@@ -253,45 +253,39 @@ export default function Profile() {
                     </>
                   ) : mediaContent.length > 0 ? (
                     <>
-                      {mediaContent.map((content: MediaContent) => (
-                        <div key={content.id} className="relative group">
-                          <div 
-                            className="cursor-pointer"
-                            onClick={() => {
-                              console.log('Direct click handler - opening modal with content:', content);
-                              setViewingContent(content);
-                              setShowViewerModal(true);
-                            }}
-                          >
+                      {mediaContent.map((content: MediaContent) => {
+                        console.log('Rendering MediaEmbed for:', content.id, 'with showEdit=true');
+                        return (
+                          <div key={content.id} className="relative group">
                             <MediaEmbed 
                               content={content} 
                               onEdit={(c) => {
-                                console.log('Direct edit handler:', c);
+                                console.log('Edit handler called:', c);
                                 setEditingContent(c);
                                 setShowEditModal(true);
                               }}
                               onView={(c) => {
-                                console.log('Direct view handler:', c);
+                                console.log('View handler called:', c);
                                 setViewingContent(c);
                                 setShowViewerModal(true);
                               }}
                               showEdit={true}
                             />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteMedia(content.id);
+                              }}
+                              disabled={deleteMediaMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteMedia(content.id);
-                            }}
-                            disabled={deleteMediaMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {/* Add Content Placeholder */}
                       <div 
                         onClick={() => setShowUploadModal(true)}

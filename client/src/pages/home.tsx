@@ -1,20 +1,28 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MediaEmbed } from "@/components/media-embed";
+import { MediaEditModal } from "@/components/media-edit-modal";
+import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
-import { User as UserIcon, Phone, MapPin, Mail, Edit, Plus, CheckCircle } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, Edit, Plus, CheckCircle, Trash2 } from "lucide-react";
 import type { User, MediaContent } from "@shared/schema";
 
 export default function Home() {
   const { toast } = useToast();
   const { user: authUser, isAuthenticated, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewerModal, setShowViewerModal] = useState(false);
+  const [editingContent, setEditingContent] = useState<MediaContent | null>(null);
+  const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -66,6 +74,44 @@ export default function Home() {
       window.location.href = "/api/login";
     }, 500);
   }
+
+  // Delete media mutation
+  const deleteMediaMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest('DELETE', `/api/media/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
+      toast({
+        title: "Contenido eliminado",
+        description: "El contenido ha sido eliminado exitosamente.",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el contenido. Por favor intenta de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteMedia = (id: string) => {
+    if (confirm('¿Estás seguro de que quieres eliminar este contenido?')) {
+      deleteMediaMutation.mutate(id);
+    }
+  };
 
   if (authLoading || userLoading) {
     return (
@@ -184,7 +230,34 @@ export default function Home() {
                     </>
                   ) : mediaContent.length > 0 ? (
                     mediaContent.map((content: MediaContent) => (
-                      <MediaEmbed key={content.id} content={content} />
+                      <div key={content.id} className="relative group">
+                        <MediaEmbed 
+                          content={content} 
+                          onEdit={(c) => {
+                            console.log('Edit handler called from home:', c);
+                            setEditingContent(c);
+                            setShowEditModal(true);
+                          }}
+                          onView={(c) => {
+                            console.log('View handler called from home:', c);
+                            setViewingContent(c);
+                            setShowViewerModal(true);
+                          }}
+                          showEdit={true}
+                        />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteMedia(content.id);
+                          }}
+                          disabled={deleteMediaMutation.isPending}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     ))
                   ) : (
                     <div className="md:col-span-2 text-center py-12">
@@ -219,6 +292,19 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <MediaEditModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        content={editingContent}
+      />
+      
+      <MediaViewerModal
+        isOpen={showViewerModal}
+        onClose={() => setShowViewerModal(false)}
+        content={viewingContent}
+      />
     </div>
   );
 }
