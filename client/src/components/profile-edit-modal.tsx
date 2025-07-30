@@ -84,7 +84,10 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: typeof formData & { skillIds: number[], languageIds: number[] }) => {
-      const response = await apiRequest("PUT", "/api/profile", data);
+      const response = await apiRequest("/api/profile", {
+        method: "PUT",
+        body: data,
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -295,7 +298,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
               </Label>
               <Select 
                 value={formData.categoryId?.toString() || ""} 
-                onValueChange={(value) => handleInputChange("categoryId", value ? parseInt(value) : null)}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: value ? parseInt(value) : null }))}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Selecciona tu área profesional" />
@@ -316,7 +319,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
               </Label>
               <Select 
                 value={formData.primaryLanguageId?.toString() || ""} 
-                onValueChange={(value) => handleInputChange("primaryLanguageId", value ? parseInt(value) : null)}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, primaryLanguageId: value ? parseInt(value) : null }))}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Selecciona tu idioma principal" />
