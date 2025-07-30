@@ -78,7 +78,7 @@ export default function Profile() {
   // Delete media content mutation
   const deleteMediaMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/media/${id}`);
+      await apiRequest(`/api/media/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/media"] });

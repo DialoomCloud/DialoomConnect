@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,13 +51,13 @@ export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
     mutationFn: async (data: { url: string; title: string; description: string; embedId: string }) => {
       return await apiRequest('/api/media', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           type: 'youtube',
           url: data.url,
           title: data.title,
           description: data.description,
           embedId: data.embedId,
-        }),
+        },
       });
     },
     onSuccess: () => {
@@ -250,6 +250,9 @@ export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
             <Upload className="w-5 h-5" />
             <span>Agregar Contenido Multimedia</span>
           </DialogTitle>
+          <DialogDescription>
+            Sube videos de YouTube, archivos MP4 locales o imágenes a tu perfil
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="youtube" className="w-full">

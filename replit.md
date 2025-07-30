@@ -86,8 +86,10 @@ The application follows a monorepo structure with clear separation between clien
 The application is designed to be deployed on Replit with automatic database provisioning and built-in authentication, making it easy to scale and maintain.
 
 ## Recent Updates (January 2025)
-- **Media Content Editing**: Added complete editing functionality for media content with modal interface
-- **Enhanced Social Media Embeds**: Improved Instagram and TikTok embed display with visual representations
-- **Type Safety Improvements**: Fixed TypeScript type errors across all components
-- **UI/UX Polish**: Enhanced visual consistency and proper error handling
-- **Database Synchronization**: All schema changes pushed to production database
+- **Simplified Media System**: Removed Instagram and TikTok support, keeping only YouTube, local videos, and images
+- **File Upload Implementation**: Added Multer and Sharp for handling MP4 videos (max 50MB) and images (max 3MB with WebP compression)
+- **New Upload Modal**: Created tabbed interface for YouTube URLs, video uploads, and image uploads
+- **Backend API Routes**: Implemented `/api/upload/video` and `/api/upload/image` endpoints with proper validation
+- **Storage Infrastructure**: Created uploads/videos and uploads/images directories with Express static serving
+- **Type Safety**: Updated schema and components to use new media types (youtube, video, image)
+- **API Client Fix**: Corrected apiRequest function signature for better usability
