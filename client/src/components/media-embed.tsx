@@ -11,7 +11,7 @@ interface MediaEmbedProps {
 }
 
 export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaEmbedProps) {
-  console.log('MediaEmbed - content:', content.id, 'showEdit:', showEdit);
+  console.log('MediaEmbed - content:', content.id, 'showEdit:', showEdit, 'onView exists:', !!onView, 'onEdit exists:', !!onEdit);
   const getTypeIcon = () => {
     switch (content.type) {
       case "youtube":
@@ -119,7 +119,13 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
     <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow duration-200 overflow-hidden cursor-pointer group">
       <CardContent className="p-0">
         {/* Media Content */}
-        <div className="relative">
+        <div 
+          className="relative"
+          onClick={() => {
+            console.log('MediaEmbed internal click, calling onView with:', content);
+            onView?.(content);
+          }}
+        >
           {getEmbedContent()}
           
           {/* Overlay for click indication */}
