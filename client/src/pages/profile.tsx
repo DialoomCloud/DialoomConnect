@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/navigation";
 import { ProfileEditModal } from "@/components/profile-edit-modal";
-import { MediaContentModal } from "@/components/media-content-modal";
+import { MediaUploadModal } from "@/components/media-upload-modal";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaEmbed } from "@/components/media-embed";
 import type { User, MediaContent } from "@shared/schema";
@@ -19,7 +19,7 @@ export default function Profile() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showMediaModal, setShowMediaModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingContent, setEditingContent] = useState<MediaContent | null>(null);
   const queryClient = useQueryClient();
@@ -220,7 +220,7 @@ export default function Profile() {
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">Contenido Multimedia</h3>
                   <Button 
-                    onClick={() => setShowMediaModal(true)}
+                    onClick={() => setShowUploadModal(true)}
                     className="bg-[hsl(159,61%,50%)] text-white hover:bg-[hsl(159,61%,45%)]"
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -263,12 +263,12 @@ export default function Profile() {
                       ))}
                       {/* Add Content Placeholder */}
                       <div 
-                        onClick={() => setShowMediaModal(true)}
+                        onClick={() => setShowUploadModal(true)}
                         className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center aspect-video hover:border-[hsl(244,91%,68%)] transition-colors cursor-pointer"
                       >
                         <Plus className="w-8 h-8 text-gray-400 mb-2" />
                         <p className="text-gray-500 font-medium">Agregar nuevo contenido</p>
-                        <p className="text-sm text-gray-400 mt-1">YouTube, Instagram o TikTok</p>
+                        <p className="text-sm text-gray-400 mt-1">YouTube, Videos MP4 o Imágenes</p>
                       </div>
                     </>
                   ) : (
@@ -278,10 +278,10 @@ export default function Profile() {
                       </div>
                       <h4 className="text-lg font-medium text-gray-900 mb-2">No hay contenido multimedia</h4>
                       <p className="text-gray-600 mb-4">
-                        Comienza agregando videos de YouTube, posts de Instagram o videos de TikTok
+                        Comienza agregando videos de YouTube, videos MP4 locales o imágenes
                       </p>
                       <Button 
-                        onClick={() => setShowMediaModal(true)}
+                        onClick={() => setShowUploadModal(true)}
                         className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
                       >
                         Agregar contenido
@@ -302,9 +302,9 @@ export default function Profile() {
         user={user}
       />
       
-      <MediaContentModal
-        isOpen={showMediaModal}
-        onClose={() => setShowMediaModal(false)}
+      <MediaUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
       />
       
       <MediaEditModal
