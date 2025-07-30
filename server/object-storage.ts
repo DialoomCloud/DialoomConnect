@@ -132,7 +132,21 @@ export class ReplitObjectStorage {
         throw new Error(`Download failed: ${result.error.message}`);
       }
 
-      return Buffer.from(result.data[0]);
+      // Check if data exists and is valid
+      if (!result.data) {
+        throw new Error('No data received from Object Storage');
+      }
+
+      // Handle different data formats from Object Storage
+      if (Buffer.isBuffer(result.data)) {
+        return result.data;
+      } else if (result.data instanceof Uint8Array) {
+        return Buffer.from(result.data);
+      } else if (Array.isArray(result.data)) {
+        return Buffer.from(result.data);
+      } else {
+        throw new Error(`Unexpected data format: ${typeof result.data}`);
+      }
     } catch (error) {
       console.error('Error downloading file from Object Storage:', error);
       throw error;
@@ -169,14 +183,14 @@ export class ReplitObjectStorage {
    */
   async listUserObjects(userId: string, folder: 'public' | 'private'): Promise<string[]> {
     try {
-      const prefix = `users/${userId}/${folder}/`;
+      const prefix = `Objects/users/${userId}/${folder}/`;
       const result = await this._client.list({ prefix });
       
       if (result.error) {
         throw new Error(`List failed: ${result.error.message}`);
       }
 
-      return result.data.map((obj: any) => obj.path);
+      return result.data ? result.data.map((obj: any) => obj.path) : [];
     } catch (error) {
       console.error('Error listing user objects:', error);
       return [];

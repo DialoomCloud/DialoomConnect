@@ -58,13 +58,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/storage/*', async (req, res) => {
     try {
       const objectPath = req.params[0];
-      const result = await replitStorage.client.downloadAsBytes(objectPath);
+      console.log(`Attempting to serve file: ${objectPath}`);
       
-      if (result.error) {
-        return res.status(404).json({ message: 'File not found' });
-      }
-
-      const fileBuffer = Buffer.from(result.data[0]);
+      const fileBuffer = await replitStorage.getFile(objectPath);
 
       // Determine content type based on file extension
       const ext = objectPath.split('.').pop()?.toLowerCase();
