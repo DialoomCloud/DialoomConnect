@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(17, 12%, 6%);
+  --muted: hsl(220, 12%, 96%);
+  --muted-foreground: hsl(220, 9%, 46%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(17, 12%, 6%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(17, 12%, 6%);
+  --border: hsl(220, 13%, 90%);
+  --input: hsl(220, 13%, 90%);
+  --primary: hsl(244, 91%, 68%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(262, 51%, 65%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(159, 61%, 50%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(60, 9%, 98%);
+  --ring: hsl(244, 91%, 68%);
+  --radius: 0.5rem;
+  
+  /* Custom Dialoom colors */
+  --dialoom-primary: hsl(244, 91%, 68%);
+  --dialoom-secondary: hsl(262, 51%, 65%);
+  --dialoom-accent: hsl(159, 61%, 50%);
+  --dialoom-background: hsl(220, 9%, 98%);
+  --dialoom-text-primary: hsl(17, 12%, 6%);
+  --dialoom-border: hsl(220, 13%, 90%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 4%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 4%, 16%);
+  --muted-foreground: hsl(240, 5%, 65%);
+  --popover: hsl(240, 10%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 4%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 4%, 16%);
+  --input: hsl(240, 4%, 16%);
+  --primary: hsl(244, 91%, 68%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(240, 4%, 16%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 4%, 16%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(244, 91%, 68%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+.dialoom-bg-gradient {
+  background: linear-gradient(135deg, hsl(244, 91%, 95%) 0%, hsl(262, 51%, 95%) 50%, hsl(159, 61%, 95%) 100%);
+}
