@@ -79,7 +79,7 @@ export function MediaViewerModal({ isOpen, onClose, content }: MediaViewerModalP
         return (
           <div className="relative w-full">
             <video
-              src={content.url}
+              src={`/storage/${content.url}`}
               controls
               autoPlay
               className="w-full max-h-[70vh] rounded-lg bg-black"
@@ -94,10 +94,14 @@ export function MediaViewerModal({ isOpen, onClose, content }: MediaViewerModalP
         return (
           <div className="relative w-full flex justify-center">
             <img
-              src={content.url}
+              src={`/storage/${content.url}`}
               alt={content.title || "Imagen"}
               className="max-w-full max-h-[70vh] object-contain rounded-lg"
               loading="lazy"
+              onError={(e) => {
+                console.error('Image failed to load:', content.url);
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </div>
         );

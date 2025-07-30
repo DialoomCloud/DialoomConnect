@@ -76,7 +76,7 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
         return (
           <div className="relative group">
             <video
-              src={content.url}
+              src={`/storage/${content.url}`}
               controls
               className="w-full aspect-video rounded-lg bg-black"
               poster=""
@@ -90,10 +90,14 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
         return (
           <div className="relative group">
             <img
-              src={content.url}
+              src={`/storage/${content.url}`}
               alt={content.title || "Imagen"}
               className="w-full aspect-video object-cover rounded-lg"
               loading="lazy"
+              onError={(e) => {
+                console.error('Image failed to load:', content.url);
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </div>
         );
