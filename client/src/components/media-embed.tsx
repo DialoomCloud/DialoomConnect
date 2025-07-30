@@ -132,16 +132,16 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
           </div>
           
           {/* Action buttons overlay */}
-          <div className="absolute top-3 right-3 flex items-center space-x-2">
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2">
             {showEdit && onEdit && (
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(content);
                 }}
-                className="bg-black/60 hover:bg-black/80 text-white p-2 h-auto backdrop-blur-sm rounded-full"
+                className="bg-white/90 hover:bg-white text-gray-700 p-2 h-auto shadow-sm"
               >
                 <Edit2 className="w-4 h-4" />
               </Button>
@@ -152,7 +152,7 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
                 target="_blank" 
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="bg-black/60 hover:bg-black/80 text-white p-2 h-auto backdrop-blur-sm rounded-full transition-colors inline-flex items-center justify-center"
+                className="bg-white/90 hover:bg-white text-gray-700 p-2 h-auto shadow-sm rounded-sm transition-colors inline-flex items-center justify-center"
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
