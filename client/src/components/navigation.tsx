@@ -25,15 +25,11 @@ export function Navigation() {
           
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
-              <Link href="/">
-                <a className="text-[hsl(244,91%,68%)] font-medium px-3 py-2 rounded-md hover:bg-[hsl(244,91%,95%)] transition-colors">
-                  Inicio
-                </a>
+              <Link href="/" className="text-[hsl(244,91%,68%)] font-medium px-3 py-2 rounded-md hover:bg-[hsl(244,91%,95%)] transition-colors">
+                Inicio
               </Link>
-              <Link href="/profile">
-                <a className="text-gray-600 hover:text-[hsl(244,91%,68%)] px-3 py-2 rounded-md transition-colors">
-                  Mi Perfil
-                </a>
+              <Link href="/profile" className="text-gray-600 hover:text-[hsl(244,91%,68%)] px-3 py-2 rounded-md transition-colors">
+                Mi Perfil
               </Link>
             </div>
           </div>

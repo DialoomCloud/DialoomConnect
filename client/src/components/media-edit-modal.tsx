@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,15 +8,17 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Youtube, Instagram, Facebook } from "lucide-react";
+import { Youtube, Play, Image } from "lucide-react";
 
 interface MediaContent {
   id: string;
-  type: "youtube" | "instagram" | "tiktok";
+  type: "youtube" | "video" | "image";
   url: string;
   title?: string;
   description?: string;
   embedId?: string;
+  fileName?: string;
+  fileSize?: number;
 }
 
 interface MediaEditModalProps {
@@ -88,10 +90,10 @@ export function MediaEditModal({ isOpen, onClose, content }: MediaEditModalProps
     switch (content.type) {
       case "youtube":
         return <Youtube className="text-red-600 text-xl" />;
-      case "instagram":
-        return <Instagram className="text-pink-600 text-xl" />;
-      case "tiktok":
-        return <Facebook className="text-black text-xl" />;
+      case "video":
+        return <Play className="text-blue-600 text-xl" />;
+      case "image":
+        return <Image className="text-green-600 text-xl" />;
       default:
         return null;
     }
@@ -102,10 +104,10 @@ export function MediaEditModal({ isOpen, onClose, content }: MediaEditModalProps
     switch (content.type) {
       case "youtube":
         return "YouTube";
-      case "instagram":
-        return "Instagram";
-      case "tiktok":
-        return "TikTok";
+      case "video":
+        return "Video Local";
+      case "image":
+        return "Imagen";
       default:
         return "";
     }
@@ -120,6 +122,9 @@ export function MediaEditModal({ isOpen, onClose, content }: MediaEditModalProps
           <DialogTitle className="text-2xl font-bold text-[hsl(17,12%,6%)]">
             Editar Contenido
           </DialogTitle>
+          <DialogDescription>
+            Modifica el título y descripción de tu contenido multimedia
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg mb-4">
