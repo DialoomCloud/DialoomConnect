@@ -535,6 +535,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Host availability routes
+  app.get('/api/host/availability', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const availability = await storage.getHostAvailability(userId);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error fetching host availability:", error);
+      res.status(500).json({ message: "Failed to fetch availability" });
+    }
+  });
+
+  app.post('/api/host/availability', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const availabilityData = req.body;
+
+      // Clear existing availability
+      const existing = await storage.getHostAvailability(userId);
+      for (const slot of existing) {
+        await storage.deleteHostAvailability(slot.id, userId);
+      }
+
+      // Create new availability
+      const results = [];
+      for (const slot of availabilityData) {
+        const result = await storage.createHostAvailability({
+          ...slot,
+          userId,
+        });
+        results.push(result);
+      }
+
+      res.json(results);
+    } catch (error) {
+      console.error("Error saving host availability:", error);
+      res.status(500).json({ message: "Failed to save availability" });
+    }
+  });
+
+  // Host pricing routes
+  app.get('/api/host/pricing', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const pricing = await storage.getHostPricing(userId);
+      res.json(pricing);
+    } catch (error) {
+      console.error("Error fetching host pricing:", error);
+      res.status(500).json({ message: "Failed to fetch pricing" });
+    }
+  });
+
+  app.post('/api/host/pricing', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const pricingData = req.body;
+
+      // Clear existing pricing
+      const existing = await storage.getHostPricing(userId);
+      for (const price of existing) {
+        await storage.deleteHostPricing(price.id, userId);
+      }
+
+      // Create new pricing
+      const results = [];
+      for (const price of pricingData) {
+        const result = await storage.createHostPricing({
+          ...price,
+          userId,
+          currency: "EUR",
+        });
+        results.push(result);
+      }
+
+      res.json(results);
+    } catch (error) {
+      console.error("Error saving host pricing:", error);
+      res.status(500).json({ message: "Failed to save pricing" });
+    }
+  });
+
   // GDPR compliance route - User data export
   app.get('/api/gdpr/export', isAuthenticated, async (req: any, res) => {
     try {

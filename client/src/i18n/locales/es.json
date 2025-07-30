@@ -3,7 +3,8 @@
     "home": "Inicio",
     "profile": "Perfil",
     "admin": "Admin",
-    "logout": "Cerrar Sesión"
+    "logout": "Cerrar Sesión",
+    "availability": "Disponibilidad"
   },
   "home": {
     "title": "Tu Dashboard Personal",
@@ -63,5 +64,39 @@
     "loading": "Cargando...",
     "save": "Guardar",
     "cancel": "Cancelar"
+  },
+  "availability": {
+    "title": "Configuración de Disponibilidad",
+    "subtitle": "Configura tu horario semanal y precios para videollamadas",
+    "weeklySchedule": "Horario Semanal",
+    "selectDays": "Selecciona los días disponibles",
+    "sunday": "Domingo",
+    "monday": "Lunes",
+    "tuesday": "Martes",
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "saveSchedule": "Guardar Horario",
+    "currentSchedule": "Horario Actual",
+    "freeConsultation": "Consulta Gratuita",
+    "30minutes": "30 minutos",
+    "60minutes": "60 minutos",
+    "90minutes": "90 minutos",
+    "saveSuccess": "Disponibilidad guardada",
+    "saveSuccessDesc": "Tu horario ha sido actualizado correctamente",
+    "saveError": "No se pudo guardar la disponibilidad"
+  },
+  "pricing": {
+    "title": "Precios de Sesiones",
+    "free": "GRATIS",
+    "freeDesc": "Primera consulta de 15 minutos sin costo",
+    "minutes": "minutos",
+    "savePricing": "Guardar Precios",
+    "saveSuccess": "Precios guardados",
+    "saveSuccessDesc": "Tus precios han sido actualizados correctamente",
+    "saveError": "No se pudieron guardar los precios"
   }
 }

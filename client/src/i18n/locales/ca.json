@@ -3,7 +3,8 @@
     "home": "Inici",
     "profile": "Perfil",
     "admin": "Admin",
-    "logout": "Tancar Sessió"
+    "logout": "Tancar Sessió",
+    "availability": "Disponibilitat"
   },
   "home": {
     "title": "El Teu Tauler Personal",
@@ -63,5 +64,39 @@
     "loading": "Carregant...",
     "save": "Desar",
     "cancel": "Cancel·lar"
+  },
+  "availability": {
+    "title": "Configuració de Disponibilitat",
+    "subtitle": "Configura el teu horari setmanal i preus per videotrucades",
+    "weeklySchedule": "Horari Setmanal",
+    "selectDays": "Selecciona els dies disponibles",
+    "sunday": "Diumenge",
+    "monday": "Dilluns",
+    "tuesday": "Dimarts",
+    "wednesday": "Dimecres",
+    "thursday": "Dijous",
+    "friday": "Divendres",
+    "saturday": "Dissabte",
+    "startTime": "Hora d'inici",
+    "endTime": "Hora de fi",
+    "saveSchedule": "Desar Horari",
+    "currentSchedule": "Horari Actual",
+    "freeConsultation": "Consulta Gratuïta",
+    "30minutes": "30 minuts",
+    "60minutes": "60 minuts",
+    "90minutes": "90 minuts",
+    "saveSuccess": "Disponibilitat desada",
+    "saveSuccessDesc": "El teu horari s'ha actualitzat correctament",
+    "saveError": "No s'ha pogut desar la disponibilitat"
+  },
+  "pricing": {
+    "title": "Preus de Sessions",
+    "free": "GRATUÏT",
+    "freeDesc": "Primera consulta de 15 minuts sense cost",
+    "minutes": "minuts",
+    "savePricing": "Desar Preus",
+    "saveSuccess": "Preus desats",
+    "saveSuccessDesc": "Els teus preus s'han actualitzat correctament",
+    "saveError": "No s'han pogut desar els preus"
   }
 }

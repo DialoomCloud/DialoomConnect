@@ -62,6 +62,34 @@ export interface IStorage {
   // GDPR compliance operations
   exportUserData(userId: string): Promise<any>;
   requestDataDeletion(userId: string, deletionDate: Date): Promise<void>;
+  
+  // Host availability operations
+  getHostAvailability(userId: string): Promise<any[]>;
+  createHostAvailability(availability: any): Promise<any>;
+  updateHostAvailability(id: string, userId: string, updates: any): Promise<any | undefined>;
+  deleteHostAvailability(id: string, userId: string): Promise<boolean>;
+  
+  // Host pricing operations
+  getHostPricing(userId: string): Promise<any[]>;
+  createHostPricing(pricing: any): Promise<any>;
+  updateHostPricing(id: string, userId: string, updates: any): Promise<any | undefined>;
+  deleteHostPricing(id: string, userId: string): Promise<boolean>;
+  
+  // Host categories operations
+  getHostCategories(userId: string): Promise<any[]>;
+  updateHostCategories(userId: string, categoryIds: number[]): Promise<void>;
+  
+  // Booking operations
+  createBooking(booking: any): Promise<any>;
+  getBookingById(id: string): Promise<any | undefined>;
+  getHostBookings(hostId: string): Promise<any[]>;
+  getGuestBookings(guestId: string): Promise<any[]>;
+  updateBooking(id: string, updates: any): Promise<any | undefined>;
+  cancelBooking(id: string, userId: string): Promise<boolean>;
+  getBookingsByDate(hostId: string, date: string): Promise<any[]>;
+  
+  // Host search operations
+  searchHosts(filters?: { categoryIds?: number[]; minPrice?: number; maxPrice?: number }): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -306,6 +334,161 @@ export class DatabaseStorage implements IStorage {
       console.error('Error updating user skills:', error);
       throw error;
     }
+  }
+  // Host availability operations
+  async getHostAvailability(userId: string): Promise<any[]> {
+    const { hostAvailability } = await import("@shared/schema");
+    return await db.select().from(hostAvailability).where(eq(hostAvailability.userId, userId));
+  }
+
+  async createHostAvailability(availability: any): Promise<any> {
+    const { hostAvailability } = await import("@shared/schema");
+    const [result] = await db.insert(hostAvailability).values(availability).returning();
+    return result;
+  }
+
+  async updateHostAvailability(id: string, userId: string, updates: any): Promise<any | undefined> {
+    const { hostAvailability } = await import("@shared/schema");
+    const [result] = await db
+      .update(hostAvailability)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(hostAvailability.id, id), eq(hostAvailability.userId, userId)))
+      .returning();
+    return result;
+  }
+
+  async deleteHostAvailability(id: string, userId: string): Promise<boolean> {
+    const { hostAvailability } = await import("@shared/schema");
+    const result = await db
+      .delete(hostAvailability)
+      .where(and(eq(hostAvailability.id, id), eq(hostAvailability.userId, userId)));
+    return (result?.rowCount || 0) > 0;
+  }
+
+  // Host pricing operations
+  async getHostPricing(userId: string): Promise<any[]> {
+    const { hostPricing } = await import("@shared/schema");
+    return await db.select().from(hostPricing).where(eq(hostPricing.userId, userId));
+  }
+
+  async createHostPricing(pricing: any): Promise<any> {
+    const { hostPricing } = await import("@shared/schema");
+    const [result] = await db.insert(hostPricing).values(pricing).returning();
+    return result;
+  }
+
+  async updateHostPricing(id: string, userId: string, updates: any): Promise<any | undefined> {
+    const { hostPricing } = await import("@shared/schema");
+    const [result] = await db
+      .update(hostPricing)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(hostPricing.id, id), eq(hostPricing.userId, userId)))
+      .returning();
+    return result;
+  }
+
+  async deleteHostPricing(id: string, userId: string): Promise<boolean> {
+    const { hostPricing } = await import("@shared/schema");
+    const result = await db
+      .delete(hostPricing)
+      .where(and(eq(hostPricing.id, id), eq(hostPricing.userId, userId)));
+    return (result?.rowCount || 0) > 0;
+  }
+
+  // Host categories operations
+  async getHostCategories(userId: string): Promise<any[]> {
+    const { hostCategories } = await import("@shared/schema");
+    return await db.select().from(hostCategories).where(eq(hostCategories.userId, userId));
+  }
+
+  async updateHostCategories(userId: string, categoryIds: number[]): Promise<void> {
+    const { hostCategories } = await import("@shared/schema");
+    
+    // Delete existing categories
+    await db.delete(hostCategories).where(eq(hostCategories.userId, userId));
+    
+    // Insert new categories
+    if (categoryIds.length > 0) {
+      await db.insert(hostCategories).values(
+        categoryIds.map(categoryId => ({ userId, categoryId }))
+      );
+    }
+  }
+
+  // Booking operations
+  async createBooking(booking: any): Promise<any> {
+    const { bookings } = await import("@shared/schema");
+    const [result] = await db.insert(bookings).values(booking).returning();
+    return result;
+  }
+
+  async getBookingById(id: string): Promise<any | undefined> {
+    const { bookings } = await import("@shared/schema");
+    const [result] = await db.select().from(bookings).where(eq(bookings.id, id));
+    return result;
+  }
+
+  async getHostBookings(hostId: string): Promise<any[]> {
+    const { bookings } = await import("@shared/schema");
+    return await db.select().from(bookings).where(eq(bookings.hostId, hostId));
+  }
+
+  async getGuestBookings(guestId: string): Promise<any[]> {
+    const { bookings } = await import("@shared/schema");
+    return await db.select().from(bookings).where(eq(bookings.guestId, guestId));
+  }
+
+  async updateBooking(id: string, updates: any): Promise<any | undefined> {
+    const { bookings } = await import("@shared/schema");
+    const [result] = await db
+      .update(bookings)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(bookings.id, id))
+      .returning();
+    return result;
+  }
+
+  async cancelBooking(id: string, userId: string): Promise<boolean> {
+    const { bookings } = await import("@shared/schema");
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    
+    if (!booking || (booking.hostId !== userId && booking.guestId !== userId)) {
+      return false;
+    }
+    
+    const result = await db
+      .update(bookings)
+      .set({ status: 'cancelled', updatedAt: new Date() })
+      .where(eq(bookings.id, id));
+    
+    return (result?.rowCount || 0) > 0;
+  }
+
+  async getBookingsByDate(hostId: string, date: string): Promise<any[]> {
+    const { bookings } = await import("@shared/schema");
+    return await db
+      .select()
+      .from(bookings)
+      .where(and(eq(bookings.hostId, hostId), eq(bookings.scheduledDate, date)));
+  }
+
+  // Host search operations
+  async searchHosts(filters?: { categoryIds?: number[]; minPrice?: number; maxPrice?: number }): Promise<User[]> {
+    let query = db.select().from(users).where(eq(users.isActive, true));
+    
+    // Add additional filtering logic here if needed
+    
+    const results = await query;
+    
+    // Return users with private info hidden
+    return results.map(user => ({
+      ...user,
+      phone: null,
+      address: null,
+      city: null,
+      postalCode: null,
+      passwordHash: null,
+    }));
   }
 }
 

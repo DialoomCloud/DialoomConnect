@@ -3,7 +3,8 @@
     "home": "Home",
     "profile": "Profile",
     "admin": "Admin",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "availability": "Availability"
   },
   "home": {
     "title": "Your Personal Dashboard",
@@ -63,5 +64,39 @@
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel"
+  },
+  "availability": {
+    "title": "Availability Configuration",
+    "subtitle": "Set up your weekly schedule and video call prices",
+    "weeklySchedule": "Weekly Schedule",
+    "selectDays": "Select available days",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "saveSchedule": "Save Schedule",
+    "currentSchedule": "Current Schedule",
+    "freeConsultation": "Free Consultation",
+    "30minutes": "30 minutes",
+    "60minutes": "60 minutes",
+    "90minutes": "90 minutes",
+    "saveSuccess": "Availability saved",
+    "saveSuccessDesc": "Your schedule has been successfully updated",
+    "saveError": "Could not save availability"
+  },
+  "pricing": {
+    "title": "Session Pricing",
+    "free": "FREE",
+    "freeDesc": "First 15-minute consultation at no cost",
+    "minutes": "minutes",
+    "savePricing": "Save Pricing",
+    "saveSuccess": "Pricing saved",
+    "saveSuccessDesc": "Your prices have been successfully updated",
+    "saveError": "Could not save pricing"
   }
 }

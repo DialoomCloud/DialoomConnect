@@ -9,6 +9,8 @@ import {
   pgEnum,
   integer,
   boolean,
+  decimal,
+  date,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -89,7 +91,7 @@ export const users = pgTable("users", {
   categoryId: integer("category_id").references(() => categories.id),
   // Admin and authentication fields
   isAdmin: boolean("is_admin").default(false),
-  username: varchar("username").unique(), // For admin login
+  username: varchar("username"), // For admin login
   passwordHash: varchar("password_hash"), // Encrypted password for admin
   // User verification and GDPR compliance
   isVerified: boolean("is_verified").default(false),
@@ -248,3 +250,60 @@ export type MediaContent = Omit<typeof mediaContent.$inferSelect, 'title' | 'des
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
 export type InsertUserLanguage = z.infer<typeof insertUserLanguageSchema>;
 export type InsertUserSkill = z.infer<typeof insertUserSkillSchema>;
+
+// Host availability and booking system
+export const hostAvailability = pgTable("host_availability", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
+  startTime: varchar("start_time").notNull(), // HH:MM format
+  endTime: varchar("end_time").notNull(), // HH:MM format
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const hostPricing = pgTable("host_pricing", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  duration: integer("duration").notNull(), // in minutes (0, 30, 60, 90)
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // 0 for free
+  currency: varchar("currency").default("EUR"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const bookings = pgTable("bookings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  hostId: varchar("host_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  guestId: varchar("guest_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  scheduledDate: date("scheduled_date").notNull(),
+  startTime: varchar("start_time").notNull(), // HH:MM format
+  duration: integer("duration").notNull(), // in minutes
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency").default("EUR"),
+  status: varchar("status").default("pending"), // pending, confirmed, completed, cancelled
+  agoraChannelName: varchar("agora_channel_name"),
+  agoraToken: text("agora_token"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const hostCategories = pgTable("host_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  categoryId: integer("category_id").notNull().references(() => categories.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schema types
+export type HostAvailability = typeof hostAvailability.$inferSelect;
+export type InsertHostAvailability = typeof hostAvailability.$inferInsert;
+export type HostPricing = typeof hostPricing.$inferSelect;
+export type InsertHostPricing = typeof hostPricing.$inferInsert;
+export type Booking = typeof bookings.$inferSelect;
+export type InsertBooking = typeof bookings.$inferInsert;
+export type HostCategory = typeof hostCategories.$inferSelect;
+export type InsertHostCategory = typeof hostCategories.$inferInsert;

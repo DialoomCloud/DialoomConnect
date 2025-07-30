@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./language-selector";
-import { Home, User as UserIcon, Shield, Users, LogOut } from "lucide-react";
+import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon } from "lucide-react";
 import type { User } from "@shared/schema";
 
 export function Navigation() {
@@ -62,6 +62,19 @@ export function Navigation() {
                   {t('home.searchHosts')}
                 </Button>
               </Link>
+              
+              {user && (
+                <Link href="/availability">
+                  <Button
+                    variant={isActive("/availability") ? "default" : "ghost"}
+                    size="sm"
+                    className={isActive("/availability") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
+                  >
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    {t('navigation.availability')}
+                  </Button>
+                </Link>
+              )}
               
               {user?.email === "dialoomroot" && (
                 <Link href="/admin">
