@@ -94,7 +94,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(mediaContent)
       .where(eq(mediaContent.id, id) && eq(mediaContent.userId, userId));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 }
 

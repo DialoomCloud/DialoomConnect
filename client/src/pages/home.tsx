@@ -9,7 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { MediaEmbed } from "@/components/media-embed";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Link } from "wouter";
-import { User, Phone, MapPin, Mail, Edit, Plus, CheckCircle } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, Edit, Plus, CheckCircle } from "lucide-react";
+import type { User, MediaContent } from "@shared/schema";
 
 export default function Home() {
   const { toast } = useToast();
@@ -31,42 +32,40 @@ export default function Home() {
   }, [isAuthenticated, authLoading, toast]);
 
   // Fetch user profile
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     enabled: isAuthenticated,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
 
+  // Handle user error
+  if (userError && isUnauthorizedError(userError as Error)) {
+    toast({
+      title: "Unauthorized",
+      description: "You are logged out. Logging in again...",
+      variant: "destructive",
+    });
+    setTimeout(() => {
+      window.location.href = "/api/login";
+    }, 500);
+  }
+
   // Fetch media content
-  const { data: mediaContent = [], isLoading: mediaLoading } = useQuery({
+  const { data: mediaContent = [], isLoading: mediaLoading, error: mediaError } = useQuery<MediaContent[]>({
     queryKey: ["/api/media"],
     enabled: isAuthenticated,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized", 
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
+
+  // Handle media error
+  if (mediaError && isUnauthorizedError(mediaError as Error)) {
+    toast({
+      title: "Unauthorized", 
+      description: "You are logged out. Logging in again...",
+      variant: "destructive",
+    });
+    setTimeout(() => {
+      window.location.href = "/api/login";
+    }, 500);
+  }
 
   if (authLoading || userLoading) {
     return (
@@ -106,7 +105,7 @@ export default function Home() {
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      <User className="w-12 h-12 text-gray-400" />
+                      <UserIcon className="w-12 h-12 text-gray-400" />
                     )}
                   </div>
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">
@@ -184,7 +183,7 @@ export default function Home() {
                       ))}
                     </>
                   ) : mediaContent.length > 0 ? (
-                    mediaContent.map((content: any) => (
+                    mediaContent.map((content: MediaContent) => (
                       <MediaEmbed key={content.id} content={content} />
                     ))
                   ) : (

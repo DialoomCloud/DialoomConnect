@@ -4,20 +4,24 @@ import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/navigation";
 import { ProfileEditModal } from "@/components/profile-edit-modal";
 import { MediaContentModal } from "@/components/media-content-modal";
+import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaEmbed } from "@/components/media-embed";
+import type { User, MediaContent } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { User, Phone, MapPin, Mail, Edit, Plus, CheckCircle, Trash2 } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, Edit, Plus, CheckCircle, Trash2 } from "lucide-react";
 
 export default function Profile() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMediaModal, setShowMediaModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingContent, setEditingContent] = useState<MediaContent | null>(null);
   const queryClient = useQueryClient();
 
   // Redirect to login if not authenticated
@@ -36,42 +40,40 @@ export default function Profile() {
   }, [isAuthenticated, authLoading, toast]);
 
   // Fetch user profile
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     enabled: isAuthenticated,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
 
+  // Handle user error
+  if (userError && isUnauthorizedError(userError as Error)) {
+    toast({
+      title: "Unauthorized",
+      description: "You are logged out. Logging in again...",
+      variant: "destructive",
+    });
+    setTimeout(() => {
+      window.location.href = "/api/login";
+    }, 500);
+  }
+
   // Fetch media content
-  const { data: mediaContent = [], isLoading: mediaLoading } = useQuery({
+  const { data: mediaContent = [], isLoading: mediaLoading, error: mediaError } = useQuery<MediaContent[]>({
     queryKey: ["/api/media"],
     enabled: isAuthenticated,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-    },
   });
+
+  // Handle media error
+  if (mediaError && isUnauthorizedError(mediaError as Error)) {
+    toast({
+      title: "Unauthorized",
+      description: "You are logged out. Logging in again...",
+      variant: "destructive",
+    });
+    setTimeout(() => {
+      window.location.href = "/api/login";
+    }, 500);
+  }
 
   // Delete media content mutation
   const deleteMediaMutation = useMutation({
@@ -109,6 +111,11 @@ export default function Profile() {
     if (window.confirm("¿Estás seguro de que quieres eliminar este contenido?")) {
       deleteMediaMutation.mutate(id);
     }
+  };
+
+  const handleEditMedia = (content: MediaContent) => {
+    setEditingContent(content);
+    setShowEditModal(true);
   };
 
   if (authLoading || userLoading) {
@@ -149,7 +156,7 @@ export default function Profile() {
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      <User className="w-12 h-12 text-gray-400" />
+                      <UserIcon className="w-12 h-12 text-gray-400" />
                     )}
                   </div>
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">
@@ -236,9 +243,13 @@ export default function Profile() {
                     </>
                   ) : mediaContent.length > 0 ? (
                     <>
-                      {mediaContent.map((content: any) => (
+                      {mediaContent.map((content: MediaContent) => (
                         <div key={content.id} className="relative group">
-                          <MediaEmbed content={content} />
+                          <MediaEmbed 
+                            content={content} 
+                            onEdit={handleEditMedia}
+                            showEdit={true}
+                          />
                           <Button
                             variant="destructive"
                             size="sm"
@@ -294,6 +305,12 @@ export default function Profile() {
       <MediaContentModal
         isOpen={showMediaModal}
         onClose={() => setShowMediaModal(false)}
+      />
+      
+      <MediaEditModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        content={editingContent}
       />
     </div>
   );

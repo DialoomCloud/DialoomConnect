@@ -1,9 +1,10 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import type { User } from "@shared/schema";
 
 export function Navigation() {
-  const { user } = useAuth();
+  const { user } = useAuth() as { user: User | undefined };
 
   const handleLogout = () => {
     window.location.href = "/api/logout";

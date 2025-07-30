@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Youtube, Instagram, Facebook, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Youtube, Instagram, Facebook, ExternalLink, Edit2 } from "lucide-react";
 
 interface MediaContent {
   id: string;
@@ -12,9 +13,11 @@ interface MediaContent {
 
 interface MediaEmbedProps {
   content: MediaContent;
+  onEdit?: (content: MediaContent) => void;
+  showEdit?: boolean;
 }
 
-export function MediaEmbed({ content }: MediaEmbedProps) {
+export function MediaEmbed({ content, onEdit, showEdit = false }: MediaEmbedProps) {
   const getTypeIcon = () => {
     switch (content.type) {
       case "youtube":
@@ -67,7 +70,26 @@ export function MediaEmbed({ content }: MediaEmbedProps) {
         );
       
       case "instagram":
-        // For Instagram, we'll show a placeholder since embedding requires special handling
+        // Instagram improved visual representation
+        if (content.embedId) {
+          return (
+            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg aspect-square flex items-center justify-center p-4">
+              <div className="text-center text-white">
+                <Instagram className="w-12 h-12 mx-auto mb-3" />
+                <p className="text-sm font-medium mb-2">Instagram Post</p>
+                <p className="text-xs text-purple-100 mb-3">ID: {content.embedId}</p>
+                <a 
+                  href={content.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block bg-white text-purple-600 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100 transition-colors"
+                >
+                  Ver en Instagram
+                </a>
+              </div>
+            </div>
+          );
+        }
         return (
           <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg aspect-square flex items-center justify-center">
             <div className="text-center text-white">
@@ -86,7 +108,26 @@ export function MediaEmbed({ content }: MediaEmbedProps) {
         );
       
       case "tiktok":
-        // For TikTok, we'll show a placeholder since embedding requires special handling
+        // TikTok embed using oEmbed API - for now using iframe with proper aspect ratio
+        if (content.embedId) {
+          return (
+            <div className="bg-black rounded-lg flex items-center justify-center" style={{ aspectRatio: "9/16", maxHeight: "400px" }}>
+              <div className="text-center text-white p-4">
+                <Facebook className="w-12 h-12 mx-auto mb-3" />
+                <p className="text-sm font-medium mb-2">TikTok Video</p>
+                <p className="text-xs text-gray-300 mb-3">ID: {content.embedId}</p>
+                <a 
+                  href={content.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block bg-white text-black px-3 py-1 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Ver en TikTok
+                </a>
+              </div>
+            </div>
+          );
+        }
         return (
           <div className="bg-black rounded-lg aspect-[9/16] max-h-80 flex items-center justify-center">
             <div className="text-center text-white">
@@ -124,14 +165,26 @@ export function MediaEmbed({ content }: MediaEmbedProps) {
             {getTypeIcon()}
             <span className="font-medium text-gray-700">{getTypeLabel()}</span>
           </div>
-          <a 
-            href={content.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-[hsl(244,91%,68%)] transition-colors"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </a>
+          <div className="flex items-center space-x-2">
+            {showEdit && onEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(content)}
+                className="text-gray-400 hover:text-[hsl(244,91%,68%)] p-1 h-auto"
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            )}
+            <a 
+              href={content.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-[hsl(244,91%,68%)] transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
         </div>
 
         {getEmbedContent()}
