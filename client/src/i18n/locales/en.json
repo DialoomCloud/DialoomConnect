@@ -66,6 +66,18 @@
     "noResults": "No hosts found",
     "searching": "Searching..."
   },
+  "profile": {
+    "notFound": "User not found",
+    "notFoundDesc": "The profile you're looking for is not available.",
+    "noMedia": "This user hasn't added any multimedia content yet",
+    "title": "Title",
+    "description": "Description",
+    "languages": "Languages",
+    "selectLanguages": "Select spoken languages",
+    "languagesSpoken": "Languages spoken",
+    "skills": "Skills",
+    "selectSkills": "Select your skills"
+  },
   "common": {
     "error": "Error",
     "loading": "Loading...",
@@ -104,6 +116,8 @@
     "savePricing": "Save Pricing",
     "saveSuccess": "Pricing saved",
     "saveSuccessDesc": "Your prices have been successfully updated",
-    "saveError": "Could not save pricing"
+    "saveError": "Could not save pricing",
+    "freeSession": "Free Session",
+    "pricing": "Pricing"
   }
 }

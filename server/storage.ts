@@ -7,6 +7,8 @@ import {
   categories,
   userLanguages,
   userSkills,
+  hostAvailability,
+  hostPricing,
   type User,
   type UpsertUser,
   type MediaContent,
@@ -20,6 +22,10 @@ import {
   type UserSkill,
   type InsertUserLanguage,
   type InsertUserSkill,
+  type HostAvailability,
+  type InsertHostAvailability,
+  type HostPricing,
+  type InsertHostPricing,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -34,6 +40,7 @@ export interface IStorage {
   
   // Media content operations
   getUserMediaContent(userId: string): Promise<MediaContent[]>;
+  getUserMedia(userId: string): Promise<MediaContent[]>; // Alias for getUserMediaContent
   createMediaContent(content: InsertMediaContent): Promise<MediaContent>;
   updateMediaContent(id: string, content: Partial<InsertMediaContent>): Promise<MediaContent>;
   deleteMediaContent(id: string, userId: string): Promise<boolean>;
@@ -62,6 +69,16 @@ export interface IStorage {
   // GDPR compliance operations
   exportUserData(userId: string): Promise<any>;
   requestDataDeletion(userId: string, deletionDate: Date): Promise<void>;
+  
+  // Host availability operations
+  getHostAvailability(userId: string): Promise<HostAvailability[]>;
+  createHostAvailability(availability: InsertHostAvailability): Promise<HostAvailability>;
+  deleteHostAvailability(id: string, userId: string): Promise<boolean>;
+  
+  // Host pricing operations
+  getHostPricing(userId: string): Promise<HostPricing[]>;
+  createHostPricing(pricing: InsertHostPricing): Promise<HostPricing>;
+  deleteHostPricing(id: string, userId: string): Promise<boolean>;
   
   // Host availability operations
   getHostAvailability(userId: string): Promise<any[]>;
@@ -239,6 +256,11 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(mediaContent.createdAt));
   }
 
+  // Alias for getUserMediaContent
+  async getUserMedia(userId: string): Promise<MediaContent[]> {
+    return this.getUserMediaContent(userId);
+  }
+
   async createMediaContent(content: InsertMediaContent): Promise<MediaContent> {
     const [newContent] = await db
       .insert(mediaContent)
@@ -264,6 +286,11 @@ export class DatabaseStorage implements IStorage {
       .delete(mediaContent)
       .where(and(eq(mediaContent.id, id), eq(mediaContent.userId, userId)));
     return (result?.rowCount || 0) > 0;
+  }
+
+  // Alias for getUserMediaContent
+  async getUserMedia(userId: string): Promise<MediaContent[]> {
+    return this.getUserMediaContent(userId);
   }
 
   // Reference data methods
@@ -336,13 +363,11 @@ export class DatabaseStorage implements IStorage {
     }
   }
   // Host availability operations
-  async getHostAvailability(userId: string): Promise<any[]> {
-    const { hostAvailability } = await import("@shared/schema");
+  async getHostAvailability(userId: string): Promise<HostAvailability[]> {
     return await db.select().from(hostAvailability).where(eq(hostAvailability.userId, userId));
   }
 
-  async createHostAvailability(availability: any): Promise<any> {
-    const { hostAvailability } = await import("@shared/schema");
+  async createHostAvailability(availability: InsertHostAvailability): Promise<HostAvailability> {
     const [result] = await db.insert(hostAvailability).values(availability).returning();
     return result;
   }
@@ -358,7 +383,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteHostAvailability(id: string, userId: string): Promise<boolean> {
-    const { hostAvailability } = await import("@shared/schema");
     const result = await db
       .delete(hostAvailability)
       .where(and(eq(hostAvailability.id, id), eq(hostAvailability.userId, userId)));
@@ -366,13 +390,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Host pricing operations
-  async getHostPricing(userId: string): Promise<any[]> {
-    const { hostPricing } = await import("@shared/schema");
+  async getHostPricing(userId: string): Promise<HostPricing[]> {
     return await db.select().from(hostPricing).where(eq(hostPricing.userId, userId));
   }
 
-  async createHostPricing(pricing: any): Promise<any> {
-    const { hostPricing } = await import("@shared/schema");
+  async createHostPricing(pricing: InsertHostPricing): Promise<HostPricing> {
     const [result] = await db.insert(hostPricing).values(pricing).returning();
     return result;
   }
@@ -388,7 +410,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteHostPricing(id: string, userId: string): Promise<boolean> {
-    const { hostPricing } = await import("@shared/schema");
     const result = await db
       .delete(hostPricing)
       .where(and(eq(hostPricing.id, id), eq(hostPricing.userId, userId)));

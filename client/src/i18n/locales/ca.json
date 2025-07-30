@@ -66,6 +66,18 @@
     "noResults": "No s'han trobat hosts",
     "searching": "Cercant..."
   },
+  "profile": {
+    "notFound": "Usuari no trobat",
+    "notFoundDesc": "El perfil que cerques no està disponible.",
+    "noMedia": "Aquest usuari encara no ha afegit contingut multimèdia",
+    "title": "Títol",
+    "description": "Descripció",
+    "languages": "Idiomes",
+    "selectLanguages": "Selecciona idiomes parlats",
+    "languagesSpoken": "Idiomes parlats",
+    "skills": "Habilitats",
+    "selectSkills": "Selecciona les teves habilitats"
+  },
   "common": {
     "error": "Error",
     "loading": "Carregant...",
@@ -104,6 +116,8 @@
     "savePricing": "Desar Preus",
     "saveSuccess": "Preus desats",
     "saveSuccessDesc": "Els teus preus s'han actualitzat correctament",
-    "saveError": "No s'han pogut desar els preus"
+    "saveError": "No s'han pogut desar els preus",
+    "freeSession": "Sessió gratuïta",
+    "pricing": "Preus"
   }
 }

@@ -575,6 +575,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public user profile routes
+  app.get('/api/users/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Return public profile information only
+      const publicProfile = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        city: user.city,
+        countryCode: user.countryCode,
+        title: user.title,
+        description: user.description,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+      };
+      
+      res.json(publicProfile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  app.get('/api/users/:id/media', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const media = await storage.getUserMedia(id);
+      res.json(media);
+    } catch (error) {
+      console.error("Error fetching user media:", error);
+      res.status(500).json({ message: "Failed to fetch user media" });
+    }
+  });
+
+  app.get('/api/users/:id/availability', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const availability = await storage.getHostAvailability(id);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error fetching user availability:", error);
+      res.status(500).json({ message: "Failed to fetch user availability" });
+    }
+  });
+
+  app.get('/api/users/:id/pricing', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const pricing = await storage.getHostPricing(id);
+      res.json(pricing);
+    } catch (error) {
+      console.error("Error fetching user pricing:", error);
+      res.status(500).json({ message: "Failed to fetch user pricing" });
+    }
+  });
+
   // Host pricing routes
   app.get('/api/host/pricing', isAuthenticated, async (req: any, res) => {
     try {

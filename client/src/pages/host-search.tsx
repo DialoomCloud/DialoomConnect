@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Navigation } from "@/components/navigation";
 import { Search, User, Mail, MapPin, CheckCircle, Eye } from "lucide-react";
+import { Link } from "wouter";
 import type { User as UserType } from "@shared/schema";
 
 export default function HostSearch() {
@@ -103,13 +104,14 @@ export default function HostSearch() {
                     )}
                   </div>
 
-                  <Button 
-                    className="w-full bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,60%)] glow-button relative overflow-hidden"
-                    onClick={() => window.location.href = `/profile/${host.id}`}
-                  >
-                    <Eye className="w-4 h-4 mr-2 relative z-10" />
-                    <span className="relative z-10">{t('hosts.viewProfile')}</span>
-                  </Button>
+                  <Link href={`/user/${host.id}`}>
+                    <Button 
+                      className="w-full bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,60%)] glow-button relative overflow-hidden"
+                    >
+                      <Eye className="w-4 h-4 mr-2 relative z-10" />
+                      <span className="relative z-10">{t('hosts.viewProfile')}</span>
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
