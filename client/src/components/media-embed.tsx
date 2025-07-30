@@ -70,77 +70,91 @@ export function MediaEmbed({ content, onEdit, showEdit = false }: MediaEmbedProp
         );
       
       case "instagram":
-        // Instagram improved visual representation
-        if (content.embedId) {
-          return (
-            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg aspect-square flex items-center justify-center p-4">
-              <div className="text-center text-white">
-                <Instagram className="w-12 h-12 mx-auto mb-3" />
-                <p className="text-sm font-medium mb-2">Instagram Post</p>
-                <p className="text-xs text-purple-100 mb-3">ID: {content.embedId}</p>
-                <a 
-                  href={content.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-block bg-white text-purple-600 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100 transition-colors"
-                >
-                  Ver en Instagram
-                </a>
-              </div>
-            </div>
-          );
-        }
         return (
-          <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg aspect-square flex items-center justify-center">
-            <div className="text-center text-white">
-              <Instagram className="w-12 h-12 mx-auto mb-2" />
-              <p className="text-sm font-medium">Instagram Post</p>
-              <a 
-                href={content.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-xs underline hover:no-underline"
-              >
-                Ver en Instagram
-              </a>
+          <div 
+            className="relative group cursor-pointer"
+            onClick={() => window.open(content.url, '_blank')}
+          >
+            {/* Instagram thumbnail */}
+            <div className="aspect-video bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 rounded-lg overflow-hidden relative transform transition-transform group-hover:scale-[1.02]">
+              {/* Background pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/20 to-black/40"></div>
+              
+              {/* Instagram icon as main visual element */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white/90 rounded-full p-4 shadow-lg transform transition-transform group-hover:scale-110">
+                  <Instagram className="w-12 h-12 text-pink-600" />
+                </div>
+              </div>
+              
+              {/* Play button overlay */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-black/70 rounded-full p-3 transform scale-75 group-hover:scale-100 transition-transform">
+                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 5v10l8-5-8-5z"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Bottom overlay with title */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                <p className="text-white font-medium text-sm truncate">
+                  {content.title || "Publicación de Instagram"}
+                </p>
+              </div>
+              
+              {/* Instagram branding badge */}
+              <div className="absolute top-3 right-3">
+                <div className="bg-black/60 backdrop-blur-sm rounded px-2 py-1">
+                  <span className="text-white text-xs font-medium">Instagram</span>
+                </div>
+              </div>
             </div>
           </div>
         );
       
       case "tiktok":
-        // TikTok embed using oEmbed API - for now using iframe with proper aspect ratio
-        if (content.embedId) {
-          return (
-            <div className="bg-black rounded-lg flex items-center justify-center" style={{ aspectRatio: "9/16", maxHeight: "400px" }}>
-              <div className="text-center text-white p-4">
-                <Facebook className="w-12 h-12 mx-auto mb-3" />
-                <p className="text-sm font-medium mb-2">TikTok Video</p>
-                <p className="text-xs text-gray-300 mb-3">ID: {content.embedId}</p>
-                <a 
-                  href={content.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-block bg-white text-black px-3 py-1 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                >
-                  Ver en TikTok
-                </a>
-              </div>
-            </div>
-          );
-        }
         return (
-          <div className="bg-black rounded-lg aspect-[9/16] max-h-80 flex items-center justify-center">
-            <div className="text-center text-white">
-              <Facebook className="w-12 h-12 mx-auto mb-2" />
-              <p className="text-sm font-medium">TikTok Video</p>
-              <a 
-                href={content.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-xs underline hover:no-underline"
-              >
-                Ver en TikTok
-              </a>
+          <div 
+            className="relative group cursor-pointer"
+            onClick={() => window.open(content.url, '_blank')}
+          >
+            {/* TikTok thumbnail */}
+            <div className="aspect-video bg-gradient-to-br from-black via-gray-900 to-pink-900 rounded-lg overflow-hidden relative transform transition-transform group-hover:scale-[1.02]">
+              {/* Background pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-pink-500/10 to-red-500/20"></div>
+              
+              {/* TikTok icon as main visual element */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white rounded-full p-4 shadow-lg transform transition-transform group-hover:scale-110">
+                  <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 01-2.31-2.84A2.89 2.89 0 017.75 11.9a3.01 3.01 0 01.69.08V8.54a6.33 6.33 0 00-.69-.05A6.33 6.33 0 001.42 14.82 6.33 6.33 0 007.75 21.1 6.33 6.33 0 0014.08 14.82V9.54a8.16 8.16 0 004.77 1.52v-3.44a4.85 4.85 0 01-.84-.07z"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Play button overlay */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-black/70 rounded-full p-3 transform scale-75 group-hover:scale-100 transition-transform">
+                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 5v10l8-5-8-5z"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Bottom overlay with title */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                <p className="text-white font-medium text-sm truncate">
+                  {content.title || "Video de TikTok"}
+                </p>
+              </div>
+              
+              {/* TikTok branding badge */}
+              <div className="absolute top-3 right-3">
+                <div className="bg-black/60 backdrop-blur-sm rounded px-2 py-1">
+                  <span className="text-white text-xs font-medium">TikTok</span>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -158,20 +172,23 @@ export function MediaEmbed({ content, onEdit, showEdit = false }: MediaEmbedProp
   };
 
   return (
-    <Card className="bg-gray-50 border-[hsl(220,13%,90%)]">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            {getTypeIcon()}
-            <span className="font-medium text-gray-700">{getTypeLabel()}</span>
-          </div>
-          <div className="flex items-center space-x-2">
+    <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+      <CardContent className="p-0">
+        {/* Media Content */}
+        <div className="relative">
+          {getEmbedContent()}
+          
+          {/* Action buttons overlay */}
+          <div className="absolute top-3 right-3 flex items-center space-x-2">
             {showEdit && onEdit && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onEdit(content)}
-                className="text-gray-400 hover:text-[hsl(244,91%,68%)] p-1 h-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(content);
+                }}
+                className="bg-black/60 hover:bg-black/80 text-white p-2 h-auto backdrop-blur-sm rounded-full"
               >
                 <Edit2 className="w-4 h-4" />
               </Button>
@@ -180,21 +197,38 @@ export function MediaEmbed({ content, onEdit, showEdit = false }: MediaEmbedProp
               href={content.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-[hsl(244,91%,68%)] transition-colors"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-black/60 hover:bg-black/80 text-white p-2 h-auto backdrop-blur-sm rounded-full transition-colors inline-flex items-center justify-center"
             >
               <ExternalLink className="w-4 h-4" />
             </a>
           </div>
         </div>
-
-        {getEmbedContent()}
-
-        {content.title && (
-          <h4 className="font-medium text-[hsl(17,12%,6%)] mt-3 mb-1">{content.title}</h4>
-        )}
-        {content.description && (
-          <p className="text-sm text-gray-600">{content.description}</p>
-        )}
+        
+        {/* Content info */}
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              {getTypeIcon()}
+              <span className="font-medium text-gray-700 text-sm">{getTypeLabel()}</span>
+            </div>
+          </div>
+          
+          {(content.title || content.description) && (
+            <div className="space-y-1">
+              {content.title && (
+                <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
+                  {content.title}
+                </h3>
+              )}
+              {content.description && (
+                <p className="text-gray-600 text-xs line-clamp-2">
+                  {content.description}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
