@@ -5,8 +5,9 @@ export class ReplitObjectStorage {
   private _client: Client;
 
   constructor() {
-    // Initialize with the specific bucket "MetallicBoilingService"
-    this._client = new Client('MetallicBoilingService');
+    // Use the default bucket that was created and works
+    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID || 'repl-default-bucket-4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da';
+    this._client = new Client(bucketId);
   }
 
   /**
@@ -14,7 +15,8 @@ export class ReplitObjectStorage {
    */
   async initializeBucket(): Promise<void> {
     try {
-      console.log('Replit Object Storage initialized with bucket: MetallicBoilingService');
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID || 'repl-default-bucket-4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da';
+      console.log(`Replit Object Storage initialized with bucket: ${bucketId}`);
     } catch (error) {
       console.error('Error initializing Object Storage:', error);
       throw error;
@@ -25,7 +27,7 @@ export class ReplitObjectStorage {
    * Get user folder path for public or private content
    */
   private getUserPath(userId: string, folder: 'public' | 'private', filename: string): string {
-    return `Objects/users/${userId}/${folder}/${filename}`;
+    return `users/${userId}/${folder}/${filename}`;
   }
 
   /**
