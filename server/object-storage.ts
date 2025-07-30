@@ -43,17 +43,31 @@ export class ReplitObjectStorage {
       const filename = `profile-${timestamp}.webp`;
       const objectPath = this.getUserPath(userId, 'public', filename);
 
-      // Upload to Replit Object Storage
-      const result = await this._client.uploadFromBytes(objectPath, processedBuffer);
+      // Save to local filesystem as primary storage (with fallback path)
+      const localPath = objectPath.replace('Objects/', 'uploads/');
+      const fs = await import('fs/promises');
+      const path = await import('path');
       
-      if (result.error) {
-        throw new Error(`Upload failed: ${result.error.message}`);
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(localPath), { recursive: true });
+      await fs.writeFile(localPath, processedBuffer);
+      console.log(`Profile image saved locally: ${localPath}`);
+
+      // Try to upload to Object Storage as backup (but don't fail if it doesn't work)
+      try {
+        const result = await this._client.uploadFromBytes(objectPath, processedBuffer);
+        if (result.error) {
+          console.warn(`Object Storage upload failed: ${result.error.message}`);
+        } else {
+          console.log(`Profile image also uploaded to Object Storage: ${objectPath}`);
+        }
+      } catch (objectStorageError) {
+        console.warn('Object Storage upload failed:', objectStorageError);
       }
 
-      console.log(`Profile image uploaded: ${objectPath}`);
       return objectPath;
     } catch (error) {
-      console.error('Error uploading profile image to Object Storage:', error);
+      console.error('Error uploading profile image:', error);
       throw error;
     }
   }
@@ -82,14 +96,28 @@ export class ReplitObjectStorage {
 
       const objectPath = this.getUserPath(userId, 'public', filename);
 
-      // Upload to Replit Object Storage
-      const result = await this._client.uploadFromBytes(objectPath, processedBuffer);
+      // Save to local filesystem as primary storage
+      const localPath = objectPath.replace('Objects/', 'uploads/');
+      const fs = await import('fs/promises');
+      const path = await import('path');
       
-      if (result.error) {
-        throw new Error(`Upload failed: ${result.error.message}`);
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(localPath), { recursive: true });
+      await fs.writeFile(localPath, processedBuffer);
+      console.log(`Media file saved locally: ${localPath}`);
+
+      // Try to upload to Object Storage as backup
+      try {
+        const result = await this._client.uploadFromBytes(objectPath, processedBuffer);
+        if (result.error) {
+          console.warn(`Object Storage upload failed: ${result.error.message}`);
+        } else {
+          console.log(`Media file also uploaded to Object Storage: ${objectPath}`);
+        }
+      } catch (objectStorageError) {
+        console.warn('Object Storage upload failed:', objectStorageError);
       }
 
-      console.log(`Media file uploaded: ${objectPath}`);
       return objectPath;
     } catch (error) {
       console.error('Error uploading media file to Object Storage:', error);
