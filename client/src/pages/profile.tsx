@@ -253,40 +253,45 @@ export default function Profile() {
                     </>
                   ) : mediaContent.length > 0 ? (
                     <>
-                      {mediaContent.map((content: MediaContent) => {
-                        const editFn = (c: MediaContent) => {
-                          console.log('Edit function called with:', c);
-                          setEditingContent(c);
-                          setShowEditModal(true);
-                        };
-                        
-                        const viewFn = (c: MediaContent) => {
-                          console.log('View function called with:', c);
-                          setViewingContent(c);
-                          setShowViewerModal(true);
-                        };
-                        
-                        console.log('Rendering content:', content.id, 'with inline functions');
-                        return (
-                          <div key={content.id} className="relative group">
+                      {mediaContent.map((content: MediaContent) => (
+                        <div key={content.id} className="relative group">
+                          <div 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              console.log('Direct click handler - opening modal with content:', content);
+                              setViewingContent(content);
+                              setShowViewerModal(true);
+                            }}
+                          >
                             <MediaEmbed 
                               content={content} 
-                              onEdit={editFn}
-                              onView={viewFn}
+                              onEdit={(c) => {
+                                console.log('Direct edit handler:', c);
+                                setEditingContent(c);
+                                setShowEditModal(true);
+                              }}
+                              onView={(c) => {
+                                console.log('Direct view handler:', c);
+                                setViewingContent(c);
+                                setShowViewerModal(true);
+                              }}
                               showEdit={true}
                             />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleDeleteMedia(content.id)}
-                              disabled={deleteMediaMutation.isPending}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
                           </div>
-                        );
-                      })}
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteMedia(content.id);
+                            }}
+                            disabled={deleteMediaMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
                       {/* Add Content Placeholder */}
                       <div 
                         onClick={() => setShowUploadModal(true)}
