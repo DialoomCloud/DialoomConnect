@@ -4,7 +4,7 @@ import { Shield, Database, UserCheck, Play, Smartphone, Share2 } from "lucide-re
 
 export default function Landing() {
   const handleLogin = () => {
-    window.location.href = "/login";
+    window.location.href = "/api/login";
   };
 
   const features = [
