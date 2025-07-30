@@ -97,3 +97,14 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Profile Enhancement**: Updated profile editing with separate address fields and multi-select options
 - **Data Population**: Loaded 45 countries, 47 languages, 99 skills, and 18 categories from CSV files
 - **Advanced Forms**: Implemented dropdowns for country/category selection and checkboxes for skills/languages
+
+## Major Update - Bucket Storage & GDPR Compliance (July 30, 2025)
+- **Bucket Storage System**: Implemented comprehensive per-user folder structure with `public/` and `private/` directories
+- **Profile Photo Upload**: Fixed image upload functionality using new bucket system with Sharp processing
+- **Security Architecture**: Created user-specific storage paths: `uploads/users/{userId}/public/` for visible content, `uploads/users/{userId}/private/` for verification documents
+- **Admin System**: Created admin user (login: dialoomroot, password: TopGun) with encrypted credentials using bcrypt
+- **User Verification**: Added verification system where users can upload ID documents for admin review
+- **GDPR Compliance**: Implemented data export, deletion requests, and privacy controls for European data protection
+- **Field Privacy**: Phone and address fields now visible only to profile owner and admin users
+- **Database Schema**: Added user verification flags, GDPR consent tracking, and data retention management
+- **API Endpoints**: Created admin routes for user verification and GDPR compliance endpoints

@@ -1,51 +1,53 @@
-import bcrypt from 'bcryptjs';
-import { db } from '../server/db';
-import { users } from '../shared/schema';
-import { eq, or } from 'drizzle-orm';
+import { db } from "../server/db";
+import { users } from "../shared/schema";
+import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 
 async function createAdminUser() {
   try {
-    // Check if admin user already exists
+    console.log("Creating admin user...");
+    
+    // Check if admin already exists
     const existingAdmin = await db
       .select()
       .from(users)
-      .where(or(
-        eq(users.username, 'dialoomroot'),
-        eq(users.email, 'admin@dialoom.com')
-      ))
+      .where(eq(users.username, "dialoomroot"))
       .limit(1);
 
     if (existingAdmin.length > 0) {
-      console.log('Admin user already exists');
+      console.log("Admin user already exists");
       return;
     }
 
     // Hash the password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash('TopGun', saltRounds);
+    const passwordHash = await bcrypt.hash("TopGun", 10);
 
     // Create admin user
     const [adminUser] = await db
       .insert(users)
       .values({
-        email: 'admin@dialoom.com',
-        username: 'dialoomroot',
-        passwordHash,
-        firstName: 'Dialoom',
-        lastName: 'Administrator',
+        id: "admin-001",
+        email: "admin@dialoom.com",
+        firstName: "Dialoom",
+        lastName: "Administrator",
+        username: "dialoomroot",
+        passwordHash: passwordHash,
         isAdmin: true,
+        isVerified: true,
+        isActive: true,
+        gdprConsent: true,
+        gdprConsentDate: new Date(),
       })
       .returning();
 
-    console.log('Admin user created successfully:', {
+    console.log("Admin user created successfully:", {
       id: adminUser.id,
-      email: adminUser.email,
       username: adminUser.username,
-      isAdmin: adminUser.isAdmin,
+      email: adminUser.email
     });
+
   } catch (error) {
-    console.error('Error creating admin user:', error);
-    process.exit(1);
+    console.error("Error creating admin user:", error);
   }
 }
 

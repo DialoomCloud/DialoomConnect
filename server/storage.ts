@@ -53,6 +53,14 @@ export interface IStorage {
   // Additional user operations
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
+  
+  // Admin and verification operations
+  getPendingVerificationUsers(): Promise<User[]>;
+  verifyUser(userId: string, isVerified: boolean, verifiedBy: string, notes?: string): Promise<void>;
+  
+  // GDPR compliance operations
+  exportUserData(userId: string): Promise<any>;
+  requestDataDeletion(userId: string, deletionDate: Date): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -106,6 +114,51 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  // Admin and verification operations
+  async getPendingVerificationUsers(): Promise<User[]> {
+    const pendingUsers = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.isVerified, false), eq(users.isActive, true)));
+    return pendingUsers;
+  }
+
+  async verifyUser(userId: string, isVerified: boolean, verifiedBy: string, notes?: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        isVerified,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  // GDPR compliance operations
+  async exportUserData(userId: string): Promise<any> {
+    const user = await db.select().from(users).where(eq(users.id, userId));
+    const userLanguagesData = await db.select().from(userLanguages).where(eq(userLanguages.userId, userId));
+    const userSkillsData = await db.select().from(userSkills).where(eq(userSkills.userId, userId));
+    const mediaContentData = await db.select().from(mediaContent).where(eq(mediaContent.userId, userId));
+
+    return {
+      profile: user[0],
+      languages: userLanguagesData,
+      skills: userSkillsData,
+      media: mediaContentData,
+      exportDate: new Date().toISOString()
+    };
+  }
+
+  async requestDataDeletion(userId: string, deletionDate: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        dataRetentionDate: deletionDate,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {

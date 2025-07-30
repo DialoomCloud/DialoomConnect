@@ -91,6 +91,13 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   username: varchar("username").unique(), // For admin login
   passwordHash: varchar("password_hash"), // Encrypted password for admin
+  // User verification and GDPR compliance
+  isVerified: boolean("is_verified").default(false),
+  isActive: boolean("is_active").default(true),
+  verificationDocuments: text("verification_documents"), // JSON array of document paths
+  gdprConsent: boolean("gdpr_consent").default(false),
+  gdprConsentDate: timestamp("gdpr_consent_date"),
+  dataRetentionDate: timestamp("data_retention_date"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -179,8 +186,31 @@ export const mediaContentRelations = relations(mediaContent, ({ one }) => ({
 }));
 
 // Schema exports
+// Document types enum for verification
+export const documentTypeEnum = pgEnum('document_type', [
+  'id_front', 'id_back', 'passport', 'driving_license', 
+  'utility_bill', 'bank_statement', 'other'
+]);
+
+// User verification documents table  
+export const userDocuments = pgTable("user_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  documentType: documentTypeEnum("document_type").notNull(),
+  filePath: text("file_path").notNull(),
+  originalFileName: varchar("original_file_name"),
+  isVerified: boolean("is_verified").default(false),
+  verifiedBy: varchar("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type UserDocument = typeof userDocuments.$inferSelect;
+export type InsertUserDocument = typeof userDocuments.$inferInsert;
 export type Country = typeof countries.$inferSelect;
 export type Language = typeof languages.$inferSelect;
 export type Skill = typeof skills.$inferSelect;

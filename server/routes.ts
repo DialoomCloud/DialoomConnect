@@ -9,6 +9,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import { insertMediaContentSchema, updateUserProfileSchema } from "@shared/schema";
 import { z } from "zod";
+import { storageBucket } from "./storage-bucket";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -39,9 +40,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   
-  // Serve uploaded files
+  // Serve uploaded files with GDPR compliance
   app.use('/uploads', (req, res, next) => {
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    
+    // Add privacy headers for GDPR compliance
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Pragma', 'no-cache');
+    res.header('Expires', '0');
+    
     next();
   });
   app.use('/uploads', express.static('uploads'));
@@ -135,23 +142,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.user.claims.sub;
       
-      // Process image with Sharp (compress and convert to WebP)
-      const outputPath = `uploads/images/profile-${userId}-${Date.now()}.webp`;
-      
-      await sharp(req.file.path)
-        .resize(400, 400, { fit: 'cover' })
-        .webp({ quality: 80 })
-        .toFile(outputPath);
-
-      // Delete temporary file
-      await fs.unlink(req.file.path);
+      // Store image in user's public bucket directory
+      const imagePath = await storageBucket.storeProfileImage(
+        userId, 
+        req.file.buffer, 
+        req.file.originalname
+      );
       
       // Update user profile with new image URL
-      const updatedUser = await storage.updateProfileImage(userId, outputPath);
+      const updatedUser = await storage.updateProfileImage(userId, imagePath);
       
       res.json({ 
         message: "Imagen de perfil actualizada exitosamente",
-        user: updatedUser 
+        user: updatedUser,
+        imagePath: imagePath
       });
     } catch (error) {
       console.error("Error uploading profile image:", error);
@@ -212,37 +216,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const userId = req.user.claims.sub;
-      const { title, description } = req.body;
       
-      // Check file size (50MB max)
-      if (req.file.size > 50 * 1024 * 1024) {
-        return res.status(400).json({ message: "El archivo excede el límite de 50MB" });
-      }
-
-      // Generate unique filename
-      const timestamp = Date.now();
-      const filename = `video_${timestamp}_${req.file.originalname}`;
-      const filepath = path.join('uploads', 'videos', filename);
-
-      // Ensure directory exists
-      await fs.mkdir(path.dirname(filepath), { recursive: true });
-      
-      // Save file
-      await fs.writeFile(filepath, req.file.buffer);
-
-      // Save to database
-      const mediaContent = await storage.createMediaContent({
+      // Store video in user's public bucket directory
+      const videoPath = await storageBucket.storePublicVideo(
         userId,
-        type: 'video' as const,
-        url: `/uploads/videos/${filename}`,
-        title: title || req.file.originalname,
-        description: description || '',
+        req.file.buffer,
+        req.file.originalname
+      );
+
+      const mediaData = {
+        userId,
+        type: "video" as const,
+        url: videoPath,
+        title: req.body.title || req.file.originalname,
+        description: req.body.description || "",
         fileName: req.file.originalname,
         fileSize: req.file.size.toString(),
         mimeType: req.file.mimetype,
-      });
+      };
 
-      res.json(mediaContent);
+      const mediaContent = await storage.createMediaContent(mediaData);
+
+      res.json({ 
+        message: "Video subido exitosamente",
+        media: mediaContent 
+      });
     } catch (error) {
       console.error("Error uploading video:", error);
       res.status(500).json({ message: "Error al subir el video" });
@@ -257,40 +255,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const userId = req.user.claims.sub;
-      const { title, description } = req.body;
       
-      // Check file size (3MB max for images)
-      if (req.file.size > 3 * 1024 * 1024) {
-        return res.status(400).json({ message: "El archivo excede el límite de 3MB" });
-      }
-
-      // Process and compress image
-      const timestamp = Date.now();
-      const filename = `image_${timestamp}.webp`;
-      const filepath = path.join('uploads', 'images', filename);
-
-      // Ensure directory exists
-      await fs.mkdir(path.dirname(filepath), { recursive: true });
-      
-      // Compress image using Sharp
-      await sharp(req.file.buffer)
-        .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 85 })
-        .toFile(filepath);
-
-      // Save to database
-      const mediaContent = await storage.createMediaContent({
+      // Store image in user's public bucket directory
+      const imagePath = await storageBucket.storePublicImage(
         userId,
-        type: 'image' as const,
-        url: `/uploads/images/${filename}`,
-        title: title || req.file.originalname,
-        description: description || '',
+        req.file.buffer,
+        req.file.originalname
+      );
+
+      const mediaData = {
+        userId,
+        type: "image" as const,
+        url: imagePath,
+        title: req.body.title || req.file.originalname,
+        description: req.body.description || "",
         fileName: req.file.originalname,
         fileSize: req.file.size.toString(),
-        mimeType: 'image/webp',
-      });
+        mimeType: "image/webp",
+      };
 
-      res.json(mediaContent);
+      const mediaContent = await storage.createMediaContent(mediaData);
+
+      res.json({
+        message: "Imagen subida exitosamente",
+        media: mediaContent
+      });
     } catch (error) {
       console.error("Error uploading image:", error);
       res.status(500).json({ message: "Error al subir la imagen" });
@@ -398,6 +387,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching categories:", error);
       res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Private document upload route (requires verification)
+  app.post('/api/upload/private-document', isAuthenticated, upload.single('document'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se proporcionó ningún documento" });
+      }
+
+      const userId = req.user.claims.sub;
+      const { documentType } = req.body;
+
+      if (!documentType) {
+        return res.status(400).json({ message: "Tipo de documento requerido" });
+      }
+
+      // Store document in user's private bucket directory
+      const documentPath = await storageBucket.storePrivateDocument(
+        userId,
+        req.file.buffer,
+        req.file.originalname,
+        documentType
+      );
+
+      res.json({
+        message: "Documento privado subido exitosamente. Esperando verificación del administrador.",
+        documentPath: documentPath,
+        documentType: documentType
+      });
+    } catch (error) {
+      console.error("Error uploading private document:", error);
+      res.status(500).json({ message: "Error al subir el documento privado" });
+    }
+  });
+
+  // Admin routes - Get users pending verification
+  app.get('/api/admin/users/pending', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const adminUser = await storage.getUser(userId);
+
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Acceso denegado. Solo administradores." });
+      }
+
+      // Get users who have uploaded documents but are not verified
+      const pendingUsers = await storage.getPendingVerificationUsers();
+      res.json(pendingUsers);
+    } catch (error) {
+      console.error("Error fetching pending users:", error);
+      res.status(500).json({ message: "Error al obtener usuarios pendientes" });
+    }
+  });
+
+  // Admin routes - Verify user
+  app.post('/api/admin/users/:targetUserId/verify', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { targetUserId } = req.params;
+      const { isVerified, notes } = req.body;
+
+      const adminUser = await storage.getUser(userId);
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Acceso denegado. Solo administradores." });
+      }
+
+      await storage.verifyUser(targetUserId, isVerified, userId, notes);
+      
+      res.json({
+        message: isVerified ? "Usuario verificado exitosamente" : "Verificación de usuario denegada",
+        verified: isVerified
+      });
+    } catch (error) {
+      console.error("Error verifying user:", error);
+      res.status(500).json({ message: "Error al verificar usuario" });
+    }
+  });
+
+  // GDPR compliance route - User data export
+  app.get('/api/gdpr/export', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userData = await storage.exportUserData(userId);
+      
+      res.json({
+        message: "Datos de usuario exportados según GDPR",
+        data: userData,
+        exportDate: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error exporting user data:", error);
+      res.status(500).json({ message: "Error al exportar datos del usuario" });
+    }
+  });
+
+  // GDPR compliance route - User data deletion request
+  app.post('/api/gdpr/delete-request', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Set data retention date to 30 days from now (GDPR compliance)
+      const retentionDate = new Date();
+      retentionDate.setDate(retentionDate.getDate() + 30);
+      
+      await storage.requestDataDeletion(userId, retentionDate);
+      
+      res.json({
+        message: "Solicitud de eliminación de datos registrada. Los datos se eliminarán en 30 días.",
+        deletionDate: retentionDate.toISOString()
+      });
+    } catch (error) {
+      console.error("Error requesting data deletion:", error);
+      res.status(500).json({ message: "Error al solicitar eliminación de datos" });
     }
   });
 
