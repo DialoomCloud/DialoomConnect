@@ -1,0 +1,67 @@
+{
+  "navigation": {
+    "home": "Inici",
+    "profile": "Perfil",
+    "admin": "Admin",
+    "logout": "Tancar Sessió"
+  },
+  "home": {
+    "title": "El Teu Tauler Personal",
+    "subtitle": "Gestiona tota la teva informació personal i contingut multimèdia des d'un panell centralitzat",
+    "verified": "Verificat",
+    "editProfile": "Editar Perfil",
+    "multimedia": "Contingut Multimèdia",
+    "add": "Afegir",
+    "searchHosts": "Cercar Hosts",
+    "searchPlaceholder": "Cercar per nom o email...",
+    "noContent": "Encara no has afegit contingut multimèdia",
+    "noContentSub": "Afegeix el teu primer vídeo o imatge per mostrar el teu treball"
+  },
+  "profile": {
+    "title": "El Meu Perfil",
+    "subtitle": "Gestiona la teva informació personal i contingut multimèdia",
+    "personalInfo": "Informació Personal",
+    "profilePhoto": "Foto de Perfil",
+    "firstName": "Nom",
+    "lastName": "Cognom",
+    "title": "Títol Professional",
+    "email": "Correu Electrònic",
+    "phone": "Telèfon",
+    "description": "Descripció",
+    "address": "Adreça",
+    "country": "País",
+    "language": "Idioma",
+    "category": "Categoria",
+    "skills": "Habilitats",
+    "languages": "Idiomes",
+    "save": "Desar Canvis",
+    "cancel": "Cancel·lar",
+    "updateSuccess": "Perfil actualitzat correctament",
+    "updateError": "Error actualitzant el perfil"
+  },
+  "media": {
+    "youtube": "YouTube",
+    "video": "Vídeo",
+    "image": "Imatge",
+    "edit": "Editar",
+    "delete": "Esborrar",
+    "change": "Canviar",
+    "view": "Veure",
+    "confirmDelete": "Estàs segur que vols esborrar aquest contingut?",
+    "deleteSuccess": "Contingut esborrat",
+    "deleteSuccessDesc": "El contingut s'ha esborrat correctament.",
+    "deleteError": "No s'ha pogut esborrar el contingut. Si us plau, torna-ho a provar."
+  },
+  "hosts": {
+    "title": "Hosts Disponibles",
+    "viewProfile": "Veure Perfil",
+    "noResults": "No s'han trobat hosts",
+    "searching": "Cercant..."
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Carregant...",
+    "save": "Desar",
+    "cancel": "Cancel·lar"
+  }
+}

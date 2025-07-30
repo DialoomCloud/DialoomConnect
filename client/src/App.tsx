@@ -8,6 +8,9 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
+import Admin from "@/pages/admin";
+import HostSearch from "@/pages/host-search";
+import "./i18n/config";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,7 +22,10 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
+          <Route path="/home" component={Home} />
           <Route path="/profile" component={Profile} />
+          <Route path="/hosts" component={HostSearch} />
+          <Route path="/admin" component={Admin} />
         </>
       )}
       <Route component={NotFound} />

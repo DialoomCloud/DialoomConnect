@@ -1,0 +1,67 @@
+{
+  "navigation": {
+    "home": "Inicio",
+    "profile": "Perfil",
+    "admin": "Admin",
+    "logout": "Cerrar Sesión"
+  },
+  "home": {
+    "title": "Tu Dashboard Personal",
+    "subtitle": "Gestiona toda tu información personal y contenido multimedia desde un panel centralizado",
+    "verified": "Verificado",
+    "editProfile": "Editar Perfil",
+    "multimedia": "Contenido Multimedia",
+    "add": "Agregar",
+    "searchHosts": "Buscar Hosts",
+    "searchPlaceholder": "Buscar por nombre o email...",
+    "noContent": "Aún no has agregado contenido multimedia",
+    "noContentSub": "Agrega tu primer video o imagen para mostrar tu trabajo"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "subtitle": "Gestiona tu información personal y contenido multimedia",
+    "personalInfo": "Información Personal",
+    "profilePhoto": "Foto de Perfil",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "title": "Título Profesional",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono",
+    "description": "Descripción",
+    "address": "Dirección",
+    "country": "País",
+    "language": "Idioma",
+    "category": "Categoría",
+    "skills": "Habilidades",
+    "languages": "Idiomas",
+    "save": "Guardar Cambios",
+    "cancel": "Cancelar",
+    "updateSuccess": "Perfil actualizado correctamente",
+    "updateError": "Error al actualizar el perfil"
+  },
+  "media": {
+    "youtube": "YouTube",
+    "video": "Video",
+    "image": "Imagen",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "change": "Cambiar",
+    "view": "Ver",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este contenido?",
+    "deleteSuccess": "Contenido eliminado",
+    "deleteSuccessDesc": "El contenido ha sido eliminado exitosamente.",
+    "deleteError": "No se pudo eliminar el contenido. Por favor intenta de nuevo."
+  },
+  "hosts": {
+    "title": "Hosts Disponibles",
+    "viewProfile": "Ver Perfil",
+    "noResults": "No se encontraron hosts",
+    "searching": "Buscando..."
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  }
+}

@@ -51,6 +51,7 @@ export interface IStorage {
   updateUserSkills(userId: string, skillIds: number[]): Promise<void>;
   
   // Additional user operations
+  getAllUsers(): Promise<User[]>;
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
   
@@ -159,6 +160,19 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const allUsers = await db.select().from(users).where(eq(users.isActive, true));
+    // Return users with private info hidden
+    return allUsers.map(user => ({
+      ...user,
+      phone: null,
+      address: null,
+      city: null,
+      postalCode: null,
+      passwordHash: null,
+    }));
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {

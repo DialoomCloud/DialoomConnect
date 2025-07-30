@@ -120,6 +120,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public route to get all hosts
+  app.get('/api/hosts', async (req, res) => {
+    try {
+      const hosts = await storage.getAllUsers();
+      res.json(hosts);
+    } catch (error) {
+      console.error("Error fetching hosts:", error);
+      res.status(500).json({ message: "Failed to fetch hosts" });
+    }
+  });
+
   // User relations routes
   app.get('/api/user/languages/:userId', isAuthenticated, async (req: any, res) => {
     try {

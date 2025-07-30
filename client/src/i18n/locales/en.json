@@ -1,0 +1,67 @@
+{
+  "navigation": {
+    "home": "Home",
+    "profile": "Profile",
+    "admin": "Admin",
+    "logout": "Log Out"
+  },
+  "home": {
+    "title": "Your Personal Dashboard",
+    "subtitle": "Manage all your personal information and multimedia content from a centralized panel",
+    "verified": "Verified",
+    "editProfile": "Edit Profile",
+    "multimedia": "Multimedia Content",
+    "add": "Add",
+    "searchHosts": "Search Hosts",
+    "searchPlaceholder": "Search by name or email...",
+    "noContent": "You haven't added any multimedia content yet",
+    "noContentSub": "Add your first video or image to showcase your work"
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your personal information and multimedia content",
+    "personalInfo": "Personal Information",
+    "profilePhoto": "Profile Photo",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "title": "Professional Title",
+    "email": "Email",
+    "phone": "Phone",
+    "description": "Description",
+    "address": "Address",
+    "country": "Country",
+    "language": "Language",
+    "category": "Category",
+    "skills": "Skills",
+    "languages": "Languages",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Error updating profile"
+  },
+  "media": {
+    "youtube": "YouTube",
+    "video": "Video",
+    "image": "Image",
+    "edit": "Edit",
+    "delete": "Delete",
+    "change": "Change",
+    "view": "View",
+    "confirmDelete": "Are you sure you want to delete this content?",
+    "deleteSuccess": "Content deleted",
+    "deleteSuccessDesc": "The content has been successfully deleted.",
+    "deleteError": "Could not delete content. Please try again."
+  },
+  "hosts": {
+    "title": "Available Hosts",
+    "viewProfile": "View Profile",
+    "noResults": "No hosts found",
+    "searching": "Searching..."
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}
