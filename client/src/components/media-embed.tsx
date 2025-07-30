@@ -116,24 +116,27 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
   };
 
   return (
-    <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow duration-200 overflow-hidden cursor-pointer group">
-      <CardContent className="p-0">
-        {/* Media Content */}
-        <div 
-          className="relative"
-          onClick={() => {
-            console.log('MediaEmbed internal click, calling onView with:', content);
-            onView?.(content);
-          }}
-        >
-          {getEmbedContent()}
-          
-          {/* Overlay for click indication */}
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
-            <div className="bg-white bg-opacity-0 group-hover:bg-opacity-90 rounded-full p-3 transform scale-0 group-hover:scale-100 transition-all duration-200">
-              <ExternalLink className="w-6 h-6 text-gray-700" />
+    <div className="w-full animate-fade-in-up hover-lift">
+      <Card className="bg-white border border-gray-200 hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group gradient-border">
+        <CardContent className="p-0">
+          {/* Media Content */}
+          <div 
+            className="relative"
+            onClick={() => {
+              console.log('MediaEmbed internal click, calling onView with:', content);
+              onView?.(content);
+            }}
+          >
+            <div className="overflow-hidden transition-transform duration-300 group-hover:scale-105">
+              {getEmbedContent()}
             </div>
-          </div>
+          
+            {/* Overlay for click indication with glow effect */}
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
+              <div className="bg-white bg-opacity-0 group-hover:bg-opacity-90 rounded-full p-3 shadow-2xl transform scale-0 group-hover:scale-100 transition-all duration-300">
+                <ExternalLink className="w-6 h-6 text-gray-700" />
+              </div>
+            </div>
           
           {/* Action buttons overlay */}
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2">
@@ -161,34 +164,35 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
                 <ExternalLink className="w-4 h-4" />
               </a>
             )}
-          </div>
-        </div>
-        
-        {/* Content info */}
-        <div className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              {getTypeIcon()}
-              <span className="font-medium text-gray-700 text-sm">{getTypeLabel()}</span>
             </div>
           </div>
           
-          {(content.title || content.description) && (
-            <div className="space-y-1">
-              {content.title && (
-                <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
-                  {content.title}
-                </h3>
-              )}
-              {content.description && (
-                <p className="text-gray-600 text-xs line-clamp-2">
-                  {content.description}
-                </p>
-              )}
+          {/* Content info with gradient background */}
+          <div className="p-4 bg-gradient-to-b from-gray-50 to-white">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center space-x-2 animate-float">
+                {getTypeIcon()}
+                <span className="font-medium text-gray-700 text-sm">{getTypeLabel()}</span>
+              </div>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            
+            {(content.title || content.description) && (
+              <div className="space-y-1">
+                {content.title && (
+                  <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
+                    {content.title}
+                  </h3>
+                )}
+                {content.description && (
+                  <p className="text-gray-600 text-xs line-clamp-2">
+                    {content.description}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

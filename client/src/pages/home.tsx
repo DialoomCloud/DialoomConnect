@@ -119,7 +119,10 @@ export default function Home() {
   if (authLoading || userLoading) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+        <div className="relative">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+          <div className="absolute inset-0 animate-glow rounded-full"></div>
+        </div>
       </div>
     );
   }
@@ -143,7 +146,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Information Card */}
           <div className="lg:col-span-1">
-            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
                   <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)]">
@@ -195,9 +198,9 @@ export default function Home() {
                 </div>
 
                 <Link href="/profile">
-                  <Button className="w-full mt-6 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]">
-                    <Edit className="w-4 h-4 mr-2" />
-                    Editar Perfil
+                  <Button className="w-full mt-6 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)] glow-button relative overflow-hidden">
+                    <Edit className="w-4 h-4 mr-2 relative z-10" />
+                    <span className="relative z-10">Editar Perfil</span>
                   </Button>
                 </Link>
               </CardContent>
@@ -206,14 +209,14 @@ export default function Home() {
 
           {/* Content Management */}
           <div className="lg:col-span-2">
-            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">Contenido Multimedia</h3>
                   <Link href="/profile">
-                    <Button className="bg-[hsl(159,61%,50%)] text-white hover:bg-[hsl(159,61%,45%)]">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Agregar
+                    <Button className="bg-[hsl(159,61%,50%)] text-white hover:bg-[hsl(159,61%,45%)] glow-button relative overflow-hidden">
+                      <Plus className="w-4 h-4 mr-2 relative z-10" />
+                      <span className="relative z-10">Agregar</span>
                     </Button>
                   </Link>
                 </div>

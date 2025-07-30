@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Youtube, Video, Image, ExternalLink, X, Edit, Trash2, Upload } from "lucide-react";
+import { Youtube, Video, Image, ExternalLink, X, Edit, Trash2, Upload, Sparkles } from "lucide-react";
 import type { MediaContent } from "@shared/schema";
 
 interface MediaViewerModalProps {
@@ -123,8 +123,8 @@ export function MediaViewerModal({ isOpen, onClose, content, onEdit, onDelete, o
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-0">
-        <div className="relative">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-0 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 border-gray-200 dark:border-gray-800">
+        <div className="relative animate-fade-in-up">
           {/* Header with title and close button */}
           <DialogHeader className="p-6 pb-4">
             <div className="flex items-center justify-between">
@@ -210,56 +210,58 @@ export function MediaViewerModal({ isOpen, onClose, content, onEdit, onDelete, o
             </div>
           )}
 
-          {/* Action buttons */}
-          <div className="p-6 pt-0 border-t flex justify-between items-center">
-            <div className="flex space-x-2">
-              {onEdit && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onEdit(content);
-                    onClose();
-                  }}
-                  className="flex items-center space-x-2"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>Editar título y descripción</span>
-                </Button>
-              )}
+          {/* Action buttons with modern design */}
+          <div className="p-6 pt-0 border-t border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+            <div className="flex justify-between items-center">
+              <div className="flex gap-2">
+                {onEdit && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      onEdit(content);
+                      onClose();
+                    }}
+                    className="group relative overflow-hidden rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md transition-all duration-300 glow-button"
+                  >
+                    <Edit className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                    <span className="relative text-gray-700 dark:text-gray-300">Editar</span>
+                  </Button>
+                )}
+                
+                {onReplace && content.type !== "youtube" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      onReplace(content);
+                      onClose();
+                    }}
+                    className="group relative overflow-hidden rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md transition-all duration-300 glow-button"
+                  >
+                    <Upload className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+                    <span className="relative text-gray-700 dark:text-gray-300">Cambiar</span>
+                  </Button>
+                )}
+              </div>
               
-              {onReplace && content.type !== "youtube" && (
+              {onDelete && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => {
-                    onReplace(content);
-                    onClose();
+                    if (confirm('¿Estás seguro de que quieres eliminar este contenido?')) {
+                      onDelete(content.id);
+                      onClose();
+                    }
                   }}
-                  className="flex items-center space-x-2"
+                  className="group relative overflow-hidden rounded-full bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950 shadow-sm hover:shadow-md transition-all duration-300"
                 >
-                  <Upload className="w-4 h-4" />
-                  <span>Cambiar {content.type === "image" ? "imagen" : "video"}</span>
+                  <Trash2 className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
+                  <span className="relative text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400">Eliminar</span>
                 </Button>
               )}
             </div>
-            
-            {onDelete && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  if (confirm('¿Estás seguro de que quieres eliminar este contenido?')) {
-                    onDelete(content.id);
-                    onClose();
-                  }
-                }}
-                className="flex items-center space-x-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Eliminar</span>
-              </Button>
-            )}
           </div>
         </div>
       </DialogContent>
