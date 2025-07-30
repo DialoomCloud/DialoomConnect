@@ -241,7 +241,10 @@ export const insertUserSkillSchema = createInsertSchema(userSkills).omit({
 });
 
 export type InsertMediaContent = z.infer<typeof insertMediaContentSchema>;
-export type MediaContent = typeof mediaContent.$inferSelect;
+export type MediaContent = Omit<typeof mediaContent.$inferSelect, 'title' | 'description'> & {
+  title?: string;
+  description?: string;
+};
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
 export type InsertUserLanguage = z.infer<typeof insertUserLanguageSchema>;
 export type InsertUserSkill = z.infer<typeof insertUserSkillSchema>;

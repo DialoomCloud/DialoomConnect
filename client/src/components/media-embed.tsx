@@ -120,7 +120,10 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
         {/* Media Content */}
         <div 
           className="relative"
-          onClick={() => onView?.(content)}
+          onClick={() => {
+            console.log('MediaEmbed clicked, onView:', onView, 'content:', content);
+            onView?.(content);
+          }}
         >
           {getEmbedContent()}
           
