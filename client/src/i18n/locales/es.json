@@ -14,6 +14,13 @@
     "multimedia": "Contenido Multimedia",
     "add": "Agregar",
     "searchHosts": "Buscar Hosts",
+    "searchHostsDesc": "Encuentra expertos para videollamadas",
+    "myAvailability": "Mi Disponibilidad",
+    "myAvailabilityDesc": "Configura tu horario y precios",
+    "myProfile": "Mi Perfil",
+    "myProfileDesc": "Edita tu información personal",
+    "videoCalls": "Videollamadas",
+    "comingSoon": "Próximamente",
     "searchPlaceholder": "Buscar por nombre o email...",
     "noContent": "Aún no has agregado contenido multimedia",
     "noContentSub": "Agrega tu primer video o imagen para mostrar tu trabajo"

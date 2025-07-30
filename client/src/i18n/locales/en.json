@@ -14,6 +14,13 @@
     "multimedia": "Multimedia Content",
     "add": "Add",
     "searchHosts": "Search Hosts",
+    "searchHostsDesc": "Find experts for video calls",
+    "myAvailability": "My Availability",
+    "myAvailabilityDesc": "Set your schedule and prices",
+    "myProfile": "My Profile",
+    "myProfileDesc": "Edit your personal information",
+    "videoCalls": "Video Calls",
+    "comingSoon": "Coming Soon",
     "searchPlaceholder": "Search by name or email...",
     "noContent": "You haven't added any multimedia content yet",
     "noContentSub": "Add your first video or image to showcase your work"

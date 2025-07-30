@@ -14,6 +14,13 @@
     "multimedia": "Contingut Multimèdia",
     "add": "Afegir",
     "searchHosts": "Cercar Hosts",
+    "searchHostsDesc": "Troba experts per videotrucades",
+    "myAvailability": "La Meva Disponibilitat",
+    "myAvailabilityDesc": "Configura el teu horari i preus",
+    "myProfile": "El Meu Perfil",
+    "myProfileDesc": "Edita la teva informació personal",
+    "videoCalls": "Videotrucades",
+    "comingSoon": "Properament",
     "searchPlaceholder": "Cercar per nom o email...",
     "noContent": "Encara no has afegit contingut multimèdia",
     "noContentSub": "Afegeix el teu primer vídeo o imatge per mostrar el teu treball"
