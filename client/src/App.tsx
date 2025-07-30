@@ -8,18 +8,28 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
+import LoginPage from "@/pages/login";
+import AuthCallbackPage from "@/pages/auth-callback";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
+      {isLoading ? (
         <Route path="/" component={Landing} />
+      ) : !isAuthenticated ? (
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/auth/callback" component={AuthCallbackPage} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />
           <Route path="/profile" component={Profile} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/auth/callback" component={AuthCallbackPage} />
         </>
       )}
       <Route component={NotFound} />

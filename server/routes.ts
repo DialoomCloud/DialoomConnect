@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { requireAuth } from "./supabaseAuth";
 import multer from "multer";
 import sharp from "sharp";
 import path from "path";
@@ -36,9 +36,6 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
-  
   // Serve uploaded files
   app.use('/uploads', (req, res, next) => {
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
@@ -46,10 +43,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   app.use('/uploads', express.static('uploads'));
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Supabase Auth routes
+  app.post('/api/auth/sync-user', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userData = req.body;
+      const user = await storage.upsertUser(userData);
+      res.json(user);
+    } catch (error) {
+      console.error("Error syncing user:", error);
+      res.status(500).json({ message: "Failed to sync user" });
+    }
+  });
+
+  app.get('/api/auth/user', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -59,9 +67,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Profile routes
-  app.put('/api/profile', isAuthenticated, async (req: any, res) => {
+  app.put('/api/profile', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = updateUserProfileSchema.parse(req.body);
       
       const updatedUser = await storage.updateUserProfile(userId, validatedData);
@@ -77,13 +85,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Media content routes
   // Upload video file
-  app.post("/api/upload/video", isAuthenticated, upload.single('video'), async (req: any, res) => {
+  app.post("/api/upload/video", requireAuth, upload.single('video'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No se proporcionó ningún archivo" });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { title, description } = req.body;
       
       // Check file size (50MB max)
@@ -122,13 +130,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload image file
-  app.post("/api/upload/image", isAuthenticated, upload.single('image'), async (req: any, res) => {
+  app.post("/api/upload/image", requireAuth, upload.single('image'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No se proporcionó ningún archivo" });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { title, description } = req.body;
       
       // Check file size (3MB max for images)
@@ -169,9 +177,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/media', isAuthenticated, async (req: any, res) => {
+  app.get('/api/media', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const mediaContent = await storage.getUserMediaContent(userId);
       res.json(mediaContent);
     } catch (error) {
@@ -180,9 +188,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/media', isAuthenticated, async (req: any, res) => {
+  app.post('/api/media', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertMediaContentSchema.parse({
         ...req.body,
         userId,
@@ -199,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/media/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/media/:id', requireAuth, async (req: any, res) => {
     try {
       const { id } = req.params;
       const validatedData = insertMediaContentSchema.partial().parse(req.body);
@@ -215,10 +223,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/media/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/media/:id', requireAuth, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const deleted = await storage.deleteMediaContent(id, userId);
       if (deleted) {

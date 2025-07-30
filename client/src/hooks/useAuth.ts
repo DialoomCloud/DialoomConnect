@@ -1,14 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSupabaseAuth } from './useSupabaseAuth';
 
 export function useAuth() {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/auth/user"],
-    retry: false,
-  });
+  const { user, loading, isAuthenticated } = useSupabaseAuth();
 
   return {
     user,
-    isLoading,
-    isAuthenticated: !!user,
+    isLoading: loading,
+    isAuthenticated,
   };
 }
