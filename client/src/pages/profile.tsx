@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/navigation";
@@ -116,16 +116,17 @@ export default function Profile() {
     }
   };
 
-  const handleEditMedia = (content: MediaContent) => {
+  const handleEditMedia = useCallback((content: MediaContent) => {
+    console.log('handleEditMedia called with:', content);
     setEditingContent(content);
     setShowEditModal(true);
-  };
+  }, []);
 
-  const handleViewMedia = (content: MediaContent) => {
+  const handleViewMedia = useCallback((content: MediaContent) => {
     console.log('handleViewMedia called with:', content);
     setViewingContent(content);
     setShowViewerModal(true);
-  };
+  }, []);
 
   if (authLoading || userLoading) {
     return (
@@ -252,25 +253,28 @@ export default function Profile() {
                     </>
                   ) : mediaContent.length > 0 ? (
                     <>
-                      {mediaContent.map((content: MediaContent) => (
-                        <div key={content.id} className="relative group">
-                          <MediaEmbed 
-                            content={content} 
-                            onEdit={handleEditMedia}
-                            onView={handleViewMedia}
-                            showEdit={true}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleDeleteMedia(content.id)}
-                            disabled={deleteMediaMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
+                      {mediaContent.map((content: MediaContent) => {
+                        console.log('Rendering content:', content.id, 'with functions:', { handleEditMedia, handleViewMedia });
+                        return (
+                          <div key={content.id} className="relative group">
+                            <MediaEmbed 
+                              content={content} 
+                              onEdit={handleEditMedia}
+                              onView={handleViewMedia}
+                              showEdit={true}
+                            />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => handleDeleteMedia(content.id)}
+                              disabled={deleteMediaMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                       {/* Add Content Placeholder */}
                       <div 
                         onClick={() => setShowUploadModal(true)}
