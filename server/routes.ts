@@ -10,6 +10,7 @@ import { promises as fs } from "fs";
 import { insertMediaContentSchema, updateUserProfileSchema } from "@shared/schema";
 import { z } from "zod";
 import { storageBucket } from "./storage-bucket";
+import { replitStorage } from "./object-storage";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -52,6 +53,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
   app.use('/uploads', express.static('uploads'));
+
+  // Serve files from Replit Object Storage
+  app.get('/storage/*', async (req, res) => {
+    try {
+      const objectPath = req.params[0];
+      const result = await replitStorage.client.downloadAsBytes(objectPath);
+      
+      if (result.error) {
+        return res.status(404).json({ message: 'File not found' });
+      }
+
+      const fileBuffer = Buffer.from(result.data[0]);
+
+      // Determine content type based on file extension
+      const ext = objectPath.split('.').pop()?.toLowerCase();
+      let contentType = 'application/octet-stream';
+      
+      if (ext === 'webp' || ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
+        contentType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+      } else if (ext === 'mp4') {
+        contentType = 'video/mp4';
+      } else if (ext === 'pdf') {
+        contentType = 'application/pdf';
+      }
+
+      res.set('Content-Type', contentType);
+      res.set('Cache-Control', 'private, max-age=3600');
+      res.send(fileBuffer);
+    } catch (error) {
+      console.error('Error serving file from Object Storage:', error);
+      res.status(404).json({ message: 'File not found' });
+    }
+  });
 
 
 
@@ -144,20 +178,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.user.claims.sub;
       
-      // Store image in user's public bucket directory using file system
-      const imagePath = await storageBucket.storeProfileImage(
+      // Initialize and upload to Replit Object Storage
+      await replitStorage.initializeBucket();
+      const storagePath = await replitStorage.uploadProfileImage(
         userId, 
         req.file.buffer, 
         req.file.originalname
       );
       
       // Update user profile with new image path
-      const updatedUser = await storage.updateProfileImage(userId, imagePath);
+      const updatedUser = await storage.updateProfileImage(userId, storagePath);
       
       res.json({ 
         message: "Imagen de perfil actualizada exitosamente",
         user: updatedUser,
-        imagePath: imagePath
+        storagePath: storagePath
       });
     } catch (error) {
       console.error("Error uploading profile image:", error);
@@ -219,17 +254,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.user.claims.sub;
       
-      // Store video in user's public bucket directory
-      const videoPath = await storageBucket.storePublicVideo(
+      // Upload to Replit Object Storage
+      const storagePath = await replitStorage.uploadMediaFile(
         userId,
         req.file.buffer,
-        req.file.originalname
+        req.file.originalname,
+        'video'
       );
 
       const mediaData = {
         userId,
         type: "video" as const,
-        url: videoPath,
+        url: storagePath,
         title: req.body.title || req.file.originalname,
         description: req.body.description || "",
         fileName: req.file.originalname,
@@ -258,17 +294,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.user.claims.sub;
       
-      // Store image in user's public bucket directory
-      const imagePath = await storageBucket.storePublicImage(
+      // Upload to Replit Object Storage
+      const storagePath = await replitStorage.uploadMediaFile(
         userId,
         req.file.buffer,
-        req.file.originalname
+        req.file.originalname,
+        'image'
       );
 
       const mediaData = {
         userId,
         type: "image" as const,
-        url: imagePath,
+        url: storagePath,
         title: req.body.title || req.file.originalname,
         description: req.body.description || "",
         fileName: req.file.originalname,
@@ -406,8 +443,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Tipo de documento requerido" });
       }
 
-      // Store document in user's private bucket directory
-      const documentPath = await storageBucket.storePrivateDocument(
+      // Store document in user's private bucket directory using Object Storage
+      const documentPath = await replitStorage.uploadPrivateDocument(
         userId,
         req.file.buffer,
         req.file.originalname,

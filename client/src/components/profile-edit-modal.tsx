@@ -239,7 +239,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
                   />
                 ) : user.profileImageUrl ? (
                   <img 
-                    src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `/${user.profileImageUrl}`} 
+                    src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`} 
                     alt="Profile" 
                     className="w-full h-full rounded-full object-cover"
                   />
