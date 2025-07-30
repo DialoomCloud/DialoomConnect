@@ -6,10 +6,11 @@ import type { MediaContent } from "@shared/schema";
 interface MediaEmbedProps {
   content: MediaContent;
   onEdit?: (content: MediaContent) => void;
+  onView?: (content: MediaContent) => void;
   showEdit?: boolean;
 }
 
-export function MediaEmbed({ content, onEdit, showEdit = false }: MediaEmbedProps) {
+export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaEmbedProps) {
   const getTypeIcon = () => {
     switch (content.type) {
       case "youtube":
@@ -110,11 +111,21 @@ export function MediaEmbed({ content, onEdit, showEdit = false }: MediaEmbedProp
   };
 
   return (
-    <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+    <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow duration-200 overflow-hidden cursor-pointer group">
       <CardContent className="p-0">
         {/* Media Content */}
-        <div className="relative">
+        <div 
+          className="relative"
+          onClick={() => onView?.(content)}
+        >
           {getEmbedContent()}
+          
+          {/* Overlay for click indication */}
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
+            <div className="bg-white bg-opacity-0 group-hover:bg-opacity-90 rounded-full p-3 transform scale-0 group-hover:scale-100 transition-all duration-200">
+              <ExternalLink className="w-6 h-6 text-gray-700" />
+            </div>
+          </div>
           
           {/* Action buttons overlay */}
           <div className="absolute top-3 right-3 flex items-center space-x-2">

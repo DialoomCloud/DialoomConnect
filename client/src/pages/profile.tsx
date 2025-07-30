@@ -5,6 +5,7 @@ import { Navigation } from "@/components/navigation";
 import { ProfileEditModal } from "@/components/profile-edit-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
 import { MediaEditModal } from "@/components/media-edit-modal";
+import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaEmbed } from "@/components/media-embed";
 import type { User, MediaContent } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +22,9 @@ export default function Profile() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewerModal, setShowViewerModal] = useState(false);
   const [editingContent, setEditingContent] = useState<MediaContent | null>(null);
+  const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
   const queryClient = useQueryClient();
 
   // Redirect to login if not authenticated
@@ -116,6 +119,11 @@ export default function Profile() {
   const handleEditMedia = (content: MediaContent) => {
     setEditingContent(content);
     setShowEditModal(true);
+  };
+
+  const handleViewMedia = (content: MediaContent) => {
+    setViewingContent(content);
+    setShowViewerModal(true);
   };
 
   if (authLoading || userLoading) {
@@ -248,6 +256,7 @@ export default function Profile() {
                           <MediaEmbed 
                             content={content} 
                             onEdit={handleEditMedia}
+                            onView={handleViewMedia}
                             showEdit={true}
                           />
                           <Button
@@ -311,6 +320,12 @@ export default function Profile() {
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         content={editingContent}
+      />
+      
+      <MediaViewerModal
+        isOpen={showViewerModal}
+        onClose={() => setShowViewerModal(false)}
+        content={viewingContent}
       />
     </div>
   );

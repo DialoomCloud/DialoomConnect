@@ -1,0 +1,218 @@
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Youtube, Video, Image, ExternalLink, X } from "lucide-react";
+import type { MediaContent } from "@shared/schema";
+
+interface MediaViewerModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  content: MediaContent | null;
+}
+
+export function MediaViewerModal({ isOpen, onClose, content }: MediaViewerModalProps) {
+  if (!content) return null;
+
+  const getTypeIcon = () => {
+    switch (content.type) {
+      case "youtube":
+        return <Youtube className="text-red-600 w-5 h-5" />;
+      case "video":
+        return <Video className="text-blue-600 w-5 h-5" />;
+      case "image":
+        return <Image className="text-green-600 w-5 h-5" />;
+      default:
+        return null;
+    }
+  };
+
+  const getTypeLabel = () => {
+    switch (content.type) {
+      case "youtube":
+        return "YouTube";
+      case "video":
+        return "Video";
+      case "image":
+        return "Imagen";
+      default:
+        return "";
+    }
+  };
+
+  const renderMediaContent = () => {
+    if (!content.url) {
+      return (
+        <div className="bg-gray-200 rounded-lg aspect-video flex items-center justify-center">
+          <div className="text-center">
+            <ExternalLink className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">Contenido no disponible</p>
+          </div>
+        </div>
+      );
+    }
+
+    switch (content.type) {
+      case "youtube":
+        if (!content.embedId) {
+          return (
+            <div className="bg-gray-200 rounded-lg aspect-video flex items-center justify-center">
+              <div className="text-center">
+                <Youtube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">Video de YouTube no disponible</p>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div className="relative w-full">
+            <iframe
+              src={`https://www.youtube.com/embed/${content.embedId}?autoplay=1`}
+              title={content.title || "YouTube video"}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="w-full aspect-video rounded-lg"
+            />
+          </div>
+        );
+      
+      case "video":
+        return (
+          <div className="relative w-full">
+            <video
+              src={content.url}
+              controls
+              autoPlay
+              className="w-full max-h-[70vh] rounded-lg bg-black"
+              poster=""
+            >
+              Su navegador no soporta el elemento video.
+            </video>
+          </div>
+        );
+      
+      case "image":
+        return (
+          <div className="relative w-full flex justify-center">
+            <img
+              src={content.url}
+              alt={content.title || "Imagen"}
+              className="max-w-full max-h-[70vh] object-contain rounded-lg"
+              loading="lazy"
+            />
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="bg-gray-200 rounded-lg aspect-video flex items-center justify-center">
+            <div className="text-center">
+              <ExternalLink className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">Tipo de contenido no soportado</p>
+            </div>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-0">
+        <div className="relative">
+          {/* Header with title and close button */}
+          <DialogHeader className="p-6 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                {getTypeIcon()}
+                <DialogTitle className="text-lg font-semibold">
+                  {content.title || `${getTypeLabel()} sin título`}
+                </DialogTitle>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                {content.type === "youtube" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                  >
+                    <a 
+                      href={content.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-2"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Ver en YouTube</span>
+                    </a>
+                  </Button>
+                )}
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="p-2"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <DialogDescription className="sr-only">
+              Visualización ampliada del contenido multimedia
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Media content */}
+          <div className="px-6">
+            {renderMediaContent()}
+          </div>
+
+          {/* Content details */}
+          {content.description && (
+            <div className="p-6 pt-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-2">Descripción</h4>
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                  {content.description}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* File info for local content */}
+          {(content.type === "video" || content.type === "image") && content.fileName && (
+            <div className="px-6 pb-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-2">Información del archivo</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Nombre original:</span>
+                    <p className="text-gray-900 font-medium">{content.fileName}</p>
+                  </div>
+                  {content.fileSize && (
+                    <div>
+                      <span className="text-gray-500">Tamaño:</span>
+                      <p className="text-gray-900 font-medium">
+                        {formatFileSize(parseInt(content.fileSize))}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Helper function to format file size
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
