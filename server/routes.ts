@@ -54,13 +54,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   app.use('/uploads', express.static('uploads'));
 
-  // Serve files from Replit Object Storage
+  // Serve files from Replit Object Storage with fallback to local files
   app.get('/storage/*', async (req, res) => {
     try {
       const objectPath = req.params[0];
       console.log(`Attempting to serve file: ${objectPath}`);
       
-      const fileBuffer = await replitStorage.getFile(objectPath);
+      let fileBuffer: Buffer;
+      
+      try {
+        // Try Object Storage first
+        fileBuffer = await replitStorage.getFile(objectPath);
+      } catch (objectStorageError) {
+        console.log('Object Storage failed, trying local fallback...');
+        
+        // Fallback to local file system
+        // Convert Object Storage path to local path
+        const localPath = objectPath.replace('Objects/', 'uploads/');
+        
+        try {
+          const fs = await import('fs/promises');
+          fileBuffer = await fs.readFile(localPath);
+          console.log(`Served from local filesystem: ${localPath}`);
+        } catch (localError) {
+          console.error('Both Object Storage and local file failed:', {
+            objectStorageError: objectStorageError.message,
+            localError: localError.message
+          });
+          return res.status(404).json({ message: 'File not found' });
+        }
+      }
 
       // Determine content type based on file extension
       const ext = objectPath.split('.').pop()?.toLowerCase();

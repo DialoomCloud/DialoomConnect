@@ -5,9 +5,8 @@ export class ReplitObjectStorage {
   private _client: Client;
 
   constructor() {
-    // Use the default bucket that was created and works
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID || 'repl-default-bucket-4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da';
-    this._client = new Client(bucketId);
+    // Use the specific bucket "MetallicBoilingService" as requested
+    this._client = new Client('MetallicBoilingService');
   }
 
   /**
@@ -15,8 +14,7 @@ export class ReplitObjectStorage {
    */
   async initializeBucket(): Promise<void> {
     try {
-      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID || 'repl-default-bucket-4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da';
-      console.log(`Replit Object Storage initialized with bucket: ${bucketId}`);
+      console.log('Replit Object Storage initialized with bucket: MetallicBoilingService');
     } catch (error) {
       console.error('Error initializing Object Storage:', error);
       throw error;
@@ -27,7 +25,7 @@ export class ReplitObjectStorage {
    * Get user folder path for public or private content
    */
   private getUserPath(userId: string, folder: 'public' | 'private', filename: string): string {
-    return `users/${userId}/${folder}/${filename}`;
+    return `Objects/users/${userId}/${folder}/${filename}`;
   }
 
   /**
@@ -128,27 +126,48 @@ export class ReplitObjectStorage {
    */
   async getFile(objectPath: string): Promise<Buffer> {
     try {
-      const result = await this._client.downloadAsBytes(objectPath);
+      // First try to check if file exists using list
+      const prefix = objectPath.substring(0, objectPath.lastIndexOf('/') + 1);
+      const listResult = await this._client.list({ prefix });
       
-      if (result.error) {
-        throw new Error(`Download failed: ${result.error.message}`);
+      if (listResult.error) {
+        throw new Error(`List failed: ${listResult.error.message}`);
+      }
+      
+      const fileExists = listResult.data?.some(obj => obj.path === objectPath);
+      if (!fileExists) {
+        throw new Error(`File not found in bucket: ${objectPath}`);
+      }
+      
+      // Try downloadAsStream first as it may be more reliable
+      const streamResult = await this._client.downloadAsStream(objectPath);
+      
+      if (streamResult.error) {
+        throw new Error(`Download failed: ${streamResult.error.message}`);
       }
 
-      // Check if data exists and is valid
-      if (!result.data) {
-        throw new Error('No data received from Object Storage');
+      if (!streamResult.data) {
+        throw new Error('No stream data received from Object Storage');
       }
 
-      // Handle different data formats from Object Storage
-      if (Buffer.isBuffer(result.data)) {
-        return result.data;
-      } else if (result.data instanceof Uint8Array) {
-        return Buffer.from(result.data);
-      } else if (Array.isArray(result.data)) {
-        return Buffer.from(result.data);
-      } else {
-        throw new Error(`Unexpected data format: ${typeof result.data}`);
-      }
+      // Convert stream to buffer
+      const chunks: Buffer[] = [];
+      
+      return new Promise((resolve, reject) => {
+        streamResult.data.on('data', (chunk: Buffer) => {
+          chunks.push(chunk);
+        });
+        
+        streamResult.data.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          resolve(buffer);
+        });
+        
+        streamResult.data.on('error', (error: Error) => {
+          reject(new Error(`Stream error: ${error.message}`));
+        });
+      });
+      
     } catch (error) {
       console.error('Error downloading file from Object Storage:', error);
       throw error;
