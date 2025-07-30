@@ -1,15 +1,17 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Youtube, Video, Image, ExternalLink, X } from "lucide-react";
+import { Youtube, Video, Image, ExternalLink, X, Edit, Trash2, Upload } from "lucide-react";
 import type { MediaContent } from "@shared/schema";
 
 interface MediaViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
   content: MediaContent | null;
+  onEdit?: (content: MediaContent) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function MediaViewerModal({ isOpen, onClose, content }: MediaViewerModalProps) {
+export function MediaViewerModal({ isOpen, onClose, content, onEdit, onDelete }: MediaViewerModalProps) {
   if (!content) return null;
 
   const getTypeIcon = () => {
@@ -206,6 +208,43 @@ export function MediaViewerModal({ isOpen, onClose, content }: MediaViewerModalP
               </div>
             </div>
           )}
+
+          {/* Action buttons */}
+          <div className="p-6 pt-0 border-t flex justify-between items-center">
+            <div className="flex space-x-2">
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onEdit(content);
+                    onClose();
+                  }}
+                  className="flex items-center space-x-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Editar título y descripción</span>
+                </Button>
+              )}
+            </div>
+            
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (confirm('¿Estás seguro de que quieres eliminar este contenido?')) {
+                    onDelete(content.id);
+                    onClose();
+                  }
+                }}
+                className="flex items-center space-x-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Eliminar</span>
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

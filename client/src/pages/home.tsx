@@ -304,6 +304,12 @@ export default function Home() {
         isOpen={showViewerModal}
         onClose={() => setShowViewerModal(false)}
         content={viewingContent}
+        onEdit={(c) => {
+          setEditingContent(c);
+          setShowEditModal(true);
+          setShowViewerModal(false);
+        }}
+        onDelete={handleDeleteMedia}
       />
     </div>
   );
