@@ -40,17 +40,20 @@ export const users = pgTable("users", {
 });
 
 // Media content type enum
-export const mediaTypeEnum = pgEnum('media_type', ['youtube', 'instagram', 'tiktok']);
+export const mediaTypeEnum = pgEnum('media_type', ['youtube', 'video', 'image']);
 
 // Media content table
 export const mediaContent = pgTable("media_content", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   type: mediaTypeEnum("type").notNull(),
-  url: text("url").notNull(),
+  url: text("url").notNull(), // For YouTube URLs or file paths for local content
   title: varchar("title"),
   description: text("description"),
-  embedId: varchar("embed_id"), // For YouTube video ID, Instagram post ID, etc.
+  embedId: varchar("embed_id"), // For YouTube video ID
+  fileName: varchar("file_name"), // Original filename for uploaded files
+  fileSize: varchar("file_size"), // File size in bytes
+  mimeType: varchar("mime_type"), // MIME type for uploaded files
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
