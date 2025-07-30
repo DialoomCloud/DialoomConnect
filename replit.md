@@ -110,10 +110,11 @@ The application is designed to be deployed on Replit with automatic database pro
 - **API Endpoints**: Created admin routes for user verification and GDPR compliance endpoints
 
 ## Complete Migration to Replit Object Storage (July 30, 2025)
-- **Object Storage Integration**: Migrated entire storage system to use Replit Object Storage bucket "repl-default-bucket-4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da"
-- **Storage Structure**: Implemented `/users/{userId}/public/` and `/users/{userId}/private/` folder structure in Object Storage
+- **Object Storage Integration**: Migrated entire storage system to use Replit Object Storage bucket "MetallicBoilingService"
+- **Storage Structure**: Implemented `/Objects/users/{userId}/public/` and `/Objects/users/{userId}/private/` folder structure in Object Storage
 - **File Serving**: Created `/storage/*` route to serve files directly from Object Storage with proper content types
 - **Media Upload System**: Updated profile images, videos, and images to upload to Object Storage with Sharp processing
 - **User Data Migration**: Successfully migrated existing user files (Nacho Saladrigas) from local filesystem to Object Storage
 - **Private Documents**: Migrated verification document uploads to use Object Storage private folders
 - **API Consistency**: All upload endpoints now use Object Storage while maintaining same API interface
+- **Bucket Configuration**: Using specific bucket "MetallicBoilingService" with /Objects/ prefix as requested
