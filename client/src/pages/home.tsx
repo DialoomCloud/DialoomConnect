@@ -100,7 +100,7 @@ export default function Home() {
                   <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)]">
                     {user.profileImageUrl ? (
                       <img 
-                        src={user.profileImageUrl} 
+                        src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`} 
                         alt="Profile" 
                         className="w-full h-full rounded-full object-cover"
                       />
