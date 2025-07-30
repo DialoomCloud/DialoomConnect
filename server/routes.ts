@@ -53,6 +53,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   app.use('/uploads', express.static('uploads'));
 
+
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -142,14 +144,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.user.claims.sub;
       
-      // Store image in user's public bucket directory
+      // Store image in user's public bucket directory using file system
       const imagePath = await storageBucket.storeProfileImage(
         userId, 
         req.file.buffer, 
         req.file.originalname
       );
       
-      // Update user profile with new image URL
+      // Update user profile with new image path
       const updatedUser = await storage.updateProfileImage(userId, imagePath);
       
       res.json({ 
