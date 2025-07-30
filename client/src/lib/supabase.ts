@@ -42,7 +42,7 @@ export const supabase = isSupabaseConfigured
     } as any;
 
 // Auth helpers
-export const signInWithProvider = async (provider: 'google' | 'apple' | 'microsoft' | 'discord' | 'linkedin' | 'github' | 'facebook' | 'twitter') => {
+export const signInWithProvider = async (provider: 'google' | 'apple' | 'microsoft' | 'discord' | 'linkedin_oidc' | 'github' | 'facebook' | 'twitter') => {
   if (!isSupabaseConfigured) {
     throw new Error('Autenticación no configurada. Por favor, contacta al administrador.');
   }

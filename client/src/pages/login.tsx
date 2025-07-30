@@ -36,7 +36,7 @@ const providers = [
     iconColor: 'text-indigo-600'
   },
   { 
-    id: 'linkedin' as const, 
+    id: 'linkedin_oidc' as const, 
     name: 'LinkedIn', 
     icon: FaLinkedin, 
     color: 'hover:bg-blue-50 border-blue-200 hover:border-blue-300',
