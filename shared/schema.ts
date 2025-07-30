@@ -87,6 +87,10 @@ export const users = pgTable("users", {
   primaryLanguageId: integer("primary_language_id").references(() => languages.id),
   // Category selection
   categoryId: integer("category_id").references(() => categories.id),
+  // Admin and authentication fields
+  isAdmin: boolean("is_admin").default(false),
+  username: varchar("username").unique(), // For admin login
+  passwordHash: varchar("password_hash"), // Encrypted password for admin
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

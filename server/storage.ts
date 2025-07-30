@@ -49,6 +49,10 @@ export interface IStorage {
   getUserSkills(userId: string): Promise<UserSkill[]>;
   updateUserLanguages(userId: string, languageIds: number[]): Promise<void>;
   updateUserSkills(userId: string, skillIds: number[]): Promise<void>;
+  
+  // Additional user operations
+  getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
+  updateProfileImage(userId: string, imageUrl: string): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -57,6 +61,50 @@ export class DatabaseStorage implements IStorage {
 
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    if (user) {
+      // Hide private information for non-admin users
+      return {
+        ...user,
+        phone: null,
+        address: null,
+        city: null,
+        postalCode: null,
+        passwordHash: null,
+      };
+    }
+    return user;
+  }
+
+  async getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [requester] = await db.select().from(users).where(eq(users.id, requesterId));
+    
+    if (user && (user.id === requesterId || requester?.isAdmin)) {
+      // Show all information if it's the owner or an admin
+      return user;
+    } else if (user) {
+      // Hide private information for other users
+      return {
+        ...user,
+        phone: null,
+        address: null,
+        city: null,
+        postalCode: null,
+        passwordHash: null,
+      };
+    }
+    return user;
+  }
+
+  async updateProfileImage(userId: string, imageUrl: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        profileImageUrl: imageUrl,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
     return user;
   }
 

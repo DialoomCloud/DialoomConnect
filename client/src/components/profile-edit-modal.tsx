@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Camera, User as UserIcon } from "lucide-react";
+import { Camera, User as UserIcon, Upload } from "lucide-react";
 import type { User, Country, Language, Skill, Category } from "@shared/schema";
 
 interface ProfileEditModalProps {
@@ -40,6 +40,8 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
 
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
 
   // Fetch user's current languages and skills
   const { data: userLanguages = [] } = useQuery<{ languageId: number }[]>({
@@ -80,6 +82,49 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
+  });
+
+  const updateProfileImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/upload/profile-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${await response.text()}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Imagen actualizada",
+        description: "Tu imagen de perfil ha sido actualizada exitosamente.",
+      });
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la imagen de perfil. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateProfileMutation = useMutation({
@@ -131,6 +176,46 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Por favor selecciona un archivo de imagen válido.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file size (max 3MB)
+      if (file.size > 3 * 1024 * 1024) {
+        toast({
+          title: "Error", 
+          description: "La imagen debe ser menor a 3MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProfileImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageSubmit = () => {
+    if (profileImageFile) {
+      updateProfileImageMutation.mutate(profileImageFile);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -146,9 +231,15 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
           <div className="text-center">
             <div className="relative inline-block">
               <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)]">
-                {user.profileImageUrl ? (
+                {profileImagePreview ? (
                   <img 
-                    src={user.profileImageUrl} 
+                    src={profileImagePreview} 
+                    alt="Preview" 
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : user.profileImageUrl ? (
+                  <img 
+                    src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `/${user.profileImageUrl}`} 
                     alt="Profile" 
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -156,15 +247,34 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
                   <UserIcon className="w-12 h-12 text-gray-400" />
                 )}
               </div>
-              <button 
-                type="button"
-                className="absolute -bottom-2 -right-2 bg-[hsl(244,91%,68%)] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[hsl(244,91%,60%)] transition-colors"
-                onClick={() => toast({ title: "Próximamente", description: "La funcionalidad de cambio de foto estará disponible pronto." })}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                id="profile-image-input"
+              />
+              <label
+                htmlFor="profile-image-input"
+                className="absolute -bottom-2 -right-2 bg-[hsl(244,91%,68%)] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[hsl(244,91%,60%)] transition-colors cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
-              </button>
+              </label>
             </div>
-            <p className="text-sm text-gray-600 mt-2">Haz clic en la cámara para cambiar tu foto</p>
+            {profileImageFile ? (
+              <div className="mt-3">
+                <Button
+                  type="button"
+                  onClick={handleImageSubmit}
+                  disabled={updateProfileImageMutation.isPending}
+                  className="bg-[hsl(242,54%,64%)] hover:bg-[hsl(242,54%,54%)] text-white text-sm"
+                >
+                  {updateProfileImageMutation.isPending ? "Subiendo..." : "Subir Nueva Imagen"}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 mt-2">Haz clic en la cámara para cambiar tu foto</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -50,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = await storage.getUserWithPrivateInfo(userId, userId);
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -85,7 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/countries", async (req, res) => {
     try {
       const countries = await storage.getCountries();
-      res.json(countries);
+      // Sort countries alphabetically by name
+      const sortedCountries = countries.sort((a, b) => a.name.localeCompare(b.name));
+      res.json(sortedCountries);
     } catch (error) {
       console.error("Error fetching countries:", error);
       res.status(500).json({ message: "Failed to fetch countries" });
@@ -95,7 +97,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/languages", async (req, res) => {
     try {
       const languages = await storage.getLanguages();
-      res.json(languages);
+      // Sort languages alphabetically by name
+      const sortedLanguages = languages.sort((a, b) => a.name.localeCompare(b.name));
+      res.json(sortedLanguages);
     } catch (error) {
       console.error("Error fetching languages:", error);
       res.status(500).json({ message: "Failed to fetch languages" });
@@ -119,6 +123,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching categories:", error);
       res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Profile image upload route
+  app.post('/api/upload/profile-image', isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se proporcionó ninguna imagen" });
+      }
+
+      const userId = req.user.claims.sub;
+      
+      // Process image with Sharp (compress and convert to WebP)
+      const outputPath = `uploads/images/profile-${userId}-${Date.now()}.webp`;
+      
+      await sharp(req.file.path)
+        .resize(400, 400, { fit: 'cover' })
+        .webp({ quality: 80 })
+        .toFile(outputPath);
+
+      // Delete temporary file
+      await fs.unlink(req.file.path);
+      
+      // Update user profile with new image URL
+      const updatedUser = await storage.updateProfileImage(userId, outputPath);
+      
+      res.json({ 
+        message: "Imagen de perfil actualizada exitosamente",
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      res.status(500).json({ message: "Error al subir la imagen de perfil" });
     }
   });
 
