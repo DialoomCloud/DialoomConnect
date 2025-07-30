@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MediaEmbed } from "@/components/media-embed";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
+import { MediaUploadModal } from "@/components/media-upload-modal";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
@@ -21,8 +22,10 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [editingContent, setEditingContent] = useState<MediaContent | null>(null);
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
+  const [replacingContent, setReplacingContent] = useState<MediaContent | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -310,6 +313,20 @@ export default function Home() {
           setShowViewerModal(false);
         }}
         onDelete={handleDeleteMedia}
+        onReplace={(c) => {
+          setReplacingContent(c);
+          setShowUploadModal(true);
+          setShowViewerModal(false);
+        }}
+      />
+      
+      <MediaUploadModal
+        isOpen={showUploadModal}
+        onClose={() => {
+          setShowUploadModal(false);
+          setReplacingContent(null);
+        }}
+        replaceContent={replacingContent}
       />
     </div>
   );

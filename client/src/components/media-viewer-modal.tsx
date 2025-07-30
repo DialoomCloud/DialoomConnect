@@ -9,9 +9,10 @@ interface MediaViewerModalProps {
   content: MediaContent | null;
   onEdit?: (content: MediaContent) => void;
   onDelete?: (id: string) => void;
+  onReplace?: (content: MediaContent) => void;
 }
 
-export function MediaViewerModal({ isOpen, onClose, content, onEdit, onDelete }: MediaViewerModalProps) {
+export function MediaViewerModal({ isOpen, onClose, content, onEdit, onDelete, onReplace }: MediaViewerModalProps) {
   if (!content) return null;
 
   const getTypeIcon = () => {
@@ -224,6 +225,21 @@ export function MediaViewerModal({ isOpen, onClose, content, onEdit, onDelete }:
                 >
                   <Edit className="w-4 h-4" />
                   <span>Editar título y descripción</span>
+                </Button>
+              )}
+              
+              {onReplace && content.type !== "youtube" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onReplace(content);
+                    onClose();
+                  }}
+                  className="flex items-center space-x-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Cambiar {content.type === "image" ? "imagen" : "video"}</span>
                 </Button>
               )}
             </div>

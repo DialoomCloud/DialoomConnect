@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,20 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Youtube, Video, Image, Upload, X } from "lucide-react";
+import type { MediaContent } from "@shared/schema";
 
 interface MediaUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  replaceContent?: MediaContent | null;
 }
 
-export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
+export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploadModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // If in replace mode, use the existing content's data
+  const isReplaceMode = !!replaceContent;
   
   // YouTube form state
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -77,7 +82,11 @@ export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
   // Video upload mutation
   const videoUploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await fetch('/api/upload/video', {
+      if (isReplaceMode && replaceContent) {
+        formData.append('contentId', replaceContent.id);
+      }
+      
+      const response = await fetch(isReplaceMode ? '/api/upload/replace/video' : '/api/upload/video', {
         method: 'POST',
         body: formData,
       });
@@ -91,7 +100,7 @@ export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/media'] });
-      toast({ title: "Video subido exitosamente" });
+      toast({ title: isReplaceMode ? "Video reemplazado exitosamente" : "Video subido exitosamente" });
       handleClose();
     },
     onError: (error: Error) => {
@@ -106,7 +115,11 @@ export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
   // Image upload mutation
   const imageUploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await fetch('/api/upload/image', {
+      if (isReplaceMode && replaceContent) {
+        formData.append('contentId', replaceContent.id);
+      }
+      
+      const response = await fetch(isReplaceMode ? '/api/upload/replace/image' : '/api/upload/image', {
         method: 'POST',
         body: formData,
       });
@@ -120,7 +133,7 @@ export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/media'] });
-      toast({ title: "Imagen subida exitosamente" });
+      toast({ title: isReplaceMode ? "Imagen reemplazada exitosamente" : "Imagen subida exitosamente" });
       handleClose();
     },
     onError: (error: Error) => {
@@ -242,34 +255,46 @@ export function MediaUploadModal({ isOpen, onClose }: MediaUploadModalProps) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // Set the initial tab based on content type in replace mode
+  const getInitialTab = () => {
+    if (!isReplaceMode || !replaceContent) return "youtube";
+    switch (replaceContent.type) {
+      case "video": return "video";
+      case "image": return "image";
+      default: return "youtube";
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Upload className="w-5 h-5" />
-            <span>Agregar Contenido Multimedia</span>
+            <span>{isReplaceMode ? "Reemplazar Contenido Multimedia" : "Agregar Contenido Multimedia"}</span>
           </DialogTitle>
           <DialogDescription>
-            Sube videos de YouTube, archivos MP4 locales o imágenes a tu perfil
+            {isReplaceMode ? "Sube un nuevo archivo para reemplazar el contenido actual" : "Sube videos de YouTube, archivos MP4 locales o imágenes a tu perfil"}
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="youtube" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="youtube" className="flex items-center space-x-2">
-              <Youtube className="w-4 h-4" />
-              <span>YouTube</span>
-            </TabsTrigger>
-            <TabsTrigger value="video" className="flex items-center space-x-2">
-              <Video className="w-4 h-4" />
-              <span>Video MP4</span>
-            </TabsTrigger>
-            <TabsTrigger value="image" className="flex items-center space-x-2">
-              <Image className="w-4 h-4" />
-              <span>Imagen</span>
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue={getInitialTab()} className="w-full">
+          {!isReplaceMode ? (
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="youtube" className="flex items-center space-x-2">
+                <Youtube className="w-4 h-4" />
+                <span>YouTube</span>
+              </TabsTrigger>
+              <TabsTrigger value="video" className="flex items-center space-x-2">
+                <Video className="w-4 h-4" />
+                <span>Video MP4</span>
+              </TabsTrigger>
+              <TabsTrigger value="image" className="flex items-center space-x-2">
+                <Image className="w-4 h-4" />
+                <span>Imagen</span>
+              </TabsTrigger>
+            </TabsList>
+          ) : null}
 
           {/* YouTube Tab */}
           <TabsContent value="youtube" className="space-y-4">
