@@ -11,7 +11,13 @@ interface MediaEmbedProps {
 }
 
 export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaEmbedProps) {
-  console.log('MediaEmbed props:', { onEdit: !!onEdit, onView: !!onView, showEdit });
+  console.log('MediaEmbed received props:', { 
+    onEdit: typeof onEdit, 
+    onView: typeof onView, 
+    showEdit,
+    onEditExists: !!onEdit,
+    onViewExists: !!onView
+  });
   const getTypeIcon = () => {
     switch (content.type) {
       case "youtube":

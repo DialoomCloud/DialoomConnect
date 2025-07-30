@@ -254,13 +254,25 @@ export default function Profile() {
                   ) : mediaContent.length > 0 ? (
                     <>
                       {mediaContent.map((content: MediaContent) => {
-                        console.log('Rendering content:', content.id, 'with functions:', { handleEditMedia, handleViewMedia });
+                        const editFn = (c: MediaContent) => {
+                          console.log('Edit function called with:', c);
+                          setEditingContent(c);
+                          setShowEditModal(true);
+                        };
+                        
+                        const viewFn = (c: MediaContent) => {
+                          console.log('View function called with:', c);
+                          setViewingContent(c);
+                          setShowViewerModal(true);
+                        };
+                        
+                        console.log('Rendering content:', content.id, 'with inline functions');
                         return (
                           <div key={content.id} className="relative group">
                             <MediaEmbed 
                               content={content} 
-                              onEdit={handleEditMedia}
-                              onView={handleViewMedia}
+                              onEdit={editFn}
+                              onView={viewFn}
                               showEdit={true}
                             />
                             <Button
