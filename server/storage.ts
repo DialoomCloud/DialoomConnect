@@ -22,7 +22,7 @@ import {
   type InsertUserSkill,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -119,8 +119,8 @@ export class DatabaseStorage implements IStorage {
   async deleteMediaContent(id: string, userId: string): Promise<boolean> {
     const result = await db
       .delete(mediaContent)
-      .where(eq(mediaContent.id, id) && eq(mediaContent.userId, userId));
-    return (result.rowCount || 0) > 0;
+      .where(and(eq(mediaContent.id, id), eq(mediaContent.userId, userId)));
+    return (result?.rowCount || 0) > 0;
   }
 
   // Reference data methods
@@ -150,26 +150,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserLanguages(userId: string, languageIds: number[]): Promise<void> {
-    // Delete existing languages
-    await db.delete(userLanguages).where(eq(userLanguages.userId, userId));
-    
-    // Insert new languages
-    if (languageIds.length > 0) {
-      await db.insert(userLanguages).values(
-        languageIds.map(languageId => ({ userId, languageId }))
-      );
+    try {
+      console.log(`Updating languages for user ${userId}:`, languageIds);
+      
+      // Delete existing languages
+      const deleteResult = await db.delete(userLanguages).where(eq(userLanguages.userId, userId));
+      console.log(`Deleted ${deleteResult?.rowCount || 0} existing languages`);
+      
+      // Insert new languages
+      if (languageIds.length > 0) {
+        const insertData = languageIds.map(languageId => ({ userId, languageId }));
+        console.log('Inserting language data:', insertData);
+        
+        const insertResult = await db.insert(userLanguages).values(insertData);
+        console.log(`Inserted ${insertResult?.rowCount || languageIds.length} languages`);
+      }
+    } catch (error) {
+      console.error('Error updating user languages:', error);
+      throw error;
     }
   }
 
   async updateUserSkills(userId: string, skillIds: number[]): Promise<void> {
-    // Delete existing skills
-    await db.delete(userSkills).where(eq(userSkills.userId, userId));
-    
-    // Insert new skills
-    if (skillIds.length > 0) {
-      await db.insert(userSkills).values(
-        skillIds.map(skillId => ({ userId, skillId }))
-      );
+    try {
+      console.log(`Updating skills for user ${userId}:`, skillIds);
+      
+      // Delete existing skills
+      const deleteResult = await db.delete(userSkills).where(eq(userSkills.userId, userId));
+      console.log(`Deleted ${deleteResult?.rowCount || 0} existing skills`);
+      
+      // Insert new skills
+      if (skillIds.length > 0) {
+        const insertData = skillIds.map(skillId => ({ userId, skillId }));
+        console.log('Inserting skill data:', insertData);
+        
+        const insertResult = await db.insert(userSkills).values(insertData);
+        console.log(`Inserted ${insertResult?.rowCount || skillIds.length} skills`);
+      }
+    } catch (error) {
+      console.error('Error updating user skills:', error);
+      throw error;
     }
   }
 }

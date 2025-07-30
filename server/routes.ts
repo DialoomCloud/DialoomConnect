@@ -127,24 +127,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { skillIds, languageIds, ...profileData } = req.body;
+      
+      console.log('Profile update request:', {
+        userId,
+        profileData,
+        skillIds,
+        languageIds,
+      });
+      
       const validatedData = updateUserProfileSchema.parse(profileData);
+      console.log('Validated profile data:', validatedData);
       
       const updatedUser = await storage.updateUserProfile(userId, validatedData);
+      console.log('User profile updated successfully');
 
       // Update user languages if provided
       if (Array.isArray(languageIds)) {
+        console.log('Updating user languages:', languageIds);
         await storage.updateUserLanguages(userId, languageIds);
+        console.log('User languages updated successfully');
       }
 
       // Update user skills if provided  
       if (Array.isArray(skillIds)) {
+        console.log('Updating user skills:', skillIds);
         await storage.updateUserSkills(userId, skillIds);
+        console.log('User skills updated successfully');
       }
       
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating profile:", error);
       if (error instanceof z.ZodError) {
+        console.error("Validation errors:", error.errors);
         return res.status(400).json({ message: "Invalid profile data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update profile" });
