@@ -11,6 +11,7 @@ interface MediaEmbedProps {
 }
 
 export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaEmbedProps) {
+  console.log('MediaEmbed props:', { onEdit: !!onEdit, onView: !!onView, showEdit });
   const getTypeIcon = () => {
     switch (content.type) {
       case "youtube":
@@ -121,8 +122,12 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
         <div 
           className="relative"
           onClick={() => {
-            console.log('MediaEmbed clicked, onView:', onView, 'content:', content);
-            onView?.(content);
+            console.log('MediaEmbed clicked, onView type:', typeof onView, 'content:', content);
+            if (onView) {
+              onView(content);
+            } else {
+              console.error('onView is not defined!');
+            }
           }}
         >
           {getEmbedContent()}

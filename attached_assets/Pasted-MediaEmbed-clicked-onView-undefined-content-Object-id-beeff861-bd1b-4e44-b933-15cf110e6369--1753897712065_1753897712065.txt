@@ -1,0 +1,27 @@
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "beeff861-bd1b-4e44-b933-15cf110e6369", userId: "36733853", type: "image", url: "Objects/users/36733853/public/image-1753896363417.webp", title: "replit-cheat-sheet", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "cf56e0a8-719f-4873-94e1-1d7e83cb55ba", userId: "36733853", type: "youtube", url: "https://youtu.be/wZURH0tZ6fU?si=YSN9U06iFGmMrJ9_", title: "dsad", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "3dab4b44-343d-4730-bddf-b406ee8821bc", userId: "36733853", type: "image", url: "/uploads/images/image_1753866029527.webp", title: "IMG_2074 - copia", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "618686d4-183c-4865-a634-6c9c9f0a7aac", userId: "36733853", type: "video", url: "/uploads/videos/video_1753864989347_freepik__mediumlong-shot-they-face-each-other-shyly-before-__22…", title: "freepik__mediumlong-shot-they-face-each-other-shyly-before-__22385", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "895d9db0-1490-4348-bf88-f02c4fbfb18e", userId: "36733853", type: "image", url: "/uploads/images/image_1753864973807.webp", title: "dialoom-logo (1)", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "618686d4-183c-4865-a634-6c9c9f0a7aac", userId: "36733853", type: "video", url: "/uploads/videos/video_1753864989347_freepik__mediumlong-shot-they-face-each-other-shyly-before-__22…", title: "freepik__mediumlong-shot-they-face-each-other-shyly-before-__22385", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "beeff861-bd1b-4e44-b933-15cf110e6369", userId: "36733853", type: "image", url: "Objects/users/36733853/public/image-1753896363417.webp", title: "replit-cheat-sheet", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "3dab4b44-343d-4730-bddf-b406ee8821bc", userId: "36733853", type: "image", url: "/uploads/images/image_1753866029527.webp", title: "IMG_2074 - copia", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "cf56e0a8-719f-4873-94e1-1d7e83cb55ba", userId: "36733853", type: "youtube", url: "https://youtu.be/wZURH0tZ6fU?si=YSN9U06iFGmMrJ9_", title: "dsad", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "895d9db0-1490-4348-bf88-f02c4fbfb18e", userId: "36733853", type: "image", url: "/uploads/images/image_1753864973807.webp", title: "dialoom-logo (1)", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "618686d4-183c-4865-a634-6c9c9f0a7aac", userId: "36733853", type: "video", url: "/uploads/videos/video_1753864989347_freepik__mediumlong-shot-they-face-each-other-shyly-before-__22…", title: "freepik__mediumlong-shot-they-face-each-other-shyly-before-__22385", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "895d9db0-1490-4348-bf88-f02c4fbfb18e", userId: "36733853", type: "image", url: "/uploads/images/image_1753864973807.webp", title: "dialoom-logo (1)", …}
+MediaEmbed clicked, onView: undefined content: 
+Object {id: "618686d4-183c-4865-a634-6c9c9f0a7aac", userId: "36733853", type: "video", url: "/uploads/videos/video_1753864989347_freepik__mediumlong-shot-they-face-each-other-shyly-before-__22…", title: "freepik__mediumlong-shot-they-face-each-other-shyly-before-__22385", …}
+MediaEmbed clicked, onView: undefined content: 

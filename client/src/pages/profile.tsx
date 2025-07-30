@@ -122,6 +122,7 @@ export default function Profile() {
   };
 
   const handleViewMedia = (content: MediaContent) => {
+    console.log('handleViewMedia called with:', content);
     setViewingContent(content);
     setShowViewerModal(true);
   };
