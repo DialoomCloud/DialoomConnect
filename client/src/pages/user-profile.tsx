@@ -94,7 +94,7 @@ export default function UserProfile() {
               <div className="relative">
                 {user.profileImageUrl ? (
                   <img
-                    src={user.profileImageUrl}
+                    src={user.profileImageUrl.startsWith('http') || user.profileImageUrl.startsWith('/') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`}
                     alt={`${user.firstName} ${user.lastName}`}
                     className="w-32 h-32 rounded-full object-cover border-4 border-[hsl(244,91%,68%)]"
                   />

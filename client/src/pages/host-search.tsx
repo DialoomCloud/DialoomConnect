@@ -67,7 +67,7 @@ export default function HostSearch() {
                     <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)] animate-glow">
                       {host.profileImageUrl ? (
                         <img 
-                          src={host.profileImageUrl.startsWith('http') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`} 
+                          src={host.profileImageUrl.startsWith('http') || host.profileImageUrl.startsWith('/') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`} 
                           alt="Profile" 
                           className="w-full h-full rounded-full object-cover"
                         />
