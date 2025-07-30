@@ -1,0 +1,100 @@
+id,name,category,created_at,description,is_active
+121,TypeScript,,2025-06-13 09:47:08.986297,Typed superset of JavaScript,t
+125,Java,,2025-06-13 09:47:12.909759,Object-oriented programming language,t
+128,Kubernetes,,2025-06-13 09:47:13.892934,Container orchestration platform,t
+129,PostgreSQL,,2025-06-13 09:47:14.712456,Open source relational database,t
+131,GraphQL,,2025-06-13 09:47:14.963141,Query language for APIs,t
+132,Vue.js,,2025-06-13 09:47:15.085598,Progressive JavaScript framework,t
+133,Angular,,2025-06-13 09:47:15.245447,Web application framework,t
+134,Next.js,,2025-06-13 09:47:15.322277,React framework for production,t
+135,Express.js,,2025-06-13 09:47:15.406484,Web framework for Node.js,t
+136,Machine Learning,,2025-06-13 09:47:15.485605,AI and data science techniques,t
+137,DevOps,,2025-06-13 09:47:15.561922,Development and operations practices,t
+138,Cybersecurity,,2025-06-13 09:47:15.638317,Information security practices,t
+139,Blockchain,,2025-06-13 09:47:15.717575,Distributed ledger technology,t
+140,Digital Marketing,,2025-06-13 09:47:15.794157,Online marketing strategies,t
+142,Content Marketing,,2025-06-13 09:47:15.956189,Content strategy and creation,t
+143,Social Media Marketing,,2025-06-13 09:47:16.034716,Social platform marketing,t
+144,Project Management,,2025-06-13 09:47:16.112313,Planning and executing projects,t
+145,Agile,,2025-06-13 09:47:16.188944,Agile development methodology,t
+146,Scrum,,2025-06-13 09:47:16.265712,Framework for agile development,t
+147,Business Analysis,,2025-06-13 09:47:16.34284,Analyzing business requirements,t
+148,Strategic Planning,,2025-06-13 09:47:16.419576,Long-term business planning,t
+149,Sales,,2025-06-13 09:47:16.494969,Selling products and services,t
+150,Customer Service,,2025-06-13 09:47:16.571457,Supporting customers,t
+152,Finance,,2025-06-13 09:47:16.723317,Financial planning and analysis,t
+153,Accounting,,2025-06-13 09:47:16.80092,Financial record keeping,t
+154,Human Resources,,2025-06-13 09:47:16.877178,People management,t
+155,Graphic Design,,2025-06-13 09:47:16.959516,Visual communication design,t
+156,UI/UX Design,,2025-06-13 09:47:17.03498,User interface and experience design,t
+157,Adobe Photoshop,,2025-06-13 09:47:17.111406,Image editing software,t
+158,Adobe Illustrator,,2025-06-13 09:47:17.188239,Vector graphics software,t
+159,Figma,,2025-06-13 09:47:17.264357,Collaborative design tool,t
+160,Video Editing,,2025-06-13 09:47:17.340767,Video production and editing,t
+162,Branding,,2025-06-13 09:47:17.493823,Brand identity development,t
+163,Web Design,,2025-06-13 09:47:17.570055,Website visual design,t
+164,Animation,,2025-06-13 09:47:17.646367,Motion graphics and animation,t
+165,Nutrition,,2025-06-13 09:47:17.722962,Dietary planning and advice,t
+166,Fitness Training,,2025-06-13 09:47:17.799655,Physical exercise instruction,t
+168,Mental Health Counseling,,2025-06-13 09:47:17.958117,Psychological support,t
+169,Physical Therapy,,2025-06-13 09:47:18.034566,Rehabilitation therapy,t
+170,Meditation,,2025-06-13 09:47:18.111046,Mindfulness and relaxation techniques,t
+171,Teaching,,2025-06-13 09:47:18.187479,Educational instruction,t
+172,Curriculum Development,,2025-06-13 09:47:18.274483,Educational program design,t
+173,Training & Development,,2025-06-13 09:47:18.350793,Professional skill building,t
+175,Writing,,2025-06-13 09:47:18.504192,Content creation and copywriting,t
+176,Research,,2025-06-13 09:47:18.580638,Information gathering and analysis,t
+177,Management Consulting,,2025-06-13 09:47:18.657428,Business strategy advice,t
+178,Legal Consulting,,2025-06-13 09:47:18.734205,Legal advice and services,t
+179,Tax Preparation,,2025-06-13 09:47:18.810651,Tax planning and filing,t
+180,Real Estate,,2025-06-13 09:47:18.885931,Property buying and selling,t
+181,Insurance,,2025-06-13 09:47:18.963139,Risk management and coverage,t
+1,3D Modeling,,2025-06-09 15:33:21.809167,,t
+2,AWS,,2025-06-09 15:33:21.809167,,t
+3,AdWords,,2025-06-09 15:33:21.809167,,t
+4,Budget Planning,,2025-06-09 15:33:21.809167,,t
+5,Business Modelling,,2025-06-09 15:33:21.809167,,t
+6,CBT,,2025-06-09 15:33:21.809167,,t
+7,Case Law Analysis,,2025-06-09 15:33:21.809167,,t
+8,Collaboration,,2025-06-09 15:33:21.809167,,t
+9,Conflict Resolution,,2025-06-09 15:33:21.809167,,t
+10,Critical Thinking,,2025-06-09 15:33:21.809167,,t
+11,Cryptography,,2025-06-09 15:33:21.809167,,t
+12,DAWs,,2025-06-09 15:33:21.809167,,t
+13,Docker,,2025-06-09 15:33:21.809167,,t
+14,Emotional Intelligence,,2025-06-09 15:33:21.809167,,t
+15,Empathy,,2025-06-09 15:33:21.809167,,t
+16,Evidence Preservation,,2025-06-09 15:33:21.809167,,t
+17,Excel,,2025-06-09 15:33:21.809167,,t
+18,Grant Writing,,2025-06-09 15:33:21.809167,,t
+19,Illustrator,,2025-06-09 15:33:21.809167,,t
+20,JavaScript,,2025-06-09 15:33:21.809167,,t
+21,Keto Diet,,2025-06-09 15:33:21.809167,,t
+22,Leadership,,2025-06-09 15:33:21.809167,,t
+23,Legal Writing,,2025-06-09 15:33:21.809167,,t
+24,Market Research,,2025-06-09 15:33:21.809167,,t
+25,Mentoring,,2025-06-09 15:33:21.809167,,t
+26,MongoDB,,2025-06-09 15:33:21.809167,,t
+27,NGO Management,,2025-06-09 15:33:21.809167,,t
+28,Node.js,,2025-06-09 15:33:21.809167,,t
+29,Pandas,,2025-06-09 15:33:21.809167,,t
+30,Patient Communication,,2025-06-09 15:33:21.809167,,t
+31,Pen Testing,,2025-06-09 15:33:21.809167,,t
+32,Photography,,2025-06-09 15:33:21.809167,,t
+33,Photoshop,,2025-06-09 15:33:21.809167,,t
+34,Pitch Decks,,2025-06-09 15:33:21.809167,,t
+35,Poetry,,2025-06-09 15:33:21.809167,,t
+36,Public Speaking,,2025-06-09 15:33:21.809167,,t
+37,Python,,2025-06-09 15:33:21.809167,,t
+38,React,,2025-06-09 15:33:21.809167,,t
+39,SEO,,2025-06-09 15:33:21.809167,,t
+40,SQL,,2025-06-09 15:33:21.809167,,t
+41,Screenwriting,,2025-06-09 15:33:21.809167,,t
+42,Self-Discipline,,2025-06-09 15:33:21.809167,,t
+43,Surveillance Techniques,,2025-06-09 15:33:21.809167,,t
+44,TensorFlow,,2025-06-09 15:33:21.809167,,t
+45,Therapeutic Listening,,2025-06-09 15:33:21.809167,,t
+46,Time Management,,2025-06-09 15:33:21.809167,,t
+47,Urban Policy,,2025-06-09 15:33:21.809167,,t
+48,Wireshark,,2025-06-09 15:33:21.809167,,t
+49,Yoga,,2025-06-09 15:33:21.809167,,t

@@ -1,11 +1,25 @@
 import {
   users,
   mediaContent,
+  countries,
+  languages,
+  skills,
+  categories,
+  userLanguages,
+  userSkills,
   type User,
   type UpsertUser,
   type MediaContent,
   type InsertMediaContent,
   type UpdateUserProfile,
+  type Country,
+  type Language,
+  type Skill,
+  type Category,
+  type UserLanguage,
+  type UserSkill,
+  type InsertUserLanguage,
+  type InsertUserSkill,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -23,6 +37,18 @@ export interface IStorage {
   createMediaContent(content: InsertMediaContent): Promise<MediaContent>;
   updateMediaContent(id: string, content: Partial<InsertMediaContent>): Promise<MediaContent>;
   deleteMediaContent(id: string, userId: string): Promise<boolean>;
+
+  // Reference data operations
+  getCountries(): Promise<Country[]>;
+  getLanguages(): Promise<Language[]>;
+  getSkills(): Promise<Skill[]>;
+  getCategories(): Promise<Category[]>;
+
+  // User relations operations
+  getUserLanguages(userId: string): Promise<UserLanguage[]>;
+  getUserSkills(userId: string): Promise<UserSkill[]>;
+  updateUserLanguages(userId: string, languageIds: number[]): Promise<void>;
+  updateUserSkills(userId: string, skillIds: number[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -95,6 +121,56 @@ export class DatabaseStorage implements IStorage {
       .delete(mediaContent)
       .where(eq(mediaContent.id, id) && eq(mediaContent.userId, userId));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Reference data methods
+  async getCountries(): Promise<Country[]> {
+    return await db.select().from(countries).where(eq(countries.isActive, true));
+  }
+
+  async getLanguages(): Promise<Language[]> {
+    return await db.select().from(languages).where(eq(languages.isActive, true));
+  }
+
+  async getSkills(): Promise<Skill[]> {
+    return await db.select().from(skills).where(eq(skills.isActive, true));
+  }
+
+  async getCategories(): Promise<Category[]> {
+    return await db.select().from(categories).where(eq(categories.isActive, true));
+  }
+
+  // User relations methods
+  async getUserLanguages(userId: string): Promise<UserLanguage[]> {
+    return await db.select().from(userLanguages).where(eq(userLanguages.userId, userId));
+  }
+
+  async getUserSkills(userId: string): Promise<UserSkill[]> {
+    return await db.select().from(userSkills).where(eq(userSkills.userId, userId));
+  }
+
+  async updateUserLanguages(userId: string, languageIds: number[]): Promise<void> {
+    // Delete existing languages
+    await db.delete(userLanguages).where(eq(userLanguages.userId, userId));
+    
+    // Insert new languages
+    if (languageIds.length > 0) {
+      await db.insert(userLanguages).values(
+        languageIds.map(languageId => ({ userId, languageId }))
+      );
+    }
+  }
+
+  async updateUserSkills(userId: string, skillIds: number[]): Promise<void> {
+    // Delete existing skills
+    await db.delete(userSkills).where(eq(userSkills.userId, userId));
+    
+    // Insert new skills
+    if (skillIds.length > 0) {
+      await db.insert(userSkills).values(
+        skillIds.map(skillId => ({ userId, skillId }))
+      );
+    }
   }
 }
 

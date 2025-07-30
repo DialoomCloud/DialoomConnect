@@ -58,13 +58,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User relations routes
+  app.get('/api/user/languages/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const userLanguages = await storage.getUserLanguages(userId);
+      res.json(userLanguages);
+    } catch (error) {
+      console.error("Error fetching user languages:", error);
+      res.status(500).json({ message: "Failed to fetch user languages" });
+    }
+  });
+
+  app.get('/api/user/skills/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const userSkills = await storage.getUserSkills(userId);
+      res.json(userSkills);
+    } catch (error) {
+      console.error("Error fetching user skills:", error);
+      res.status(500).json({ message: "Failed to fetch user skills" });
+    }
+  });
+
+  // Reference data routes
+  app.get("/api/countries", async (req, res) => {
+    try {
+      const countries = await storage.getCountries();
+      res.json(countries);
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+      res.status(500).json({ message: "Failed to fetch countries" });
+    }
+  });
+
+  app.get("/api/languages", async (req, res) => {
+    try {
+      const languages = await storage.getLanguages();
+      res.json(languages);
+    } catch (error) {
+      console.error("Error fetching languages:", error);
+      res.status(500).json({ message: "Failed to fetch languages" });
+    }
+  });
+
+  app.get("/api/skills", async (req, res) => {
+    try {
+      const skills = await storage.getSkills();
+      res.json(skills);
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+      res.status(500).json({ message: "Failed to fetch skills" });
+    }
+  });
+
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
   // Profile routes
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const validatedData = updateUserProfileSchema.parse(req.body);
+      const { skillIds, languageIds, ...profileData } = req.body;
+      const validatedData = updateUserProfileSchema.parse(profileData);
       
       const updatedUser = await storage.updateUserProfile(userId, validatedData);
+
+      // Update user languages if provided
+      if (Array.isArray(languageIds)) {
+        await storage.updateUserLanguages(userId, languageIds);
+      }
+
+      // Update user skills if provided  
+      if (Array.isArray(skillIds)) {
+        await storage.updateUserSkills(userId, skillIds);
+      }
+      
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -229,6 +305,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting media content:", error);
       res.status(500).json({ message: "Failed to delete media content" });
+    }
+  });
+
+  // Reference data routes (no auth required for lookups)
+  app.get('/api/countries', async (req, res) => {
+    try {
+      const countries = await storage.getCountries();
+      res.json(countries);
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+      res.status(500).json({ message: "Failed to fetch countries" });
+    }
+  });
+
+  app.get('/api/languages', async (req, res) => {
+    try {
+      const languages = await storage.getLanguages();
+      res.json(languages);
+    } catch (error) {
+      console.error("Error fetching languages:", error);
+      res.status(500).json({ message: "Failed to fetch languages" });
+    }
+  });
+
+  app.get('/api/skills', async (req, res) => {
+    try {
+      const skills = await storage.getSkills();
+      res.json(skills);
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+      res.status(500).json({ message: "Failed to fetch skills" });
+    }
+  });
+
+  app.get('/api/categories', async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
     }
   });
 

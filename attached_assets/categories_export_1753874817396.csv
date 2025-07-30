@@ -1,0 +1,19 @@
+id,name,description,image_url,icon_url,display_order,is_active,created_at,updated_at
+1,Education & Tutoring,Academic tutoring and educational services,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+2,Technology & Development,Software development and technical consulting,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+3,Business & Entrepreneurship,Business strategy and startup guidance,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+4,Marketing & Social Media,Digital marketing and social media management,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+5,Health & Wellness,Health coaching and wellness services,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+6,Arts & Creativity,Creative arts and design services,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+7,Languages & Translation,Language learning and translation services,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+8,Travel & Hospitality,Travel planning and hospitality consulting,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+9,Legal & Compliance,Legal advice and compliance consulting,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+10,Finance & Investing,Financial planning and investment advice,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+11,Engineering & STEM,Engineering and scientific consulting,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+12,Home & DIY,Home improvement and DIY projects,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+13,Cooking & Gastronomy,Culinary arts and cooking instruction,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+14,Entertainment & Media,Media production and entertainment services,,,0,t,2025-06-09 15:32:05.492441,2025-06-09 15:32:05.492441
+15,Sports & Performance,Sports coaching and performance training,,,0,t,2025-06-13 08:44:02.371263,2025-06-13 08:44:02.371263
+16,Personal Care & Beauty,Beauty and personal care services,,,0,t,2025-06-13 08:44:02.371263,2025-06-13 08:44:02.371263
+17,Pets & Animals,Pet care and animal training,,,0,t,2025-06-13 08:44:02.371263,2025-06-13 08:44:02.371263
+18,Sustainability & Impact,Environmental and sustainability consulting,,,0,t,2025-06-13 08:44:02.371263,2025-06-13 08:44:02.371263
