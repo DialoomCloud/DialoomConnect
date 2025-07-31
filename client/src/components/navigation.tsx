@@ -22,11 +22,12 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-8">
-            <Link href="/home" className="flex items-center space-x-2 hover-lift">
-              <div className="w-8 h-8 bg-[hsl(244,91%,68%)] rounded flex items-center justify-center animate-glow">
-                <span className="text-white font-bold">D</span>
-              </div>
-              <span className="text-xl font-bold text-[hsl(17,12%,6%)]">Dialoom</span>
+            <Link href="/home" className="flex items-center hover-lift">
+              <img 
+                src={new URL('../assets/dialoom-logo.png', import.meta.url).href}
+                alt="Dialoom" 
+                className="h-10 w-auto"
+              />
             </Link>
             
             <div className="hidden md:flex items-center space-x-2">
