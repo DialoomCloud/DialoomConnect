@@ -24,9 +24,10 @@ export function Navigation() {
           <div className="flex items-center space-x-8">
             <Link href="/home" className="flex items-center hover-lift">
               <img 
-                src="/uploads/media/dialoom-logo.png"
+                src="/uploads/images/dialoomblue.png"
                 alt="Dialoom" 
-                className="h-10 w-auto"
+                className="h-8 w-auto object-contain"
+                style={{ maxWidth: '140px' }}
               />
             </Link>
             
@@ -64,18 +65,7 @@ export function Navigation() {
                 </Button>
               </Link>
               
-              {user && (
-                <Link href="/availability">
-                  <Button
-                    variant={isActive("/availability") ? "default" : "ghost"}
-                    size="sm"
-                    className={isActive("/availability") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
-                  >
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    {t('navigation.availability')}
-                  </Button>
-                </Link>
-              )}
+
               
               {user?.email === "dialoomroot" && (
                 <Link href="/admin">
