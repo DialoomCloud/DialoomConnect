@@ -37,10 +37,10 @@ const CheckoutForm = ({ bookingDetails, onSuccess, onCancel }: CheckoutFormProps
   const [isProcessing, setIsProcessing] = useState(false);
 
   const servicePrices = {
-    screenSharing: 5.00,
-    translation: 10.00,
-    recording: 8.00,
-    transcription: 12.00,
+    screenSharing: 10.00,
+    translation: 25.00,
+    recording: 10.00,
+    transcription: 5.00,
   };
 
   const calculateTotal = () => {

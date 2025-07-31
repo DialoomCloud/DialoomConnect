@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MediaEmbed } from "@/components/media-embed";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
+import { BookingModal } from "@/components/booking-modal";
 import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { useState } from "react";
@@ -22,6 +23,8 @@ export default function UserProfile() {
   const userId = params.id;
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedPricing, setSelectedPricing] = useState<{ duration: number; price: string } | null>(null);
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -168,41 +171,52 @@ export default function UserProfile() {
                     ))}
                   </div>
 
-                  {/* Service Options */}
-                  {pricing.some(p => p.includesScreenSharing || p.includesTranslation || p.includesRecording || p.includesTranscription) && (
-                    <div className="mt-4 pt-4 border-t">
-                      <p className="text-sm font-medium text-gray-600 mb-3">Servicios Incluidos:</p>
-                      <div className="space-y-2">
-                        {pricing.some(p => p.includesScreenSharing) && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Monitor className="w-4 h-4 text-[hsl(244,91%,68%)]" />
-                            <span>Compartir Pantalla</span>
-                          </div>
-                        )}
-                        {pricing.some(p => p.includesTranslation) && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Languages className="w-4 h-4 text-[hsl(244,91%,68%)]" />
-                            <span>Traducción Simultánea</span>
-                          </div>
-                        )}
-                        {pricing.some(p => p.includesRecording) && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Video className="w-4 h-4 text-[hsl(244,91%,68%)]" />
-                            <span>Grabación de Sesión</span>
-                          </div>
-                        )}
-                        {pricing.some(p => p.includesTranscription) && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <FileText className="w-4 h-4 text-[hsl(244,91%,68%)]" />
-                            <span>Transcripción Automática</span>
-                          </div>
-                        )}
+                  {/* Service Options - Available for selection */}
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm font-medium text-gray-600 mb-3">Servicios Adicionales Disponibles:</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Monitor className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <span>Compartir Pantalla</span>
+                        </div>
+                        <span className="font-medium text-[hsl(159,61%,50%)]">+€10</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Languages className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <span>Traducción Simultánea</span>
+                        </div>
+                        <span className="font-medium text-[hsl(159,61%,50%)]">+€25</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Video className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <span>Grabación de Sesión</span>
+                        </div>
+                        <span className="font-medium text-[hsl(159,61%,50%)]">+€10</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <span>Transcripción Automática</span>
+                        </div>
+                        <span className="font-medium text-[hsl(159,61%,50%)]">+€5</span>
                       </div>
                     </div>
-                  )}
+                  </div>
                   
-                  <Button className="w-full mt-4 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]" disabled>
-                    {t('home.comingSoon')}
+                  <Button 
+                    className="w-full mt-4 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+                    onClick={() => {
+                      const activePricing = pricing.find(p => p.isActive);
+                      if (activePricing) {
+                        setSelectedPricing({ duration: activePricing.duration, price: activePricing.price });
+                        setShowBookingModal(true);
+                      }
+                    }}
+                  >
+                    Reservar Videollamada
                   </Button>
                 </CardContent>
               </Card>
@@ -282,6 +296,21 @@ export default function UserProfile() {
         onClose={() => setShowViewerModal(false)}
         content={viewingContent}
       />
+
+      {/* Booking Modal */}
+      {showBookingModal && selectedPricing && user && (
+        <BookingModal
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          host={{
+            id: user.id,
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Host'
+          }}
+          pricing={selectedPricing}
+          selectedDate={new Date()}
+          selectedTime="10:00"
+        />
+      )}
     </div>
   );
 }

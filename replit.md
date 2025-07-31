@@ -132,7 +132,7 @@ The application is designed to be deployed on Replit with automatic database pro
 ## Complete Stripe Payment Integration (July 31, 2025)
 - **Stripe Gateway Setup**: Full payment processing with webhooks, payment intents, and customer management
 - **Commission Structure**: 10% commission + 21% VAT automatically calculated and split between host and platform
-- **Service Add-ons Pricing**: Screen sharing (€5), translation (€10), recording (€8), transcription (€12)
+- **Service Add-ons Pricing**: Screen sharing (€10), translation (€25), recording (€10), transcription (€5)
 - **Invoice System**: Automatic invoice generation with downloadable PDFs linked to Stripe payments
 - **Admin Panel**: Complete configuration management for commission rates and service pricing
 - **Payment Flow**: Integrated checkout with booking system, real-time payment status updates
@@ -143,3 +143,4 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Configuration Defaults**: Commission 10%, VAT 21%, service pricing configured and stored in admin_config table
 - **Dashboard Transformation**: Transformed dashboard into comprehensive host control center integrating all profile functionalities including contact data, multimedia content, availability, and pricing management
 - **Stripe Connect Analysis**: Analyzed requirements for implementing Stripe Connect to enable hosts to issue invoices in their name. Added database fields (stripeAccountId, stripeOnboardingCompleted) but full implementation pending as current system works with centralized payments to Dialoom account
+- **Service Add-ons System (July 31, 2025)**: Transformed service add-ons from host-configured to client-selectable during booking. Created BookingModal component allowing clients to select additional services with checkboxes. Updated pricing in admin_config table. Services now appear as "Available Additional Services" in public profiles with prices clearly displayed
