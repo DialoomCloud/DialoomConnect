@@ -25,7 +25,7 @@ interface TimeSlot {
 export function HostAvailabilitySection() {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number>(1);
+  const [selectedDaysOfWeek, setSelectedDaysOfWeek] = useState<number[]>([]);
   const [newTimeSlot, setNewTimeSlot] = useState<TimeSlot>({ startTime: "", endTime: "" });
   const [customDuration, setCustomDuration] = useState<number>(120);
   const [customPrice, setCustomPrice] = useState<number>(0);
@@ -131,11 +131,15 @@ export function HostAvailabilitySection() {
       return;
     }
 
-    const data = isSpecificDate
-      ? { date: format(selectedDate!, "yyyy-MM-dd"), ...newTimeSlot }
-      : { dayOfWeek: selectedDayOfWeek, ...newTimeSlot };
-
-    addAvailabilityMutation.mutate(data);
+    if (isSpecificDate) {
+      const data = { date: format(selectedDate!, "yyyy-MM-dd"), ...newTimeSlot };
+      addAvailabilityMutation.mutate(data);
+    } else {
+      // Add time slot for each selected day
+      selectedDaysOfWeek.forEach(dayOfWeek => {
+        addAvailabilityMutation.mutate({ dayOfWeek, ...newTimeSlot });
+      });
+    }
   };
 
   const handlePricingToggle = (duration: number, isActive: boolean, currentPrice?: number) => {
@@ -350,17 +354,20 @@ export function HostAvailabilitySection() {
             {/* Weekly Schedule */}
             <TabsContent value="weekly" className="space-y-4">
               <div className="space-y-2">
-                <Label className="block mb-2">Día de la semana</Label>
-                <RadioGroup 
-                  value={selectedDayOfWeek.toString()} 
-                  onValueChange={(value) => setSelectedDayOfWeek(parseInt(value))}
-                  className="space-y-2"
-                >
+                <Label className="block mb-2">Selecciona los días de la semana</Label>
+                <div className="space-y-2">
                   {daysOfWeek.map((day, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <RadioGroupItem 
-                        value={index.toString()} 
+                      <Checkbox
                         id={`weekday-${index}`}
+                        checked={selectedDaysOfWeek.includes(index)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedDaysOfWeek([...selectedDaysOfWeek, index]);
+                          } else {
+                            setSelectedDaysOfWeek(selectedDaysOfWeek.filter(d => d !== index));
+                          }
+                        }}
                         className="border-gray-300 text-[hsl(244,91%,68%)]"
                       />
                       <Label 
@@ -371,7 +378,7 @@ export function HostAvailabilitySection() {
                       </Label>
                     </div>
                   ))}
-                </RadioGroup>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -395,11 +402,11 @@ export function HostAvailabilitySection() {
 
               <Button
                 onClick={() => handleAddTimeSlot(false)}
-                disabled={addAvailabilityMutation.isPending}
+                disabled={addAvailabilityMutation.isPending || selectedDaysOfWeek.length === 0}
                 className="w-full"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Agregar Franja Horaria
+                Agregar Franja Horaria a {selectedDaysOfWeek.length} día{selectedDaysOfWeek.length !== 1 ? 's' : ''}
               </Button>
 
               {/* Weekly slots list */}
