@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import Profile from "@/pages/profile";
 import Admin from "@/pages/admin";
 import HostSearch from "@/pages/host-search";
+import Dashboard from "@/pages/dashboard";
 
 import UserProfile from "@/pages/user-profile";
 import "./i18n/config";
@@ -31,7 +32,7 @@ function Router() {
           <Route path="/home" component={Home} />
           <Route path="/profile" component={Profile} />
           <Route path="/hosts" component={HostSearch} />
-
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={Admin} />
           <Route path="/user/:id" component={UserProfile} />
         </>

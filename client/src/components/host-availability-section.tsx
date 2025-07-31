@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
-import { Plus, Trash2, Clock, DollarSign, CalendarDays } from "lucide-react";
+import { Plus, Trash2, Clock, DollarSign, CalendarDays, Monitor, Languages, Video, FileText } from "lucide-react";
 import type { HostAvailability, HostPricing } from "@shared/schema";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -88,7 +89,16 @@ export function HostAvailabilitySection() {
 
   // Update pricing mutation
   const updatePricingMutation = useMutation({
-    mutationFn: async (data: { duration: number; price: number; isActive: boolean; isCustom?: boolean }) => {
+    mutationFn: async (data: { 
+      duration: number; 
+      price: number; 
+      isActive: boolean; 
+      isCustom?: boolean;
+      includesScreenSharing?: boolean;
+      includesTranslation?: boolean;
+      includesRecording?: boolean;
+      includesTranscription?: boolean;
+    }) => {
       await apiRequest("/api/host/pricing", {
         method: "POST",
         body: data,
@@ -316,6 +326,131 @@ export function HostAvailabilitySection() {
                   </Button>
                 </div>
               ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Service Options Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="w-5 h-5" />
+            Servicios Adicionales
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+              <Checkbox
+                id="screen-sharing"
+                checked={pricing.some(p => p.includesScreenSharing)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.find(p => p.isActive);
+                  if (activePricing) {
+                    updatePricingMutation.mutate({
+                      duration: activePricing.duration,
+                      price: parseFloat(activePricing.price),
+                      isActive: true,
+                      includesScreenSharing: !!checked,
+                      includesTranslation: activePricing.includesTranslation,
+                      includesRecording: activePricing.includesRecording,
+                      includesTranscription: activePricing.includesTranscription,
+                    });
+                  }
+                }}
+              />
+              <Label htmlFor="screen-sharing" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Monitor className="w-4 h-4 text-gray-600" />
+                <div>
+                  <p className="font-medium">Compartir Pantalla</p>
+                  <p className="text-sm text-gray-600">Permite compartir pantalla durante la videollamada</p>
+                </div>
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+              <Checkbox
+                id="translation"
+                checked={pricing.some(p => p.includesTranslation)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.find(p => p.isActive);
+                  if (activePricing) {
+                    updatePricingMutation.mutate({
+                      duration: activePricing.duration,
+                      price: parseFloat(activePricing.price),
+                      isActive: true,
+                      includesScreenSharing: activePricing.includesScreenSharing,
+                      includesTranslation: !!checked,
+                      includesRecording: activePricing.includesRecording,
+                      includesTranscription: activePricing.includesTranscription,
+                    });
+                  }
+                }}
+              />
+              <Label htmlFor="translation" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Languages className="w-4 h-4 text-gray-600" />
+                <div>
+                  <p className="font-medium">Traducción Simultánea</p>
+                  <p className="text-sm text-gray-600">Servicio de traducción en tiempo real</p>
+                </div>
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+              <Checkbox
+                id="recording"
+                checked={pricing.some(p => p.includesRecording)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.find(p => p.isActive);
+                  if (activePricing) {
+                    updatePricingMutation.mutate({
+                      duration: activePricing.duration,
+                      price: parseFloat(activePricing.price),
+                      isActive: true,
+                      includesScreenSharing: activePricing.includesScreenSharing,
+                      includesTranslation: activePricing.includesTranslation,
+                      includesRecording: !!checked,
+                      includesTranscription: activePricing.includesTranscription,
+                    });
+                  }
+                }}
+              />
+              <Label htmlFor="recording" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Video className="w-4 h-4 text-gray-600" />
+                <div>
+                  <p className="font-medium">Grabación de Videollamada</p>
+                  <p className="text-sm text-gray-600">Graba la sesión completa para referencia futura</p>
+                </div>
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+              <Checkbox
+                id="transcription"
+                checked={pricing.some(p => p.includesTranscription)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.find(p => p.isActive);
+                  if (activePricing) {
+                    updatePricingMutation.mutate({
+                      duration: activePricing.duration,
+                      price: parseFloat(activePricing.price),
+                      isActive: true,
+                      includesScreenSharing: activePricing.includesScreenSharing,
+                      includesTranslation: activePricing.includesTranslation,
+                      includesRecording: activePricing.includesRecording,
+                      includesTranscription: !!checked,
+                    });
+                  }
+                }}
+              />
+              <Label htmlFor="transcription" className="flex items-center gap-2 cursor-pointer flex-1">
+                <FileText className="w-4 h-4 text-gray-600" />
+                <div>
+                  <p className="font-medium">Transcripción Automática</p>
+                  <p className="text-sm text-gray-600">Transcripción de texto de la conversación</p>
+                </div>
+              </Label>
             </div>
           </div>
         </CardContent>

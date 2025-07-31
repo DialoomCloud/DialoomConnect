@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MediaEmbed } from "@/components/media-embed";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
-import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { useState } from "react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -154,17 +156,51 @@ export default function UserProfile() {
                     {t('availability.pricing')}
                   </h3>
                   <div className="space-y-3">
-                    {pricing.map((option) => (
+                    {pricing.filter(p => p.isActive).map((option) => (
                       <div key={option.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium">
                           {option.duration === 0 ? t('availability.freeSession') : `${option.duration} ${t('availability.minutes')}`}
                         </span>
                         <span className="text-[hsl(159,61%,50%)] font-bold">
-                          {option.duration === 0 ? t('availability.free') : `$${option.price}`}
+                          {option.price === "0.00" ? t('availability.free') : `€${option.price}`}
                         </span>
                       </div>
                     ))}
                   </div>
+
+                  {/* Service Options */}
+                  {pricing.some(p => p.includesScreenSharing || p.includesTranslation || p.includesRecording || p.includesTranscription) && (
+                    <div className="mt-4 pt-4 border-t">
+                      <p className="text-sm font-medium text-gray-600 mb-3">Servicios Incluidos:</p>
+                      <div className="space-y-2">
+                        {pricing.some(p => p.includesScreenSharing) && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Monitor className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                            <span>Compartir Pantalla</span>
+                          </div>
+                        )}
+                        {pricing.some(p => p.includesTranslation) && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Languages className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                            <span>Traducción Simultánea</span>
+                          </div>
+                        )}
+                        {pricing.some(p => p.includesRecording) && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Video className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                            <span>Grabación de Sesión</span>
+                          </div>
+                        )}
+                        {pricing.some(p => p.includesTranscription) && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FileText className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                            <span>Transcripción Automática</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
                   <Button className="w-full mt-4 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]" disabled>
                     {t('home.comingSoon')}
                   </Button>
@@ -183,7 +219,7 @@ export default function UserProfile() {
                   <div className="space-y-2">
                     {availability.map((slot) => (
                       <div key={slot.id} className="text-sm">
-                        <div className="font-medium text-gray-700">{getDayName(slot.dayOfWeek)}</div>
+                        <div className="font-medium text-gray-700">{slot.dayOfWeek !== null ? getDayName(slot.dayOfWeek) : format(new Date(slot.date!), "d 'de' MMMM", { locale: es })}</div>
                         <div className="text-gray-600 flex items-center">
                           <Clock className="w-4 h-4 mr-1" />
                           {slot.startTime} - {slot.endTime}

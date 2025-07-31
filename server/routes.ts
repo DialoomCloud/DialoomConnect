@@ -675,26 +675,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/host/pricing', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const pricingData = req.body;
+      const body = req.body;
 
-      // Clear existing pricing
-      const existing = await storage.getHostPricing(userId);
-      for (const price of existing) {
-        await storage.deleteHostPricing(price.id, userId);
-      }
+      // Check if it's a single pricing update or bulk update
+      if (Array.isArray(body)) {
+        // Bulk update - clear existing and create new
+        const existing = await storage.getHostPricing(userId);
+        for (const price of existing) {
+          await storage.deleteHostPricing(price.id, userId);
+        }
 
-      // Create new pricing
-      const results = [];
-      for (const price of pricingData) {
-        const result = await storage.createHostPricing({
-          ...price,
+        const results = [];
+        for (const price of body) {
+          const result = await storage.createHostPricing({
+            ...price,
+            userId,
+            currency: "EUR",
+          });
+          results.push(result);
+        }
+        res.json(results);
+      } else {
+        // Single pricing update
+        const { 
+          duration, 
+          price, 
+          isActive, 
+          isCustom,
+          includesScreenSharing,
+          includesTranslation,
+          includesRecording,
+          includesTranscription
+        } = body;
+
+        const pricingData = {
           userId,
+          duration,
+          price,
           currency: "EUR",
-        });
-        results.push(result);
-      }
+          isActive,
+          isCustom: isCustom || false,
+          includesScreenSharing: includesScreenSharing || false,
+          includesTranslation: includesTranslation || false,
+          includesRecording: includesRecording || false,
+          includesTranscription: includesTranscription || false,
+        };
 
-      res.json(results);
+        const result = await storage.upsertHostPricing(pricingData);
+        res.json(result);
+      }
     } catch (error) {
       console.error("Error saving host pricing:", error);
       res.status(500).json({ message: "Failed to save pricing" });

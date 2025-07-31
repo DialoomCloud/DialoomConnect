@@ -175,16 +175,18 @@ export default function Home() {
             </Card>
           </Link>
 
-          {/* Video Calls */}
-          <Card className="bg-gray-50 border-[hsl(220,13%,90%)] shadow-lg cursor-not-allowed opacity-60">
-            <CardContent className="p-6 text-center">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Video className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="font-semibold text-gray-600 mb-2">{t('home.videoCalls')}</h3>
-              <p className="text-sm text-gray-500">{t('home.comingSoon')}</p>
-            </CardContent>
-          </Card>
+          {/* My Dashboard */}
+          <Link href="/dashboard">
+            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift cursor-pointer group transition-all duration-300 hover:shadow-xl">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-[hsl(159,61%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(159,61%,50%)] transition-colors">
+                  <Calendar className="w-8 h-8 text-[hsl(159,61%,50%)] group-hover:text-white transition-colors" />
+                </div>
+                <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-2">{t('home.myDashboard')}</h3>
+                <p className="text-sm text-gray-600">{t('home.myDashboardDesc')}</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

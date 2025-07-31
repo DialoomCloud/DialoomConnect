@@ -273,6 +273,11 @@ export const hostPricing = pgTable("host_pricing", {
   currency: varchar("currency").default("EUR"),
   isActive: boolean("is_active").default(true),
   isCustom: boolean("is_custom").default(false), // true for custom duration/price
+  // Additional service options
+  includesScreenSharing: boolean("includes_screen_sharing").default(false),
+  includesTranslation: boolean("includes_translation").default(false),
+  includesRecording: boolean("includes_recording").default(false),
+  includesTranscription: boolean("includes_transcription").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
