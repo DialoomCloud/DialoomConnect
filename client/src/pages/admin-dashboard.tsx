@@ -36,6 +36,16 @@ export default function AdminDashboard() {
     }
   }, [isLoading, adminUser, setLocation]);
 
+  // Fetch admin statistics - must be called before conditional returns
+  const { data: stats } = useQuery({
+    queryKey: ["/api/admin/stats"],
+    queryFn: async () => {
+      const response = await apiRequest("/api/admin/stats", { method: "GET" });
+      return response.json();
+    },
+    enabled: !!adminUser, // Only fetch when adminUser exists
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
@@ -47,15 +57,6 @@ export default function AdminDashboard() {
   if (!adminUser) {
     return null;
   }
-
-  // Fetch admin statistics
-  const { data: stats } = useQuery({
-    queryKey: ["/api/admin/stats"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/stats");
-      return response.json();
-    },
-  });
 
   return (
     <div className="min-h-screen bg-[hsl(220,9%,98%)]">

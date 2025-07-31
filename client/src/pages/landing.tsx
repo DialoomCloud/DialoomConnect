@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Database, UserCheck, Play, Smartphone, Share2 } from "lucide-react";
-import { Footer } from "@/components/footer";
+
 import { Link } from "wouter";
 
 export default function Landing() {
@@ -143,8 +143,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }
