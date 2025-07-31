@@ -93,6 +93,8 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   username: varchar("username"), // For admin login
   passwordHash: varchar("password_hash"), // Encrypted password for admin
+  // Stripe integration
+  stripeCustomerId: varchar("stripe_customer_id"),
   // User verification and GDPR compliance
   isVerified: boolean("is_verified").default(false),
   isActive: boolean("is_active").default(true),
@@ -315,3 +317,141 @@ export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = typeof bookings.$inferInsert;
 export type HostCategory = typeof hostCategories.$inferSelect;
 export type InsertHostCategory = typeof hostCategories.$inferInsert;
+
+// Stripe payment status enum
+export const paymentStatusEnum = pgEnum('payment_status', [
+  'pending', 'processing', 'succeeded', 'failed', 'cancelled', 'refunded'
+]);
+
+// Stripe payments table for transaction tracking
+export const stripePayments = pgTable("stripe_payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  bookingId: varchar("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  stripePaymentIntentId: varchar("stripe_payment_intent_id").notNull().unique(),
+  stripeCustomerId: varchar("stripe_customer_id"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // Total amount
+  hostAmount: decimal("host_amount", { precision: 10, scale: 2 }).notNull(), // Amount for host (after commission)
+  commissionAmount: decimal("commission_amount", { precision: 10, scale: 2 }).notNull(), // Dialoom commission
+  vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }).notNull(), // VAT on commission
+  currency: varchar("currency").default("EUR"),
+  status: paymentStatusEnum("status").default("pending"),
+  // Service add-ons pricing breakdown
+  screenSharingFee: decimal("screen_sharing_fee", { precision: 10, scale: 2 }).default("0"),
+  translationFee: decimal("translation_fee", { precision: 10, scale: 2 }).default("0"),
+  recordingFee: decimal("recording_fee", { precision: 10, scale: 2 }).default("0"),
+  transcriptionFee: decimal("transcription_fee", { precision: 10, scale: 2 }).default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Invoices table for downloadable invoices
+export const invoices = pgTable("invoices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invoiceNumber: varchar("invoice_number").notNull().unique(), // Sequential number: DIAL-2025-00001
+  paymentId: varchar("payment_id").notNull().references(() => stripePayments.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id), // Who receives the invoice
+  hostId: varchar("host_id").notNull().references(() => users.id), // Service provider
+  issueDate: date("issue_date").notNull().defaultNow(),
+  dueDate: date("due_date"), // For future invoices
+  pdfPath: text("pdf_path"), // Path to generated PDF in Object Storage
+  isDownloaded: boolean("is_downloaded").default(false),
+  downloadCount: integer("download_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Global configuration for admin-managed settings
+export const adminConfig = pgTable("admin_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key").notNull().unique(), // config keys like 'commission_rate', 'screen_sharing_price'
+  value: text("value").notNull(), // JSON values for flexibility
+  description: text("description"), // Human-readable description
+  updatedBy: varchar("updated_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Admin audit log
+export const adminAuditLog = pgTable("admin_audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminId: varchar("admin_id").notNull().references(() => users.id),
+  action: varchar("action").notNull(), // 'update_commission', 'update_service_price', 'verify_user'
+  targetTable: varchar("target_table"), // Table affected
+  targetId: varchar("target_id"), // ID of affected record
+  oldValue: jsonb("old_value"), // Previous value
+  newValue: jsonb("new_value"), // New value
+  description: text("description"),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations for new tables
+export const stripePaymentsRelations = relations(stripePayments, ({ one }) => ({
+  booking: one(bookings, {
+    fields: [stripePayments.bookingId],
+    references: [bookings.id],
+  }),
+}));
+
+export const invoicesRelations = relations(invoices, ({ one }) => ({
+  payment: one(stripePayments, {
+    fields: [invoices.paymentId],
+    references: [stripePayments.id],
+  }),
+  user: one(users, {
+    fields: [invoices.userId],
+    references: [users.id],
+  }),
+  host: one(users, {
+    fields: [invoices.hostId],
+    references: [users.id],
+  }),
+}));
+
+export const adminConfigRelations = relations(adminConfig, ({ one }) => ({
+  updatedBy: one(users, {
+    fields: [adminConfig.updatedBy],
+    references: [users.id],
+  }),
+}));
+
+export const adminAuditLogRelations = relations(adminAuditLog, ({ one }) => ({
+  admin: one(users, {
+    fields: [adminAuditLog.adminId],
+    references: [users.id],
+  }),
+}));
+
+// Export new types
+export type StripePayment = typeof stripePayments.$inferSelect;
+export type InsertStripePayment = typeof stripePayments.$inferInsert;
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+export type AdminConfig = typeof adminConfig.$inferSelect;
+export type InsertAdminConfig = typeof adminConfig.$inferInsert;
+export type AdminAuditLog = typeof adminAuditLog.$inferSelect;
+export type InsertAdminAuditLog = typeof adminAuditLog.$inferInsert;
+
+// Create schemas for validation
+export const createStripePaymentSchema = createInsertSchema(stripePayments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const createInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateAdminConfigSchema = createInsertSchema(adminConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type CreateStripePayment = z.infer<typeof createStripePaymentSchema>;
+export type CreateInvoice = z.infer<typeof createInvoiceSchema>;
+export type UpdateAdminConfig = z.infer<typeof updateAdminConfigSchema>;

@@ -13,6 +13,7 @@ import HostSearch from "@/pages/host-search";
 import Dashboard from "@/pages/dashboard";
 
 import UserProfile from "@/pages/user-profile";
+import AdminPanel from "@/pages/admin-panel";
 import "./i18n/config";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
           <Route path="/hosts" component={HostSearch} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={Admin} />
+          <Route path="/admin-panel" component={AdminPanel} />
           <Route path="/user/:id" component={UserProfile} />
         </>
       )}

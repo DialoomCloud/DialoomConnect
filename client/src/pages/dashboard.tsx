@@ -16,11 +16,87 @@ import {
   TrendingUp,
   CalendarCheck,
   CalendarX,
-  MessageSquare
+  MessageSquare,
+  Download,
+  FileText,
+  Settings
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import type { Booking } from "@shared/schema";
+
+// Invoices tab component
+function InvoicesTab({ userId }: { userId?: string }) {
+  const { data: invoices = [], isLoading } = useQuery<Invoice[]>({
+    queryKey: ['/api/invoices'],
+    enabled: !!userId,
+  });
+
+  const downloadInvoiceMutation = useMutation({
+    mutationFn: async (invoiceId: string) => {
+      return apiRequest('GET', `/api/invoices/${invoiceId}/download`);
+    },
+    onSuccess: (data) => {
+      // For now, just show the data. Later we'll handle PDF download
+      console.log('Invoice data:', data);
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+        <p className="text-sm text-gray-500 mt-2">Cargando facturas...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {invoices.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No tienes facturas disponibles</p>
+          <p className="text-sm">Las facturas se generan automáticamente después de cada pago</p>
+        </div>
+      ) : (
+        invoices.map((invoice) => (
+          <div key={invoice.id} className="border rounded-lg p-4 hover:bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium">Factura #{invoice.invoiceNumber}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {invoice.isDownloaded ? 'Descargada' : 'Pendiente'}
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Fecha: {format(new Date(invoice.issueDate), "d 'de' MMMM 'de' yyyy", { locale: es })}
+                </p>
+                {invoice.downloadCount > 0 && (
+                  <p className="text-xs text-gray-500">
+                    Descargada {invoice.downloadCount} {invoice.downloadCount === 1 ? 'vez' : 'veces'}
+                  </p>
+                )}
+              </div>
+              <div className="text-right">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => downloadInvoiceMutation.mutate(invoice.id)}
+                  disabled={downloadInvoiceMutation.isPending}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {downloadInvoiceMutation.isPending ? 'Descargando...' : 'Descargar'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -126,16 +202,40 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Bookings Tabs */}
+        {/* Admin Panel Access */}
+        {user?.isAdmin && (
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-lg mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="h-6 w-6 text-blue-600" />
+                  <div>
+                    <h3 className="font-semibold text-blue-900">Panel de Administración</h3>
+                    <p className="text-sm text-blue-700">Gestiona comisiones y precios de servicios</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => window.location.href = '/admin-panel'}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Abrir Panel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Bookings and Invoices Tabs */}
         <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
           <CardHeader>
-            <CardTitle>Gestión de Llamadas</CardTitle>
+            <CardTitle>Gestión de Llamadas y Facturación</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="upcoming" onValueChange={setSelectedTab}>
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="upcoming">Próximas</TabsTrigger>
                 <TabsTrigger value="past">Pasadas</TabsTrigger>
+                <TabsTrigger value="invoices">Facturas</TabsTrigger>
               </TabsList>
 
               <TabsContent value="upcoming" className="space-y-4">
@@ -205,6 +305,10 @@ export default function Dashboard() {
                     </div>
                   ))
                 )}
+              </TabsContent>
+
+              <TabsContent value="invoices" className="space-y-4">
+                <InvoicesTab userId={user?.id} />
               </TabsContent>
             </Tabs>
           </CardContent>

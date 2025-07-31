@@ -11,6 +11,7 @@ import { insertMediaContentSchema, updateUserProfileSchema } from "@shared/schem
 import { z } from "zod";
 import { storageBucket } from "./storage-bucket";
 import { replitStorage } from "./object-storage";
+import Stripe from "stripe";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -35,6 +36,14 @@ const upload = multer({
       cb(new Error('Tipo de archivo no permitido'));
     }
   }
+});
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2023-10-16",
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -727,6 +736,219 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving host pricing:", error);
       res.status(500).json({ message: "Failed to save pricing" });
+    }
+  });
+
+  // Stripe payment routes
+  app.post('/api/stripe/create-payment-intent', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { bookingId, amount, serviceAddons = {} } = req.body;
+
+      // Calculate commission and VAT
+      const calculations = await storage.calculateCommission(parseFloat(amount));
+      const servicePricing = await storage.getServicePricing();
+
+      // Calculate addon fees
+      let addonTotal = 0;
+      if (serviceAddons.screenSharing) addonTotal += servicePricing.screenSharing;
+      if (serviceAddons.translation) addonTotal += servicePricing.translation;
+      if (serviceAddons.recording) addonTotal += servicePricing.recording;
+      if (serviceAddons.transcription) addonTotal += servicePricing.transcription;
+
+      const totalAmount = parseFloat(amount) + addonTotal;
+      const finalCalculations = await storage.calculateCommission(totalAmount);
+
+      // Create Stripe customer if doesn't exist
+      const user = await storage.getUser(userId);
+      let stripeCustomerId = user?.stripeCustomerId;
+
+      if (!stripeCustomerId && user?.email) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        });
+        stripeCustomerId = customer.id;
+        
+        // Update user with Stripe customer ID
+        await storage.updateUserProfile(userId, { stripeCustomerId });
+      }
+
+      // Create payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(totalAmount * 100), // Convert to cents
+        currency: 'eur',
+        customer: stripeCustomerId,
+        metadata: {
+          bookingId,
+          userId,
+          hostAmount: finalCalculations.hostAmount.toString(),
+          commissionAmount: finalCalculations.commission.toString(),
+          vatAmount: finalCalculations.vat.toString(),
+        },
+      });
+
+      // Store payment in database
+      await storage.createStripePayment({
+        bookingId,
+        stripePaymentIntentId: paymentIntent.id,
+        stripeCustomerId,
+        amount: totalAmount.toString(),
+        hostAmount: finalCalculations.hostAmount.toString(),
+        commissionAmount: finalCalculations.commission.toString(),
+        vatAmount: finalCalculations.vat.toString(),
+        currency: 'EUR',
+        status: 'pending',
+        screenSharingFee: serviceAddons.screenSharing ? servicePricing.screenSharing.toString() : '0',
+        translationFee: serviceAddons.translation ? servicePricing.translation.toString() : '0', 
+        recordingFee: serviceAddons.recording ? servicePricing.recording.toString() : '0',
+        transcriptionFee: serviceAddons.transcription ? servicePricing.transcription.toString() : '0',
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+      });
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({ message: 'Error al crear el intento de pago' });
+    }
+  });
+
+  // Stripe webhook for payment status updates
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET!);
+    } catch (err: any) {
+      console.log(`Webhook signature verification failed.`, err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    try {
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          await storage.updateStripePaymentStatus(paymentIntent.id, 'succeeded');
+          
+          // Generate invoice
+          const payment = await storage.getStripePaymentByIntent(paymentIntent.id);
+          if (payment) {
+            const booking = await storage.getBookingById(payment.bookingId);
+            if (booking) {
+              const invoiceNumber = await storage.generateNextInvoiceNumber();
+              await storage.createInvoice({
+                invoiceNumber,
+                paymentId: payment.id,
+                userId: booking.guestId,
+                hostId: booking.hostId,
+                issueDate: new Date().toISOString().split('T')[0],
+              });
+            }
+          }
+          break;
+
+        case 'payment_intent.payment_failed':
+          await storage.updateStripePaymentStatus(event.data.object.id, 'failed');
+          break;
+
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+    } catch (error) {
+      console.error('Error processing webhook:', error);
+      return res.status(500).json({ error: 'Webhook processing failed' });
+    }
+
+    res.json({ received: true });
+  });
+
+  // Invoice routes
+  app.get('/api/invoices', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const invoices = await storage.getUserInvoices(userId);
+      res.json(invoices);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      res.status(500).json({ message: 'Error al obtener facturas' });
+    }
+  });
+
+  app.get('/api/invoices/:id/download', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const invoiceId = req.params.id;
+      
+      const invoice = await storage.getInvoice(invoiceId);
+      if (!invoice || invoice.userId !== userId) {
+        return res.status(404).json({ message: 'Factura no encontrada' });
+      }
+
+      // Update download count
+      await storage.updateInvoiceDownload(invoiceId);
+
+      // For now, return JSON data - later we'll generate PDF
+      res.json({
+        invoice,
+        message: 'Factura descargada (PDF en desarrollo)',
+      });
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      res.status(500).json({ message: 'Error al descargar factura' });
+    }
+  });
+
+  // Admin routes for commission and service pricing management
+  app.get('/api/admin/config', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: 'Acceso denegado' });
+      }
+
+      const config = await storage.getAllAdminConfig();
+      res.json(config);
+    } catch (error) {
+      console.error('Error fetching admin config:', error);
+      res.status(500).json({ message: 'Error al obtener configuración' });
+    }
+  });
+
+  app.put('/api/admin/config/:key', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: 'Acceso denegado' });
+      }
+
+      const { key } = req.params;
+      const { value, description } = req.body;
+
+      const oldConfig = await storage.getAdminConfig(key);
+      const updatedConfig = await storage.updateAdminConfig(key, value, userId, description);
+
+      // Create audit log
+      await storage.createAuditLog({
+        adminId: userId,
+        action: 'update_config',
+        targetTable: 'admin_config',
+        targetId: key,
+        oldValue: oldConfig ? { value: oldConfig.value } : null,
+        newValue: { value },
+        description: `Updated config: ${key}`,
+      });
+
+      res.json(updatedConfig);
+    } catch (error) {
+      console.error('Error updating admin config:', error);
+      res.status(500).json({ message: 'Error al actualizar configuración' });
     }
   });
 

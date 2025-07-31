@@ -128,3 +128,16 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Profile Page Enhancement**: Added comprehensive "Disponibilidad y Precios" section in profile with tabbed interface for scheduling
 - **Bug Fixes**: Fixed critical JSON double-stringification issue in API requests that was breaking drag-and-drop functionality
 - **UI Improvements**: Made media content boxes full-width (1 column layout) for better visibility on desktop
+
+## Complete Stripe Payment Integration (July 31, 2025)
+- **Stripe Gateway Setup**: Full payment processing with webhooks, payment intents, and customer management
+- **Commission Structure**: 10% commission + 21% VAT automatically calculated and split between host and platform
+- **Service Add-ons Pricing**: Screen sharing (€5), translation (€10), recording (€8), transcription (€12)
+- **Invoice System**: Automatic invoice generation with downloadable PDFs linked to Stripe payments
+- **Admin Panel**: Complete configuration management for commission rates and service pricing
+- **Payment Flow**: Integrated checkout with booking system, real-time payment status updates
+- **Database Schema**: New tables for stripe_payments, invoices, admin_config, admin_audit_log
+- **API Endpoints**: Full REST API for payments (/api/stripe/*), invoices (/api/invoices/*), admin config (/api/admin/*)
+- **Dashboard Integration**: Added billing section with invoice downloads and payment history
+- **Webhook Processing**: Stripe webhook handling for payment confirmations and failures
+- **Configuration Defaults**: Commission 10%, VAT 21%, service pricing configured and stored in admin_config table
