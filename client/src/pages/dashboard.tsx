@@ -19,10 +19,176 @@ import {
   MessageSquare,
   Download,
   FileText,
-  Settings
+  Settings,
+  Upload,
+  Video,
+  Image,
+  Trash2,
+  Edit,
+  Save,
+  Globe,
+  Phone,
+  Mail,
+  MapPin,
+  Plus,
+  CheckCircle2
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+
+// Import additional types and utilities
+import type { Booking, Invoice, MediaContent, User, HostPricing } from "@shared/schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+
+// Profile Management Component
+function ProfileManagement({ userId }: { userId?: string }) {
+  const { data: userProfile, isLoading } = useQuery<User>({
+    queryKey: [`/api/users/${userId}`],
+    enabled: !!userId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <ProfileForm user={userProfile} />
+    </div>
+  );
+}
+
+// Content Management Component
+function ContentManagement({ userId }: { userId?: string }) {
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const queryClient = useQueryClient();
+  
+  const { data: mediaContent = [], isLoading } = useQuery<MediaContent[]>({
+    queryKey: ['/api/media'],
+    enabled: !!userId,
+  });
+
+  const deleteMediaMutation = useMutation({
+    mutationFn: async (mediaId: string) => {
+      return apiRequest('DELETE', `/api/media/${mediaId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/media'] });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Mi Contenido Multimedia</h3>
+        <Button onClick={() => setShowUploadModal(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Añadir Contenido
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {mediaContent.map((content) => (
+          <Card key={content.id} className="overflow-hidden">
+            <div className="aspect-video bg-gray-100 relative">
+              {content.mediaType === 'youtube' && (
+                <div className="flex items-center justify-center h-full">
+                  <Video className="w-12 h-12 text-gray-400" />
+                </div>
+              )}
+              {content.mediaType === 'image' && (
+                <img 
+                  src={content.mediaUrl} 
+                  alt={content.title} 
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            <CardContent className="p-4">
+              <h4 className="font-medium truncate">{content.title}</h4>
+              <p className="text-sm text-gray-500 mt-1">
+                {format(new Date(content.createdAt), "d MMM yyyy", { locale: es })}
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="destructive"
+                  onClick={() => deleteMediaMutation.mutate(content.id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {showUploadModal && (
+        <MediaUploadModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onUploadComplete={() => {
+            setShowUploadModal(false);
+            queryClient.invalidateQueries({ queryKey: ['/api/media'] });
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Availability Management Component
+function AvailabilityManagement({ userId }: { userId?: string }) {
+  const { data: pricing, isLoading: pricingLoading } = useQuery<HostPricing>({
+    queryKey: [`/api/users/${userId}/pricing`],
+    enabled: !!userId,
+  });
+
+  const { data: availability, isLoading: availabilityLoading } = useQuery({
+    queryKey: [`/api/users/${userId}/availability`],
+    enabled: !!userId,
+  });
+
+  if (pricingLoading || availabilityLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue="pricing">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="pricing">Precios</TabsTrigger>
+          <TabsTrigger value="schedule">Disponibilidad</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="pricing" className="mt-6">
+          <HostPricingForm existingPricing={pricing} />
+        </TabsContent>
+        
+        <TabsContent value="schedule" className="mt-6">
+          <AvailabilitySchedule />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
 
 // Invoices tab component
 function InvoicesTab({ userId }: { userId?: string }) {
@@ -101,7 +267,7 @@ function InvoicesTab({ userId }: { userId?: string }) {
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user, isLoading: authLoading } = useAuth();
-  const [selectedTab, setSelectedTab] = useState("upcoming");
+  const [selectedTab, setSelectedTab] = useState("overview");
 
   // Fetch bookings
   const { data: bookings = [], isLoading: bookingsLoading } = useQuery<Booking[]>({
@@ -225,20 +391,114 @@ export default function Dashboard() {
           </Card>
         )}
 
-        {/* Bookings and Invoices Tabs */}
+        {/* Complete Host Management Dashboard */}
         <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
           <CardHeader>
-            <CardTitle>Gestión de Llamadas y Facturación</CardTitle>
+            <CardTitle>Centro de Control del Host</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="upcoming" onValueChange={setSelectedTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="upcoming">Próximas</TabsTrigger>
-                <TabsTrigger value="past">Pasadas</TabsTrigger>
-                <TabsTrigger value="invoices">Facturas</TabsTrigger>
+            <Tabs defaultValue="overview" onValueChange={setSelectedTab}>
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 gap-2">
+                <TabsTrigger value="overview">Resumen</TabsTrigger>
+                <TabsTrigger value="calls">Llamadas</TabsTrigger>
+                <TabsTrigger value="invoices">Facturación</TabsTrigger>
+                <TabsTrigger value="profile">Mi Perfil</TabsTrigger>
+                <TabsTrigger value="content">Contenido</TabsTrigger>
+                <TabsTrigger value="availability">Disponibilidad</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="upcoming" className="space-y-4">
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="mt-6">
+                <div className="grid gap-6">
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-green-700 font-medium">Ingresos del Mes</p>
+                            <p className="text-2xl font-bold text-green-900">€245.00</p>
+                          </div>
+                          <TrendingUp className="h-8 w-8 text-green-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-blue-700 font-medium">Próximas Llamadas</p>
+                            <p className="text-2xl font-bold text-blue-900">{stats.upcomingCalls}</p>
+                          </div>
+                          <CalendarCheck className="h-8 w-8 text-blue-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-purple-700 font-medium">Completadas</p>
+                            <p className="text-2xl font-bold text-purple-900">{stats.completedCalls}</p>
+                          </div>
+                          <Users className="h-8 w-8 text-purple-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-yellow-700 font-medium">Calificación</p>
+                            <p className="text-2xl font-bold text-yellow-900">{stats.averageRating}</p>
+                          </div>
+                          <Star className="h-8 w-8 text-yellow-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Recent Activity */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Actividad Reciente</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">Nueva reserva confirmada</p>
+                            <p className="text-xs text-gray-500">Usuario #12345 - 15 ago, 16:00</p>
+                          </div>
+                          <span className="text-sm font-semibold text-green-600">+€45</span>
+                        </div>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">Pago recibido</p>
+                            <p className="text-xs text-gray-500">Factura #DIAL-2025-00023</p>
+                          </div>
+                          <span className="text-sm font-semibold text-blue-600">€120</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              {/* Calls Tab */}
+              <TabsContent value="calls" className="mt-6">
+                <Tabs defaultValue="upcoming">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upcoming">Próximas</TabsTrigger>
+                    <TabsTrigger value="past">Pasadas</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="upcoming" className="space-y-4 mt-4">
                 {upcomingBookings.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     No tienes llamadas pendientes
@@ -270,7 +530,7 @@ export default function Dashboard() {
                 )}
               </TabsContent>
 
-              <TabsContent value="past" className="space-y-4">
+              <TabsContent value="past" className="space-y-4 mt-4">
                 {pastBookings.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     No tienes llamadas pasadas
@@ -306,9 +566,27 @@ export default function Dashboard() {
                   ))
                 )}
               </TabsContent>
+                </Tabs>
+              </TabsContent>
 
-              <TabsContent value="invoices" className="space-y-4">
+              {/* Invoices Tab */}
+              <TabsContent value="invoices" className="mt-6">
                 <InvoicesTab userId={user?.id} />
+              </TabsContent>
+
+              {/* Profile Tab */}
+              <TabsContent value="profile" className="mt-6">
+                <ProfileManagement userId={user?.id} />
+              </TabsContent>
+
+              {/* Content Tab */}
+              <TabsContent value="content" className="mt-6">
+                <ContentManagement userId={user?.id} />
+              </TabsContent>
+
+              {/* Availability Tab */}
+              <TabsContent value="availability" className="mt-6">
+                <AvailabilityManagement userId={user?.id} />
               </TabsContent>
             </Tabs>
           </CardContent>
