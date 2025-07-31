@@ -80,6 +80,7 @@ export interface IStorage {
   updateUserStatus(userId: string, updates: { role?: string, isActive?: boolean, isVerified?: boolean }): Promise<void>;
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
+  updateUserStripeConnect(userId: string, accountId: string, onboardingCompleted: boolean): Promise<User>;
   
   // Admin and verification operations
   getPendingVerificationUsers(): Promise<User[]>;
@@ -110,9 +111,11 @@ export interface IStorage {
   // Booking operations
   createBooking(booking: any): Promise<any>;
   getBookingById(id: string): Promise<any | undefined>;
+  getBooking(id: string): Promise<Booking | undefined>; // Alias for getBookingById
   getHostBookings(hostId: string): Promise<any[]>;
   getGuestBookings(guestId: string): Promise<any[]>;
   updateBooking(id: string, updates: any): Promise<any | undefined>;
+  updateBookingStatus(id: string, status: string): Promise<void>;
   cancelBooking(id: string, userId: string): Promise<boolean>;
   getBookingsByDate(hostId: string, date: string): Promise<any[]>;
   
@@ -317,6 +320,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async updateUserStripeConnect(userId: string, accountId: string, onboardingCompleted: boolean): Promise<User> {
+    const [updated] = await db
+      .update(users)
+      .set({ 
+        stripeAccountId: accountId,
+        stripeOnboardingCompleted: onboardingCompleted,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updated;
   }
 
   // Media content operations
@@ -556,6 +572,10 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async getBooking(id: string): Promise<Booking | undefined> {
+    return this.getBookingById(id);
+  }
+
   async getHostBookings(hostId: string): Promise<any[]> {
     const { bookings } = await import("@shared/schema");
     return await db.select().from(bookings).where(eq(bookings.hostId, hostId));
@@ -590,6 +610,14 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bookings.id, id));
     
     return (result?.rowCount || 0) > 0;
+  }
+
+  async updateBookingStatus(id: string, status: string): Promise<void> {
+    const { bookings } = await import("@shared/schema");
+    await db
+      .update(bookings)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(bookings.id, id));
   }
 
   async getBookingsByDate(hostId: string, date: string): Promise<any[]> {

@@ -339,7 +339,7 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
                 <Button 
                   type="submit" 
                   disabled={youtubeVideoMutation.isPending}
-                  className="bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,58%)]"
+                  className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
                 >
                   {youtubeVideoMutation.isPending ? "Agregando..." : "Agregar Video"}
                 </Button>
@@ -398,7 +398,7 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
                 <Button 
                   type="submit" 
                   disabled={videoUploadMutation.isPending}
-                  className="bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,58%)]"
+                  className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
                 >
                   {videoUploadMutation.isPending ? "Subiendo..." : "Subir Video"}
                 </Button>
@@ -457,7 +457,7 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
                 <Button 
                   type="submit" 
                   disabled={imageUploadMutation.isPending}
-                  className="bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,58%)]"
+                  className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
                 >
                   {imageUploadMutation.isPending ? "Subiendo..." : "Subir Imagen"}
                 </Button>

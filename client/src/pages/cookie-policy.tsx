@@ -163,10 +163,10 @@ export default function CookiePolicy() {
                 : 'For more information on how common browsers manage cookies:'}
             </p>
             <ul className="text-sm space-y-1">
-              <li>• <a href="#" className="text-[hsl(244,91%,68%)] hover:underline">Chrome</a></li>
-              <li>• <a href="#" className="text-[hsl(244,91%,68%)] hover:underline">Firefox</a></li>
-              <li>• <a href="#" className="text-[hsl(244,91%,68%)] hover:underline">Safari</a></li>
-              <li>• <a href="#" className="text-[hsl(244,91%,68%)] hover:underline">Edge</a></li>
+              <li>• <a href="#" className="text-[hsl(188,100%,38%)] hover:underline">Chrome</a></li>
+              <li>• <a href="#" className="text-[hsl(188,100%,38%)] hover:underline">Firefox</a></li>
+              <li>• <a href="#" className="text-[hsl(188,100%,38%)] hover:underline">Safari</a></li>
+              <li>• <a href="#" className="text-[hsl(188,100%,38%)] hover:underline">Edge</a></li>
             </ul>
             <p className="text-xs text-gray-500 mt-4">
               {i18n.language === 'es' 

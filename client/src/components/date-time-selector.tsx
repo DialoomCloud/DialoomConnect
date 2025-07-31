@@ -135,7 +135,7 @@ export function DateTimeSelector({ isOpen, onClose, availability, onConfirm }: D
                     variant={selectedTime === time ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedTime(time)}
-                    className={selectedTime === time ? "bg-[hsl(244,91%,68%)]" : ""}
+                    className={selectedTime === time ? "bg-[hsl(188,100%,38%)]" : ""}
                   >
                     {time}
                   </Button>
@@ -168,7 +168,7 @@ export function DateTimeSelector({ isOpen, onClose, availability, onConfirm }: D
           <Button
             onClick={handleConfirm}
             disabled={!selectedDate || !selectedTime}
-            className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+            className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
           >
             Continuar con la Reserva
           </Button>

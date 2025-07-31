@@ -174,7 +174,7 @@ export function MediaEditModal({ isOpen, onClose, content }: MediaEditModalProps
             <Button 
               type="submit" 
               disabled={updateMediaMutation.isPending}
-              className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+              className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
             >
               {updateMediaMutation.isPending ? "Guardando..." : "Guardar Cambios"}
             </Button>

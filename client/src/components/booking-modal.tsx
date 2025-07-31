@@ -141,7 +141,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                     <span>Compartir Pantalla</span>
                   </Label>
                 </div>
-                <span className="font-medium text-[hsl(159,61%,50%)]">+€{servicePrices.screenSharing}</span>
+                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.screenSharing}</span>
               </div>
 
               <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
@@ -156,7 +156,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                     <span>Traducción Simultánea</span>
                   </Label>
                 </div>
-                <span className="font-medium text-[hsl(159,61%,50%)]">+€{servicePrices.translation}</span>
+                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.translation}</span>
               </div>
 
               <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
@@ -171,7 +171,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                     <span>Grabación de Sesión</span>
                   </Label>
                 </div>
-                <span className="font-medium text-[hsl(159,61%,50%)]">+€{servicePrices.recording}</span>
+                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.recording}</span>
               </div>
 
               <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
@@ -186,7 +186,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                     <span>Transcripción Automática</span>
                   </Label>
                 </div>
-                <span className="font-medium text-[hsl(159,61%,50%)]">+€{servicePrices.transcription}</span>
+                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.transcription}</span>
               </div>
             </div>
           </div>
@@ -195,7 +195,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
           <div className="pt-4 border-t">
             <div className="flex justify-between items-center">
               <span className="text-lg font-medium">Total:</span>
-              <span className="text-2xl font-bold text-[hsl(159,61%,50%)]">€{calculateTotal().toFixed(2)}</span>
+              <span className="text-2xl font-bold text-[hsl(188,80%,42%)]">€{calculateTotal().toFixed(2)}</span>
             </div>
           </div>
 
@@ -206,7 +206,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
             </Button>
             <Button 
               onClick={handleProceedToPayment}
-              className="flex-1 bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,60%)]"
+              className="flex-1 bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
             >
               Proceder al Pago
             </Button>

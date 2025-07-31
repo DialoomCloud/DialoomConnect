@@ -34,7 +34,7 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/privacy-policy" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)] flex items-center gap-2">
+                <Link href="/privacy-policy" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
                   <Shield className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Política de Privacidad'
@@ -44,7 +44,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/terms-of-service" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)] flex items-center gap-2">
+                <Link href="/terms-of-service" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
                   <FileText className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Términos de Servicio'
@@ -54,7 +54,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/cookie-policy" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)] flex items-center gap-2">
+                <Link href="/cookie-policy" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
                   <Cookie className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Política de Cookies'
@@ -77,7 +77,7 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/gdpr-rights" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)]">
+                <Link href="/gdpr-rights" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
                   {i18n.language === 'es' 
                     ? 'Tus Derechos RGPD'
                     : i18n.language === 'ca'
@@ -86,7 +86,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/data-request" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)]">
+                <Link href="/data-request" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
                   {i18n.language === 'es' 
                     ? 'Solicitar mis Datos'
                     : i18n.language === 'ca'
@@ -95,7 +95,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/delete-account" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)]">
+                <Link href="/delete-account" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
                   {i18n.language === 'es' 
                     ? 'Eliminar mi Cuenta'
                     : i18n.language === 'ca'
@@ -117,12 +117,12 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:privacy@dialoom.com" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)]">
+                <a href="mailto:privacy@dialoom.com" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
                   privacy@dialoom.com
                 </a>
               </li>
               <li>
-                <a href="mailto:support@dialoom.com" className="text-sm text-gray-600 hover:text-[hsl(244,91%,68%)]">
+                <a href="mailto:support@dialoom.com" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
                   support@dialoom.com
                 </a>
               </li>

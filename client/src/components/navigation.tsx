@@ -36,7 +36,7 @@ export function Navigation() {
                 <Button
                   variant={isActive("/home") ? "default" : "ghost"}
                   size="sm"
-                  className={isActive("/home") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
+                  className={isActive("/home") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
                 >
                   <Home className="w-4 h-4 mr-2" />
                   {t('navigation.home')}
@@ -47,7 +47,7 @@ export function Navigation() {
                 <Button
                   variant={isActive("/profile") ? "default" : "ghost"}
                   size="sm"
-                  className={isActive("/profile") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
+                  className={isActive("/profile") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
                 >
                   <UserIcon className="w-4 h-4 mr-2" />
                   {t('navigation.profile')}
@@ -58,7 +58,7 @@ export function Navigation() {
                 <Button
                   variant={isActive("/hosts") ? "default" : "ghost"}
                   size="sm"
-                  className={isActive("/hosts") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
+                  className={isActive("/hosts") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
                 >
                   <Users className="w-4 h-4 mr-2" />
                   {t('home.searchHosts')}
@@ -72,7 +72,7 @@ export function Navigation() {
                   <Button
                     variant={isActive("/admin-dashboard") ? "default" : "ghost"}
                     size="sm"
-                    className={isActive("/admin-dashboard") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
+                    className={isActive("/admin-dashboard") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
                   >
                     <Shield className="w-4 h-4 mr-2" />
                     {t('navigation.admin')}

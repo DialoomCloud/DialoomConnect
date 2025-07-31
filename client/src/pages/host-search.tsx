@@ -44,7 +44,7 @@ export default function HostSearch() {
                 placeholder={t('home.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-6 text-lg shadow-lg border-0 focus:ring-2 focus:ring-[hsl(244,91%,68%)] transition-all"
+                className="pl-10 pr-4 py-6 text-lg shadow-lg border-0 focus:ring-2 focus:ring-[hsl(188,100%,38%)] transition-all"
               />
             </div>
           </div>
@@ -52,7 +52,7 @@ export default function HostSearch() {
 
         {isLoading ? (
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[hsl(244,91%,68%)]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[hsl(188,100%,38%)]"></div>
           </div>
         ) : filteredHosts && filteredHosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -64,7 +64,7 @@ export default function HostSearch() {
               >
                 <CardContent className="p-6">
                   <div className="text-center mb-4">
-                    <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)] animate-glow">
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)] animate-glow">
                       {host.profileImageUrl ? (
                         <img 
                           src={host.profileImageUrl.startsWith('http') || host.profileImageUrl.startsWith('/') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`} 
@@ -83,7 +83,7 @@ export default function HostSearch() {
                     {host.title && (
                       <p className="text-gray-600 mb-3">{host.title}</p>
                     )}
-                    <Badge className="bg-[hsl(159,61%,95%)] text-[hsl(159,61%,50%)] hover:bg-[hsl(159,61%,90%)]">
+                    <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
                       <CheckCircle className="w-4 h-4 mr-1" />
                       {t('home.verified')}
                     </Badge>
@@ -92,13 +92,13 @@ export default function HostSearch() {
                   <div className="space-y-2 mb-4">
                     {host.email && (
                       <div className="flex items-center text-gray-600 text-sm">
-                        <Mail className="w-4 h-4 mr-2 text-[hsl(244,91%,68%)]" />
+                        <Mail className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
                         <span className="truncate">{host.email}</span>
                       </div>
                     )}
                     {host.city && (
                       <div className="flex items-center text-gray-600 text-sm">
-                        <MapPin className="w-4 h-4 mr-2 text-[hsl(244,91%,68%)]" />
+                        <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
                         <span>{host.city}</span>
                       </div>
                     )}
@@ -106,7 +106,7 @@ export default function HostSearch() {
 
                   <Link href={`/user/${host.id}`}>
                     <Button 
-                      className="w-full bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,60%)] glow-button relative overflow-hidden"
+                      className="w-full bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] glow-button relative overflow-hidden"
                     >
                       <Eye className="w-4 h-4 mr-2 relative z-10" />
                       <span className="relative z-10">{t('hosts.viewProfile')}</span>

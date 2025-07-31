@@ -22,6 +22,7 @@ import {
   Settings,
   Upload,
   Video,
+  Video as VideoIcon,
   Image,
   Trash2,
   Edit,
@@ -31,7 +32,8 @@ import {
   Mail,
   MapPin,
   Plus,
-  CheckCircle2
+  CheckCircle2,
+  CreditCard
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -40,6 +42,7 @@ import { es } from "date-fns/locale";
 import type { Booking, Invoice, MediaContent, User, HostPricing } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
 
 // Profile Management Component
 function ProfileManagement({ userId }: { userId?: string }) {
@@ -298,7 +301,7 @@ export default function Dashboard() {
   if (authLoading || bookingsLoading) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
       </div>
     );
   }
@@ -320,10 +323,10 @@ export default function Dashboard() {
           <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[hsl(159,61%,95%)] rounded-full flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-[hsl(159,61%,50%)]" />
+                <div className="w-12 h-12 bg-[hsl(188,80%,95%)] rounded-full flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-[hsl(188,80%,42%)]" />
                 </div>
-                <TrendingUp className="w-4 h-4 text-[hsl(159,61%,50%)]" />
+                <TrendingUp className="w-4 h-4 text-[hsl(188,80%,42%)]" />
               </div>
               <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)]">€{stats.totalEarnings.toFixed(2)}</h3>
               <p className="text-sm text-gray-600">Ingresos Totales</p>
@@ -333,10 +336,10 @@ export default function Dashboard() {
           <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[hsl(244,91%,95%)] rounded-full flex items-center justify-center">
-                  <CalendarCheck className="w-6 h-6 text-[hsl(244,91%,68%)]" />
+                <div className="w-12 h-12 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center">
+                  <CalendarCheck className="w-6 h-6 text-[hsl(188,100%,38%)]" />
                 </div>
-                <span className="text-sm font-medium text-[hsl(244,91%,68%)]">+2</span>
+                <span className="text-sm font-medium text-[hsl(188,100%,38%)]">+2</span>
               </div>
               <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)]">{stats.upcomingCalls}</h3>
               <p className="text-sm text-gray-600">Llamadas Pendientes</p>
@@ -398,13 +401,17 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="overview" onValueChange={setSelectedTab}>
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 gap-2">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-2">
                 <TabsTrigger value="overview">Resumen</TabsTrigger>
                 <TabsTrigger value="calls">Llamadas</TabsTrigger>
                 <TabsTrigger value="invoices">Facturación</TabsTrigger>
                 <TabsTrigger value="profile">Mi Perfil</TabsTrigger>
                 <TabsTrigger value="content">Contenido</TabsTrigger>
                 <TabsTrigger value="availability">Disponibilidad</TabsTrigger>
+                <TabsTrigger value="stripe-connect">
+                  <CreditCard className="w-4 h-4 mr-1" />
+                  Stripe
+                </TabsTrigger>
               </TabsList>
 
               {/* Overview Tab */}
@@ -519,8 +526,13 @@ export default function Dashboard() {
                           <p className="text-sm text-gray-600">Invitado: Usuario #{booking.guestId}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-[hsl(159,61%,50%)]">€{booking.price}</p>
-                          <Button size="sm" className="mt-2">
+                          <p className="font-bold text-[hsl(188,80%,42%)]">€{booking.price}</p>
+                          <Button 
+                            size="sm" 
+                            className="mt-2 bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
+                            onClick={() => window.location.href = `/video-call/${booking.id}`}
+                          >
+                            <VideoIcon className="w-4 h-4 mr-1" />
                             Unirse a Llamada
                           </Button>
                         </div>
@@ -555,7 +567,7 @@ export default function Dashboard() {
                           <p className="text-sm text-gray-600">Invitado: Usuario #{booking.guestId}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-[hsl(159,61%,50%)]">€{booking.price}</p>
+                          <p className="font-bold text-[hsl(188,80%,42%)]">€{booking.price}</p>
                           <Button size="sm" variant="outline" className="mt-2">
                             <MessageSquare className="w-4 h-4 mr-2" />
                             Ver Reseña
@@ -588,6 +600,11 @@ export default function Dashboard() {
               <TabsContent value="availability" className="mt-6">
                 <AvailabilityManagement userId={user?.id} />
               </TabsContent>
+
+              {/* Stripe Connect Tab */}
+              <TabsContent value="stripe-connect" className="mt-6">
+                <StripeConnectOnboarding />
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
@@ -605,7 +622,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600 mb-1">Este Mes</p>
-                  <p className="text-2xl font-bold text-[hsl(159,61%,50%)]">€245.00</p>
+                  <p className="text-2xl font-bold text-[hsl(188,80%,42%)]">€245.00</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600 mb-1">Mes Pasado</p>
@@ -620,7 +637,7 @@ export default function Dashboard() {
                 <Button variant="outline">
                   Descargar Factura
                 </Button>
-                <Button className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]">
+                <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]">
                   Configurar Pagos
                 </Button>
               </div>

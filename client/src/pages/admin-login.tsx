@@ -87,7 +87,7 @@ export default function AdminLogin() {
             />
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-2">
-            <Shield className="w-8 h-8 text-[hsl(244,91%,68%)]" />
+            <Shield className="w-8 h-8 text-[hsl(188,100%,38%)]" />
             Acceso Administrativo
           </h1>
           <p className="mt-2 text-gray-600">
@@ -127,7 +127,7 @@ export default function AdminLogin() {
 
               <Button
                 type="submit"
-                className="w-full bg-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,60%)]"
+                className="w-full bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
                 disabled={isLoading}
               >
                 {isLoading ? "Ingresando..." : "Ingresar"}

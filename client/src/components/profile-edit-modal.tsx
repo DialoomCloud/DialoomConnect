@@ -230,7 +230,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
           {/* Profile Photo Section */}
           <div className="text-center">
             <div className="relative inline-block">
-              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)]">
+              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)]">
                 {profileImagePreview ? (
                   <img 
                     src={profileImagePreview} 
@@ -256,7 +256,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
               />
               <label
                 htmlFor="profile-image-input"
-                className="absolute -bottom-2 -right-2 bg-[hsl(244,91%,68%)] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[hsl(244,91%,60%)] transition-colors cursor-pointer"
+                className="absolute -bottom-2 -right-2 bg-[hsl(188,100%,38%)] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[hsl(188,100%,32%)] transition-colors cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
               </label>
@@ -523,7 +523,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
             <Button 
               type="submit" 
               disabled={updateProfileMutation.isPending}
-              className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+              className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
             >
               {updateProfileMutation.isPending ? "Guardando..." : "Guardar Cambios"}
             </Button>

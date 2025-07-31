@@ -271,7 +271,7 @@ export function MediaContentModal({ isOpen, onClose }: MediaContentModalProps) {
               <Button 
                 type="submit" 
                 disabled={createMediaMutation.isPending}
-                className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+                className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
               >
                 {createMediaMutation.isPending ? "Agregando..." : "Agregar Contenido"}
               </Button>

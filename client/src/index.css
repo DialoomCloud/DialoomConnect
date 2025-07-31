@@ -4,55 +4,55 @@
 
 :root {
   --background: hsl(0, 0%, 100%);
-  --foreground: hsl(17, 12%, 6%);
-  --muted: hsl(220, 12%, 96%);
-  --muted-foreground: hsl(220, 9%, 46%);
+  --foreground: hsl(0, 0%, 10%);
+  --muted: hsl(188, 10%, 96%);
+  --muted-foreground: hsl(188, 5%, 40%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(17, 12%, 6%);
+  --popover-foreground: hsl(0, 0%, 10%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(17, 12%, 6%);
-  --border: hsl(220, 13%, 90%);
-  --input: hsl(220, 13%, 90%);
-  --primary: hsl(244, 91%, 68%);
+  --card-foreground: hsl(0, 0%, 10%);
+  --border: hsl(188, 10%, 92%);
+  --input: hsl(188, 10%, 92%);
+  --primary: hsl(188, 100%, 38%);
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(262, 51%, 65%);
+  --secondary: hsl(188, 50%, 45%);
   --secondary-foreground: hsl(0, 0%, 100%);
-  --accent: hsl(159, 61%, 50%);
+  --accent: hsl(188, 80%, 42%);
   --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(60, 9%, 98%);
-  --ring: hsl(244, 91%, 68%);
+  --ring: hsl(188, 100%, 38%);
   --radius: 0.5rem;
   
   /* Custom Dialoom colors */
-  --dialoom-primary: hsl(244, 91%, 68%);
-  --dialoom-secondary: hsl(262, 51%, 65%);
-  --dialoom-accent: hsl(159, 61%, 50%);
-  --dialoom-background: hsl(220, 9%, 98%);
-  --dialoom-text-primary: hsl(17, 12%, 6%);
-  --dialoom-border: hsl(220, 13%, 90%);
+  --dialoom-primary: hsl(188, 100%, 38%);
+  --dialoom-secondary: hsl(188, 50%, 45%);
+  --dialoom-accent: hsl(188, 80%, 42%);
+  --dialoom-background: hsl(0, 0%, 98%);
+  --dialoom-text-primary: hsl(0, 0%, 10%);
+  --dialoom-border: hsl(188, 10%, 92%);
 }
 
 .dark {
-  --background: hsl(240, 10%, 4%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 4%, 16%);
-  --muted-foreground: hsl(240, 5%, 65%);
-  --popover: hsl(240, 10%, 4%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 4%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 4%, 16%);
-  --input: hsl(240, 4%, 16%);
-  --primary: hsl(244, 91%, 68%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 4%, 16%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 4%, 16%);
-  --accent-foreground: hsl(0, 0%, 98%);
+  --background: hsl(0, 0%, 5%);
+  --foreground: hsl(0, 0%, 95%);
+  --muted: hsl(188, 10%, 15%);
+  --muted-foreground: hsl(188, 5%, 65%);
+  --popover: hsl(0, 0%, 8%);
+  --popover-foreground: hsl(0, 0%, 95%);
+  --card: hsl(0, 0%, 8%);
+  --card-foreground: hsl(0, 0%, 95%);
+  --border: hsl(188, 10%, 20%);
+  --input: hsl(188, 10%, 20%);
+  --primary: hsl(188, 100%, 45%);
+  --primary-foreground: hsl(0, 0%, 5%);
+  --secondary: hsl(188, 50%, 40%);
+  --secondary-foreground: hsl(0, 0%, 95%);
+  --accent: hsl(188, 80%, 48%);
+  --accent-foreground: hsl(0, 0%, 5%);
   --destructive: hsl(0, 63%, 31%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(244, 91%, 68%);
+  --ring: hsl(188, 100%, 45%);
 }
 
 @layer base {
@@ -67,7 +67,7 @@
 }
 
 .dialoom-bg-gradient {
-  background: linear-gradient(135deg, hsl(244, 91%, 95%) 0%, hsl(262, 51%, 95%) 50%, hsl(159, 61%, 95%) 100%);
+  background: linear-gradient(135deg, hsl(188, 100%, 95%) 0%, hsl(188, 70%, 92%) 50%, hsl(188, 50%, 96%) 100%);
 }
 
 /* Text truncation utility */
@@ -110,13 +110,13 @@
 
 @keyframes glow {
   0% {
-    box-shadow: 0 0 5px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 5px rgba(0, 172, 193, 0.2);
   }
   50% {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 0 30px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 0 20px rgba(0, 172, 193, 0.4), 0 0 30px rgba(0, 188, 212, 0.2);
   }
   100% {
-    box-shadow: 0 0 5px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 5px rgba(0, 172, 193, 0.2);
   }
 }
 

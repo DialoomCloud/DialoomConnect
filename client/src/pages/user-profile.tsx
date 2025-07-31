@@ -105,15 +105,15 @@ export default function UserProfile() {
                   <img
                     src={user.profileImageUrl.startsWith('http') || user.profileImageUrl.startsWith('/') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`}
                     alt={`${user.firstName} ${user.lastName}`}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-[hsl(244,91%,68%)]"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-[hsl(188,100%,38%)]"
                   />
                 ) : (
-                  <div className="w-32 h-32 bg-[hsl(244,91%,95%)] rounded-full flex items-center justify-center">
-                    <UserIcon className="w-16 h-16 text-[hsl(244,91%,68%)]" />
+                  <div className="w-32 h-32 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center">
+                    <UserIcon className="w-16 h-16 text-[hsl(188,100%,38%)]" />
                   </div>
                 )}
                 {user.isVerified && (
-                  <Badge className="absolute -bottom-2 right-2 bg-[hsl(159,61%,50%)] text-white">
+                  <Badge className="absolute -bottom-2 right-2 bg-[hsl(188,80%,42%)] text-white">
                     <CheckCircle className="w-4 h-4 mr-1" />
                     {t('home.verified')}
                   </Badge>
@@ -135,13 +135,13 @@ export default function UserProfile() {
                 <div className="flex flex-wrap gap-4">
                   {user.email && (
                     <div className="flex items-center text-gray-600">
-                      <Mail className="w-5 h-5 mr-2 text-[hsl(244,91%,68%)]" />
+                      <Mail className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
                       <span>{user.email}</span>
                     </div>
                   )}
                   {user.city && user.countryCode && (
                     <div className="flex items-center text-gray-600">
-                      <MapPin className="w-5 h-5 mr-2 text-[hsl(244,91%,68%)]" />
+                      <MapPin className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
                       <span>{user.city}, {user.countryCode}</span>
                     </div>
                   )}
@@ -159,7 +159,7 @@ export default function UserProfile() {
               <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg mb-6">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
-                    <DollarSign className="w-5 h-5 mr-2 text-[hsl(159,61%,50%)]" />
+                    <DollarSign className="w-5 h-5 mr-2 text-[hsl(188,80%,42%)]" />
                     {t('availability.pricing')}
                   </h3>
                   <div className="space-y-3">
@@ -168,7 +168,7 @@ export default function UserProfile() {
                         <span className="font-medium">
                           {option.duration === 0 ? t('availability.freeSession') : `${option.duration} ${t('availability.minutes')}`}
                         </span>
-                        <span className="text-[hsl(159,61%,50%)] font-bold">
+                        <span className="text-[hsl(188,80%,42%)] font-bold">
                           {option.price === "0.00" ? t('availability.free') : `€${option.price}`}
                         </span>
                       </div>
@@ -181,37 +181,37 @@ export default function UserProfile() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <Monitor className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <Monitor className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Compartir Pantalla</span>
                         </div>
-                        <span className="font-medium text-[hsl(159,61%,50%)]">+€10</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€10</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <Languages className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <Languages className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Traducción Simultánea</span>
                         </div>
-                        <span className="font-medium text-[hsl(159,61%,50%)]">+€25</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€25</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <Video className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <Video className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Grabación de Sesión</span>
                         </div>
-                        <span className="font-medium text-[hsl(159,61%,50%)]">+€10</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€10</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-[hsl(244,91%,68%)]" />
+                          <FileText className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Transcripción Automática</span>
                         </div>
-                        <span className="font-medium text-[hsl(159,61%,50%)]">+€5</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€5</span>
                       </div>
                     </div>
                   </div>
                   
                   <Button 
-                    className="w-full mt-4 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+                    className="w-full mt-4 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
                     onClick={() => {
                       const activePricing = pricing.find(p => p.isActive);
                       if (activePricing) {
@@ -231,7 +231,7 @@ export default function UserProfile() {
               <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
-                    <Calendar className="w-5 h-5 mr-2 text-[hsl(244,91%,68%)]" />
+                    <Calendar className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
                     {t('availability.weeklySchedule')}
                   </h3>
                   <div className="space-y-2">

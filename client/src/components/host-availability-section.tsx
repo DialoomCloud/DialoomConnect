@@ -368,7 +368,7 @@ export function HostAvailabilitySection() {
                             setSelectedDaysOfWeek(selectedDaysOfWeek.filter(d => d !== index));
                           }
                         }}
-                        className="border-gray-300 text-[hsl(244,91%,68%)]"
+                        className="border-gray-300 text-[hsl(188,100%,38%)]"
                       />
                       <Label 
                         htmlFor={`weekday-${index}`}

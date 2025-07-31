@@ -11,32 +11,32 @@ export default function Landing() {
 
   const features = [
     {
-      icon: <Database className="text-[hsl(244,91%,68%)]" />,
+      icon: <Database className="text-[hsl(188,100%,38%)]" />,
       title: "Base de Datos SQL Robusta",
       description: "Almacenamiento persistente y seguro de todos tus datos con tecnología NEON PostgreSQL"
     },
     {
-      icon: <UserCheck className="text-[hsl(262,51%,65%)]" />,
+      icon: <UserCheck className="text-[hsl(188,80%,42%)]" />,
       title: "Perfil Completo",
       description: "Gestiona tu información personal, foto de perfil, contacto y descripción profesional"
     },
     {
-      icon: <Play className="text-[hsl(159,61%,50%)]" />,
+      icon: <Play className="text-[hsl(188,70%,45%)]" />,
       title: "Contenido Multimedia",
       description: "Integra y muestra contenido de YouTube, Instagram y TikTok en tu perfil"
     },
     {
-      icon: <Shield className="text-[hsl(244,91%,68%)]" />,
+      icon: <Shield className="text-[hsl(188,100%,38%)]" />,
       title: "Autenticación Segura",
       description: "Sistema de registro y login seguro para proteger tu información personal"
     },
     {
-      icon: <Smartphone className="text-[hsl(262,51%,65%)]" />,
+      icon: <Smartphone className="text-[hsl(188,80%,42%)]" />,
       title: "Diseño Responsivo",
       description: "Interfaz optimizada para todos los dispositivos, desde móviles hasta escritorio"
     },
     {
-      icon: <Share2 className="text-[hsl(159,61%,50%)]" />,
+      icon: <Share2 className="text-[hsl(188,70%,45%)]" />,
       title: "Compartir Fácilmente",
       description: "Comparte tu perfil y contenido con otros usuarios de forma rápida y sencilla"
     }
@@ -63,7 +63,7 @@ export default function Landing() {
               <Link href="/admin-login">
                 <Button 
                   variant="ghost" 
-                  className="text-gray-600 hover:text-[hsl(244,91%,68%)] font-medium"
+                  className="text-gray-600 hover:text-[hsl(188,100%,38%)] font-medium"
                 >
                   Admin
                 </Button>
@@ -71,13 +71,13 @@ export default function Landing() {
               <Button 
                 variant="ghost" 
                 onClick={handleLogin}
-                className="text-gray-600 hover:text-[hsl(244,91%,68%)] font-medium"
+                className="text-gray-600 hover:text-[hsl(188,100%,38%)] font-medium"
               >
                 Iniciar Sesión
               </Button>
               <Button 
                 onClick={handleLogin}
-                className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+                className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
               >
                 Registrarse
               </Button>
@@ -92,7 +92,7 @@ export default function Landing() {
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-[hsl(17,12%,6%)] mb-6">
               Crea tu perfil profesional{" "}
-              <span className="text-[hsl(244,91%,68%)]">completo</span>
+              <span className="text-[hsl(188,100%,38%)]">completo</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Gestiona tu información personal, comparte contenido multimedia de YouTube, Instagram y TikTok. 
@@ -102,14 +102,14 @@ export default function Landing() {
               <Button 
                 size="lg"
                 onClick={handleLogin}
-                className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)] px-8 py-3 text-lg font-semibold"
+                className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] px-8 py-3 text-lg font-semibold"
               >
                 Comenzar Ahora
               </Button>
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-[hsl(244,91%,68%)] text-[hsl(244,91%,68%)] hover:bg-[hsl(244,91%,95%)] px-8 py-3 text-lg font-semibold"
+                className="border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,95%)] px-8 py-3 text-lg font-semibold"
               >
                 Ver Demo
               </Button>

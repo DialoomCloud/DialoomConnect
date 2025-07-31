@@ -133,7 +133,7 @@ export default function Profile() {
   if (authLoading || userLoading) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function Profile() {
             <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
-                  <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)]">
+                  <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)]">
                     {user.profileImageUrl ? (
                       <img 
                         src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`} 
@@ -180,7 +180,7 @@ export default function Profile() {
                     <p className="text-gray-600">{user.title}</p>
                   )}
                   <div className="flex justify-center mt-3">
-                    <Badge className="bg-[hsl(159,61%,95%)] text-[hsl(159,61%,50%)] hover:bg-[hsl(159,61%,90%)]">
+                    <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
                       <CheckCircle className="w-4 h-4 mr-1" />
                       Verificado
                     </Badge>
@@ -190,19 +190,19 @@ export default function Profile() {
                 <div className="space-y-4">
                   {user.email && (
                     <div className="flex items-center text-gray-600">
-                      <Mail className="w-5 h-5 mr-3 text-[hsl(244,91%,68%)]" />
+                      <Mail className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span className="truncate text-sm">{user.email}</span>
                     </div>
                   )}
                   {user.phone && (
                     <div className="flex items-center text-gray-600">
-                      <Phone className="w-5 h-5 mr-3 text-[hsl(244,91%,68%)]" />
+                      <Phone className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span className="text-sm">{user.phone}</span>
                     </div>
                   )}
                   {user.address && (
                     <div className="flex items-center text-gray-600">
-                      <MapPin className="w-5 h-5 mr-3 text-[hsl(244,91%,68%)]" />
+                      <MapPin className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span className="text-sm">{user.address}</span>
                     </div>
                   )}
@@ -216,7 +216,7 @@ export default function Profile() {
 
                 <Button 
                   onClick={() => setShowProfileModal(true)}
-                  className="w-full mt-6 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+                  className="w-full mt-6 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Editar Perfil
@@ -233,7 +233,7 @@ export default function Profile() {
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">Contenido Multimedia</h3>
                   <Button 
                     onClick={() => setShowUploadModal(true)}
-                    className="bg-[hsl(159,61%,50%)] text-white hover:bg-[hsl(159,61%,45%)]"
+                    className="bg-[hsl(188,80%,42%)] text-white hover:bg-[hsl(188,80%,36%)]"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Agregar
@@ -280,7 +280,7 @@ export default function Profile() {
                       </p>
                       <Button 
                         onClick={() => setShowUploadModal(true)}
-                        className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+                        className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
                       >
                         Agregar contenido
                       </Button>

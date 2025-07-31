@@ -178,7 +178,7 @@ export default function HostAvailability() {
   if (authLoading || availabilityLoading || pricingLoading) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
       </div>
     );
   }
@@ -204,7 +204,7 @@ export default function HostAvailability() {
           <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[hsl(244,91%,68%)]" />
+                <Calendar className="w-5 h-5 text-[hsl(188,100%,38%)]" />
                 {t('availability.weeklySchedule')}
               </CardTitle>
             </CardHeader>
@@ -262,7 +262,7 @@ export default function HostAvailability() {
               <Button
                 onClick={handleSaveAvailability}
                 disabled={selectedDays.length === 0 || saveAvailabilityMutation.isPending}
-                className="w-full bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]"
+                className="w-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {t('availability.saveSchedule')}
@@ -274,7 +274,7 @@ export default function HostAvailability() {
           <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Euro className="w-5 h-5 text-[hsl(159,61%,50%)]" />
+                <Euro className="w-5 h-5 text-[hsl(188,80%,42%)]" />
                 {t('pricing.title')}
               </CardTitle>
             </CardHeader>
@@ -283,7 +283,7 @@ export default function HostAvailability() {
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-sm font-medium">{t('availability.freeConsultation')}</Label>
-                    <Badge className="bg-[hsl(159,61%,95%)] text-[hsl(159,61%,50%)]">
+                    <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)]">
                       {t('pricing.free')}
                     </Badge>
                   </div>
@@ -313,7 +313,7 @@ export default function HostAvailability() {
               <Button
                 onClick={handleSavePricing}
                 disabled={savePricingMutation.isPending}
-                className="w-full bg-[hsl(159,61%,50%)] text-white hover:bg-[hsl(159,61%,45%)]"
+                className="w-full bg-[hsl(188,80%,42%)] text-white hover:bg-[hsl(188,80%,36%)]"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {t('pricing.savePricing')}

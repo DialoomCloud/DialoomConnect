@@ -194,7 +194,7 @@ export function SortableMediaGrid({ media, showEdit, onEdit, onView, onAddNew }:
           {onAddNew && (
             <div 
               onClick={onAddNew}
-              className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center aspect-video hover:border-[hsl(244,91%,68%)] transition-colors cursor-pointer"
+              className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center aspect-video hover:border-[hsl(188,100%,38%)] transition-colors cursor-pointer"
             >
               <Plus className="w-8 h-8 text-gray-400 mb-2" />
               <p className="text-gray-500 font-medium">Agregar nuevo contenido</p>

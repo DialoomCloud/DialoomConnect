@@ -122,7 +122,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
         <div className="relative">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
           <div className="absolute inset-0 animate-glow rounded-full"></div>
         </div>
       </div>
@@ -151,8 +151,8 @@ export default function Home() {
           <Link href="/hosts">
             <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift cursor-pointer group transition-all duration-300 hover:shadow-xl">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-[hsl(244,91%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(244,91%,68%)] transition-colors">
-                  <Users className="w-8 h-8 text-[hsl(244,91%,68%)] group-hover:text-white transition-colors" />
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(188,100%,38%)] transition-colors">
+                  <Users className="w-8 h-8 text-[hsl(188,100%,38%)] group-hover:text-white transition-colors" />
                 </div>
                 <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-2">{t('home.searchHosts')}</h3>
                 <p className="text-sm text-gray-600">{t('home.searchHostsDesc')}</p>
@@ -179,8 +179,8 @@ export default function Home() {
           <Link href="/dashboard">
             <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift cursor-pointer group transition-all duration-300 hover:shadow-xl">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-[hsl(159,61%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(159,61%,50%)] transition-colors">
-                  <Calendar className="w-8 h-8 text-[hsl(159,61%,50%)] group-hover:text-white transition-colors" />
+                <div className="w-16 h-16 bg-[hsl(188,80%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(188,80%,42%)] transition-colors">
+                  <Calendar className="w-8 h-8 text-[hsl(188,80%,42%)] group-hover:text-white transition-colors" />
                 </div>
                 <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-2">{t('home.myDashboard')}</h3>
                 <p className="text-sm text-gray-600">{t('home.myDashboardDesc')}</p>
@@ -195,7 +195,7 @@ export default function Home() {
             <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
-                  <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(244,91%,95%)]">
+                  <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)]">
                     {user.profileImageUrl ? (
                       <img 
                         src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`} 
@@ -215,7 +215,7 @@ export default function Home() {
                     <p className="text-gray-600">{user.title}</p>
                   )}
                   <div className="flex justify-center mt-3">
-                    <Badge className="bg-[hsl(159,61%,95%)] text-[hsl(159,61%,50%)] hover:bg-[hsl(159,61%,90%)]">
+                    <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
                       <CheckCircle className="w-4 h-4 mr-1" />
                       {t('home.verified')}
                     </Badge>
@@ -225,26 +225,26 @@ export default function Home() {
                 <div className="space-y-4">
                   {user.email && (
                     <div className="flex items-center text-gray-600">
-                      <Mail className="w-5 h-5 mr-3 text-[hsl(244,91%,68%)]" />
+                      <Mail className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span className="truncate">{user.email}</span>
                     </div>
                   )}
                   {user.phone && (
                     <div className="flex items-center text-gray-600">
-                      <Phone className="w-5 h-5 mr-3 text-[hsl(244,91%,68%)]" />
+                      <Phone className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span>{user.phone}</span>
                     </div>
                   )}
                   {user.address && (
                     <div className="flex items-center text-gray-600">
-                      <MapPin className="w-5 h-5 mr-3 text-[hsl(244,91%,68%)]" />
+                      <MapPin className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span className="text-sm">{user.address}</span>
                     </div>
                   )}
                 </div>
 
                 <Link href="/profile">
-                  <Button className="w-full mt-6 bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)] glow-button relative overflow-hidden">
+                  <Button className="w-full mt-6 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] glow-button relative overflow-hidden">
                     <Edit className="w-4 h-4 mr-2 relative z-10" />
                     <span className="relative z-10">{t('home.editProfile')}</span>
                   </Button>
@@ -260,7 +260,7 @@ export default function Home() {
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">{t('home.multimedia')}</h3>
                   <Link href="/profile">
-                    <Button className="bg-[hsl(159,61%,50%)] text-white hover:bg-[hsl(159,61%,45%)] glow-button relative overflow-hidden">
+                    <Button className="bg-[hsl(188,80%,42%)] text-white hover:bg-[hsl(188,80%,36%)] glow-button relative overflow-hidden">
                       <Plus className="w-4 h-4 mr-2 relative z-10" />
                       <span className="relative z-10">{t('home.add')}</span>
                     </Button>
@@ -321,7 +321,7 @@ export default function Home() {
                         {t('home.noContentSub')}
                       </p>
                       <Link href="/profile">
-                        <Button className="bg-[hsl(244,91%,68%)] text-white hover:bg-[hsl(244,91%,60%)]">
+                        <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]">
                           {t('home.add')} {t('home.multimedia')}
                         </Button>
                       </Link>
@@ -331,7 +331,7 @@ export default function Home() {
                   {/* Add Content Placeholder - only show when there is content */}
                   {mediaContent.length > 0 && (
                     <Link href="/profile">
-                      <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center aspect-video hover:border-[hsl(244,91%,68%)] transition-colors cursor-pointer">
+                      <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center aspect-video hover:border-[hsl(188,100%,38%)] transition-colors cursor-pointer">
                         <Plus className="w-8 h-8 text-gray-400 mb-2" />
                         <p className="text-gray-500 font-medium">Agregar nuevo contenido</p>
                         <p className="text-sm text-gray-400 mt-1">YouTube, Instagram o TikTok</p>

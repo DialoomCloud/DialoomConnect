@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
       </div>
     );
   }
@@ -484,9 +484,9 @@ function NewsManagement() {
 // Theme Editor Component
 function ThemeEditor() {
   const { i18n } = useTranslation();
-  const [primaryColor, setPrimaryColor] = useState('#6366F1');
-  const [secondaryColor, setSecondaryColor] = useState('#8B5CF6');
-  const [accentColor, setAccentColor] = useState('#10B981');
+  const [primaryColor, setPrimaryColor] = useState('#00ACC1');
+  const [secondaryColor, setSecondaryColor] = useState('#0097A7');
+  const [accentColor, setAccentColor] = useState('#00BCD4');
   
   return (
     <div className="space-y-4">

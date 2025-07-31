@@ -13,6 +13,7 @@ import { storageBucket } from "./storage-bucket";
 import { replitStorage } from "./object-storage";
 import Stripe from "stripe";
 import session from "express-session";
+import { generateAgoraToken } from "./agora-token";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -877,6 +878,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Stripe Connect routes for hosts
+  app.post('/api/stripe/connect/create-account', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      // Check if user already has a Stripe account
+      if (user.stripeAccountId) {
+        return res.json({ 
+          accountId: user.stripeAccountId,
+          onboardingCompleted: user.stripeOnboardingCompleted 
+        });
+      }
+
+      // Create Stripe Connect account
+      const account = await stripe.accounts.create({
+        type: 'express', // Express accounts are easier to manage
+        country: 'ES',
+        email: user.email || undefined,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+      });
+
+      // Save account ID to user
+      await storage.updateUserStripeConnect(userId, account.id, false);
+
+      res.json({ 
+        accountId: account.id,
+        onboardingCompleted: false 
+      });
+    } catch (error) {
+      console.error('Error creating Stripe Connect account:', error);
+      res.status(500).json({ message: 'Error al crear cuenta de Stripe Connect' });
+    }
+  });
+
+  app.post('/api/stripe/connect/onboarding-link', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeAccountId) {
+        return res.status(400).json({ message: "No se encontró cuenta de Stripe" });
+      }
+
+      // Create account link for onboarding
+      const accountLink = await stripe.accountLinks.create({
+        account: user.stripeAccountId,
+        refresh_url: `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/dashboard?stripe_connect=reauth`,
+        return_url: `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/dashboard?stripe_connect=success`,
+        type: 'account_onboarding',
+      });
+
+      res.json({ url: accountLink.url });
+    } catch (error) {
+      console.error('Error creating onboarding link:', error);
+      res.status(500).json({ message: 'Error al crear enlace de onboarding' });
+    }
+  });
+
+  app.get('/api/stripe/connect/account-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeAccountId) {
+        return res.json({ 
+          hasAccount: false,
+          onboardingCompleted: false 
+        });
+      }
+
+      // Get account details from Stripe
+      const account = await stripe.accounts.retrieve(user.stripeAccountId);
+      
+      // Check if onboarding is complete
+      const isComplete = account.charges_enabled && account.payouts_enabled;
+      
+      // Update database if status changed
+      if (isComplete !== user.stripeOnboardingCompleted) {
+        await storage.updateUserStripeConnect(userId, user.stripeAccountId, isComplete);
+      }
+
+      res.json({
+        hasAccount: true,
+        onboardingCompleted: isComplete,
+        accountId: user.stripeAccountId,
+        chargesEnabled: account.charges_enabled,
+        payoutsEnabled: account.payouts_enabled,
+        requirements: account.requirements,
+      });
+    } catch (error) {
+      console.error('Error checking account status:', error);
+      res.status(500).json({ message: 'Error al verificar estado de cuenta' });
+    }
+  });
+
   // Host pricing routes
   app.get('/api/host/pricing', isAuthenticated, async (req: any, res) => {
     try {
@@ -967,8 +1071,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalAmount = parseFloat(amount) + addonTotal;
       const finalCalculations = await storage.calculateCommission(totalAmount);
 
-      // Create Stripe customer if doesn't exist
+      // Get booking and user details
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: 'Reserva no encontrada' });
+      }
+
       const user = await storage.getUser(userId);
+      const host = await storage.getUser(booking.hostId);
+      
       let stripeCustomerId = user?.stripeCustomerId;
 
       if (!stripeCustomerId && user?.email) {
@@ -982,19 +1093,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserProfile(userId, { stripeCustomerId });
       }
 
-      // Create payment intent
-      const paymentIntent = await stripe.paymentIntents.create({
+      // Create payment intent with Stripe Connect if host has account
+      let paymentIntentParams: any = {
         amount: Math.round(totalAmount * 100), // Convert to cents
         currency: 'eur',
         customer: stripeCustomerId,
         metadata: {
           bookingId,
           userId,
+          hostId: booking.hostId,
           hostAmount: finalCalculations.hostAmount.toString(),
           commissionAmount: finalCalculations.commission.toString(),
           vatAmount: finalCalculations.vat.toString(),
         },
-      });
+      };
+
+      // If host has completed Stripe Connect onboarding, use their account
+      if (host?.stripeAccountId && host?.stripeOnboardingCompleted) {
+        // For connected accounts, charge customer and transfer to host
+        paymentIntentParams.application_fee_amount = Math.round((finalCalculations.commission + finalCalculations.vat) * 100); // Platform fee including VAT
+        paymentIntentParams.transfer_data = {
+          destination: host.stripeAccountId,
+        };
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
 
       // Store payment in database
       await storage.createStripePayment({
@@ -1242,5 +1365,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  // Video Call Routes
+  app.post("/api/video-call/token", isAuthenticated, async (req, res) => {
+    try {
+      const { bookingId, userId } = req.body;
+      
+      // Verify booking exists and user has access
+      const booking = await storage.getBooking(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      // Check if user is either host or guest
+      if (booking.hostId !== userId && booking.guestId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Generate Agora token
+      const channelName = `booking_${bookingId}`;
+      const token = await generateAgoraToken(channelName, userId);
+      
+      // Get host info
+      const host = await storage.getUser(booking.hostId);
+      
+      res.json({
+        token,
+        channelName,
+        appId: process.env.AGORA_APP_ID,
+        hostName: host?.firstName || "Host",
+        scheduledDate: booking.date,
+        startTime: booking.time,
+        duration: booking.duration,
+        services: booking.services
+      });
+    } catch (error) {
+      console.error("Error generating video call token:", error);
+      res.status(500).json({ message: "Failed to generate video call token" });
+    }
+  });
+  
+  app.post("/api/video-call/end", isAuthenticated, async (req, res) => {
+    try {
+      const { bookingId } = req.body;
+      
+      // Update booking status to completed
+      await storage.updateBookingStatus(bookingId, 'completed');
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error ending video call:", error);
+      res.status(500).json({ message: "Failed to end video call" });
+    }
+  });
+
   return httpServer;
 }

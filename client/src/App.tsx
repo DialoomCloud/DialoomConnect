@@ -22,6 +22,7 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import CookiePolicy from "@/pages/cookie-policy";
 import GdprRights from "@/pages/gdpr-rights";
+import VideoCallRoom from "@/pages/video-call-room";
 import "./i18n/config";
 
 function Router() {
@@ -51,6 +52,7 @@ function Router() {
               <Route path="/admin-dashboard" component={AdminDashboard} />
               <Route path="/user/:id" component={UserProfile} />
               <Route path="/admin-login" component={AdminLogin} />
+              <Route path="/video-call/:bookingId" component={VideoCallRoom} />
             </>
           )}
           {/* Legal pages accessible to all */}
