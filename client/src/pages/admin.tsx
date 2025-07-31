@@ -17,7 +17,7 @@ export default function AdminPage() {
 
   const [, setLocation] = useLocation();
 
-  if (user?.email !== "dialoomroot") {
+  if (!user?.isAdmin) {
     setLocation("/home");
     return null;
   }

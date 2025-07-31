@@ -67,7 +67,7 @@ export function Navigation() {
               
 
               
-              {user?.email === "dialoomroot" && (
+              {user?.isAdmin && (
                 <Link href="/admin-dashboard">
                   <Button
                     variant={isActive("/admin-dashboard") ? "default" : "ghost"}
