@@ -68,11 +68,11 @@ export function Navigation() {
 
               
               {user?.email === "dialoomroot" && (
-                <Link href="/admin">
+                <Link href="/admin-dashboard">
                   <Button
-                    variant={isActive("/admin") ? "default" : "ghost"}
+                    variant={isActive("/admin-dashboard") ? "default" : "ghost"}
                     size="sm"
-                    className={isActive("/admin") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
+                    className={isActive("/admin-dashboard") ? "bg-[hsl(244,91%,68%)] animate-glow" : "hover-lift"}
                   >
                     <Shield className="w-4 h-4 mr-2" />
                     {t('navigation.admin')}

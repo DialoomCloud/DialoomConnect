@@ -143,6 +143,18 @@ export interface IStorage {
   // Commission and pricing calculations
   calculateCommission(amount: number): Promise<{ commission: number; vat: number; hostAmount: number }>;
   getServicePricing(): Promise<{ screenSharing: number; translation: number; recording: number; transcription: number }>;
+  
+  // Admin Dashboard Statistics
+  getTotalHosts(): Promise<number>;
+  getNewHostsThisMonth(): Promise<number>;
+  getTotalVideoCalls(): Promise<number>;
+  getCallsToday(): Promise<number>;
+  getMonthlyRevenue(): Promise<number>;
+  getRevenueGrowth(): Promise<number>;
+  getAverageCallDuration(): Promise<number>;
+  getAllHosts(): Promise<User[]>;
+  getAdminConfig(): Promise<any>;
+  updateAdminConfig(config: any, userId: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -766,6 +778,155 @@ export class DatabaseStorage implements IStorage {
       recording: configs[2] ? parseFloat(configs[2].value) : 8.0,
       transcription: configs[3] ? parseFloat(configs[3].value) : 12.0,
     };
+  }
+
+  // Admin Dashboard Statistics
+  async getTotalHosts(): Promise<number> {
+    const result = await db
+      .select({ count: users.id })
+      .from(users)
+      .where(eq(users.isActive, true));
+    return result.length;
+  }
+
+  async getNewHostsThisMonth(): Promise<number> {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({ count: users.id })
+      .from(users)
+      .where(and(
+        eq(users.isActive, true),
+        eq(users.createdAt >= startOfMonth, true)
+      ));
+    return result.length;
+  }
+
+  async getTotalVideoCalls(): Promise<number> {
+    const result = await db
+      .select({ count: bookings.id })
+      .from(bookings)
+      .where(eq(bookings.status, 'completed'));
+    return result.length;
+  }
+
+  async getCallsToday(): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({ count: bookings.id })
+      .from(bookings)
+      .where(and(
+        eq(bookings.status, 'completed'),
+        eq(bookings.date >= today.toISOString(), true)
+      ));
+    return result.length;
+  }
+
+  async getMonthlyRevenue(): Promise<number> {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const payments = await db
+      .select({ amount: stripePayments.amount })
+      .from(stripePayments)
+      .where(and(
+        eq(stripePayments.status, 'succeeded'),
+        eq(stripePayments.createdAt >= startOfMonth, true)
+      ));
+    
+    return payments.reduce((sum, payment) => sum + payment.amount, 0) / 100; // Convert cents to euros
+  }
+
+  async getRevenueGrowth(): Promise<number> {
+    const thisMonth = await this.getMonthlyRevenue();
+    
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    lastMonth.setDate(1);
+    lastMonth.setHours(0, 0, 0, 0);
+    
+    const endOfLastMonth = new Date(lastMonth);
+    endOfLastMonth.setMonth(endOfLastMonth.getMonth() + 1);
+    endOfLastMonth.setDate(0);
+    
+    const lastMonthPayments = await db
+      .select({ amount: stripePayments.amount })
+      .from(stripePayments)
+      .where(and(
+        eq(stripePayments.status, 'succeeded'),
+        and(
+          eq(stripePayments.createdAt >= lastMonth, true),
+          eq(stripePayments.createdAt <= endOfLastMonth, true)
+        )
+      ));
+    
+    const lastMonthRevenue = lastMonthPayments.reduce((sum, payment) => sum + payment.amount, 0) / 100;
+    
+    if (lastMonthRevenue === 0) return 0;
+    return Math.round(((thisMonth - lastMonthRevenue) / lastMonthRevenue) * 100);
+  }
+
+  async getAverageCallDuration(): Promise<number> {
+    const completedBookings = await db
+      .select({ duration: bookings.duration })
+      .from(bookings)
+      .where(eq(bookings.status, 'completed'));
+    
+    if (completedBookings.length === 0) return 0;
+    
+    const totalDuration = completedBookings.reduce((sum, booking) => sum + (booking.duration || 0), 0);
+    return Math.round(totalDuration / completedBookings.length);
+  }
+
+  async getAllHosts(): Promise<User[]> {
+    const hosts = await db
+      .select()
+      .from(users)
+      .where(eq(users.isActive, true))
+      .orderBy(desc(users.createdAt));
+    
+    // Return with private info for admin
+    return hosts;
+  }
+
+  async getAdminConfig(): Promise<any> {
+    const configs = await this.getAllAdminConfig();
+    const configMap: any = {};
+    
+    configs.forEach(config => {
+      configMap[config.key] = config.value;
+    });
+    
+    return {
+      commission: parseFloat(configMap.commission_rate || '10'),
+      vatRate: parseFloat(configMap.vat_rate || '21'),
+      screenSharePrice: parseFloat(configMap.screen_sharing_price || '10'),
+      translationPrice: parseFloat(configMap.translation_price || '25'),
+      recordingPrice: parseFloat(configMap.recording_price || '10'),
+      transcriptionPrice: parseFloat(configMap.transcription_price || '5'),
+    };
+  }
+
+  async updateAdminConfig(config: any, userId: string): Promise<any> {
+    const updates = [
+      { key: 'commission_rate', value: config.commission?.toString() || '10' },
+      { key: 'vat_rate', value: config.vatRate?.toString() || '21' },
+      { key: 'screen_sharing_price', value: config.screenSharePrice?.toString() || '10' },
+      { key: 'translation_price', value: config.translationPrice?.toString() || '25' },
+      { key: 'recording_price', value: config.recordingPrice?.toString() || '10' },
+      { key: 'transcription_price', value: config.transcriptionPrice?.toString() || '5' },
+    ];
+
+    for (const update of updates) {
+      await this.updateAdminConfig(update.key, update.value, userId);
+    }
+
+    return this.getAdminConfig();
   }
 }
 

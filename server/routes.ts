@@ -602,6 +602,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Dashboard Stats
+  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const adminUser = await storage.getUser(userId);
+
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Access denied. Admin only." });
+      }
+
+      // Get statistics
+      const stats = {
+        totalHosts: await storage.getTotalHosts(),
+        newHostsThisMonth: await storage.getNewHostsThisMonth(),
+        totalCalls: await storage.getTotalVideoCalls(),
+        callsToday: await storage.getCallsToday(),
+        monthlyRevenue: await storage.getMonthlyRevenue(),
+        revenueGrowth: await storage.getRevenueGrowth(),
+        avgCallDuration: await storage.getAverageCallDuration()
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin statistics" });
+    }
+  });
+
+  // Admin - Get all hosts
+  app.get('/api/admin/hosts', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const adminUser = await storage.getUser(userId);
+
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Access denied. Admin only." });
+      }
+
+      const hosts = await storage.getAllHosts();
+      res.json(hosts);
+    } catch (error) {
+      console.error("Error fetching hosts:", error);
+      res.status(500).json({ message: "Failed to fetch hosts" });
+    }
+  });
+
+  // Admin - Get/Update configuration
+  app.get('/api/admin/config', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const adminUser = await storage.getUser(userId);
+
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Access denied. Admin only." });
+      }
+
+      const config = await storage.getAdminConfig();
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching config:", error);
+      res.status(500).json({ message: "Failed to fetch configuration" });
+    }
+  });
+
+  app.put('/api/admin/config', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const adminUser = await storage.getUser(userId);
+
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Access denied. Admin only." });
+      }
+
+      const config = await storage.updateAdminConfig(req.body, userId);
+      res.json(config);
+    } catch (error) {
+      console.error("Error updating config:", error);
+      res.status(500).json({ message: "Failed to update configuration" });
+    }
+  });
+
   // Host availability routes
   app.get('/api/host/availability', isAuthenticated, async (req: any, res) => {
     try {
