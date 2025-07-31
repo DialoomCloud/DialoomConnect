@@ -85,7 +85,7 @@ The application follows a monorepo structure with clear separation between clien
 
 The application is designed to be deployed on Replit with automatic database provisioning and built-in authentication, making it easy to scale and maintain.
 
-## Recent Updates (January 2025 - July 2025)
+## Recent Updates (January 2025 - July 31, 2025)
 - **Simplified Media System**: Removed Instagram and TikTok support, keeping only YouTube, local videos, and images
 - **File Upload Implementation**: Added Multer and Sharp for handling MP4 videos (max 50MB) and images (max 3MB with WebP compression)
 - **New Upload Modal**: Created tabbed interface for YouTube URLs, video uploads, and image uploads
@@ -122,3 +122,9 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Host Search Accessibility**: Fixed 404 error by making host search page accessible to both authenticated and non-authenticated users
 - **Home Page UX**: Improved user experience with visual navigation cards featuring icons and hover effects
 - **Multilingual Support**: Added translations for new navigation menu items in Spanish, English, and Catalan
+- **Host Availability Integration (July 31, 2025)**: Integrated availability management directly into profile page, removing separate availability page
+- **Enhanced Pricing System**: Added toggleable free tier option and fourth customizable pricing tier with custom minutes/price settings
+- **Advanced Scheduling**: Implemented dual scheduling system supporting both weekly recurring schedules and specific date selections
+- **Profile Page Enhancement**: Added comprehensive "Disponibilidad y Precios" section in profile with tabbed interface for scheduling
+- **Bug Fixes**: Fixed critical JSON double-stringification issue in API requests that was breaking drag-and-drop functionality
+- **UI Improvements**: Made media content boxes full-width (1 column layout) for better visibility on desktop

@@ -568,28 +568,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/host/availability', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const availabilityData = req.body;
-
-      // Clear existing availability
-      const existing = await storage.getHostAvailability(userId);
-      for (const slot of existing) {
-        await storage.deleteHostAvailability(slot.id, userId);
-      }
-
-      // Create new availability
-      const results = [];
-      for (const slot of availabilityData) {
-        const result = await storage.createHostAvailability({
-          ...slot,
-          userId,
-        });
-        results.push(result);
-      }
-
-      res.json(results);
+      const availability = await storage.addHostAvailability({
+        ...req.body,
+        userId,
+      });
+      res.json(availability);
     } catch (error) {
-      console.error("Error saving host availability:", error);
-      res.status(500).json({ message: "Failed to save availability" });
+      console.error("Error adding host availability:", error);
+      res.status(500).json({ message: "Failed to add availability" });
+    }
+  });
+
+  app.delete('/api/host/availability/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const deleted = await storage.deleteHostAvailability(id, userId);
+      if (deleted) {
+        res.json({ message: "Availability deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Availability not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting host availability:", error);
+      res.status(500).json({ message: "Failed to delete availability" });
     }
   });
 

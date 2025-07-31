@@ -160,18 +160,7 @@ export default function Home() {
             </Card>
           </Link>
 
-          {/* My Availability */}
-          <Link href="/availability">
-            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift cursor-pointer group transition-all duration-300 hover:shadow-xl">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-[hsl(159,61%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(159,61%,50%)] transition-colors">
-                  <Calendar className="w-8 h-8 text-[hsl(159,61%,50%)] group-hover:text-white transition-colors" />
-                </div>
-                <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-2">{t('home.myAvailability')}</h3>
-                <p className="text-sm text-gray-600">{t('home.myAvailabilityDesc')}</p>
-              </CardContent>
-            </Card>
-          </Link>
+
 
           {/* My Profile */}
           <Link href="/profile">

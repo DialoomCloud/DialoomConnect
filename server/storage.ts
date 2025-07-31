@@ -74,22 +74,14 @@ export interface IStorage {
   // Host availability operations
   getHostAvailability(userId: string): Promise<HostAvailability[]>;
   createHostAvailability(availability: InsertHostAvailability): Promise<HostAvailability>;
+  addHostAvailability(availability: InsertHostAvailability): Promise<HostAvailability>;
+  updateHostAvailability(id: string, userId: string, updates: any): Promise<any | undefined>;
   deleteHostAvailability(id: string, userId: string): Promise<boolean>;
   
   // Host pricing operations
   getHostPricing(userId: string): Promise<HostPricing[]>;
   createHostPricing(pricing: InsertHostPricing): Promise<HostPricing>;
-  deleteHostPricing(id: string, userId: string): Promise<boolean>;
-  
-  // Host availability operations
-  getHostAvailability(userId: string): Promise<any[]>;
-  createHostAvailability(availability: any): Promise<any>;
-  updateHostAvailability(id: string, userId: string, updates: any): Promise<any | undefined>;
-  deleteHostAvailability(id: string, userId: string): Promise<boolean>;
-  
-  // Host pricing operations
-  getHostPricing(userId: string): Promise<any[]>;
-  createHostPricing(pricing: any): Promise<any>;
+  upsertHostPricing(pricing: InsertHostPricing): Promise<HostPricing>;
   updateHostPricing(id: string, userId: string, updates: any): Promise<any | undefined>;
   deleteHostPricing(id: string, userId: string): Promise<boolean>;
   
@@ -381,6 +373,10 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async addHostAvailability(availability: InsertHostAvailability): Promise<HostAvailability> {
+    return this.createHostAvailability(availability);
+  }
+
   async updateHostAvailability(id: string, userId: string, updates: any): Promise<any | undefined> {
     const { hostAvailability } = await import("@shared/schema");
     const [result] = await db
@@ -406,6 +402,29 @@ export class DatabaseStorage implements IStorage {
   async createHostPricing(pricing: InsertHostPricing): Promise<HostPricing> {
     const [result] = await db.insert(hostPricing).values(pricing).returning();
     return result;
+  }
+
+  async upsertHostPricing(pricing: InsertHostPricing): Promise<HostPricing> {
+    const existing = await db
+      .select()
+      .from(hostPricing)
+      .where(and(
+        eq(hostPricing.userId, pricing.userId),
+        eq(hostPricing.duration, pricing.duration)
+      ));
+
+    if (existing.length > 0) {
+      // Update existing pricing
+      const [result] = await db
+        .update(hostPricing)
+        .set({ ...pricing, updatedAt: new Date() })
+        .where(eq(hostPricing.id, existing[0].id))
+        .returning();
+      return result;
+    } else {
+      // Create new pricing
+      return this.createHostPricing(pricing);
+    }
   }
 
   async updateHostPricing(id: string, userId: string, updates: any): Promise<any | undefined> {

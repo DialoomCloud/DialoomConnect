@@ -140,7 +140,7 @@ export function SortableMediaGrid({ media, showEdit, onEdit, onView, onAddNew }:
         const mediaIds = newItems.map((item) => item.id);
         await apiRequest("/api/media/order", {
           method: "PUT",
-          body: JSON.stringify({ mediaIds }),
+          body: { mediaIds },
         });
         
         // Invalidate the media query to refresh the order
@@ -178,7 +178,7 @@ export function SortableMediaGrid({ media, showEdit, onEdit, onView, onAddNew }:
         items={items.map((item) => item.id)}
         strategy={rectSortingStrategy}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {items.map((content) => (
             <SortableMediaItem
               key={content.id}

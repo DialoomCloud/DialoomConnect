@@ -256,7 +256,8 @@ export type InsertUserSkill = z.infer<typeof insertUserSkillSchema>;
 export const hostAvailability = pgTable("host_availability", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
+  date: date("date"), // Specific date (YYYY-MM-DD) - null for recurring weekly
+  dayOfWeek: integer("day_of_week"), // 0-6 (Sunday-Saturday) - for recurring weekly
   startTime: varchar("start_time").notNull(), // HH:MM format
   endTime: varchar("end_time").notNull(), // HH:MM format
   isActive: boolean("is_active").default(true),
@@ -267,10 +268,11 @@ export const hostAvailability = pgTable("host_availability", {
 export const hostPricing = pgTable("host_pricing", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  duration: integer("duration").notNull(), // in minutes (0, 30, 60, 90)
+  duration: integer("duration").notNull(), // in minutes (0, 30, 60, 90, or custom)
   price: decimal("price", { precision: 10, scale: 2 }).notNull(), // 0 for free
   currency: varchar("currency").default("EUR"),
   isActive: boolean("is_active").default(true),
+  isCustom: boolean("is_custom").default(false), // true for custom duration/price
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
