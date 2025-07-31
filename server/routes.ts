@@ -364,6 +364,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload logo to public media folder
+  app.post("/api/upload/logo", upload.single('logo'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No logo file uploaded" });
+      }
+
+      // Upload to Object Storage public media folder
+      const objectPath = 'media/dialoom-logo.png';
+      
+      // Save to local filesystem as primary storage
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const localPath = `uploads/${objectPath}`;
+      
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(localPath), { recursive: true });
+      await fs.writeFile(localPath, req.file.buffer);
+      console.log(`Logo saved locally: ${localPath}`);
+
+      // Try to upload to Object Storage as backup
+      const uploadResult = await replitStorage.uploadPublicFile('dialoom-logo.png', req.file.buffer);
+      if (!uploadResult.success) {
+        console.warn('Object Storage upload had issues:', uploadResult.error);
+      }
+
+      // Return the public URL
+      const publicUrl = `/storage/media/dialoom-logo.png`;
+      
+      res.json({ 
+        success: true, 
+        url: publicUrl,
+        message: 'Logo uploaded successfully' 
+      });
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      res.status(500).json({ message: 'Failed to upload logo' });
+    }
+  });
+
   app.get('/api/media', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

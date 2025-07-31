@@ -29,6 +29,37 @@ export class ReplitObjectStorage {
   }
 
   /**
+   * Upload generic file to public media folder
+   */
+  async uploadPublicFile(filename: string, fileBuffer: Buffer): Promise<{ success: boolean; error?: string }> {
+    try {
+      const objectPath = `media/${filename}`;
+      
+      // Save to local filesystem first
+      const localPath = `uploads/${objectPath}`;
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      await fs.mkdir(path.dirname(localPath), { recursive: true });
+      await fs.writeFile(localPath, fileBuffer);
+      console.log(`File saved locally: ${localPath}`);
+
+      // Try to upload to Object Storage
+      const result = await this._client.uploadFromBytes(objectPath, fileBuffer);
+      if (result.error) {
+        console.warn(`Object Storage upload failed: ${result.error.message}`);
+        return { success: true, error: result.error.message };
+      } else {
+        console.log(`File uploaded to Object Storage: ${objectPath}`);
+        return { success: true };
+      }
+    } catch (error) {
+      console.error('Error uploading public file:', error);
+      return { success: false, error: String(error) };
+    }
+  }
+
+  /**
    * Upload profile image (processed and stored in public folder)
    */
   async uploadProfileImage(userId: string, fileBuffer: Buffer, originalName: string): Promise<string> {

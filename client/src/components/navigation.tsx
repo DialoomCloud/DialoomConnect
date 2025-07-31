@@ -24,7 +24,7 @@ export function Navigation() {
           <div className="flex items-center space-x-8">
             <Link href="/home" className="flex items-center hover-lift">
               <img 
-                src={new URL('../assets/dialoom-logo.png', import.meta.url).href}
+                src="/storage/media/dialoom-logo.png"
                 alt="Dialoom" 
                 className="h-10 w-auto"
               />
