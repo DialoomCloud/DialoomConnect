@@ -49,8 +49,8 @@ export function DateTimeSelector({ isOpen, onClose, availability, onConfirm }: D
     while (currentHour < endHour || (currentHour === endHour && currentMinute < endMinute)) {
       slots.push(`${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`);
       
-      // Increment by 30 minutes
-      currentMinute += 30;
+      // Increment by 15 minutes
+      currentMinute += 15;
       if (currentMinute >= 60) {
         currentMinute = 0;
         currentHour++;

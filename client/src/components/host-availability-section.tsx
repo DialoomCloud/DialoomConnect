@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
@@ -349,16 +350,28 @@ export function HostAvailabilitySection() {
             {/* Weekly Schedule */}
             <TabsContent value="weekly" className="space-y-4">
               <div className="space-y-2">
-                <Label>Día de la semana</Label>
-                <select
-                  value={selectedDayOfWeek}
-                  onChange={(e) => setSelectedDayOfWeek(parseInt(e.target.value))}
-                  className="w-full p-2 border rounded-md"
+                <Label className="block mb-2">Día de la semana</Label>
+                <RadioGroup 
+                  value={selectedDayOfWeek.toString()} 
+                  onValueChange={(value) => setSelectedDayOfWeek(parseInt(value))}
+                  className="space-y-2"
                 >
                   {daysOfWeek.map((day, index) => (
-                    <option key={index} value={index}>{day}</option>
+                    <div key={index} className="flex items-center space-x-2">
+                      <RadioGroupItem 
+                        value={index.toString()} 
+                        id={`weekday-${index}`}
+                        className="border-gray-300 text-[hsl(244,91%,68%)]"
+                      />
+                      <Label 
+                        htmlFor={`weekday-${index}`}
+                        className="flex-1 cursor-pointer py-1 px-2 rounded hover:bg-gray-50 transition-colors"
+                      >
+                        {day}
+                      </Label>
+                    </div>
                   ))}
-                </select>
+                </RadioGroup>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
