@@ -67,7 +67,7 @@ export function Navigation() {
               
 
               
-              {user?.isAdmin && (
+              {(user?.isAdmin || user?.role === 'admin') && (
                 <Link href="/admin-dashboard">
                   <Button
                     variant={isActive("/admin-dashboard") ? "default" : "ghost"}

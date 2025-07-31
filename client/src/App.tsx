@@ -16,6 +16,7 @@ import Dashboard from "@/pages/dashboard";
 import UserProfile from "@/pages/user-profile";
 import AdminPanel from "@/pages/admin-panel";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminLogin from "@/pages/admin-login";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import CookiePolicy from "@/pages/cookie-policy";
@@ -34,6 +35,7 @@ function Router() {
               <Route path="/" component={Landing} />
               <Route path="/hosts" component={HostSearch} />
               <Route path="/user/:id" component={UserProfile} />
+              <Route path="/admin-login" component={AdminLogin} />
             </>
           ) : (
             <>
@@ -46,6 +48,7 @@ function Router() {
               <Route path="/admin-panel" component={AdminPanel} />
               <Route path="/admin-dashboard" component={AdminDashboard} />
               <Route path="/user/:id" component={UserProfile} />
+              <Route path="/admin-login" component={AdminLogin} />
             </>
           )}
           {/* Legal pages accessible to all */}

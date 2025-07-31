@@ -50,6 +50,7 @@ export interface IStorage {
   // User operations
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, profile: UpdateUserProfile): Promise<User>;
   
@@ -75,6 +76,8 @@ export interface IStorage {
   
   // Additional user operations
   getAllUsers(): Promise<User[]>;
+  getAllUsersForAdmin(): Promise<User[]>;
+  updateUserStatus(userId: string, updates: { role?: string, isActive?: boolean, isVerified?: boolean }): Promise<void>;
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
   
@@ -266,6 +269,27 @@ export class DatabaseStorage implements IStorage {
       postalCode: null,
       passwordHash: null,
     }));
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getAllUsersForAdmin(): Promise<User[]> {
+    const allUsers = await db.select().from(users);
+    // Return all user data for admin
+    return allUsers;
+  }
+
+  async updateUserStatus(userId: string, updates: { role?: string, isActive?: boolean, isVerified?: boolean }): Promise<void> {
+    const updateData: any = { updatedAt: new Date() };
+    
+    if (updates.role !== undefined) updateData.role = updates.role;
+    if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
+    if (updates.isVerified !== undefined) updateData.isVerified = updates.isVerified;
+    
+    await db.update(users).set(updateData).where(eq(users.id, userId));
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {

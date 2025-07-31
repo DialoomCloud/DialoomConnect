@@ -38,6 +38,9 @@ const upload = multer({
   }
 });
 
+// Helper for password hashing
+import bcrypt from "bcryptjs";
+
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -49,6 +52,54 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  
+  // Admin login endpoint (separate from Replit auth)
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).send("Usuario y contraseña requeridos");
+      }
+      
+      // Find user by username
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user || !user.passwordHash) {
+        return res.status(401).send("Credenciales inválidas");
+      }
+      
+      // Check if user is admin
+      if (!user.isAdmin && user.role !== 'admin') {
+        return res.status(403).send("Acceso denegado");
+      }
+      
+      // Verify password
+      const validPassword = await bcrypt.compare(password, user.passwordHash);
+      if (!validPassword) {
+        return res.status(401).send("Credenciales inválidas");
+      }
+      
+      // Log the user in using the session
+      (req as any).session.userId = user.id;
+      (req as any).session.isAdmin = true;
+      (req as any).user = user;
+      
+      res.json({ 
+        success: true, 
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          isAdmin: user.isAdmin,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).send("Error del servidor");
+    }
+  });
   
   // Serve uploaded files with GDPR compliance
   app.use('/uploads', (req, res, next) => {
@@ -1019,6 +1070,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error downloading invoice:', error);
       res.status(500).json({ message: 'Error al descargar factura' });
+    }
+  });
+
+  // Admin routes - Get all users
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin && user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Acceso denegado' });
+      }
+
+      const users = await storage.getAllUsersForAdmin();
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Error al obtener usuarios' });
+    }
+  });
+
+  // Admin routes - Update user status
+  app.put('/api/admin/users/:targetUserId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const { targetUserId } = req.params;
+      const { role, isActive, isVerified } = req.body;
+      
+      if (!user?.isAdmin && user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Acceso denegado' });
+      }
+
+      await storage.updateUserStatus(targetUserId, {
+        role,
+        isActive,
+        isVerified
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ message: 'Error al actualizar usuario' });
     }
   });
 

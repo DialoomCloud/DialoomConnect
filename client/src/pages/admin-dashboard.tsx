@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { AdminUserManagement } from "@/components/admin-user-management";
 
 export default function AdminDashboard() {
   const { i18n } = useTranslation();
@@ -171,7 +172,7 @@ export default function AdminDashboard() {
 
           {/* Hosts Management Tab */}
           <TabsContent value="hosts" className="space-y-4">
-            <HostsManagement />
+            <AdminUserManagement />
           </TabsContent>
 
           {/* Invoices Tab */}

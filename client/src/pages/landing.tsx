@@ -1,6 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Database, UserCheck, Play, Smartphone, Share2 } from "lucide-react";
+import { Footer } from "@/components/footer";
+import { Link } from "wouter";
 
 export default function Landing() {
   const handleLogin = () => {
@@ -48,14 +50,24 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
-                <div className="w-8 h-8 bg-[hsl(244,91%,68%)] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">D</span>
-                </div>
-                <span className="ml-2 text-xl font-bold text-[hsl(17,12%,6%)]">Dialoom</span>
+                <img 
+                  src="/uploads/images/dialoomblue.png"
+                  alt="Dialoom" 
+                  className="h-8 w-auto object-contain"
+                  style={{ maxWidth: '140px' }}
+                />
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
+              <Link href="/admin-login">
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-600 hover:text-[hsl(244,91%,68%)] font-medium"
+                >
+                  Admin
+                </Button>
+              </Link>
               <Button 
                 variant="ghost" 
                 onClick={handleLogin}
@@ -132,48 +144,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-[hsl(220,13%,90%)] py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-[hsl(244,91%,68%)] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">D</span>
-                </div>
-                <span className="ml-2 text-xl font-bold text-[hsl(17,12%,6%)]">Dialoom</span>
-              </div>
-              <p className="text-gray-600 mb-4 max-w-md">
-                La plataforma definitiva para crear y gestionar tu perfil profesional con contenido multimedia integrado.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-4">Producto</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">Características</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">Precios</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">Integraciones</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">API</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-4">Soporte</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">Centro de Ayuda</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">Contacto</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">Privacidad</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-[hsl(244,91%,68%)] transition-colors">Términos</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-[hsl(220,13%,90%)] mt-8 pt-8 text-center">
-            <p className="text-gray-600">&copy; 2024 Dialoom. Todos los derechos reservados.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
