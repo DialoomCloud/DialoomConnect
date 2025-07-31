@@ -102,7 +102,7 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Bucket Storage System**: Implemented comprehensive per-user folder structure with `public/` and `private/` directories
 - **Profile Photo Upload**: Fixed image upload functionality using new bucket system with Sharp processing
 - **Security Architecture**: Created user-specific storage paths: `uploads/users/{userId}/public/` for visible content, `uploads/users/{userId}/private/` for verification documents
-- **Admin System**: Created admin user (login: dialoomroot, password: TopGun) with encrypted credentials using bcrypt
+- **Admin System**: Uses Replit Auth with isAdmin flag. Admin access granted to specific users via database update
 - **User Verification**: Added verification system where users can upload ID documents for admin review
 - **GDPR Compliance**: Implemented data export, deletion requests, and privacy controls for European data protection
 - **Field Privacy**: Phone and address fields now visible only to profile owner and admin users
