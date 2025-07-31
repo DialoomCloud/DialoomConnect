@@ -7,6 +7,7 @@ import { MediaUploadModal } from "@/components/media-upload-modal";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaEmbed } from "@/components/media-embed";
+import { SortableMediaGrid } from "@/components/sortable-media-grid";
 import type { User, MediaContent } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -252,50 +253,21 @@ export default function Profile() {
                       ))}
                     </>
                   ) : mediaContent.length > 0 ? (
-                    <>
-                      {mediaContent.map((content: MediaContent) => {
-                        console.log('Rendering MediaEmbed for:', content.id, 'with showEdit=true');
-                        return (
-                          <div key={content.id} className="relative group">
-                            <MediaEmbed 
-                              content={content} 
-                              onEdit={(c) => {
-                                console.log('Edit handler called:', c);
-                                setEditingContent(c);
-                                setShowEditModal(true);
-                              }}
-                              onView={(c) => {
-                                console.log('View handler called:', c);
-                                setViewingContent(c);
-                                setShowViewerModal(true);
-                              }}
-                              showEdit={true}
-                            />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteMedia(content.id);
-                              }}
-                              disabled={deleteMediaMutation.isPending}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        );
-                      })}
-                      {/* Add Content Placeholder */}
-                      <div 
-                        onClick={() => setShowUploadModal(true)}
-                        className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center aspect-video hover:border-[hsl(244,91%,68%)] transition-colors cursor-pointer"
-                      >
-                        <Plus className="w-8 h-8 text-gray-400 mb-2" />
-                        <p className="text-gray-500 font-medium">Agregar nuevo contenido</p>
-                        <p className="text-sm text-gray-400 mt-1">YouTube, Videos MP4 o Imágenes</p>
-                      </div>
-                    </>
+                    <SortableMediaGrid
+                      media={mediaContent}
+                      showEdit={true}
+                      onEdit={(c) => {
+                        console.log('Edit handler called:', c);
+                        setEditingContent(c);
+                        setShowEditModal(true);
+                      }}
+                      onView={(c) => {
+                        console.log('View handler called:', c);
+                        setViewingContent(c);
+                        setShowViewerModal(true);
+                      }}
+                      onAddNew={() => setShowUploadModal(true)}
+                    />
                   ) : (
                     <div className="md:col-span-2 text-center py-12">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

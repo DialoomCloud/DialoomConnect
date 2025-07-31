@@ -28,7 +28,7 @@ import {
   type InsertHostPricing,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, asc } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -44,6 +44,7 @@ export interface IStorage {
   createMediaContent(content: InsertMediaContent): Promise<MediaContent>;
   updateMediaContent(id: string, content: Partial<InsertMediaContent>): Promise<MediaContent>;
   deleteMediaContent(id: string, userId: string): Promise<boolean>;
+  updateMediaOrder(userId: string, mediaIds: string[]): Promise<void>;
 
   // Reference data operations
   getCountries(): Promise<Country[]>;
@@ -253,7 +254,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(mediaContent)
       .where(eq(mediaContent.userId, userId))
-      .orderBy(desc(mediaContent.createdAt));
+      .orderBy(asc(mediaContent.displayOrder));
   }
 
   // Alias for getUserMediaContent
@@ -288,9 +289,17 @@ export class DatabaseStorage implements IStorage {
     return (result?.rowCount || 0) > 0;
   }
 
-  // Alias for getUserMediaContent
-  async getUserMedia(userId: string): Promise<MediaContent[]> {
-    return this.getUserMediaContent(userId);
+  async updateMediaOrder(userId: string, mediaIds: string[]): Promise<void> {
+    // Update the display order for each media item
+    for (let i = 0; i < mediaIds.length; i++) {
+      await db
+        .update(mediaContent)
+        .set({ displayOrder: i })
+        .where(and(
+          eq(mediaContent.id, mediaIds[i]),
+          eq(mediaContent.userId, userId)
+        ));
+    }
   }
 
   // Reference data methods

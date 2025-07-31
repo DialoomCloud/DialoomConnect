@@ -418,6 +418,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update media order (for drag and drop)
+  app.put('/api/media/order', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { mediaIds } = req.body;
+      
+      if (!Array.isArray(mediaIds)) {
+        return res.status(400).json({ message: "mediaIds must be an array" });
+      }
+      
+      await storage.updateMediaOrder(userId, mediaIds);
+      res.json({ message: "Media order updated successfully" });
+    } catch (error) {
+      console.error("Error updating media order:", error);
+      res.status(500).json({ message: "Failed to update media order" });
+    }
+  });
+
   // Reference data routes (no auth required for lookups)
   app.get('/api/countries', async (req, res) => {
     try {

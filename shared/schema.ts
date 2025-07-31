@@ -135,6 +135,7 @@ export const mediaContent = pgTable("media_content", {
   fileName: varchar("file_name"), // Original filename for uploaded files
   fileSize: varchar("file_size"), // File size in bytes
   mimeType: varchar("mime_type"), // MIME type for uploaded files
+  displayOrder: integer("display_order").default(0), // For drag-and-drop ordering
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
