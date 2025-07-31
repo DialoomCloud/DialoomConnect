@@ -30,21 +30,21 @@ export default function AdminDashboard() {
   const { adminUser, isLoading } = useAdminAuth();
   const [, setLocation] = useLocation();
 
+  // Fetch admin statistics - must be called before conditional returns
+  const { data: stats } = useQuery({
+    queryKey: ["/api/admin/stats"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/stats");
+      return response.json();
+    },
+    enabled: !!adminUser && !isLoading, // Only fetch when adminUser exists
+  });
+
   useEffect(() => {
     if (!isLoading && !adminUser) {
       setLocation("/admin-login");
     }
   }, [isLoading, adminUser, setLocation]);
-
-  // Fetch admin statistics - must be called before conditional returns
-  const { data: stats } = useQuery({
-    queryKey: ["/api/admin/stats"],
-    queryFn: async () => {
-      const response = await apiRequest("/api/admin/stats", { method: "GET" });
-      return response.json();
-    },
-    enabled: !!adminUser, // Only fetch when adminUser exists
-  });
 
   if (isLoading) {
     return (
