@@ -142,3 +142,4 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Webhook Processing**: Stripe webhook handling for payment confirmations and failures
 - **Configuration Defaults**: Commission 10%, VAT 21%, service pricing configured and stored in admin_config table
 - **Dashboard Transformation**: Transformed dashboard into comprehensive host control center integrating all profile functionalities including contact data, multimedia content, availability, and pricing management
+- **Stripe Connect Analysis**: Analyzed requirements for implementing Stripe Connect to enable hosts to issue invoices in their name. Added database fields (stripeAccountId, stripeOnboardingCompleted) but full implementation pending as current system works with centralized payments to Dialoom account

@@ -95,6 +95,8 @@ export const users = pgTable("users", {
   passwordHash: varchar("password_hash"), // Encrypted password for admin
   // Stripe integration
   stripeCustomerId: varchar("stripe_customer_id"),
+  stripeAccountId: varchar("stripe_account_id"), // For Stripe Connect (hosts)
+  stripeOnboardingCompleted: boolean("stripe_onboarding_completed").default(false),
   // User verification and GDPR compliance
   isVerified: boolean("is_verified").default(false),
   isActive: boolean("is_active").default(true),
