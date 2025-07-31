@@ -65,7 +65,10 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
   if (showPayment) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="payment-dialog-description">
+          <div id="payment-dialog-description" className="sr-only">
+            Procede con el pago de tu reserva
+          </div>
           <PaymentCheckout
             bookingDetails={{
               id: `booking-${Date.now()}`,
@@ -92,10 +95,13 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" aria-describedby="booking-dialog-description">
         <DialogHeader>
           <DialogTitle>Confirmar Reserva</DialogTitle>
         </DialogHeader>
+        <div id="booking-dialog-description" className="sr-only">
+          Confirma los detalles de tu reserva de videollamada
+        </div>
 
         <div className="space-y-4">
           {/* Booking details */}

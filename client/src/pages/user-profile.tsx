@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { MediaEmbed } from "@/components/media-embed";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { BookingModal } from "@/components/booking-modal";
+import { DateTimeSelector } from "@/components/date-time-selector";
 import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { useState } from "react";
@@ -25,6 +26,9 @@ export default function UserProfile() {
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState<{ duration: number; price: string } | null>(null);
+  const [showDateTimeSelector, setShowDateTimeSelector] = useState(false);
+  const [selectedBookingDate, setSelectedBookingDate] = useState<Date | null>(null);
+  const [selectedBookingTime, setSelectedBookingTime] = useState<string | null>(null);
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -212,7 +216,7 @@ export default function UserProfile() {
                       const activePricing = pricing.find(p => p.isActive);
                       if (activePricing) {
                         setSelectedPricing({ duration: activePricing.duration, price: activePricing.price });
-                        setShowBookingModal(true);
+                        setShowDateTimeSelector(true);
                       }
                     }}
                   >
@@ -297,18 +301,37 @@ export default function UserProfile() {
         content={viewingContent}
       />
 
+      {/* Date/Time Selection Modal */}
+      {showDateTimeSelector && selectedPricing && (
+        <DateTimeSelector
+          isOpen={showDateTimeSelector}
+          onClose={() => setShowDateTimeSelector(false)}
+          availability={availability || []}
+          onConfirm={(date, time) => {
+            setSelectedBookingDate(date);
+            setSelectedBookingTime(time);
+            setShowDateTimeSelector(false);
+            setShowBookingModal(true);
+          }}
+        />
+      )}
+
       {/* Booking Modal */}
-      {showBookingModal && selectedPricing && user && (
+      {showBookingModal && selectedPricing && user && selectedBookingDate && selectedBookingTime && (
         <BookingModal
           isOpen={showBookingModal}
-          onClose={() => setShowBookingModal(false)}
+          onClose={() => {
+            setShowBookingModal(false);
+            setSelectedBookingDate(null);
+            setSelectedBookingTime(null);
+          }}
           host={{
             id: user.id,
             name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Host'
           }}
           pricing={selectedPricing}
-          selectedDate={new Date()}
-          selectedTime="10:00"
+          selectedDate={selectedBookingDate}
+          selectedTime={selectedBookingTime}
         />
       )}
     </div>
