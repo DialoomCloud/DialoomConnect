@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Shield } from "lucide-react";
 import { Link } from "wouter";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Usuario requerido"),
@@ -21,6 +22,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function AdminLogin() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { setAdminUser, checkAdminSession } = useAdminAuth();
   
   const {
     register,
@@ -39,10 +41,16 @@ export default function AdminLogin() {
       });
       
       if (response.ok) {
+        const data = await response.json();
+        setAdminUser(data.user);
+        
         toast({
           title: "Acceso exitoso",
           description: "Redirigiendo al panel de administración...",
         });
+        
+        // Check session and redirect
+        await checkAdminSession();
         
         // Redirect to admin dashboard
         setTimeout(() => {

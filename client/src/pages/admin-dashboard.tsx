@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "wouter";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -25,6 +27,26 @@ import { AdminUserManagement } from "@/components/admin-user-management";
 export default function AdminDashboard() {
   const { i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("overview");
+  const { adminUser, isLoading } = useAdminAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !adminUser) {
+      setLocation("/admin-login");
+    }
+  }, [isLoading, adminUser, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(244,91%,68%)]"></div>
+      </div>
+    );
+  }
+
+  if (!adminUser) {
+    return null;
+  }
 
   // Fetch admin statistics
   const { data: stats } = useQuery({

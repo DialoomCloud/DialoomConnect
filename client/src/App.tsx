@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { AdminAuthProvider } from "@/hooks/useAdminAuth";
 import { Footer } from "@/components/footer";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
@@ -36,6 +37,7 @@ function Router() {
               <Route path="/hosts" component={HostSearch} />
               <Route path="/user/:id" component={UserProfile} />
               <Route path="/admin-login" component={AdminLogin} />
+              <Route path="/admin-dashboard" component={AdminDashboard} />
             </>
           ) : (
             <>
@@ -67,10 +69,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <AdminAuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AdminAuthProvider>
     </QueryClientProvider>
   );
 }

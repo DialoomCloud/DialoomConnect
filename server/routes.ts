@@ -12,6 +12,7 @@ import { z } from "zod";
 import { storageBucket } from "./storage-bucket";
 import { replitStorage } from "./object-storage";
 import Stripe from "stripe";
+import session from "express-session";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -50,9 +51,44 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure session for admin
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'dialoom-admin-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
   // Auth middleware
   await setupAuth(app);
   
+  // Admin check session endpoint
+  app.get('/api/admin/check-session', async (req, res) => {
+    if ((req as any).session?.isAdmin && (req as any).session?.userId) {
+      const user = await storage.getUser((req as any).session.userId);
+      if (user && (user.isAdmin || user.role === 'admin')) {
+        res.json({ 
+          success: true,
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            role: user.role
+          }
+        });
+      } else {
+        res.status(401).send("No autorizado");
+      }
+    } else {
+      res.status(401).send("No autorizado");
+    }
+  });
+
   // Admin login endpoint (separate from Replit auth)
   app.post('/api/admin/login', async (req, res) => {
     try {
