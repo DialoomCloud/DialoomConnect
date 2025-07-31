@@ -18,9 +18,11 @@ import UserProfile from "@/pages/user-profile";
 import AdminPanel from "@/pages/admin-panel";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminLogin from "@/pages/admin-login";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import TermsOfService from "@/pages/terms-of-service";
-import CookiePolicy from "@/pages/cookie-policy";
+import PrivacyPolicy from "@/pages/legal/privacy-policy";
+import TermsOfService from "@/pages/legal/terms-of-service";
+import CookiePolicy from "@/pages/legal/cookie-policy";
+import DMCA from "@/pages/legal/dmca";
+import Help from "@/pages/help";
 import GdprRights from "@/pages/gdpr-rights";
 import VideoCallRoom from "@/pages/video-call-room";
 import "./i18n/config";
@@ -55,10 +57,12 @@ function Router() {
               <Route path="/video-call/:bookingId" component={VideoCallRoom} />
             </>
           )}
-          {/* Legal pages accessible to all */}
-          <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/terms-of-service" component={TermsOfService} />
-          <Route path="/cookie-policy" component={CookiePolicy} />
+          {/* Legal and help pages accessible to all */}
+          <Route path="/legal/privacy" component={PrivacyPolicy} />
+          <Route path="/legal/terms" component={TermsOfService} />
+          <Route path="/legal/cookies" component={CookiePolicy} />
+          <Route path="/legal/dmca" component={DMCA} />
+          <Route path="/help" component={Help} />
           <Route path="/gdpr-rights" component={GdprRights} />
           <Route component={NotFound} />
         </Switch>

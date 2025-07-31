@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Cookie, FileText, Heart } from "lucide-react";
+import { Shield, Cookie, FileText, Heart, Copyright, HelpCircle } from "lucide-react";
 
 export function Footer() {
   const { t, i18n } = useTranslation();
@@ -34,7 +34,7 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/privacy-policy" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/legal/privacy" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
                   <Shield className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Política de Privacidad'
@@ -44,7 +44,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/terms-of-service" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/legal/terms" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
                   <FileText className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Términos de Servicio'
@@ -54,13 +54,19 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/cookie-policy" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/legal/cookies" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
                   <Cookie className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Política de Cookies'
                     : i18n.language === 'ca'
                     ? 'Política de Cookies'
                     : 'Cookie Policy'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/dmca" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                  <Copyright className="w-3 h-3" />
+                  DMCA
                 </Link>
               </li>
             </ul>
@@ -110,20 +116,30 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-4">
               {i18n.language === 'es' 
-                ? 'Contacto'
+                ? 'Soporte'
                 : i18n.language === 'ca'
-                ? 'Contacte'
-                : 'Contact'}
+                ? 'Suport'
+                : 'Support'}
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:privacy@dialoom.com" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
-                  privacy@dialoom.com
+                <Link href="/help" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                  <HelpCircle className="w-3 h-3" />
+                  {i18n.language === 'es' 
+                    ? 'Centro de Ayuda'
+                    : i18n.language === 'ca'
+                    ? 'Centre d\'Ajuda'
+                    : 'Help Center'}
+                </Link>
+              </li>
+              <li>
+                <a href="mailto:support@dialoom.cloud" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
+                  support@dialoom.cloud
                 </a>
               </li>
               <li>
-                <a href="mailto:support@dialoom.com" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
-                  support@dialoom.com
+                <a href="mailto:privacy@dialoom.cloud" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
+                  privacy@dialoom.cloud
                 </a>
               </li>
             </ul>
