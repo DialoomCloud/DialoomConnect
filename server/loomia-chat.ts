@@ -278,10 +278,4 @@ ${languageInstructions[language as keyof typeof languageInstructions] || languag
   }
 }
 
-  async improveDescription(description: string): Promise<string> {
-    // Wrapper function for backward compatibility
-    return this.improveDescriptionWithSocialContext(description);
-  }
-}
-
 export const loomiaAI = new LoomiaAI();

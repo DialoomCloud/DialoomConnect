@@ -1397,61 +1397,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Skills by name operations
-  async getSkillByName(name: string): Promise<any | undefined> {
-    const [skill] = await db.select().from(skills).where(eq(skills.name, name));
-    return skill;
-  }
 
-  async createSkill(skillData: any): Promise<any> {
-    const [newSkill] = await db.insert(skills).values({
-      name: skillData.name,
-      category: skillData.category,
-      description: skillData.description,
-      isActive: skillData.isActive ?? true
-    }).returning();
-    return newSkill;
-  }
-
-  async addUserSkill(userId: string, skillId: number): Promise<void> {
-    // Check if association already exists
-    const existing = await db.select().from(userSkills).where(
-      and(eq(userSkills.userId, userId), eq(userSkills.skillId, skillId))
-    );
-    
-    if (existing.length === 0) {
-      await db.insert(userSkills).values({ userId, skillId });
-    }
-  }
-
-  // Categories by name operations
-  async getCategoryByName(name: string): Promise<any | undefined> {
-    const [category] = await db.select().from(categories).where(eq(categories.name, name));
-    return category;
-  }
-
-  async createCategory(categoryData: any): Promise<any> {
-    const [newCategory] = await db.insert(categories).values({
-      name: categoryData.name,
-      description: categoryData.description,
-      imageUrl: categoryData.imageUrl,
-      iconUrl: categoryData.iconUrl,
-      displayOrder: categoryData.displayOrder ?? 0,
-      isActive: categoryData.isActive ?? true
-    }).returning();
-    return newCategory;
-  }
-
-  async addUserCategory(userId: string, categoryId: number): Promise<void> {
-    // Check if association already exists
-    const existing = await db.select().from(userCategories).where(
-      and(eq(userCategories.userId, userId), eq(userCategories.categoryId, categoryId))
-    );
-    
-    if (existing.length === 0) {
-      await db.insert(userCategories).values({ userId, categoryId });
-    }
-  }
 }
 
 export const storage = new DatabaseStorage();
