@@ -26,6 +26,18 @@ interface LoomiaResponse {
     confidence: number;
     suggestedActions?: string[];
   };
+  suggestions?: {
+    categories: Array<{
+      name: string;
+      description: string;
+      subcategories?: string[];
+    }>;
+    skills: Array<{
+      name: string;
+      category: string;
+      description: string;
+    }>;
+  };
 }
 
 export function LoomiaChat() {
@@ -37,7 +49,7 @@ export function LoomiaChat() {
     {
       id: "welcome",
       role: "assistant",
-      content: "¡Hola! Soy Loomia, tu asistente de IA para Dialoom. ¿En qué puedo ayudarte hoy? Puedo ayudarte con reservas, configuración de perfil, precios o cualquier duda sobre la plataforma.",
+      content: "¡Hola! Soy Loomia, tu asistente de IA para Dialoom. ¿En qué puedo ayudarte hoy?\n\n• Puedo sugerir categorías y skills para tu perfil profesional\n• Ayudarte con reservas y pagos\n• Guiarte en la configuración de precios y disponibilidad\n• Resolver dudas sobre videollamadas\n• Y cualquier otra consulta sobre la plataforma",
       timestamp: new Date(),
     }
   ]);
@@ -79,6 +91,15 @@ export function LoomiaChat() {
           title: "Acciones sugeridas",
           description: data.intent.suggestedActions.join(", "),
           duration: 5000,
+        });
+      }
+
+      // Show notification if AI suggestions were generated
+      if (data.suggestions) {
+        toast({
+          title: "Sugerencias de IA generadas",
+          description: `Se han generado ${data.suggestions.categories.length} categorías y ${data.suggestions.skills.length} skills sugeridas.`,
+          duration: 7000,
         });
       }
     },

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { generateProfessionalSuggestions } from "./ai-suggestions";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable must be set");
@@ -6,7 +7,7 @@ if (!process.env.OPENAI_API_KEY) {
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Loomia - Asistente IA de Chat Dialoom
+// Loomia - Asistente IA unificado de Dialoom (chat + sugerencias + análisis)
 export class LoomiaAI {
   private systemPrompt = `
 Eres Loomia, el asistente IA oficial de Dialoom - una plataforma de videoconsultas 1-a-1 con expertos.
@@ -23,11 +24,11 @@ Eres Loomia, el asistente IA oficial de Dialoom - una plataforma de videoconsult
 4. **Para Administradores**: Guiar sobre configuraciones del sistema
 
 ## Capacidades Técnicas
-- Análisis de perfiles profesionales con sugerencias de IA
-- Búsqueda inteligente de expertos
-- Gestión de disponibilidad y precios
-- Sistema de videollamadas con Agora
-- Integración con Stripe para pagos
+- Análisis de perfiles profesionales con sugerencias automáticas de categorías y skills
+- Búsqueda inteligente de expertos con puntuación de relevancia
+- Ayuda con configuración de perfiles de host, precios y disponibilidad
+- Guía para reservas, pagos con Stripe y videollamadas
+- Asistencia con todas las funcionalidades de la plataforma Dialoom
 
 ## Formato de Respuesta
 - Respuestas concisas y estructuradas
@@ -116,6 +117,40 @@ Responde siempre de manera útil, profesional y centrada en ayudar al usuario co
     } catch (error) {
       console.error("Error analyzing user intent:", error);
       return { intent: "general_info", confidence: 0.5 };
+    }
+  }
+
+  // Unified method for professional suggestions (integrates with existing AI suggestions)
+  async generateProfessionalSuggestions(description: string, categories: any[], skills: any[]) {
+    return await generateProfessionalSuggestions(description, categories, skills);
+  }
+
+  // Enhanced chat response that can handle profile suggestions
+  async handleProfileSuggestionRequest(description: string, categories: any[], skills: any[]) {
+    try {
+      const suggestions = await this.generateProfessionalSuggestions(description, categories, skills);
+      
+      const response = `He analizado tu descripción profesional y he generado las siguientes sugerencias:
+
+**Categorías recomendadas:**
+${suggestions.categories.map((cat: any, index: number) => 
+  `${index + 1}. **${cat.name}**: ${cat.description}`
+).join('\n')}
+
+**Skills sugeridas:**
+${suggestions.skills.map((skill: any, index: number) => 
+  `${index + 1}. **${skill.name}** (${skill.category}): ${skill.description}`
+).join('\n')}
+
+Estas sugerencias están basadas en tu experiencia como "${description}". Puedes seleccionar las que mejor representen tu perfil profesional.`;
+
+      return { response, suggestions };
+    } catch (error) {
+      console.error("Error generating profile suggestions:", error);
+      return {
+        response: "Lo siento, tuve un problema al generar sugerencias para tu perfil. ¿Podrías intentar describir tu experiencia de otra manera?",
+        suggestions: null
+      };
     }
   }
 }

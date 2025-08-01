@@ -695,7 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Loomia AI Chat - Asistente IA de Dialoom
+  // Loomia AI Chat - Asistente IA unificado de Dialoom
   app.post('/api/loomia/chat', async (req: any, res) => {
     try {
       const { message, userRole, conversationHistory } = req.body;
@@ -708,15 +708,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { loomiaAI } = await import("./loomia-chat");
       
-      // Generate response and analyze intent
-      const [response, intent] = await Promise.all([
-        loomiaAI.generateResponse(message, userRole, conversationHistory),
-        loomiaAI.analyzeUserIntent(message)
-      ]);
+      // Analyze intent first to determine if this requires profile suggestions
+      const intent = await loomiaAI.analyzeUserIntent(message);
+      
+      let response;
+      let suggestions = null;
+      
+      // Check if user is asking for profile suggestions
+      if (intent.intent === "profile_setup" && 
+          (message.toLowerCase().includes("sugerir") || 
+           message.toLowerCase().includes("categoría") || 
+           message.toLowerCase().includes("skill") ||
+           message.toLowerCase().includes("experiencia"))) {
+        
+        // Get current categories and skills for context
+        const [categories, skills] = await Promise.all([
+          storage.getCategories(),
+          storage.getSkills()
+        ]);
+        
+        const profileSuggestionResult = await loomiaAI.handleProfileSuggestionRequest(
+          message, categories, skills
+        );
+        
+        response = profileSuggestionResult.response;
+        suggestions = profileSuggestionResult.suggestions;
+      } else {
+        // Regular chat response
+        response = await loomiaAI.generateResponse(message, userRole, conversationHistory);
+      }
 
       res.json({
         response,
         intent,
+        suggestions, // Include suggestions if generated
         timestamp: new Date().toISOString()
       });
     } catch (error) {
@@ -725,7 +750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI-powered suggestions for professional categories and skills
+  // AI-powered suggestions for professional categories and skills (via Loomia)
   app.post('/api/ai/suggest-profile', async (req: any, res) => {
     try {
       const { description } = req.body;
@@ -742,9 +767,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getSkills()
       ]);
 
-      // Generate AI suggestions
-      const { generateProfessionalSuggestions } = await import("./ai-suggestions");
-      const suggestions = await generateProfessionalSuggestions(
+      // Generate AI suggestions using unified Loomia system
+      const { loomiaAI } = await import("./loomia-chat");
+      const suggestions = await loomiaAI.generateProfessionalSuggestions(
         description,
         categories,
         skills
