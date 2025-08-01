@@ -1,0 +1,73 @@
+📑 Guía de Uso · Asistente IA de Chat Dialoom
+
+(versión API ChatGPT 4.1 · actualizado 1 ago 2025)
+
+⸻
+
+1 · Propósito
+
+El asistente IA responde, en lenguaje natural, a dudas frecuentes sobre Dialoom—plataforma de videoconsultas 1-a-1 con pagos Stripe y slots autogestionados—y sobre los procesos internos descritos en la documentación técnica y de negocio de Fremmenn Dynamics. Su objetivo es:
+	1.	Ayudar a usuarios a reservar, pagar o valorar sesiones.
+	2.	Orientar a hosts en la creación de perfiles, slots y add-ons.
+	3.	Guiar a super-admins sobre flujos DevOps, CI/CD y observabilidad.
+	4.	Aportar referencias precisas a la API REST/WS v1 y a las guías de despliegue cuando se soliciten detalles técnicos.
+
+⸻
+
+2 · Alcance de Conocimiento
+
+Categoría	Contenido cubierto	Fuentes internas
+Funcionalidades de producto	Slots, Storefront, Gamificación, Calendars, Videollamadas HD	README, Roadmap, API Docs
+Endpoints & DTOs	Autenticación, Hosts, Bookings, Add-ons, Admin	API Reference
+Dev & CI/CD	Git flow, prisma workflow, despliegues en Replit + Neon	Project Instructions, Prisma Guidelines, Deployment docs
+Empresa	Misión y unidades de Fremmenn Dynamics	fremmenndynamics.com  ￼
+Marketing / UX	Mensajes clave, beneficios para hosts y clientes	dialoom.com snippet  ￼
+
+El asistente no proporciona asesoramiento legal ni médico; redirige al soporte humano cuando detecta temas fuera de su dominio.
+
+⸻
+
+3 · Buenas Prácticas al Preguntar
+	1.	Sé específico: “¿Cómo añado un slot de 60 min a €30?” mejor que “slots”.
+	2.	Indica tu rol (User, Host, SuperAdmin) para respuestas filtradas por permisos.
+	3.	Contexto primero, código después: para errores API comparte el endpoint, cuerpo de la petición y mensaje de error.
+	4.	Evita datos sensibles: nunca pegues claves secretas ni tokens JWT completos.
+
+⸻
+
+4 · Comandos / Prompts de Arranque
+
+Prompt sugerido	Qué obtendrás
+“Guíame para convertirme en host y fijar mi primer precio.”	Pasos: POST /hosts, PATCH /hosts/{id}, creación de HostSlot MIN30 – incluye JSON DTO.
+“Sincronizar Google Calendar con mis bookings”	OAuth flow, scopes y llamada POST /calendars/connect/google.
+“¿Qué add-ons hay y cuánto cuestan?”	Tabla RECORDING, TRANSLATION, WHITEBOARD con basePrice y currency.
+“Despliegue a producción paso a paso”	Checklist de secretos, migraciones, smoke tests, cron jobs.
+
+
+⸻
+
+5 · Formato de Respuesta del Asistente
+	•	Breve intro ⟶ pasos numerados o fragmentos de código JSON/CLI cuando aplique.
+	•	Citas en línea a docs internas () o web () para trazabilidad.
+	•	Para preguntas de API: incluir método-URL, campos requeridos y ejemplo de payload.
+	•	Para guías largas (>25 líneas) ofrecer descarga Markdown o link a canvas.
+
+⸻
+
+6 · Limitaciones & Salvaguardas
+	•	Datos en tiempo real: precios de moneda (currencies) se actualizan cada 6 h; el asistente puede quedar desfasado algunos minutos.
+	•	Privacidad: las conversaciones se almacenan cifradas siguiendo la política GDPR de Dialoom.
+	•	Tasa de peticiones: API rate-limit 10 req/min en /auth, 20 req/min en /bookings.
+	•	Contenido restringido: cualquier solicitud de modificar la base de datos en producción será denegada a roles ≠ SuperAdmin.
+
+⸻
+
+7 · Cómo Escalar o Reportar Feedback
+
+Botón “Reportar” en el widget → abre ticket en #support (Discord).
+Incidencias críticas DevOps → canal #dev-backend.
+Sugerencias de mejora del asistente → issue label ai-docs en GitHub.
+
+⸻
+
+Con esta guía, tu equipo puede dialogar de forma eficiente con el asistente IA integrado en Dialoom para maximizar productividad y minimizar ambigüedad.

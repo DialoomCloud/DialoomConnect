@@ -10,6 +10,7 @@ import { MediaEmbed } from "@/components/media-embed";
 import { SortableMediaGrid } from "@/components/sortable-media-grid";
 import { HostAvailabilitySection } from "@/components/host-availability-section";
 import { AIProfileSuggestions } from "@/components/ai-profile-suggestions";
+import { queryClient } from "@/lib/queryClient";
 import type { User, MediaContent } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

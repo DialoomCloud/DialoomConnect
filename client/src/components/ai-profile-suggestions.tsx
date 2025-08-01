@@ -36,9 +36,8 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
 
   const generateSuggestionsMutation = useMutation({
     mutationFn: async (desc: string) => {
-      const response = await apiRequest("/api/ai/suggest-profile", {
-        method: "POST",
-        body: { description: desc }
+      const response = await apiRequest("POST", "/api/ai/suggest-profile", {
+        description: desc
       });
       return response.json();
     },
@@ -71,12 +70,9 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
         selectedSkills.includes(skill.name)
       );
 
-      const response = await apiRequest("/api/ai/approve-suggestions", {
-        method: "POST",
-        body: {
-          categories: categoriesToApprove,
-          skills: skillsToApprove
-        }
+      const response = await apiRequest("POST", "/api/ai/approve-suggestions", {
+        categories: categoriesToApprove,
+        skills: skillsToApprove
       });
       return response.json();
     },

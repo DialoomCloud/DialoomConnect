@@ -696,7 +696,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI-powered suggestions for professional categories and skills
-  app.post('/api/ai/suggest-profile', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/suggest-profile', async (req: any, res) => {
     try {
       const { description } = req.body;
       
@@ -727,8 +727,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add new category suggested by AI
-  app.post('/api/categories', isAdminAuthenticated, async (req: any, res) => {
+  // Add new category suggested by AI (accessible by authenticated users, not just admin)
+  app.post('/api/categories', isAuthenticated, async (req: any, res) => {
     try {
       const { name, description, subcategories } = req.body;
       
@@ -761,8 +761,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add new skill suggested by AI
-  app.post('/api/skills', isAdminAuthenticated, async (req: any, res) => {
+  // Add new skill suggested by AI (accessible by authenticated users, not just admin)  
+  app.post('/api/skills', isAuthenticated, async (req: any, res) => {
     try {
       const { name, category, description } = req.body;
       
