@@ -110,6 +110,119 @@ Responde con un JSON que contenga un array de habilidades sugeridas (máximo 8):
     }
   }
 
+  async generateProfessionalSuggestions(description: string): Promise<{
+    categories: string[];
+    skills: string[];
+  }> {
+    try {
+      const categoriesPromise = this.generateCategorySuggestions(description);
+      const skillsPromise = this.generateSkillSuggestions(description);
+      
+      const [categories, skills] = await Promise.all([categoriesPromise, skillsPromise]);
+      
+      return {
+        categories,
+        skills
+      };
+    } catch (error) {
+      console.error("Error generating professional suggestions:", error);
+      return {
+        categories: [],
+        skills: []
+      };
+    }
+  }
+
+  async analyzeSocialProfiles(socialUrls: { platform: string; url: string }[]): Promise<string> {
+    try {
+      if (!socialUrls || socialUrls.length === 0) {
+        return "";
+      }
+
+      const profilesInfo = socialUrls
+        .map(social => `${social.platform}: ${social.url}`)
+        .join("\n");
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `Analiza las URLs de perfiles sociales proporcionadas y extrae información profesional relevante que pueda ayudar a mejorar la descripción del perfil del usuario en Dialoom.
+
+Busca patrones como:
+- Especialidades profesionales
+- Experiencia destacada
+- Sectores o industrias
+- Herramientas o tecnologías
+- Logros o certificaciones
+
+Devuelve un resumen breve y relevante de máximo 3 líneas.`
+          },
+          {
+            role: "user",
+            content: `Analiza estos perfiles sociales:\n${profilesInfo}`
+          }
+        ],
+        max_tokens: 200,
+        temperature: 0.3,
+      });
+
+      return response.choices[0]?.message?.content?.trim() || "";
+    } catch (error) {
+      console.error("Error analyzing social profiles:", error);
+      return "";
+    }
+  }
+
+  async improveDescriptionWithSocialContext(
+    currentDescription: string,
+    socialUrls?: { platform: string; url: string }[]
+  ): Promise<string> {
+    try {
+      let socialContext = "";
+      if (socialUrls && socialUrls.length > 0) {
+        socialContext = await this.analyzeSocialProfiles(socialUrls);
+      }
+
+      const prompt = socialContext
+        ? `Descripción actual: "${currentDescription}"\n\nInformación extraída de perfiles sociales: ${socialContext}\n\nMejora la descripción combinando ambas fuentes de información.`
+        : `Descripción actual: "${currentDescription}"`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `Eres Loomia, el asistente de IA de Dialoom. Tu tarea es mejorar descripciones profesionales para perfiles de hosts expertos.
+
+Directrices:
+1. Mantén un tono profesional pero accesible
+2. Destaca las fortalezas y experiencia única
+3. Usa verbos de acción y logros específicos cuando sea posible
+4. Optimiza para búsquedas manteniendo naturalidad
+5. Máximo 4-5 líneas
+6. Si tienes información de perfiles sociales, úsala para enriquecer la descripción
+7. Escribe en el mismo idioma que la descripción original
+
+IMPORTANTE: Devuelve SOLO la descripción mejorada, sin comillas ni explicaciones adicionales.`
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
+      });
+
+      return response.choices[0]?.message?.content?.trim() || currentDescription;
+    } catch (error) {
+      console.error("Error improving description with social context:", error);
+      throw error;
+    }
+  }
+
   async chatResponse(message: string, context?: string): Promise<string> {
     try {
       const systemMessage = `Eres Loomia, el asistente inteligente de Dialoom, una plataforma de videollamadas profesionales que conecta expertos con clientes.
@@ -153,6 +266,12 @@ Responde siempre en español y mantén las respuestas concisas pero útiles.`;
       console.error("Error generating chat response:", error);
       return "Lo siento, no puedo responder en este momento. Por favor intenta de nuevo.";
     }
+  }
+}
+
+  async improveDescription(description: string): Promise<string> {
+    // Wrapper function for backward compatibility
+    return this.improveDescriptionWithSocialContext(description);
   }
 }
 

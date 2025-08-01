@@ -2362,9 +2362,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Get user's social profiles if available
+      const userId = req.user.claims.sub;
+      let socialUrls: { platform: string; url: string }[] = [];
+      
+      try {
+        const socialProfiles = await storage.getUserSocialProfiles(userId);
+        socialUrls = socialProfiles.map((profile: any) => ({
+          platform: profile.platformName || profile.platform,
+          url: `https://${profile.platformName || profile.platform}.com/${profile.username}`
+        }));
+      } catch (error) {
+        console.log("Could not fetch social profiles for AI analysis");
+      }
+
       // Use unified Loomia system for description improvement
       const { loomiaAI } = await import("./loomia-chat");
-      const improvedDescription = await loomiaAI.improveDescription(description);
+      const improvedDescription = await loomiaAI.improveDescriptionWithSocialContext(
+        description,
+        socialUrls
+      );
 
       res.json({ improvedDescription });
     } catch (error) {

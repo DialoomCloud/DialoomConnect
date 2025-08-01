@@ -441,7 +441,20 @@ export function EnhancedProfileEdit() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Descripción Profesional</FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Descripción Profesional</FormLabel>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleImproveDescription}
+                            disabled={improveDescriptionMutation.isPending}
+                            className="flex items-center gap-2"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            {improveDescriptionMutation.isPending ? "Mejorando..." : "Mejorar con IA"}
+                          </Button>
+                        </div>
                         <FormControl>
                           <Textarea 
                             {...field} 
