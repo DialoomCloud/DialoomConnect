@@ -80,13 +80,15 @@ class EmailService {
       const notification = await storage.createEmailNotification(notificationData);
 
       // Send email via Resend
-      await resend.emails.send({
-        from: 'Dialoom <notifications@dialoom.cloud>',
+      const emailResult = await resend.emails.send({
+        from: 'Dialoom <onboarding@resend.dev>',
         to: params.recipientEmail,
         subject,
         html: htmlContent,
         text: textContent,
       });
+      
+      console.log('Resend API response:', emailResult);
 
       // Update notification status
       await storage.updateEmailNotification(notification.id, {

@@ -6,9 +6,9 @@ async function sendTestEmail() {
   try {
     const result = await emailService.sendEmail({
       templateType: 'user_registration',
-      recipientEmail: 'nachosaladrigas@gmail.com',
+      recipientEmail: 'app@dialoom.cloud',
       variables: {
-        firstName: 'Nacho',
+        firstName: 'Usuario de Prueba',
         dashboardUrl: 'https://dialoom.cloud/dashboard'
       }
     });
