@@ -16,6 +16,7 @@ import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/
 import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -52,6 +53,42 @@ export default function UserProfile() {
   const { data: pricing } = useQuery<HostPricing[]>({
     queryKey: [`/api/users/${userId}/pricing`],
     enabled: !!userId,
+  });
+  
+  // Fetch service prices from admin configuration
+  const { data: servicePrices } = useQuery({
+    queryKey: ["/api/admin/config/service-prices"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/config", {});
+      const configs = await response.json();
+      
+      const prices = {
+        screenSharing: 10,
+        translation: 25,
+        recording: 10,
+        transcription: 5
+      };
+      
+      configs.forEach((config: any) => {
+        const value = parseFloat(config.value);
+        switch (config.key) {
+          case 'screen_sharing_price':
+            prices.screenSharing = value;
+            break;
+          case 'translation_price':
+            prices.translation = value;
+            break;
+          case 'recording_price':
+            prices.recording = value;
+            break;
+          case 'transcription_price':
+            prices.transcription = value;
+            break;
+        }
+      });
+      
+      return prices;
+    },
   });
 
   if (userError) {
@@ -184,28 +221,28 @@ export default function UserProfile() {
                           <Monitor className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Compartir Pantalla</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€10</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.screenSharing || 10}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Languages className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Traducción Simultánea</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€25</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.translation || 25}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Video className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Grabación de Sesión</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€10</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.recording || 10}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Transcripción Automática</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€5</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.transcription || 5}</span>
                       </div>
                     </div>
                   </div>
