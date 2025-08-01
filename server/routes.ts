@@ -97,6 +97,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin authentication middleware
+  const isAdminAuthenticated: RequestHandler = async (req: any, res, next) => {
+    if (req.session?.isAdmin && req.session?.userId) {
+      const user = await storage.getUser(req.session.userId);
+      if (user && (user.isAdmin || user.role === 'admin')) {
+        req.adminUser = user;
+        next();
+      } else {
+        res.status(401).json({ message: "Unauthorized - Admin access required" });
+      }
+    } else {
+      res.status(401).json({ message: "Unauthorized - Admin access required" });
+    }
+  };
+
   // Admin login endpoint (separate from Replit auth)
   app.post('/api/admin/login', async (req, res) => {
     try {
@@ -655,15 +670,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - Get users pending verification
-  app.get('/api/admin/users/pending', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/users/pending', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getUser(userId);
-
-      if (!adminUser?.isAdmin) {
-        return res.status(403).json({ message: "Acceso denegado. Solo administradores." });
-      }
-
       // Get users who have uploaded documents but are not verified
       const pendingUsers = await storage.getPendingVerificationUsers();
       res.json(pendingUsers);
@@ -674,18 +682,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - Verify user
-  app.post('/api/admin/users/:targetUserId/verify', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/users/:targetUserId/verify', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
       const { targetUserId } = req.params;
       const { isVerified, notes } = req.body;
 
-      const adminUser = await storage.getUser(userId);
-      if (!adminUser?.isAdmin) {
-        return res.status(403).json({ message: "Acceso denegado. Solo administradores." });
-      }
-
-      await storage.verifyUser(targetUserId, isVerified, userId, notes);
+      await storage.verifyUser(targetUserId, isVerified, req.adminUser.id, notes);
       
       res.json({
         message: isVerified ? "Usuario verificado exitosamente" : "Verificación de usuario denegada",
@@ -698,15 +700,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Dashboard Stats
-  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/stats', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getUser(userId);
-
-      if (!adminUser?.isAdmin) {
-        return res.status(403).json({ message: "Access denied. Admin only." });
-      }
-
       // Get statistics
       const stats = {
         totalHosts: await storage.getTotalHosts(),
@@ -726,15 +721,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin - Get all hosts
-  app.get('/api/admin/hosts', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/hosts', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getUser(userId);
-
-      if (!adminUser?.isAdmin) {
-        return res.status(403).json({ message: "Access denied. Admin only." });
-      }
-
       const hosts = await storage.getAllHosts();
       res.json(hosts);
     } catch (error) {
@@ -744,15 +732,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin - Get/Update configuration
-  app.get('/api/admin/config', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/config', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getUser(userId);
-
-      if (!adminUser?.isAdmin) {
-        return res.status(403).json({ message: "Access denied. Admin only." });
-      }
-
       const config = await storage.getAllAdminConfig();
       res.json(config);
     } catch (error) {
@@ -761,16 +742,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/admin/config', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/config', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getUser(userId);
-
-      if (!adminUser?.isAdmin) {
-        return res.status(403).json({ message: "Access denied. Admin only." });
-      }
-
-      const config = await storage.updateMultipleAdminConfigs(req.body, userId);
+      const config = await storage.updateMultipleAdminConfigs(req.body, req.adminUser.id);
       res.json(config);
     } catch (error) {
       console.error("Error updating config:", error);
@@ -779,21 +753,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin - Create/Update individual configuration
-  app.post('/api/admin/config', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/config', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getUser(userId);
-
-      if (!adminUser?.isAdmin) {
-        return res.status(403).json({ message: "Access denied. Admin only." });
-      }
-
       const { key, value, description } = req.body;
-      const updatedConfig = await storage.updateAdminConfig(key, value, userId, description);
+      const updatedConfig = await storage.updateAdminConfig(key, value, req.adminUser.id, description);
       
       // Create audit log
       await storage.createAuditLog({
-        adminId: userId,
+        adminId: req.adminUser.id,
         action: 'update_config',
         targetTable: 'admin_config',
         targetId: key,
@@ -1489,15 +1456,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - Get all users
-  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/users', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user?.isAdmin && user?.role !== 'admin') {
-        return res.status(403).json({ message: 'Acceso denegado' });
-      }
-
       const users = await storage.getAllUsersForAdmin();
       res.json(users);
     } catch (error) {
@@ -1507,16 +1467,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - Update user status
-  app.put('/api/admin/users/:targetUserId', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/users/:targetUserId', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
       const { targetUserId } = req.params;
       const { role, isActive, isVerified } = req.body;
-      
-      if (!user?.isAdmin && user?.role !== 'admin') {
-        return res.status(403).json({ message: 'Acceso denegado' });
-      }
 
       await storage.updateUserStatus(targetUserId, {
         role,
@@ -1531,42 +1485,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes for commission and service pricing management
-  app.get('/api/admin/config', isAuthenticated, async (req: any, res) => {
+  // DUPLICATE ROUTE - COMMENTED OUT (using the one at line 735)
+  // app.get('/api/admin/config', isAuthenticated, async (req: any, res) => {
+  //   try {
+  //     const userId = req.user.claims.sub;
+  //     const user = await storage.getUser(userId);
+  //     
+  //     if (!user?.isAdmin) {
+  //       return res.status(403).json({ message: 'Acceso denegado' });
+  //     }
+  //
+  //     const config = await storage.getAllAdminConfig();
+  //     res.json(config);
+  //   } catch (error) {
+  //     console.error('Error fetching admin config:', error);
+  //     res.status(500).json({ message: 'Error al obtener configuración' });
+  //   }
+  // });
+
+  app.put('/api/admin/config/:key', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: 'Acceso denegado' });
-      }
-
-      const config = await storage.getAllAdminConfig();
-      res.json(config);
-    } catch (error) {
-      console.error('Error fetching admin config:', error);
-      res.status(500).json({ message: 'Error al obtener configuración' });
-    }
-  });
-
-  app.put('/api/admin/config/:key', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: 'Acceso denegado' });
-      }
-
       const { key } = req.params;
       const { value, description } = req.body;
 
       const oldConfig = await storage.getAdminConfig(key);
-      const updatedConfig = await storage.updateAdminConfig(key, value, userId, description);
+      const updatedConfig = await storage.updateAdminConfig(key, value, req.adminUser.id, description);
 
       // Create audit log
       await storage.createAuditLog({
-        adminId: userId,
+        adminId: req.adminUser.id,
         action: 'update_config',
         targetTable: 'admin_config',
         targetId: key,
@@ -1675,18 +1622,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Email template management endpoints (Admin only)
-  app.get('/api/admin/email-templates', isAuthenticated, async (req, res) => {
+  app.get('/api/admin/email-templates', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.claims?.sub) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const userRecord = await storage.getUser(user.claims.sub);
-      if (!userRecord?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
       const templates = await storage.getAllEmailTemplates();
       res.json(templates);
     } catch (error) {
@@ -1695,18 +1632,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/email-templates', isAuthenticated, async (req, res) => {
+  app.post('/api/admin/email-templates', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.claims?.sub) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const userRecord = await storage.getUser(user.claims.sub);
-      if (!userRecord?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
       const validatedData = createEmailTemplateSchema.parse(req.body);
       const template = await storage.createEmailTemplate(validatedData);
       res.status(201).json(template);
@@ -1719,18 +1646,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/admin/email-templates/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/admin/email-templates/:id', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.claims?.sub) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const userRecord = await storage.getUser(user.claims.sub);
-      if (!userRecord?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
       const { id } = req.params;
       const validatedData = updateEmailTemplateSchema.parse(req.body);
       const template = await storage.updateEmailTemplate(id, validatedData);
@@ -1744,18 +1661,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/admin/email-templates/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/admin/email-templates/:id', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.claims?.sub) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const userRecord = await storage.getUser(user.claims.sub);
-      if (!userRecord?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
       const { id } = req.params;
       const success = await storage.deleteEmailTemplate(id);
       if (success) {
@@ -1770,18 +1677,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Initialize default email templates
-  app.post("/api/admin/initialize-email-templates", isAuthenticated, async (req, res) => {
+  app.post("/api/admin/initialize-email-templates", isAdminAuthenticated, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.claims?.sub) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const userRecord = await storage.getUser(user.claims.sub);
-      if (!userRecord?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
       await initializeEmailTemplates();
       res.json({ message: "Email templates initialized successfully" });
     } catch (error) {
@@ -1791,18 +1688,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Email notifications log (Admin only)
-  app.get('/api/admin/email-notifications', isAuthenticated, async (req, res) => {
+  app.get('/api/admin/email-notifications', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.claims?.sub) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const userRecord = await storage.getUser(user.claims.sub);
-      if (!userRecord?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
       const limit = parseInt(req.query.limit as string) || 50;
       const notifications = await storage.getEmailNotifications(undefined, limit);
       res.json(notifications);
