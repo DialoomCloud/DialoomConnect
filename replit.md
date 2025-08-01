@@ -6,6 +6,16 @@ Dialoom is a comprehensive multilingual web application designed as a profession
 ## User Preferences
 Preferred communication style: Simple, everyday language (non-technical users).
 
+## Recent Changes (January 2025)
+- Fixed login redirect flow: Users now land on /profile after login instead of being automatically redirected to admin page
+- Updated Loomia AI to respond in the platform's selected language (ES/EN/CA)
+- Updated Loomia's context with current Dialoom payment information:
+  - All payments processed through Stripe
+  - 10% Dialoom commission on all transactions
+  - Hosts can only edit their own video call rates and durations
+  - Service fees (recording, etc.) are fixed by Dialoom and non-editable by hosts
+- Admin panel remains accessible via manual navigation for users with admin role
+
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.
 

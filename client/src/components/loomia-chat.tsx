@@ -9,6 +9,7 @@ import { MessageCircle, Send, Bot, User, Minimize2, Maximize2, X } from "lucide-
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 interface ChatMessage {
   id: string;
@@ -43,13 +44,24 @@ interface LoomiaResponse {
 export function LoomiaChat() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const getWelcomeMessage = () => {
+    const messages = {
+      es: "¡Hola! Soy Loomia, tu asistente de IA para Dialoom. ¿En qué puedo ayudarte hoy?\n\n• Puedo sugerir categorías y skills para tu perfil profesional\n• Ayudarte con reservas y pagos\n• Guiarte en la configuración de precios y disponibilidad\n• Resolver dudas sobre videollamadas\n• Y cualquier otra consulta sobre la plataforma",
+      en: "Hello! I'm Loomia, your AI assistant for Dialoom. How can I help you today?\n\n• I can suggest categories and skills for your professional profile\n• Help you with bookings and payments\n• Guide you in setting up prices and availability\n• Answer questions about video calls\n• And any other questions about the platform",
+      ca: "Hola! Sóc Loomia, el teu assistent d'IA per a Dialoom. Com et puc ajudar avui?\n\n• Puc suggerir categories i habilitats per al teu perfil professional\n• Ajudar-te amb reserves i pagaments\n• Guiar-te en la configuració de preus i disponibilitat\n• Resoldre dubtes sobre videotrucades\n• I qualsevol altra consulta sobre la plataforma"
+    };
+    
+    return messages[i18n.language as keyof typeof messages] || messages.es;
+  };
+  
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: "¡Hola! Soy Loomia, tu asistente de IA para Dialoom. ¿En qué puedo ayudarte hoy?\n\n• Puedo sugerir categorías y skills para tu perfil profesional\n• Ayudarte con reservas y pagos\n• Guiarte en la configuración de precios y disponibilidad\n• Resolver dudas sobre videollamadas\n• Y cualquier otra consulta sobre la plataforma",
+      content: getWelcomeMessage(),
       timestamp: new Date(),
     }
   ]);
@@ -71,7 +83,8 @@ export function LoomiaChat() {
         body: {
           message,
           userRole: (user as any)?.role || "guest",
-          conversationHistory: messages.slice(-6).map(m => ({ role: m.role, content: m.content }))
+          conversationHistory: messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
+          language: i18n.language || 'es'
         }
       });
       return response.json() as Promise<LoomiaResponse>;

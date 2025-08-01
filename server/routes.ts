@@ -698,7 +698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Loomia AI Chat - Asistente IA unificado de Dialoom
   app.post('/api/loomia/chat', async (req: any, res) => {
     try {
-      const { message, userRole, conversationHistory } = req.body;
+      const { message, userRole, conversationHistory, language } = req.body;
       
       if (!message || message.trim().length === 0) {
         return res.status(400).json({ 
@@ -734,8 +734,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response = profileSuggestionResult.response;
         suggestions = profileSuggestionResult.suggestions;
       } else {
-        // Regular chat response
-        response = await loomiaAI.generateResponse(message, userRole, conversationHistory);
+        // Regular chat response with language support
+        response = await loomiaAI.chatResponse(message, null, language || 'es');
       }
 
       res.json({

@@ -44,7 +44,17 @@ function Router() {
       <div className="flex-1">
         <Switch>
           {/* Public routes available to everyone */}
-          <Route path="/" component={isAuthenticated && !isLoading ? Home : Landing} />
+          <Route path="/">
+            {isAuthenticated && !isLoading ? (
+              <Route component={() => {
+                const [, setLocation] = useLocation();
+                useEffect(() => setLocation("/profile"), [setLocation]);
+                return null;
+              }} />
+            ) : (
+              <Landing />
+            )}
+          </Route>
           <Route path="/hosts" component={HostSearch} />
           <Route path="/user/:id" component={UserProfile} />
           <Route path="/admin-login" component={AdminLogin} />

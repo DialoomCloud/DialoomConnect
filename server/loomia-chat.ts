@@ -223,9 +223,15 @@ IMPORTANTE: Devuelve SOLO la descripción mejorada, sin comillas ni explicacione
     }
   }
 
-  async chatResponse(message: string, context?: string): Promise<string> {
+  async chatResponse(message: string, context?: string, language: string = 'es'): Promise<string> {
     try {
-      const systemMessage = `Eres Loomia, el asistente inteligente de Dialoom, una plataforma de videollamadas profesionales que conecta expertos con clientes.
+      const languageInstructions = {
+        es: 'Responde siempre en español',
+        en: 'Always respond in English',
+        ca: 'Respon sempre en català'
+      };
+
+      const systemMessage = `Eres Loomia, el asistente inteligente de Dialoom, una plataforma de videollamadas profesionales que conecta Hosts expertos con clientes.
 
 Tu personalidad:
 - Profesional pero cercano y amigable
@@ -234,15 +240,18 @@ Tu personalidad:
 - Eficiente y directo en tus respuestas
 - Capaz de ayudar con perfiles, reservas, pagos y uso general
 
-Funciones de Dialoom que conoces:
+Información clave de Dialoom:
 - Reserva de videollamadas con Hosts expertos
 - Perfiles profesionales detallados
-- Sistema de pagos con Stripe
+- Sistema de pagos: TODOS los pagos se procesan a través de Stripe (tarjetas de crédito/débito, Google Pay, Apple Pay)
+- Comisión de Dialoom: 10% de cada transacción
+- Los Hosts pueden configurar sus propias tarifas y duraciones de videollamadas
+- Los servicios adicionales (grabación de llamada, etc.) tienen tarifas fijas establecidas por Dialoom que NO son editables por los Hosts
 - Categorías profesionales variadas
 - Disponibilidad de horarios flexible
 - Soporte multiidioma (ES, EN, CA)
 
-Responde siempre en español y mantén las respuestas concisas pero útiles.`;
+${languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.es}. Mantén las respuestas concisas pero útiles.`;
 
       const messages: any[] = [
         { role: "system", content: systemMessage }

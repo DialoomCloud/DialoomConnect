@@ -32,12 +32,7 @@ export default function Home() {
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
   const [replacingContent, setReplacingContent] = useState<MediaContent | null>(null);
 
-  // Check for admin user and redirect to admin dashboard
-  useEffect(() => {
-    if (!adminLoading && adminUser) {
-      setLocation("/admin");
-    }
-  }, [adminUser, adminLoading, setLocation]);
+  // Remove automatic admin redirect - users should navigate manually
 
   // Redirect to login if not authenticated (and not admin)
   useEffect(() => {
