@@ -683,7 +683,7 @@ function ArticleEditor({
           {/* Status */}
           <div>
             <Label htmlFor="status">Estado</Label>
-            <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+            <Select value={formData.status} onValueChange={(value: "draft" | "published" | "archived") => setFormData(prev => ({ ...prev, status: value }))}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Selecciona el estado" />
               </SelectTrigger>
