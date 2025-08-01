@@ -1,0 +1,96 @@
+**Resumen rápido**
+Dialoom necesita una *home* que explique, seduzca y convierta en unos segundos. Hoy la propuesta de valor apenas se percibe en dialoom.cloud; en cambio, la landing pública de dialoom.com muestra con un solo párrafo quién puede ganar dinero, cómo y por qué es diferente — aunque todavía le falta foco en beneficios y prueba social.([dialoom.com][1])  Inspirándonos en las mejores prácticas de landing (titular + hero + CTA único, pruebas sociales, F-pattern, copy orientado a la acción)([Elegant Themes][2]) y en referentes del sector como Intro, Mentorcam, Minnect o CallTheOne, que destacan acceso inmediato, monetización y asesorías 1-a-1([intro.co][3], [mentor.cam][4], [minnect.com][5], [calltheone.com][6]), propongo la siguiente arquitectura editorial.
+
+---
+
+## Nueva estructura de contenidos
+
+### 1. Home (`/`)
+
+| Bloque               | Objetivo         | Copy propuesto (ES)                                                                                                                                |
+| -------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hero**             | Promesa + CTA    | **“Habla cara a cara con la persona que más admiras.”**<br/>Videollamadas 1-a-1 con expertos, creadores e ídolos en menos de 60 segundos.          |
+| **¿Cómo funciona?**  | Explicar 3 pasos | 1) **Encuentra** un experto.<br/>2) **Reserva** tu slot y paga con Stripe.<br/>3) **Conéctate** y recibe consejos en directo.                      |
+| **Para quién**       | Segmentos        | - Fans que sueñan con conocer a su artista favorito.<br/>- Profesionales que buscan mentoría.<br/>- Creadores que desean monetizar.                |
+| **Beneficios clave** | Ventajas         | • Acceso directo y sin intermediarios.([Google Play][7]) <br/>• Experiencia personalizada.([Apple][8]) <br/>• Pago seguro y reembolso garantizado. |
+| **Prueba social**    | Confianza        | “Me ahorré 14 000 € gracias a los consejos del diseñador Shawn H.” Erika P., LA.([intro.co][3])                                                    |
+| **CTA final**        | Conversión       | **“Reserva tu primera llamada ya”** (botón primario)                                                                                               |
+
+### 2. Subpáginas recomendadas
+
+| Ruta              | Objetivo          | Componentes                                                                                                 |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| `/expertos`       | Captar *hosts*    | Beneficios de ser experto, comisión, tutorial de alta, ranking.                                             |
+| `/usuarios`       | Educar al cliente | Video demo, FAQs básicas, garantía.                                                                         |
+| `/precios`        | Transparencia     | Tabla de precios por duración + add-ons (grabación, traducción).                                            |
+| `/faq`            | Objeciones        | 10 preguntas frecuentes agrupadas por pagos, llamadas y seguridad.                                          |
+| `/sobre-nosotros` | Marca             | Historia, misión (“acercar a todo el mundo a quien admira”)([Google Play][7], [Apple][8]), equipo y prensa. |
+| `/blog`           | SEO & autoridad   | Guías (“Cómo preparar tu 1-a-1 con un piloto”, etc.).                                                       |
+| `/app`            | Descarga móvil    | Enlaces App Store + Google Play con badges oficiales.([Google Play][7], [Apple][8])                         |
+
+---
+
+## Prompt para Replit (copiar/pegar en la consola AI replit deploy)
+
+````txt
+# 🔧 Update marketing site content
+
+1. **Home (`apps/web/app/page.tsx`)**
+   - Reemplaza el `<Hero>` con:
+     ```
+     title="Habla cara a cara con la persona que más admiras."
+     subtitle="Videollamadas 1-a-1 con expertos, creadores e ídolos en menos de 60 segundos."
+     ctaLabel="Reserva tu primera llamada"
+     ctaHref="/app"
+     ```
+   - Añade secciones `<HowItWorks>`, `<Benefits>`, `<Testimonials>` y `<GetStarted>` según el copy detallado arriba.
+
+2. **Crea páginas nuevas**  
+   - `apps/web/app/expertos/page.tsx` → usa el componente `<MarketingLayout>` y el copy del bloque “/expertos”.  
+   - `app/usuarios`, `app/precios`, `app/faq`, `app/sobre-nosotros`, `app/blog`, `app/app` con la estructura MDX básica y contenido propuesto.  
+   - Agrega rutas en `next.config.js` y menú principal.
+
+3. **Editorial clean-up**  
+   - Elimina cualquier texto _Lorem ipsum_.  
+   - Sustituye “Comming soon” por sp “Próximamente” en páginas inacabadas.  
+   - Revisa meta-tags:  
+     ```
+     og:title = "Dialoom — Videollamadas con Expertos e Ídolos"
+     og:description = "Conecta en directo con quien más te inspira. Reserva en segundos, aprende para siempre."
+     ```
+
+4. **SEO & accesibilidad**  
+   - Añade `alt` descriptivo a imágenes y botones con `aria-label`.  
+   - Incluye un `sitemap.xml` autogenerado.
+
+5. **Commit**  
+   - Rama `feat/landing-redesign`, convention commit `feat(marketing): new landing + subpages`.
+
+# End
+````
+
+---
+
+### Por qué funciona
+
+* El **titular** promete resultado, no solo funcionalidad (beneficio emocional).
+* Se mantiene un **CTA único** en toda la página — claro y visible.([Elegant Themes][2])
+* **Prueba social** y logos refuerzan credibilidad, como hacen Intro o Mentorcam.([intro.co][3], [mentor.cam][4])
+* El flujo de 3 pasos simplifica la acción, replicando patrones de conversión de Minnect.([minnect.com][5])
+* Subpáginas atacan palabras clave long-tail y responden objeciones, mejorando SEO y confianza.([Medium][9])
+
+Con este plan Dialoom ganará coherencia, claridad y, sobre todo, conversiones.
+
+[1]: https://dialoom.com/?doing_wp_cron=1753884152.3333110809326171875000&utm_source=chatgpt.com "Home - Dialoom: Video Call Who Sparks your Curiosity"
+[2]: https://www.elegantthemes.com/blog/marketing/how-to-create-a-landing-page "How to Create a Landing Page in 2025 (Detailed Guide)"
+[3]: https://intro.co/ "Intro - Book experts & get advice"
+[4]: https://mentor.cam/ "Create Next App"
+[5]: https://www.minnect.com/get-expert-advice-instantly/ "Get Expert Advice, Instantly"
+[6]: https://www.calltheone.com/en "
+        	        Call TheONE | Direct contact with professionals via video calling and webinars
+            "
+[7]: https://play.google.com/store/apps/details?hl=en_US&id=com.dialoom "Dialoom - Apps on Google Play"
+[8]: https://apps.apple.com/gb/app/dialoom/id6470259526 "
+      ‎Dialoom on the App Store
+    "
+[9]: https://medium.com/swlh/20-ways-to-create-a-landing-page-without-knowing-how-to-code-a-complete-independent-tool-review-8c8df0516b40 "20 ways to create a landing page without knowing how to code: a complete independent tool review | by Roman Rudnik | The Startup | Medium"

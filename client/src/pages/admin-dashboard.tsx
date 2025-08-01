@@ -13,7 +13,6 @@ import {
   BarChart3, 
   DollarSign, 
   Palette, 
-  UserCheck,
   Newspaper,
   Activity,
   Video,
@@ -548,34 +547,7 @@ function AdminSettings() {
   );
 }
 
-// Host Approvals Component
-function HostApprovals() {
-  const { i18n } = useTranslation();
-  
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {i18n.language === 'es' ? 'Aprobación de Hosts' : 'Host Approvals'}
-          </CardTitle>
-          <CardDescription>
-            {i18n.language === 'es' 
-              ? 'Revisa y aprueba nuevos hosts'
-              : 'Review and approve new hosts'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-gray-500">
-            {i18n.language === 'es' 
-              ? 'Sistema de verificación y aprobación de hosts'
-              : 'Host verification and approval system'}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+
 
 // News Management Component
 function NewsManagement() {
