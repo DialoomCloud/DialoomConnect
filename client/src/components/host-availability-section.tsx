@@ -210,14 +210,16 @@ export function HostAvailabilitySection() {
                 <span className="text-lg font-semibold">€</span>
                 <Input
                   type="number"
-                  value={getPricingInfo(30)?.price || ""}
+                  step="1"
+                  min="0"
+                  value={Math.round(parseFloat(getPricingInfo(30)?.price || "0"))}
                   onChange={(e) => updatePricingMutation.mutate({
                     duration: 30,
-                    price: parseFloat(e.target.value) || 0,
+                    price: parseInt(e.target.value) || 0,
                     isActive: true,
                   })}
                   className="w-24"
-                  placeholder="0.00"
+                  placeholder="30"
                 />
               </div>
               <Switch
@@ -237,14 +239,16 @@ export function HostAvailabilitySection() {
                 <span className="text-lg font-semibold">€</span>
                 <Input
                   type="number"
-                  value={getPricingInfo(60)?.price || ""}
+                  step="1"
+                  min="0"
+                  value={Math.round(parseFloat(getPricingInfo(60)?.price || "0"))}
                   onChange={(e) => updatePricingMutation.mutate({
                     duration: 60,
-                    price: parseFloat(e.target.value) || 0,
+                    price: parseInt(e.target.value) || 0,
                     isActive: true,
                   })}
                   className="w-24"
-                  placeholder="0.00"
+                  placeholder="60"
                 />
               </div>
               <Switch
@@ -264,14 +268,16 @@ export function HostAvailabilitySection() {
                 <span className="text-lg font-semibold">€</span>
                 <Input
                   type="number"
-                  value={getPricingInfo(90)?.price || ""}
+                  step="1"
+                  min="0"
+                  value={Math.round(parseFloat(getPricingInfo(90)?.price || "0"))}
                   onChange={(e) => updatePricingMutation.mutate({
                     duration: 90,
-                    price: parseFloat(e.target.value) || 0,
+                    price: parseInt(e.target.value) || 0,
                     isActive: true,
                   })}
                   className="w-24"
-                  placeholder="0.00"
+                  placeholder="90"
                 />
               </div>
               <Switch
@@ -298,9 +304,11 @@ export function HostAvailabilitySection() {
                 <Label className="text-sm">Precio (€)</Label>
                 <Input
                   type="number"
+                  step="1"
+                  min="0"
                   value={customPrice}
-                  onChange={(e) => setCustomPrice(parseFloat(e.target.value) || 0)}
-                  placeholder="0.00"
+                  onChange={(e) => setCustomPrice(parseInt(e.target.value) || 0)}
+                  placeholder="120"
                 />
               </div>
               <div className="flex items-end">
@@ -316,13 +324,13 @@ export function HostAvailabilitySection() {
             <div className="mt-4 space-y-2">
               {pricing.filter(p => p.isCustom).map((p) => (
                 <div key={p.id} className="flex items-center justify-between text-sm">
-                  <span>{p.duration} minutos - €{p.price}</span>
+                  <span>{p.duration} minutos - €{Math.round(parseFloat(p.price))}</span>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => updatePricingMutation.mutate({
                       duration: p.duration,
-                      price: parseFloat(p.price),
+                      price: parseInt(p.price),
                       isActive: false,
                       isCustom: true,
                     })}

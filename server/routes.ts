@@ -77,91 +77,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   
-  // Admin check session endpoint
-  app.get('/api/admin/check-session', async (req, res) => {
-    if ((req as any).session?.isAdmin && (req as any).session?.userId) {
-      const user = await storage.getUser((req as any).session.userId);
-      if (user && (user.isAdmin || user.role === 'admin')) {
-        res.json({ 
-          success: true,
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            isAdmin: user.isAdmin,
-            role: user.role
-          }
-        });
-      } else {
-        res.status(401).send("No autorizado");
-      }
-    } else {
-      res.status(401).send("No autorizado");
-    }
-  });
-
-  // Admin authentication middleware
-  const isAdminAuthenticated: RequestHandler = async (req: any, res, next) => {
-    if (req.session?.isAdmin && req.session?.userId) {
-      const user = await storage.getUser(req.session.userId);
-      if (user && (user.isAdmin || user.role === 'admin')) {
-        req.adminUser = user;
-        next();
-      } else {
-        res.status(401).json({ message: "Unauthorized - Admin access required" });
-      }
-    } else {
-      res.status(401).json({ message: "Unauthorized - Admin access required" });
-    }
-  };
-
-  // Admin login endpoint (separate from Replit auth)
-  app.post('/api/admin/login', async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).send("Usuario y contraseña requeridos");
-      }
-      
-      // Find user by username
-      const user = await storage.getUserByUsername(username);
-      
-      if (!user || !user.passwordHash) {
-        return res.status(401).send("Credenciales inválidas");
-      }
-      
-      // Check if user is admin
-      if (!user.isAdmin && user.role !== 'admin') {
-        return res.status(403).send("Acceso denegado");
-      }
-      
-      // Verify password
-      const validPassword = await bcrypt.compare(password, user.passwordHash);
-      if (!validPassword) {
-        return res.status(401).send("Credenciales inválidas");
-      }
-      
-      // Log the user in using the session
-      (req as any).session.userId = user.id;
-      (req as any).session.isAdmin = true;
-      (req as any).user = user;
-      
+  // Admin authentication middleware - using Replit Auth
+  const ADMIN_USERNAMES = ['dialoomroot', 'marcgarcia10', 'nachosaladrigas'];
+  
+  // Admin check session endpoint - simplified for Replit Auth
+  app.get('/api/admin/check-session', isAuthenticated, (req: any, res) => {
+    const user = req.user;
+    const isAdmin = user && ADMIN_USERNAMES.includes(user.claims?.email?.split('@')[0] || '');
+    
+    if (isAdmin) {
       res.json({ 
-        success: true, 
+        success: true,
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          isAdmin: user.isAdmin,
-          role: user.role
+          id: user.claims.sub,
+          email: user.claims.email,
+          firstName: user.claims.first_name,
+          isAdmin: true
         }
       });
-    } catch (error) {
-      console.error("Admin login error:", error);
-      res.status(500).send("Error del servidor");
+    } else {
+      res.status(401).json({ message: "No autorizado" });
     }
   });
+  
+  const isAdminAuthenticated: RequestHandler = async (req: any, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized - Login required" });
+    }
+
+    const user = req.user;
+    const isAdmin = user && ADMIN_USERNAMES.includes(user.claims?.email?.split('@')[0] || '');
+    
+    if (!isAdmin) {
+      return res.status(401).json({ message: "Unauthorized - Admin access required" });
+    }
+
+    req.adminUser = user;
+    next();
+  };
+
+
   
   // Serve uploaded files with GDPR compliance
   app.use('/uploads', (req, res, next) => {
