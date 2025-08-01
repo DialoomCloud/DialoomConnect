@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
@@ -13,7 +14,7 @@ import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { User as UserIcon, Phone, MapPin, Mail, Edit, Plus, CheckCircle, Trash2, Search, Users, Calendar, Video, Settings } from "lucide-react";
 import type { User, MediaContent } from "@shared/schema";
 
@@ -21,6 +22,8 @@ export default function Home() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const { user: authUser, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { adminUser, isLoading: adminLoading } = useAdminAuth();
+  const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
@@ -29,9 +32,16 @@ export default function Home() {
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
   const [replacingContent, setReplacingContent] = useState<MediaContent | null>(null);
 
-  // Redirect to login if not authenticated
+  // Check for admin user and redirect to admin dashboard
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!adminLoading && adminUser) {
+      setLocation("/admin");
+    }
+  }, [adminUser, adminLoading, setLocation]);
+
+  // Redirect to login if not authenticated (and not admin)
+  useEffect(() => {
+    if (!authLoading && !adminLoading && !isAuthenticated && !adminUser) {
       toast({
         title: "Unauthorized",
         description: "You are logged out. Logging in again...",
@@ -42,7 +52,7 @@ export default function Home() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, authLoading, toast]);
+  }, [isAuthenticated, authLoading, adminLoading, adminUser, toast]);
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
