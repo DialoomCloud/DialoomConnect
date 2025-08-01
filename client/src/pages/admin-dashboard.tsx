@@ -21,10 +21,11 @@ import {
   TrendingUp,
   Mail
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AdminUserManagement } from "@/components/admin-user-management";
 import { AdminEmailManagement } from "@/components/admin-email-management";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
   const { i18n } = useTranslation();
@@ -364,11 +365,88 @@ function InvoicesManagement() {
 // Admin Settings Component
 function AdminSettings() {
   const { i18n } = useTranslation();
-  const { data: config } = useQuery({
+  const { toast } = useToast();
+  
+  // State for all settings
+  const [commission, setCommission] = useState(10);
+  const [screenSharingFee, setScreenSharingFee] = useState(10);
+  const [translationFee, setTranslationFee] = useState(25);
+  const [recordingFee, setRecordingFee] = useState(10);
+  const [transcriptionFee, setTranscriptionFee] = useState(5);
+  const [vatRate, setVatRate] = useState(21);
+  
+  // Load configuration from database
+  const { data: configs, isLoading } = useQuery({
     queryKey: ["/api/admin/config"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/admin/config", {});
       return response.json();
+    },
+  });
+
+  // Update state when configs load
+  useEffect(() => {
+    if (configs && Array.isArray(configs)) {
+      configs.forEach((config: any) => {
+        const value = typeof config.value === 'string' ? parseFloat(config.value) : config.value;
+        switch (config.key) {
+          case 'commission_rate':
+            setCommission(value);
+            break;
+          case 'screen_sharing_price':
+            setScreenSharingFee(value);
+            break;
+          case 'translation_price':
+            setTranslationFee(value);
+            break;
+          case 'recording_price':
+            setRecordingFee(value);
+            break;
+          case 'transcription_price':
+            setTranscriptionFee(value);
+            break;
+          case 'vat_rate':
+            setVatRate(value);
+            break;
+        }
+      });
+    }
+  }, [configs]);
+
+  // Save configuration mutation
+  const saveConfigMutation = useMutation({
+    mutationFn: async () => {
+      const configs = [
+        { key: 'commission_rate', value: commission.toString(), description: 'Platform commission percentage' },
+        { key: 'vat_rate', value: vatRate.toString(), description: 'VAT rate percentage' },
+        { key: 'screen_sharing_price', value: screenSharingFee.toString(), description: 'Screen sharing service fee in EUR' },
+        { key: 'translation_price', value: translationFee.toString(), description: 'Translation service fee in EUR' },
+        { key: 'recording_price', value: recordingFee.toString(), description: 'Recording service fee in EUR' },
+        { key: 'transcription_price', value: transcriptionFee.toString(), description: 'Transcription service fee in EUR' },
+      ];
+
+      // Save each config item
+      for (const config of configs) {
+        await apiRequest("POST", "/api/admin/config", config);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/config"] });
+      toast({
+        title: i18n.language === 'es' ? "Configuración guardada" : "Settings saved",
+        description: i18n.language === 'es' 
+          ? "Los cambios se han aplicado correctamente"
+          : "Changes have been applied successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: i18n.language === 'es' ? "Error" : "Error",
+        description: i18n.language === 'es' 
+          ? "No se pudieron guardar los cambios"
+          : "Could not save changes",
+        variant: "destructive",
+      });
     },
   });
 
@@ -386,41 +464,91 @@ function AdminSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">
-              {i18n.language === 'es' ? 'Comisión Global (%)' : 'Global Commission (%)'}
-            </label>
-            <input 
-              type="number" 
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              defaultValue={config?.commission || 10}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">
+                {i18n.language === 'es' ? 'Comisión Global (%)' : 'Global Commission (%)'}
+              </label>
+              <input 
+                type="number" 
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                value={commission}
+                onChange={(e) => setCommission(Number(e.target.value))}
+                min="0"
+                max="100"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">
+                {i18n.language === 'es' ? 'IVA (%)' : 'VAT (%)'}
+              </label>
+              <input 
+                type="number" 
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                value={vatRate}
+                onChange={(e) => setVatRate(Number(e.target.value))}
+                min="0"
+                max="100"
+              />
+            </div>
           </div>
+          
           <div>
             <h3 className="font-medium mb-2">
-              {i18n.language === 'es' ? 'Tarifas de Servicios Adicionales' : 'Additional Service Fees'}
+              {i18n.language === 'es' ? 'Tarifas de Servicios Adicionales (€)' : 'Additional Service Fees (€)'}
             </h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span>Screen Sharing</span>
-                <input type="number" className="w-20 rounded border px-2" defaultValue={10} />
+                <span>{i18n.language === 'es' ? 'Compartir Pantalla' : 'Screen Sharing'}</span>
+                <input 
+                  type="number" 
+                  className="w-24 rounded border px-2 py-1" 
+                  value={screenSharingFee}
+                  onChange={(e) => setScreenSharingFee(Number(e.target.value))}
+                  min="0"
+                />
               </div>
               <div className="flex justify-between items-center">
-                <span>Translation</span>
-                <input type="number" className="w-20 rounded border px-2" defaultValue={25} />
+                <span>{i18n.language === 'es' ? 'Traducción' : 'Translation'}</span>
+                <input 
+                  type="number" 
+                  className="w-24 rounded border px-2 py-1" 
+                  value={translationFee}
+                  onChange={(e) => setTranslationFee(Number(e.target.value))}
+                  min="0"
+                />
               </div>
               <div className="flex justify-between items-center">
-                <span>Recording</span>
-                <input type="number" className="w-20 rounded border px-2" defaultValue={10} />
+                <span>{i18n.language === 'es' ? 'Grabación' : 'Recording'}</span>
+                <input 
+                  type="number" 
+                  className="w-24 rounded border px-2 py-1" 
+                  value={recordingFee}
+                  onChange={(e) => setRecordingFee(Number(e.target.value))}
+                  min="0"
+                />
               </div>
               <div className="flex justify-between items-center">
-                <span>Transcription</span>
-                <input type="number" className="w-20 rounded border px-2" defaultValue={5} />
+                <span>{i18n.language === 'es' ? 'Transcripción' : 'Transcription'}</span>
+                <input 
+                  type="number" 
+                  className="w-24 rounded border px-2 py-1" 
+                  value={transcriptionFee}
+                  onChange={(e) => setTranscriptionFee(Number(e.target.value))}
+                  min="0"
+                />
               </div>
             </div>
           </div>
-          <Button className="w-full">
-            {i18n.language === 'es' ? 'Guardar Configuración' : 'Save Settings'}
+          
+          <Button 
+            className="w-full" 
+            onClick={() => saveConfigMutation.mutate()}
+            disabled={saveConfigMutation.isPending || isLoading}
+          >
+            {saveConfigMutation.isPending
+              ? (i18n.language === 'es' ? 'Guardando...' : 'Saving...')
+              : (i18n.language === 'es' ? 'Guardar Configuración' : 'Save Settings')}
           </Button>
         </CardContent>
       </Card>
@@ -497,9 +625,63 @@ function NewsManagement() {
 // Theme Editor Component
 function ThemeEditor() {
   const { i18n } = useTranslation();
-  const [primaryColor, setPrimaryColor] = useState('#00ACC1');
-  const [secondaryColor, setSecondaryColor] = useState('#0097A7');
-  const [accentColor, setAccentColor] = useState('#00BCD4');
+  const { toast } = useToast();
+  const [primaryColor, setPrimaryColor] = useState('#008B9A');
+  const [secondaryColor, setSecondaryColor] = useState('#00B8CC');
+  const [accentColor, setAccentColor] = useState('#B8DCE1');
+  
+  // Load theme configuration from database
+  const { data: themeConfig, isLoading } = useQuery({
+    queryKey: ["/api/admin/config/theme"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/config", {});
+      const configs = await response.json();
+      const theme = configs.find((c: any) => c.key === 'theme_colors');
+      if (theme) {
+        const colors = JSON.parse(theme.value);
+        setPrimaryColor(colors.primary || '#008B9A');
+        setSecondaryColor(colors.secondary || '#00B8CC');
+        setAccentColor(colors.accent || '#B8DCE1');
+        return colors;
+      }
+      return null;
+    },
+  });
+
+  // Save theme configuration mutation
+  const saveThemeMutation = useMutation({
+    mutationFn: async () => {
+      const themeData = {
+        key: 'theme_colors',
+        value: JSON.stringify({
+          primary: primaryColor,
+          secondary: secondaryColor,
+          accent: accentColor,
+        }),
+        description: 'Application theme colors',
+      };
+      
+      await apiRequest("POST", "/api/admin/config", themeData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/config"] });
+      toast({
+        title: i18n.language === 'es' ? "Tema actualizado" : "Theme updated",
+        description: i18n.language === 'es' 
+          ? "Los colores del tema se han guardado correctamente"
+          : "Theme colors have been saved successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: i18n.language === 'es' ? "Error" : "Error",
+        description: i18n.language === 'es' 
+          ? "No se pudieron guardar los cambios"
+          : "Could not save changes",
+        variant: "destructive",
+      });
+    },
+  });
   
   return (
     <div className="space-y-4">
@@ -560,8 +742,14 @@ function ThemeEditor() {
             </div>
           </div>
           
-          <Button className="w-full">
-            {i18n.language === 'es' ? 'Aplicar Cambios' : 'Apply Changes'}
+          <Button 
+            className="w-full" 
+            onClick={() => saveThemeMutation.mutate()}
+            disabled={saveThemeMutation.isPending}
+          >
+            {saveThemeMutation.isPending 
+              ? (i18n.language === 'es' ? 'Guardando...' : 'Saving...')
+              : (i18n.language === 'es' ? 'Aplicar Cambios' : 'Apply Changes')}
           </Button>
         </CardContent>
       </Card>

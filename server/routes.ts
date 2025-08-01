@@ -753,7 +753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied. Admin only." });
       }
 
-      const config = await storage.getAdminConfig();
+      const config = await storage.getAllAdminConfig();
       res.json(config);
     } catch (error) {
       console.error("Error fetching config:", error);
@@ -770,8 +770,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied. Admin only." });
       }
 
-      const config = await storage.updateAdminConfig(req.body, userId);
+      const config = await storage.updateMultipleAdminConfigs(req.body, userId);
       res.json(config);
+    } catch (error) {
+      console.error("Error updating config:", error);
+      res.status(500).json({ message: "Failed to update configuration" });
+    }
+  });
+
+  // Admin - Create/Update individual configuration
+  app.post('/api/admin/config', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const adminUser = await storage.getUser(userId);
+
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Access denied. Admin only." });
+      }
+
+      const { key, value, description } = req.body;
+      const updatedConfig = await storage.updateAdminConfig(key, value, userId, description);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        adminId: userId,
+        action: 'update_config',
+        targetTable: 'admin_config',
+        targetId: key,
+        oldValue: null,
+        newValue: { value },
+        description: `Updated config: ${key}`,
+      });
+      
+      res.json(updatedConfig);
     } catch (error) {
       console.error("Error updating config:", error);
       res.status(500).json({ message: "Failed to update configuration" });

@@ -52,7 +52,7 @@ import {
   type InsertUserMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, asc } from "drizzle-orm";
+import { eq, desc, and, asc, sql, gte, lte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -168,8 +168,11 @@ export interface IStorage {
   getRevenueGrowth(): Promise<number>;
   getAverageCallDuration(): Promise<number>;
   getAllHosts(): Promise<User[]>;
-  getAdminConfig(): Promise<any>;
-  updateAdminConfig(config: any, userId: string): Promise<any>;
+  getAdminConfigObject(): Promise<any>;
+  getAdminConfig(key: string): Promise<AdminConfig | undefined>;
+  getAllAdminConfig(): Promise<AdminConfig[]>;
+  updateAdminConfig(key: string, value: string, updatedBy: string, description?: string): Promise<AdminConfig>;
+  updateMultipleAdminConfigs(config: any, userId: string): Promise<any>;
 
   // Email system operations
   getEmailTemplate(type: string): Promise<EmailTemplate | null>;
@@ -972,7 +975,7 @@ export class DatabaseStorage implements IStorage {
     return hosts;
   }
 
-  async getAdminConfig(): Promise<any> {
+  async getAdminConfigObject(): Promise<any> {
     const configs = await this.getAllAdminConfig();
     const configMap: any = {};
     
@@ -990,7 +993,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateAdminConfig(config: any, userId: string): Promise<any> {
+  async updateMultipleAdminConfigs(config: any, userId: string): Promise<any> {
     const updates = [
       { key: 'commission_rate', value: config.commission?.toString() || '10' },
       { key: 'vat_rate', value: config.vatRate?.toString() || '21' },
@@ -1004,7 +1007,7 @@ export class DatabaseStorage implements IStorage {
       await this.updateAdminConfig(update.key, update.value, userId);
     }
 
-    return this.getAdminConfig();
+    return this.getAdminConfigObject();
   }
 
   // Email system operations
