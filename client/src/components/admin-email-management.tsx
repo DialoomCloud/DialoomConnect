@@ -73,6 +73,7 @@ export function AdminEmailManagement() {
   const { toast } = useToast();
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [selectedHostForTest, setSelectedHostForTest] = useState<string>('');
   const [newTemplate, setNewTemplate] = useState({
     type: '',
     subject: '',
@@ -90,6 +91,18 @@ export function AdminEmailManagement() {
   const { data: notifications = [], isLoading: notificationsLoading } = useQuery<EmailNotification[]>({
     queryKey: ['/api/admin/email-notifications'],
   });
+
+  // Fetch all users for test email selector (will filter hosts on client side)
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['/api/admin/users'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/users');
+      return response.json();
+    },
+  });
+
+  // Filter hosts from all users
+  const hosts = allUsers.filter((user: any) => user.isHost || user.role === 'host');
 
   // Create template mutation
   const createTemplateMutation = useMutation({
@@ -141,7 +154,7 @@ export function AdminEmailManagement() {
   // Delete template mutation
   const deleteTemplateMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('DELETE', `/api/admin/email-templates/${id}`, {});
+      const response = await apiRequest('DELETE', `/api/admin/email-templates/${id}`);
       return response.json();
     },
     onSuccess: () => {
@@ -163,7 +176,7 @@ export function AdminEmailManagement() {
   // Initialize templates mutation
   const initializeTemplatesMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/admin/initialize-email-templates', {});
+      const response = await apiRequest('POST', '/api/admin/initialize-email-templates');
       return response.json();
     },
     onSuccess: () => {
@@ -182,6 +195,30 @@ export function AdminEmailManagement() {
     },
   });
 
+  // Send test email mutation
+  const sendTestEmailMutation = useMutation({
+    mutationFn: async ({ templateId, recipientId }: { templateId: string; recipientId: string }) => {
+      const response = await apiRequest('POST', '/api/admin/send-test-email', {
+        templateId,
+        recipientId,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email de prueba enviado",
+        description: "El email de prueba ha sido enviado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al enviar email",
+        description: error.message || "No se pudo enviar el email de prueba",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateTemplate = () => {
     createTemplateMutation.mutate(newTemplate);
   };
@@ -190,6 +227,11 @@ export function AdminEmailManagement() {
     if (editingTemplate) {
       updateTemplateMutation.mutate(editingTemplate);
     }
+  };
+
+  const handleEditTemplate = (template: EmailTemplate) => {
+    setEditingTemplate(template);
+    setSelectedHostForTest(''); // Reset host selection when switching templates
   };
 
   const getTypeLabel = (type: string) => {
@@ -368,7 +410,7 @@ export function AdminEmailManagement() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setEditingTemplate(template)}
+                              onClick={() => handleEditTemplate(template)}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -711,19 +753,44 @@ export function AdminEmailManagement() {
                 Cancelar
               </Button>
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    // Send test email logic could go here
-                    toast({
-                      title: "Función en desarrollo",
-                      description: "La función de envío de prueba estará disponible pronto.",
-                    });
-                  }}
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  Enviar Prueba
-                </Button>
+                <div className="flex gap-2 items-center">
+                  <Select value={selectedHostForTest} onValueChange={setSelectedHostForTest}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Seleccionar host..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {hosts.map((host: any) => (
+                        <SelectItem key={host.id} value={host.id}>
+                          {host.firstName} {host.lastName} ({host.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    variant="outline" 
+                    disabled={!selectedHostForTest || sendTestEmailMutation.isPending}
+                    onClick={() => {
+                      if (editingTemplate && selectedHostForTest) {
+                        sendTestEmailMutation.mutate({
+                          templateId: editingTemplate.id,
+                          recipientId: selectedHostForTest,
+                        });
+                      }
+                    }}
+                  >
+                    {sendTestEmailMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        Enviar Prueba
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <Button onClick={handleUpdateTemplate} disabled={updateTemplateMutation.isPending}>
                   {updateTemplateMutation.isPending ? (
                     <>

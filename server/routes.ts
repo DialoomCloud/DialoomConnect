@@ -1732,6 +1732,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send test email
+  app.post('/api/admin/send-test-email', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { templateId, recipientId } = req.body;
+      
+      if (!templateId || !recipientId) {
+        return res.status(400).json({ message: "Template ID and recipient ID are required" });
+      }
+
+      // Get the email template
+      const template = await storage.getEmailTemplateById(templateId);
+      if (!template) {
+        return res.status(404).json({ message: "Email template not found" });
+      }
+
+      // Get the recipient user
+      const recipient = await storage.getUser(recipientId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient user not found" });
+      }
+
+      // Replace template variables with test data
+      const testData = {
+        user_name: `${recipient.firstName} ${recipient.lastName}`,
+        platform_name: 'Dialoom',
+        login_url: `${req.protocol}://${req.get('host')}/auth/login`,
+        host_name: `${recipient.firstName} ${recipient.lastName}`,
+        guest_name: 'Usuario de Prueba',
+        call_date: new Date().toLocaleDateString('es-ES'),
+        call_time: '15:00',
+        total_price: '€50.00'
+      };
+
+      let htmlContent = template.htmlContent;
+      let textContent = template.textContent;
+      let subject = template.subject;
+
+      // Replace variables in all content
+      Object.entries(testData).forEach(([key, value]) => {
+        const placeholder = `{{${key}}}`;
+        htmlContent = htmlContent.replace(new RegExp(placeholder, 'g'), value);
+        textContent = textContent.replace(new RegExp(placeholder, 'g'), value);
+        subject = subject.replace(new RegExp(placeholder, 'g'), value);
+      });
+
+      // Send the email
+      const emailSent = await emailService.sendEmail({
+        to: recipient.email,
+        subject: `[PRUEBA] ${subject}`,
+        html: htmlContent,
+        text: textContent,
+      });
+
+      if (emailSent) {
+        // Log the email notification
+        await storage.createEmailNotification({
+          templateId: template.id,
+          recipientEmail: recipient.email,
+          subject: `[PRUEBA] ${subject}`,
+          status: 'sent',
+          sentAt: new Date(),
+          metadata: { isTest: true, recipientName: `${recipient.firstName} ${recipient.lastName}` }
+        });
+
+        res.json({ message: "Test email sent successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ message: "Failed to send test email" });
+    }
+  });
+
   // Email notifications log (Admin only)
   app.get('/api/admin/email-notifications', isAdminAuthenticated, async (req: any, res) => {
     try {
