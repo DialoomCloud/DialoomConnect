@@ -15,6 +15,9 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Hosts can only edit their own video call rates and durations
   - Service fees (recording, etc.) are fixed by Dialoom and non-editable by hosts
 - Admin panel remains accessible via manual navigation for users with admin role
+- Verified database integrity: All tables properly configured with CASCADE foreign keys
+- Object Storage configured with bucket 'replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7'
+- Public assets served via `/storage/*` route with local filesystem fallback
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.
@@ -35,7 +38,12 @@ The application adopts a monorepo structure, separating client, server, and shar
 -   **Monorepo Structure**: Enables clear separation and shared components across frontend and backend.
 -   **Component-Based UI**: Leverages shadcn/ui and Radix UI for accessible, responsive, and consistent design, prioritizing a mobile-first approach.
 -   **Server State Management**: Employs TanStack Query for efficient data fetching, caching, and optimistic updates.
--   **Object Storage Integration**: Comprehensive per-user folder structure within Replit Object Storage for multimedia content and private documents, served via a dedicated route.
+-   **Object Storage Integration**: 
+     - Bucket ID: `replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7`
+     - Public assets served via `/storage/*` routes with automatic fallback to local filesystem
+     - Per-user folder structure for multimedia content and private documents
+     - Public directory: `/public` for shared assets
+     - Private directory: `/.private` for user-specific protected content
 -   **Dynamic Content Management**: Supports multimedia uploads (videos, images) with processing (Sharp) and YouTube embedding.
 -   **Comprehensive Profile Management**: Enables detailed user profiles including professional categories, skills, languages, and contact information. Includes AI-powered analysis for suggesting professional categories and skills based on user descriptions.
 -   **Advanced Scheduling & Pricing**: Implements flexible scheduling (recurring and specific dates) and customizable pricing tiers with service add-ons.
@@ -47,7 +55,40 @@ The application adopts a monorepo structure, separating client, server, and shar
 -   **SEO & Marketing**: Conversion-focused landing page design with structured content, social proof, and multilingual support.
 -   **Translation System**: Complete i18n implementation across all application features and components.
 -   **Social Media Integration**: Comprehensive support for 10 major social platforms (LinkedIn, Instagram, X/Twitter, Facebook, GitHub, YouTube, ArtStation, Behance, Discord, Dribbble) with user profile linking and management.
--   **AI Assistant "Loomia"**: Fully integrated OpenAI-powered assistant providing description enhancement, professional category suggestions, skill recommendations, and general platform support with contextual understanding.
+-   **AI Assistant "Loomia"**: Fully integrated OpenAI-powered assistant providing description enhancement, professional category suggestions, skill recommendations, and general platform support with contextual understanding in the selected platform language.
+
+## Database Schema
+The application uses PostgreSQL with 25 tables properly configured with CASCADE foreign key relationships:
+
+**Core Tables:**
+- `users` - User profiles with authentication, Stripe integration, and GDPR compliance
+- `sessions` - Session management for Replit Auth
+- `bookings` - Video call reservations between hosts and guests
+- `stripe_payments` - Payment tracking with commission calculation
+- `invoices` - Downloadable invoice generation
+
+**Reference Tables:**
+- `countries`, `languages`, `skills`, `categories`, `social_platforms`
+
+**User Relations:**
+- `user_languages`, `user_skills`, `user_categories`, `user_social_profiles`
+- `user_documents` - Verification document storage
+- `user_messages` - Contact/inquiry system
+
+**Content Management:**
+- `media_content` - User multimedia (YouTube, videos, images)
+- `news_articles` - Blog/news system with rich content
+- `email_templates` - Customizable email notifications
+- `email_notifications` - Email delivery tracking
+
+**Host Features:**
+- `host_availability` - Schedule management
+- `host_pricing` - Pricing tiers with service add-ons
+- `host_categories` - Professional category assignments
+
+**Admin:**
+- `admin_config` - Global platform settings
+- `admin_audit_log` - Administrative action tracking
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL
