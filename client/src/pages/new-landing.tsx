@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Video, Clock, Star, CheckCircle, Play, Smartphone, Globe, Heart } from "lucide-react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/language-selector";
 
 export default function NewLanding() {
   const { t, i18n } = useTranslation();
@@ -42,6 +43,7 @@ export default function NewLanding() {
                   Blog
                 </Button>
               </Link>
+              <LanguageSelector />
               <Button 
                 variant="ghost" 
                 onClick={handleLogin}

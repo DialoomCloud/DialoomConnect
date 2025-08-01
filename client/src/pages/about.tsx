@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Users, Globe, Target } from "lucide-react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/language-selector";
 
 export default function About() {
   const { t, i18n } = useTranslation();
@@ -150,6 +151,7 @@ export default function About() {
                   {currentLang === 'es' ? 'Expertos' : 'Experts'}
                 </Button>
               </Link>
+              <LanguageSelector />
               <Button 
                 onClick={handleLogin}
                 className="bg-primary hover:bg-primary/90 text-white font-medium px-6"

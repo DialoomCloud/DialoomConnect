@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { DollarSign, Users, TrendingUp, CheckCircle, Star, Video } from "lucide-react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/language-selector";
 
 export default function Experts() {
   const { t, i18n } = useTranslation();
@@ -37,6 +38,7 @@ export default function Experts() {
                   {t('navigation.home')}
                 </Button>
               </Link>
+              <LanguageSelector />
               <Button 
                 variant="ghost" 
                 onClick={handleLogin}

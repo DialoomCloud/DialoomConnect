@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Video, Mic, FileText, MonitorSpeaker } from "lucide-react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/language-selector";
 
 export default function Pricing() {
   const { t, i18n } = useTranslation();
@@ -183,6 +184,7 @@ export default function Pricing() {
                   {currentLang === 'es' ? 'Expertos' : 'Experts'}
                 </Button>
               </Link>
+              <LanguageSelector />
               <Button 
                 onClick={handleLogin}
                 className="bg-primary hover:bg-primary/90 text-white font-medium px-6"
