@@ -21,6 +21,7 @@ Preferred communication style: Simple, everyday language (non-technical users).
 - Fixed blank page issue when navigating back from profile editor: Home page now shows loading skeleton instead of blank screen during data fetching
 - Improved navigation stability: Added cleanup effects to close all modals when leaving profile page
 - Enhanced home page loading states to handle navigation from other pages more gracefully
+- Fixed JavaScript error "Can't find variable: useLocation" by properly importing useLocation and useEffect in App.tsx
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.
