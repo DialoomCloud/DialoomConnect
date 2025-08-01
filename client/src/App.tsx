@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 import { Footer } from "@/components/footer";
 import NotFound from "@/pages/not-found";
-import Landing from "@/pages/landing";
+import Landing from "@/pages/new-landing";
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
 import Admin from "@/pages/admin";
@@ -27,6 +27,9 @@ import GdprRights from "@/pages/gdpr-rights";
 import VideoCallRoom from "@/pages/video-call-room";
 import NewsPage from "@/pages/news";
 import NewsArticlePage from "@/pages/news-article";
+import Experts from "@/pages/experts";
+import Pricing from "@/pages/pricing";
+import About from "@/pages/about";
 import "./i18n/config";
 
 function Router() {
@@ -44,6 +47,9 @@ function Router() {
           <Route path="/admin-dashboard" component={AdminDashboard} />
           <Route path="/news" component={NewsPage} />
           <Route path="/news/:slug" component={NewsArticlePage} />
+          <Route path="/experts" component={Experts} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/about" component={About} />
           
           {/* Routes that require authentication */}
           {isAuthenticated && !isLoading && (
