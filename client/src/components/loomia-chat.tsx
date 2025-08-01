@@ -66,10 +66,13 @@ export function LoomiaChat() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
-      const response = await apiRequest("POST", "/api/loomia/chat", {
-        message,
-        userRole: user?.role || "guest",
-        conversationHistory: messages.slice(-6) // Last 6 messages for context
+      const response = await apiRequest("/api/loomia/chat", {
+        method: "POST",
+        body: {
+          message,
+          userRole: (user as any)?.role || "guest",
+          conversationHistory: messages.slice(-6).map(m => ({ role: m.role, content: m.content }))
+        }
       });
       return response.json() as Promise<LoomiaResponse>;
     },
