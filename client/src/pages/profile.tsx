@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
 import { ProfileEditModal } from "@/components/profile-edit-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
@@ -22,6 +23,7 @@ import { User as UserIcon, Phone, MapPin, Mail, Edit, Plus, CheckCircle, Trash2 
 
 export default function Profile() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -100,8 +102,8 @@ export default function Profile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/media"] });
       toast({
-        title: "Contenido eliminado",
-        description: "El contenido multimedia ha sido eliminado exitosamente.",
+        title: t('media.deleteSuccess'),
+        description: t('media.deleteSuccessDesc'),
       });
     },
     onError: (error: Error) => {
@@ -117,15 +119,15 @@ export default function Profile() {
         return;
       }
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el contenido. Inténtalo de nuevo.",
+        title: t('common.error'),
+        description: t('media.deleteError'),
         variant: "destructive",
       });
     },
   });
 
   const handleDeleteMedia = (id: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar este contenido?")) {
+    if (window.confirm(t('media.confirmDelete'))) {
       deleteMediaMutation.mutate(id);
     }
   };
@@ -160,9 +162,9 @@ export default function Profile() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">Gestión de Perfil</h2>
+          <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('profile.title')}</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Edita tu información personal y gestiona tu contenido multimedia
+            {t('profile.subtitle')}
           </p>
         </div>
 
@@ -194,7 +196,7 @@ export default function Profile() {
                   <div className="flex justify-center mt-3">
                     <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
                       <CheckCircle className="w-4 h-4 mr-1" />
-                      Verificado
+                      {t('profile.verified')}
                     </Badge>
                   </div>
                 </div>
@@ -231,7 +233,7 @@ export default function Profile() {
                   className="w-full mt-6 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Editar Perfil
+                  {t('profile.editProfile')}
                 </Button>
               </CardContent>
             </Card>
@@ -242,13 +244,13 @@ export default function Profile() {
             <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">Contenido Multimedia</h3>
+                  <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">{t('profile.mediaContent')}</h3>
                   <Button 
                     onClick={() => setShowUploadModal(true)}
                     className="bg-[hsl(188,80%,42%)] text-white hover:bg-[hsl(188,80%,36%)]"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Agregar
+                    {t('common.add')}
                   </Button>
                 </div>
 
@@ -286,15 +288,15 @@ export default function Profile() {
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Plus className="w-8 h-8 text-gray-400" />
                       </div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">No hay contenido multimedia</h4>
+                      <h4 className="text-lg font-medium text-gray-900 mb-2">{t('home.noContent')}</h4>
                       <p className="text-gray-600 mb-4">
-                        Comienza agregando videos de YouTube, videos MP4 locales o imágenes
+                        {t('home.noContentSub')}
                       </p>
                       <Button 
                         onClick={() => setShowUploadModal(true)}
                         className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
                       >
-                        Agregar contenido
+                        {t('common.add')} {t('home.multimedia')}
                       </Button>
                     </div>
                   )}
@@ -306,13 +308,13 @@ export default function Profile() {
 
         {/* Host Availability Section */}
         <div className="mt-8">
-          <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-6">Disponibilidad y Precios</h3>
+          <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-6">{t('availability.title')}</h3>
           <HostAvailabilitySection />
         </div>
 
         {/* AI Profile Suggestions Section */}
         <div className="mt-8">
-          <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-6">Sugerencias Inteligentes</h3>
+          <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-6">{t('ai.suggestions.title')}</h3>
           <AIProfileSuggestions 
             onSuggestionsApproved={(data) => {
               // Refresh user profile and related data

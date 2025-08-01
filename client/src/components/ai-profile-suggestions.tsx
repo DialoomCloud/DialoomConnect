@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,6 +30,7 @@ interface AIProfileSuggestionsProps {
 
 export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggestionsProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [description, setDescription] = useState("");
   const [suggestions, setSuggestions] = useState<AISuggestion | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -49,14 +51,14 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
       setSelectedCategories([]);
       setSelectedSkills([]);
       toast({
-        title: "Sugerencias generadas",
-        description: "La IA ha analizado tu perfil y generado sugerencias relevantes.",
+        title: t('ai.suggestionsGenerated'),
+        description: t('ai.suggestionsGeneratedDesc'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "No se pudieron generar las sugerencias",
+        title: t('common.error'),
+        description: error.message || t('ai.generateError'),
         variant: "destructive",
       });
     },
@@ -84,8 +86,11 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
     },
     onSuccess: (data) => {
       toast({
-        title: "Sugerencias aplicadas",
-        description: `Se agregaron ${data.addedCategories.length} categorías y ${data.addedSkills.length} skills a tu perfil.`,
+        title: t('ai.suggestionsApplied'),
+        description: t('ai.suggestionsAppliedDesc', { 
+          categories: data.addedCategories.length, 
+          skills: data.addedSkills.length 
+        }),
       });
       
       if (onSuggestionsApproved) {
@@ -100,8 +105,8 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "No se pudieron aplicar las sugerencias",
+        title: t('common.error'),
+        description: error.message || t('ai.applyError'),
         variant: "destructive",
       });
     },
@@ -110,8 +115,8 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
   const handleGenerateSuggestions = () => {
     if (description.trim().length < 10) {
       toast({
-        title: "Descripción muy corta",
-        description: "Por favor, proporciona una descripción de al menos 10 caracteres.",
+        title: t('ai.descriptionTooShort'),
+        description: t('ai.descriptionMinLength'),
         variant: "destructive",
       });
       return;
@@ -140,25 +145,25 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-blue-500" />
-          Sugerencias Inteligentes de Perfil
+          {t('ai.title')}
         </CardTitle>
         <p className="text-sm text-gray-600">
-          Describe tu experiencia profesional y la IA sugerirá categorías y habilidades relevantes para tu perfil.
+          {t('ai.subtitle')}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="description">Describe tu experiencia profesional</Label>
+          <Label htmlFor="description">{t('ai.describeExperience')}</Label>
           <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ej: He sido coordinador IT en educación durante 5 años, gestionando equipos técnicos y implementando soluciones educativas digitales..."
+            placeholder={t('ai.experiencePlaceholder')}
             rows={4}
             className="resize-none"
           />
           <p className="text-xs text-gray-500">
-            Mínimo 10 caracteres. Sé específico sobre tu rol, industria y responsabilidades.
+            {t('ai.experienceHint')}
           </p>
         </div>
 
@@ -170,12 +175,12 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
           {generateSuggestionsMutation.isPending ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Generando sugerencias...
+              {t('ai.generatingSuggestions')}
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4 mr-2" />
-              Generar Sugerencias con IA
+              {t('ai.generateButton')}
             </>
           )}
         </Button>
@@ -185,7 +190,7 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
             <div>
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <Plus className="w-4 h-4" />
-                Categorías Profesionales Sugeridas
+                {t('ai.suggestedCategories')}
               </h3>
               <div className="space-y-2">
                 {suggestions.categories.map((category) => (
@@ -223,7 +228,7 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
             <div>
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <Plus className="w-4 h-4" />
-                Habilidades Técnicas Sugeridas
+                {t('ai.suggestedSkills')}
               </h3>
               <div className="space-y-2">
                 {suggestions.skills.map((skill) => (
@@ -256,10 +261,10 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
               <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                 <div>
                   <p className="font-medium text-blue-900">
-                    {selectedCategories.length} categorías y {selectedSkills.length} skills seleccionadas
+                    {t('ai.selectedCount', { categories: selectedCategories.length, skills: selectedSkills.length })}
                   </p>
                   <p className="text-sm text-blue-700">
-                    Estas se agregarán a tu perfil y estarán disponibles para todos los usuarios.
+                    {t('ai.selectedDescription')}
                   </p>
                 </div>
                 <Button
@@ -270,12 +275,12 @@ export function AIProfileSuggestions({ onSuggestionsApproved }: AIProfileSuggest
                   {approveSuggestionsMutation.isPending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Aplicando...
+                      {t('ai.applying')}
                     </>
                   ) : (
                     <>
                       <Check className="w-4 h-4 mr-2" />
-                      Aplicar Seleccionadas
+                      {t('ai.applySelected')}
                     </>
                   )}
                 </Button>

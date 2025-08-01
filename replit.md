@@ -22,6 +22,10 @@ Preferred communication style: Simple, everyday language (non-technical users).
 - Improved navigation stability: Added cleanup effects to close all modals when leaving profile page
 - Enhanced home page loading states to handle navigation from other pages more gracefully
 - Fixed JavaScript error "Can't find variable: useLocation" by properly importing useLocation and useEffect in App.tsx
+- Extended translation coverage: Replaced hardcoded Spanish text with i18n translation keys in:
+  - host-availability-section.tsx: All availability settings, pricing options, time selections, and date pickers
+  - ai-profile-suggestions.tsx: All AI suggestion interface texts, buttons, and messages
+  - Added comprehensive translation keys to es.json, en.json, and ca.json for complete multilingual support
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.

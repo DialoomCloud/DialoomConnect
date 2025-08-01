@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +16,7 @@ import { queryClient } from "@/lib/queryClient";
 import { Plus, Trash2, Clock, DollarSign, CalendarDays, Monitor, Languages, Video, FileText } from "lucide-react";
 import type { HostAvailability, HostPricing } from "@shared/schema";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS, ca } from "date-fns/locale";
 
 interface TimeSlot {
   startTime: string;
@@ -24,11 +25,21 @@ interface TimeSlot {
 
 export function HostAvailabilitySection() {
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedDaysOfWeek, setSelectedDaysOfWeek] = useState<number[]>([]);
   const [newTimeSlot, setNewTimeSlot] = useState<TimeSlot>({ startTime: "", endTime: "" });
   const [customDuration, setCustomDuration] = useState<number>(120);
   const [customPrice, setCustomPrice] = useState<number>(0);
+  
+  // Get appropriate locale for date-fns
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'en': return enUS;
+      case 'ca': return ca;
+      default: return es;
+    }
+  };
 
   // Fetch availability
   const { data: availability = [], isLoading: availabilityLoading } = useQuery<HostAvailability[]>({
@@ -51,15 +62,15 @@ export function HostAvailabilitySection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/host/availability"] });
       toast({
-        title: "Disponibilidad agregada",
-        description: "La franja horaria se ha agregado correctamente.",
+        title: t('availability.addSuccess'),
+        description: t('availability.addSuccessDesc'),
       });
       setNewTimeSlot({ startTime: "", endTime: "" });
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "No se pudo agregar la disponibilidad.",
+        title: t('common.error'),
+        description: t('availability.addError'),
         variant: "destructive",
       });
     },
@@ -75,14 +86,14 @@ export function HostAvailabilitySection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/host/availability"] });
       toast({
-        title: "Disponibilidad eliminada",
-        description: "La franja horaria se ha eliminado correctamente.",
+        title: t('availability.deleteSuccess'),
+        description: t('availability.deleteSuccessDesc'),
       });
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "No se pudo eliminar la disponibilidad.",
+        title: t('common.error'),
+        description: t('availability.deleteError'),
         variant: "destructive",
       });
     },
@@ -108,14 +119,14 @@ export function HostAvailabilitySection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/host/pricing"] });
       toast({
-        title: "Precio actualizado",
-        description: "Los precios se han actualizado correctamente.",
+        title: t('pricing.updateSuccess'),
+        description: t('pricing.updateSuccessDesc'),
       });
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "No se pudo actualizar el precio.",
+        title: t('common.error'),
+        description: t('pricing.updateError'),
         variant: "destructive",
       });
     },
@@ -170,7 +181,13 @@ export function HostAvailabilitySection() {
   };
 
   const daysOfWeek = [
-    "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
+    t('availability.sunday'),
+    t('availability.monday'), 
+    t('availability.tuesday'),
+    t('availability.wednesday'),
+    t('availability.thursday'),
+    t('availability.friday'),
+    t('availability.saturday')
   ];
 
   const getPricingInfo = (duration: number) => {
@@ -184,15 +201,15 @@ export function HostAvailabilitySection() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="w-5 h-5" />
-            Precios y Duración
+            {t('pricing.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Free tier */}
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div>
-              <Label className="text-base font-medium">Llamada Gratuita</Label>
-              <p className="text-sm text-gray-600">Ofrece llamadas gratuitas de introducción</p>
+              <Label className="text-base font-medium">{t('availability.freeConsultation')}</Label>
+              <p className="text-sm text-gray-600">{t('pricing.freeDesc')}</p>
             </div>
             <Switch
               checked={getPricingInfo(0)?.isActive || false}
@@ -203,7 +220,7 @@ export function HostAvailabilitySection() {
           {/* 30 minutes */}
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="flex-1">
-              <Label className="text-base font-medium">30 Minutos</Label>
+              <Label className="text-base font-medium">{t('availability.30minutes')}</Label>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -232,7 +249,7 @@ export function HostAvailabilitySection() {
           {/* 60 minutes */}
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="flex-1">
-              <Label className="text-base font-medium">60 Minutos</Label>
+              <Label className="text-base font-medium">{t('availability.60minutes')}</Label>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -261,7 +278,7 @@ export function HostAvailabilitySection() {
           {/* 90 minutes */}
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="flex-1">
-              <Label className="text-base font-medium">90 Minutos</Label>
+              <Label className="text-base font-medium">{t('availability.90minutes')}</Label>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -289,10 +306,10 @@ export function HostAvailabilitySection() {
 
           {/* Custom duration */}
           <div className="p-4 border rounded-lg bg-gray-50">
-            <Label className="text-base font-medium mb-3 block">Duración Personalizada</Label>
+            <Label className="text-base font-medium mb-3 block">{t('pricing.customDuration')}</Label>
             <div className="flex gap-4">
               <div className="flex-1">
-                <Label className="text-sm">Minutos</Label>
+                <Label className="text-sm">{t('pricing.minutes')}</Label>
                 <Input
                   type="number"
                   value={customDuration}
@@ -301,7 +318,7 @@ export function HostAvailabilitySection() {
                 />
               </div>
               <div className="flex-1">
-                <Label className="text-sm">Precio (€)</Label>
+                <Label className="text-sm">{t('pricing.price')} (€)</Label>
                 <Input
                   type="number"
                   step="1"
@@ -316,7 +333,7 @@ export function HostAvailabilitySection() {
                   onClick={handleCustomPricing}
                   disabled={updatePricingMutation.isPending}
                 >
-                  Agregar
+                  {t('common.add')}
                 </Button>
               </div>
             </div>
@@ -349,20 +366,20 @@ export function HostAvailabilitySection() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="w-5 h-5" />
-            Disponibilidad
+            {t('availability.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="weekly" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="weekly">Horario Semanal</TabsTrigger>
-              <TabsTrigger value="specific">Fechas Específicas</TabsTrigger>
+              <TabsTrigger value="weekly">{t('availability.weeklySchedule')}</TabsTrigger>
+              <TabsTrigger value="specific">{t('availability.specificDates')}</TabsTrigger>
             </TabsList>
 
             {/* Weekly Schedule */}
             <TabsContent value="weekly" className="space-y-4">
               <div className="space-y-2">
-                <Label className="block mb-2">Selecciona los días de la semana</Label>
+                <Label className="block mb-2">{t('availability.selectDays')}</Label>
                 <div className="space-y-2">
                   {daysOfWeek.map((day, index) => (
                     <div key={index} className="flex items-center space-x-2">
@@ -391,7 +408,7 @@ export function HostAvailabilitySection() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Hora de inicio</Label>
+                  <Label>{t('availability.startTime')}</Label>
                   <Input
                     type="time"
                     value={newTimeSlot.startTime}
@@ -399,7 +416,7 @@ export function HostAvailabilitySection() {
                   />
                 </div>
                 <div>
-                  <Label>Hora de fin</Label>
+                  <Label>{t('availability.endTime')}</Label>
                   <Input
                     type="time"
                     value={newTimeSlot.endTime}
@@ -414,7 +431,7 @@ export function HostAvailabilitySection() {
                 className="w-full"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Agregar Franja Horaria a {selectedDaysOfWeek.length} día{selectedDaysOfWeek.length !== 1 ? 's' : ''}
+                {t('availability.addTimeSlot')} {selectedDaysOfWeek.length} {selectedDaysOfWeek.length !== 1 ? t('common.days') : t('common.day')}
               </Button>
 
               {/* Weekly slots list */}
@@ -447,12 +464,12 @@ export function HostAvailabilitySection() {
             {/* Specific Dates */}
             <TabsContent value="specific" className="space-y-4">
               <div>
-                <Label>Selecciona una fecha</Label>
+                <Label>{t('availability.selectDate')}</Label>
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  locale={es}
+                  locale={getDateLocale()}
                   className="rounded-md border"
                 />
               </div>
@@ -461,7 +478,7 @@ export function HostAvailabilitySection() {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Hora de inicio</Label>
+                      <Label>{t('availability.startTime')}</Label>
                       <Input
                         type="time"
                         value={newTimeSlot.startTime}
@@ -469,7 +486,7 @@ export function HostAvailabilitySection() {
                       />
                     </div>
                     <div>
-                      <Label>Hora de fin</Label>
+                      <Label>{t('availability.endTime')}</Label>
                       <Input
                         type="time"
                         value={newTimeSlot.endTime}
@@ -484,7 +501,7 @@ export function HostAvailabilitySection() {
                     className="w-full"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Agregar Franja Horaria
+                    {t('availability.addSlot')}
                   </Button>
                 </>
               )}
@@ -499,7 +516,7 @@ export function HostAvailabilitySection() {
                       <div className="flex items-center gap-2">
                         <CalendarDays className="w-4 h-4 text-gray-500" />
                         <span className="font-medium">
-                          {format(new Date(slot.date || ""), "d 'de' MMMM 'de' yyyy", { locale: es })}
+                          {format(new Date(slot.date || ""), i18n.language === 'es' ? "d 'de' MMMM 'de' yyyy" : "MMMM d, yyyy", { locale: getDateLocale() })}
                         </span>
                         <span className="text-gray-600">
                           {slot.startTime} - {slot.endTime}

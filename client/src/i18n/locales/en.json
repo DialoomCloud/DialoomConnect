@@ -77,7 +77,10 @@
     "save": "Save Changes",
     "cancel": "Cancel",
     "updateSuccess": "Profile updated successfully",
-    "updateError": "Error updating profile"
+    "updateError": "Error updating profile",
+    "verified": "Verified",
+    "editProfile": "Edit Profile",
+    "mediaContent": "Multimedia Content"
   },
   "media": {
     "youtube": "YouTube",
@@ -143,7 +146,9 @@
     "accept": "Accept",
     "reject": "Reject",
     "approve": "Approve",
-    "deny": "Deny"
+    "deny": "Deny",
+    "days": "days",
+    "day": "day"
   },
   "availability": {
     "title": "Availability Configuration",
@@ -167,7 +172,17 @@
     "90minutes": "90 minutes",
     "saveSuccess": "Availability saved",
     "saveSuccessDesc": "Your schedule has been successfully updated",
-    "saveError": "Could not save availability"
+    "saveError": "Could not save availability",
+    "addSuccess": "Availability added",
+    "addSuccessDesc": "Time slot has been added successfully",
+    "addError": "Could not add availability",
+    "deleteSuccess": "Availability deleted",
+    "deleteSuccessDesc": "Time slot has been deleted successfully",
+    "deleteError": "Could not delete availability",
+    "specificDates": "Specific Dates",
+    "addTimeSlot": "Add Time Slot to",
+    "selectDate": "Select a date",
+    "addSlot": "Add Time Slot"
   },
   "pricing": {
     "title": "Session Pricing",
@@ -178,8 +193,13 @@
     "saveSuccess": "Pricing saved",
     "saveSuccessDesc": "Your prices have been successfully updated",
     "saveError": "Could not save pricing",
+    "updateSuccess": "Pricing updated",
+    "updateSuccessDesc": "Prices have been updated successfully",
+    "updateError": "Could not update pricing",
     "freeSession": "Free Session",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "customDuration": "Custom Duration",
+    "price": "Price"
   },
   "admin": {
     "title": "Administration Panel",
@@ -282,5 +302,36 @@
     "madeWith": "Made with",
     "in": "in Barcelona",
     "gdprCompliant": "GDPR Compliant"
+  },
+  "ai": {
+    "title": "Smart Profile Suggestions",
+    "subtitle": "Describe your professional experience and AI will suggest relevant categories and skills for your profile.",
+    "describeExperience": "Describe your professional experience",
+    "experiencePlaceholder": "E.g: I have been an IT coordinator in education for 5 years, managing technical teams and implementing digital educational solutions...",
+    "experienceHint": "Minimum 10 characters. Be specific about your role, industry, and responsibilities.",
+    "generatingSuggestions": "Generating suggestions...",
+    "generateButton": "Generate AI Suggestions",
+    "suggestionsGenerated": "Suggestions generated",
+    "suggestionsGeneratedDesc": "AI has analyzed your profile and generated relevant suggestions.",
+    "generateError": "Could not generate suggestions",
+    "suggestionsApplied": "Suggestions applied",
+    "suggestionsAppliedDesc": "Added {{categories}} categories and {{skills}} skills to your profile.",
+    "applyError": "Could not apply suggestions",
+    "descriptionTooShort": "Description too short",
+    "descriptionMinLength": "Please provide a description of at least 10 characters.",
+    "suggestedCategories": "Suggested Professional Categories",
+    "suggestedSkills": "Suggested Technical Skills",
+    "selectedCount": "{{categories}} categories and {{skills}} skills selected",
+    "selectedDescription": "These will be added to your profile and will be available to all users.",
+    "applying": "Applying...",
+    "applySelected": "Apply Selected",
+    "suggestions": {
+      "title": "Smart Suggestions",
+      "generated": "Suggestions generated",
+      "generatedDesc": "AI has analyzed your profile and generated relevant suggestions.",
+      "error": "Could not generate suggestions",
+      "categories": "Suggested categories:",
+      "skills": "Suggested skills:"
+    }
   }
 }

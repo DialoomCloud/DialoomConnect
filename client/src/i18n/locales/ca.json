@@ -77,7 +77,10 @@
     "save": "Desar Canvis",
     "cancel": "Cancel·lar",
     "updateSuccess": "Perfil actualitzat correctament",
-    "updateError": "Error actualitzant el perfil"
+    "updateError": "Error actualitzant el perfil",
+    "verified": "Verificat",
+    "editProfile": "Editar Perfil",
+    "mediaContent": "Contingut Multimèdia"
   },
   "media": {
     "youtube": "YouTube",
@@ -143,7 +146,9 @@
     "accept": "Acceptar",
     "reject": "Rebutjar",
     "approve": "Aprovar",
-    "deny": "Denegar"
+    "deny": "Denegar",
+    "days": "dies",
+    "day": "dia"
   },
   "availability": {
     "title": "Configuració de Disponibilitat",
@@ -167,7 +172,17 @@
     "90minutes": "90 minuts",
     "saveSuccess": "Disponibilitat desada",
     "saveSuccessDesc": "El teu horari s'ha actualitzat correctament",
-    "saveError": "No s'ha pogut desar la disponibilitat"
+    "saveError": "No s'ha pogut desar la disponibilitat",
+    "addSuccess": "Disponibilitat afegida",
+    "addSuccessDesc": "La franja horària s'ha afegit correctament",
+    "addError": "No s'ha pogut afegir la disponibilitat",
+    "deleteSuccess": "Disponibilitat eliminada",
+    "deleteSuccessDesc": "La franja horària s'ha eliminat correctament",
+    "deleteError": "No s'ha pogut eliminar la disponibilitat",
+    "specificDates": "Dates Específiques",
+    "addTimeSlot": "Afegir Franja Horària a",
+    "selectDate": "Selecciona una data",
+    "addSlot": "Afegir Franja Horària"
   },
   "pricing": {
     "title": "Preus de Sessions",
@@ -178,8 +193,13 @@
     "saveSuccess": "Preus desats",
     "saveSuccessDesc": "Els teus preus s'han actualitzat correctament",
     "saveError": "No s'han pogut desar els preus",
+    "updateSuccess": "Preu actualitzat",
+    "updateSuccessDesc": "Els preus s'han actualitzat correctament",
+    "updateError": "No s'ha pogut actualitzar el preu",
     "freeSession": "Sessió gratuïta",
-    "pricing": "Preus"
+    "pricing": "Preus",
+    "customDuration": "Durada Personalitzada",
+    "price": "Preu"
   },
   "admin": {
     "title": "Panell d'Administració",
@@ -282,5 +302,36 @@
     "madeWith": "Fet amb",
     "in": "a Barcelona",
     "gdprCompliant": "Complim amb RGPD"
+  },
+  "ai": {
+    "title": "Suggeriments Intel·ligents de Perfil",
+    "subtitle": "Descriu la teva experiència professional i la IA suggerirà categories i habilitats rellevants per al teu perfil.",
+    "describeExperience": "Descriu la teva experiència professional",
+    "experiencePlaceholder": "Ex: He estat coordinador IT en educació durant 5 anys, gestionant equips tècnics i implementant solucions educatives digitals...",
+    "experienceHint": "Mínim 10 caràcters. Sigues específic sobre el teu rol, indústria i responsabilitats.",
+    "generatingSuggestions": "Generant suggeriments...",
+    "generateButton": "Generar Suggeriments amb IA",
+    "suggestionsGenerated": "Suggeriments generats",
+    "suggestionsGeneratedDesc": "La IA ha analitzat el teu perfil i generat suggeriments rellevants.",
+    "generateError": "No s'han pogut generar els suggeriments",
+    "suggestionsApplied": "Suggeriments aplicats",
+    "suggestionsAppliedDesc": "S'han afegit {{categories}} categories i {{skills}} habilitats al teu perfil.",
+    "applyError": "No s'han pogut aplicar els suggeriments",
+    "descriptionTooShort": "Descripció massa curta",
+    "descriptionMinLength": "Si us plau, proporciona una descripció d'almenys 10 caràcters.",
+    "suggestedCategories": "Categories Professionals Suggerides",
+    "suggestedSkills": "Habilitats Tècniques Suggerides",
+    "selectedCount": "{{categories}} categories i {{skills}} habilitats seleccionades",
+    "selectedDescription": "Aquestes s'afegiran al teu perfil i estaran disponibles per a tots els usuaris.",
+    "applying": "Aplicant...",
+    "applySelected": "Aplicar Seleccionades",
+    "suggestions": {
+      "title": "Suggeriments Intel·ligents",
+      "generated": "Suggeriments generats",
+      "generatedDesc": "La IA ha analitzat el teu perfil i generat suggeriments rellevants.",
+      "error": "No s'han pogut generar els suggeriments",
+      "categories": "Categories suggerides:",
+      "skills": "Habilitats suggerides:"
+    }
   }
 }

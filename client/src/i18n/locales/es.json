@@ -77,7 +77,10 @@
     "save": "Guardar Cambios",
     "cancel": "Cancelar",
     "updateSuccess": "Perfil actualizado correctamente",
-    "updateError": "Error al actualizar el perfil"
+    "updateError": "Error al actualizar el perfil",
+    "verified": "Verificado",
+    "editProfile": "Editar Perfil",
+    "mediaContent": "Contenido Multimedia"
   },
   "media": {
     "youtube": "YouTube",
@@ -143,7 +146,9 @@
     "accept": "Aceptar",
     "reject": "Rechazar",
     "approve": "Aprobar",
-    "deny": "Denegar"
+    "deny": "Denegar",
+    "days": "días",
+    "day": "día"
   },
   "availability": {
     "title": "Configuración de Disponibilidad",
@@ -167,19 +172,34 @@
     "90minutes": "90 minutos",
     "saveSuccess": "Disponibilidad guardada",
     "saveSuccessDesc": "Tu horario ha sido actualizado correctamente",
-    "saveError": "No se pudo guardar la disponibilidad"
+    "saveError": "No se pudo guardar la disponibilidad",
+    "addSuccess": "Disponibilidad agregada",
+    "addSuccessDesc": "La franja horaria se ha agregado correctamente",
+    "addError": "No se pudo agregar la disponibilidad",
+    "deleteSuccess": "Disponibilidad eliminada",
+    "deleteSuccessDesc": "La franja horaria se ha eliminado correctamente",
+    "deleteError": "No se pudo eliminar la disponibilidad",
+    "specificDates": "Fechas Específicas",
+    "addTimeSlot": "Agregar Franja Horaria a",
+    "selectDate": "Selecciona una fecha",
+    "addSlot": "Agregar Franja Horaria"
   },
   "pricing": {
     "title": "Precios de Sesiones",
     "free": "GRATIS",
     "freeDesc": "Primera consulta de 15 minutos sin costo",
+    "updateSuccess": "Precio actualizado",
+    "updateSuccessDesc": "Los precios se han actualizado correctamente",
+    "updateError": "No se pudo actualizar el precio",
     "minutes": "minutos",
     "savePricing": "Guardar Precios",
     "saveSuccess": "Precios guardados",
     "saveSuccessDesc": "Tus precios han sido actualizados correctamente",
     "saveError": "No se pudieron guardar los precios",
     "freeSession": "Sesión gratuita",
-    "pricing": "Precios"
+    "pricing": "Precios",
+    "customDuration": "Duración Personalizada",
+    "price": "Precio"
   },
   "admin": {
     "title": "Panel de Administración",
@@ -282,6 +302,37 @@
     "madeWith": "Hecho con",
     "in": "en Barcelona",
     "gdprCompliant": "Cumplimos con RGPD"
+  },
+  "ai": {
+    "title": "Sugerencias Inteligentes de Perfil",
+    "subtitle": "Describe tu experiencia profesional y la IA sugerirá categorías y habilidades relevantes para tu perfil.",
+    "describeExperience": "Describe tu experiencia profesional",
+    "experiencePlaceholder": "Ej: He sido coordinador IT en educación durante 5 años, gestionando equipos técnicos y implementando soluciones educativas digitales...",
+    "experienceHint": "Mínimo 10 caracteres. Sé específico sobre tu rol, industria y responsabilidades.",
+    "generatingSuggestions": "Generando sugerencias...",
+    "generateButton": "Generar Sugerencias con IA",
+    "suggestionsGenerated": "Sugerencias generadas",
+    "suggestionsGeneratedDesc": "La IA ha analizado tu perfil y generado sugerencias relevantes.",
+    "generateError": "No se pudieron generar las sugerencias",
+    "suggestionsApplied": "Sugerencias aplicadas",
+    "suggestionsAppliedDesc": "Se agregaron {{categories}} categorías y {{skills}} skills a tu perfil.",
+    "applyError": "No se pudieron aplicar las sugerencias",
+    "descriptionTooShort": "Descripción muy corta",
+    "descriptionMinLength": "Por favor, proporciona una descripción de al menos 10 caracteres.",
+    "suggestedCategories": "Categorías Profesionales Sugeridas",
+    "suggestedSkills": "Habilidades Técnicas Sugeridas",
+    "selectedCount": "{{categories}} categorías y {{skills}} skills seleccionadas",
+    "selectedDescription": "Estas se agregarán a tu perfil y estarán disponibles para todos los usuarios.",
+    "applying": "Aplicando...",
+    "applySelected": "Aplicar Seleccionadas",
+    "suggestions": {
+      "title": "Sugerencias Inteligentes",
+      "generated": "Sugerencias generadas",
+      "generatedDesc": "La IA ha analizado tu perfil y generado sugerencias relevantes.",
+      "error": "No se pudieron generar las sugerencias",
+      "categories": "Categorías sugeridas:",
+      "skills": "Habilidades sugeridas:"
+    }
   },
   "payment": {
     "selectMethod": "Selecciona método de pago",
