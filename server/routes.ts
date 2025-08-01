@@ -695,6 +695,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Loomia AI Chat - Asistente IA de Dialoom
+  app.post('/api/loomia/chat', async (req: any, res) => {
+    try {
+      const { message, userRole, conversationHistory } = req.body;
+      
+      if (!message || message.trim().length === 0) {
+        return res.status(400).json({ 
+          message: "Se requiere un mensaje" 
+        });
+      }
+
+      const { loomiaAI } = await import("./loomia-chat");
+      
+      // Generate response and analyze intent
+      const [response, intent] = await Promise.all([
+        loomiaAI.generateResponse(message, userRole, conversationHistory),
+        loomiaAI.analyzeUserIntent(message)
+      ]);
+
+      res.json({
+        response,
+        intent,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error in Loomia chat:", error);
+      res.status(500).json({ message: "Error al procesar tu consulta" });
+    }
+  });
+
   // AI-powered suggestions for professional categories and skills
   app.post('/api/ai/suggest-profile', async (req: any, res) => {
     try {
