@@ -71,7 +71,7 @@ export default function AdminNewsManagement() {
   // Delete article mutation
   const deleteArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('DELETE', `/api/admin/news/articles/${id}`);
+      const response = await apiRequest(`/api/admin/news/articles/${id}`, { method: 'DELETE' });
       return response.json();
     },
     onSuccess: () => {
@@ -93,7 +93,7 @@ export default function AdminNewsManagement() {
   // Publish article mutation
   const publishArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('PUT', `/api/admin/news/articles/${id}/publish`);
+      const response = await apiRequest(`/api/admin/news/articles/${id}/publish`, { method: 'PUT' });
       return response.json();
     },
     onSuccess: () => {
@@ -192,7 +192,7 @@ export default function AdminNewsManagement() {
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start gap-2">
                 <CardTitle className="text-lg line-clamp-2">{article.title || ''}</CardTitle>
-                {getStatusBadge(article.status)}
+                {getStatusBadge(article.status || 'draft')}
               </div>
               {article.excerpt && (
                 <p className="text-sm text-gray-600 line-clamp-3">{article.excerpt}</p>
@@ -335,7 +335,7 @@ function ArticleEditor({
         ...data,
         tags: data.tags ? data.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : [],
       };
-      const response = await apiRequest(method, url, payload);
+      const response = await apiRequest(url, { method, body: payload });
       return response.json();
     },
     onSuccess: () => {
