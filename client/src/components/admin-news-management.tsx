@@ -63,7 +63,7 @@ export default function AdminNewsManagement() {
       const url = filterStatus === 'all' 
         ? '/api/admin/news/articles' 
         : `/api/admin/news/articles?status=${filterStatus}`;
-      const response = await apiRequest('GET', url, {});
+      const response = await apiRequest('GET', url);
       return response.json();
     },
   });
@@ -71,7 +71,7 @@ export default function AdminNewsManagement() {
   // Delete article mutation
   const deleteArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('DELETE', `/api/admin/news/articles/${id}`, {});
+      const response = await apiRequest('DELETE', `/api/admin/news/articles/${id}`);
       return response.json();
     },
     onSuccess: () => {
@@ -93,7 +93,7 @@ export default function AdminNewsManagement() {
   // Publish article mutation
   const publishArticleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('PUT', `/api/admin/news/articles/${id}/publish`, {});
+      const response = await apiRequest('PUT', `/api/admin/news/articles/${id}/publish`);
       return response.json();
     },
     onSuccess: () => {
@@ -191,7 +191,7 @@ export default function AdminNewsManagement() {
           <Card key={article.id} className="flex flex-col">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start gap-2">
-                <CardTitle className="text-lg line-clamp-2">{article.title}</CardTitle>
+                <CardTitle className="text-lg line-clamp-2">{article.title || ''}</CardTitle>
                 {getStatusBadge(article.status)}
               </div>
               {article.excerpt && (
@@ -223,7 +223,9 @@ export default function AdminNewsManagement() {
                 <p className="text-xs text-gray-400">
                   {article.publishedAt 
                     ? `Publicado: ${new Date(article.publishedAt).toLocaleDateString()}`
-                    : `Creado: ${new Date(article.createdAt).toLocaleDateString()}`
+                    : article.createdAt 
+                    ? `Creado: ${new Date(article.createdAt).toLocaleDateString()}`
+                    : 'Fecha no disponible'
                   }
                 </p>
               </div>
@@ -329,10 +331,11 @@ function ArticleEditor({
         : `/api/admin/news/articles/${article?.id}`;
       const method = mode === 'create' ? 'POST' : 'PUT';
       
-      const response = await apiRequest(method, url, {
+      const payload = {
         ...data,
         tags: data.tags ? data.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : [],
-      });
+      };
+      const response = await apiRequest(method, url, payload);
       return response.json();
     },
     onSuccess: () => {
