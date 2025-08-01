@@ -49,7 +49,7 @@ function Router() {
             {isAuthenticated && !isLoading ? (
               <Route component={() => {
                 const [, setLocation] = useLocation();
-                useEffect(() => setLocation("/profile"), [setLocation]);
+                useEffect(() => setLocation("/home"), [setLocation]);
                 return null;
               }} />
             ) : (

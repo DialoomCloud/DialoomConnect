@@ -7,7 +7,7 @@ Dialoom is a comprehensive multilingual web application designed as a profession
 Preferred communication style: Simple, everyday language (non-technical users).
 
 ## Recent Changes (January 2025)
-- Fixed login redirect flow: Users now land on /profile after login instead of being automatically redirected to admin page
+- Fixed navigation flow: Users now go to /home when clicking on Dialoom logo while authenticated (previously redirected to /profile)
 - Updated Loomia AI to respond in the platform's selected language (ES/EN/CA)
 - Updated Loomia's context with current Dialoom payment information:
   - All payments processed through Stripe
