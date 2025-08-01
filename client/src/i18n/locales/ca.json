@@ -14,8 +14,8 @@
     "editProfile": "Editar Perfil",
     "multimedia": "Contingut Multimèdia",
     "add": "Afegir",
-    "searchHosts": "Cercar Experts",
-    "searchHostsDesc": "Troba experts per videotrucades",
+    "searchHosts": "Cercar Hosts",
+    "searchHostsDesc": "Troba hosts per videotrucades",
     "myProfile": "El Meu Perfil",
     "myProfileDesc": "Edita la teva informació personal",
     "myDashboard": "El Meu Tauler de Control",
@@ -93,16 +93,16 @@
     "deleteError": "No s'ha pogut esborrar el contingut. Si us plau, torna-ho a provar."
   },
   "hosts": {
-    "title": "Experts Disponibles",
-    "subtitle": "Troba l'expert perfecte per a la teva consulta",
+    "title": "Hosts Disponibles",
+    "subtitle": "Troba el host perfecte per a la teva consulta",
     "viewProfile": "Veure Perfil",
-    "noResults": "No s'han trobat experts",
+    "noResults": "No s'han trobat hosts",
     "searching": "Cercant...",
-    "expertIn": "Expert en",
+    "expertIn": "Host especialista en",
     "aiSearchActive": "Cerca intel·ligent activada",
-    "aiSearchHint": "Usa llenguatge natural: \"astronautes\", \"experts en cuina\", etc.",
-    "searchPlaceholder": "Cerca experts per àrea, professió o habilitat...",
-    "foundResults": "Trobats {count} experts usant cerca intel·ligent",
+    "aiSearchHint": "Usa llenguatge natural: \"astronautes\", \"hosts de cuina\", etc.",
+    "searchPlaceholder": "Cerca hosts per àrea, professió o habilitat...",
+    "foundResults": "Trobats {count} hosts usant cerca intel·ligent",
     "analyzing": "Analitzant la teva cerca amb IA...",
     "relevant": "% rellevant"
   },
@@ -199,17 +199,17 @@
   },
   "landing": {
     "hero": {
-      "title": "Connecta amb Experts de Tot el Món",
+      "title": "Connecta amb Hosts de Tot el Món",
       "subtitle": "Accedeix directament als millors professionals i creadors a través de videotrucades personalitzades",
       "cta": "Començar Ara",
-      "searchExperts": "Cercar Experts"
+      "searchExperts": "Cercar Hosts"
     },
     "features": {
       "title": "Per què triar Dialoom?",
       "subtitle": "La plataforma líder per connexions professionals",
       "directAccess": {
         "title": "Accés directe sense intermediaris",
-        "description": "Connecta directament amb experts sense complicacions"
+        "description": "Connecta directament amb hosts sense complicacions"
       },
       "personalizedExperience": {
         "title": "Experiència personalitzada",
@@ -226,8 +226,44 @@
     },
     "finalCta": {
       "title": "Preparat per connectar?",
-      "subtitle": "Uneix-te a milers d'usuaris que ja han trobat el seu expert ideal",
+      "subtitle": "Uneix-te a milers d'usuaris que ja han trobat el seu host ideal",
       "button": "Reserva la teva primera trucada"
+    }
+  },
+  "experts": {
+    "hero": {
+      "commission": "Només 0% de comissió els primers 3 mesos",
+      "title": "Converteix la teva Experiència en Ingressos",
+      "subtitle": "Uneix-te a la plataforma de hosts professionals més fiable. Connecta amb clients globals i monetitza el teu coneixement.",
+      "cta": "Començar com a Host"
+    },
+    "benefits": {
+      "title": "Per què triar Dialoom com a Host?",
+      "flexibleIncome": {
+        "title": "Ingressos Flexibles",
+        "description": "Estableix els teus propis preus i horaris. Treballa quan vulguis i guanya el que mereixes."
+      },
+      "globalAudience": {
+        "title": "Audiència Global",
+        "description": "Accedeix a clients de tot el món. Expandeix el teu abast més enllà de la teva ubicació geogràfica."
+      },
+      "professionalGrowth": {
+        "title": "Creixement Professional",
+        "description": "Desenvolupa la teva marca personal i construeix una reputació sòlida en la teva àrea d'expertesa."
+      }
+    },
+    "howItWorks": {
+      "title": "Com Funciona?",
+      "step1": "Crea el teu perfil professional i configura la teva disponibilitat",
+      "step2": "Els clients et troben i reserven sessions amb tu",
+      "step3": "Realitza videotrucades directament a la plataforma",
+      "step4": "Rep pagaments automàtics després de cada sessió",
+      "step5": "Construeix la teva reputació i augmenta els teus ingressos"
+    },
+    "finalCta": {
+      "title": "Preparat per Començar?",
+      "subtitle": "Uneix-te a milers de hosts que ja estan generant ingressos a Dialoom",
+      "button": "Registrar-se com a Host"
     }
   },
   "footer": {

@@ -18,11 +18,11 @@ export default function Pricing() {
     es: {
       hero: {
         title: "Precios transparentes",
-        subtitle: "Elige la duración perfecta para tu sesión con expertos"
+        subtitle: "Elige la duración perfecta para tu sesión con hosts"
       },
       baseSession: {
         title: "Sesiones base",
-        description: "Tarifas establecidas por cada experto"
+        description: "Tarifas establecidas por cada host"
       },
       addOns: {
         title: "Servicios adicionales",
@@ -31,7 +31,7 @@ export default function Pricing() {
           {
             name: "Compartir pantalla",
             price: "10",
-            description: "El experto puede compartir su pantalla contigo",
+            description: "El host puede compartir su pantalla contigo",
             icon: <MonitorSpeaker className="h-6 w-6" />
           },
           {
@@ -62,7 +62,7 @@ export default function Pricing() {
           "Soporte técnico 24/7",
           "Garantía de satisfacción",
           "Facturación automática",
-          "Reembolso si el experto no se conecta"
+          "Reembolso si el host no se conecta"
         ]
       },
       faq: {
@@ -70,7 +70,7 @@ export default function Pricing() {
         items: [
           {
             question: "¿Cuándo se cobra el pago?",
-            answer: "El pago se procesa al confirmar la reserva. Si el experto no se conecta, se reembolsa automáticamente."
+            answer: "El pago se procesa al confirmar la reserva. Si el host no se conecta, se reembolsa automáticamente."
           },
           {
             question: "¿Puedo cancelar una sesión?",
@@ -86,11 +86,11 @@ export default function Pricing() {
     en: {
       hero: {
         title: "Transparent pricing",
-        subtitle: "Choose the perfect duration for your expert sessions"
+        subtitle: "Choose the perfect duration for your host sessions"
       },
       baseSession: {
         title: "Base sessions",
-        description: "Rates set by each expert"
+        description: "Rates set by each host"
       },
       addOns: {
         title: "Additional services",
@@ -99,7 +99,7 @@ export default function Pricing() {
           {
             name: "Screen sharing",
             price: "10",
-            description: "Expert can share their screen with you",
+            description: "Host can share their screen with you",
             icon: <MonitorSpeaker className="h-6 w-6" />
           },
           {
@@ -130,7 +130,7 @@ export default function Pricing() {
           "24/7 technical support",
           "Satisfaction guarantee",
           "Automatic billing",
-          "Refund if expert doesn't connect"
+          "Refund if host doesn't connect"
         ]
       },
       faq: {
@@ -138,7 +138,7 @@ export default function Pricing() {
         items: [
           {
             question: "When is payment charged?",
-            answer: "Payment is processed when confirming the booking. If the expert doesn't connect, it's automatically refunded."
+            answer: "Payment is processed when confirming the booking. If the host doesn't connect, it's automatically refunded."
           },
           {
             question: "Can I cancel a session?",
@@ -223,7 +223,7 @@ export default function Pricing() {
           <Card className="max-w-2xl mx-auto border-2 border-primary/20">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-primary">
-                {currentLang === 'es' ? 'Precio por experto' : 'Price per expert'}
+                {currentLang === 'es' ? 'Precio por host' : 'Price per host'}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center">
@@ -232,8 +232,8 @@ export default function Pricing() {
               </p>
               <p className="text-gray-600 mb-6">
                 {currentLang === 'es' 
-                  ? 'Cada experto establece sus propias tarifas según su experiencia y especialización'
-                  : 'Each expert sets their own rates based on their experience and specialization'
+                  ? 'Cada host establece sus propias tarifas según su experiencia y especialización'
+                  : 'Each host sets their own rates based on their experience and specialization'
                 }
               </p>
               <Badge className="bg-primary/10 text-primary px-4 py-2">
@@ -322,14 +322,14 @@ export default function Pricing() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             {currentLang === 'es' 
-              ? '¿Listo para conectar con un experto?' 
-              : 'Ready to connect with an expert?'
+              ? '¿Listo para conectar con un host?' 
+              : 'Ready to connect with a host?'
             }
           </h2>
           <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
             {currentLang === 'es' 
-              ? 'Encuentra el experto perfecto para ti y reserva tu primera sesión'
-              : 'Find the perfect expert for you and book your first session'
+              ? 'Encuentra el host perfecto para ti y reserva tu primera sesión'
+              : 'Find the perfect host for you and book your first session'
             }
           </p>
           <Button 
@@ -337,7 +337,7 @@ export default function Pricing() {
             onClick={handleLogin}
             className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-4 text-lg"
           >
-            {currentLang === 'es' ? 'Buscar expertos' : 'Find experts'}
+            {currentLang === 'es' ? 'Buscar hosts' : 'Find hosts'}
           </Button>
         </div>
       </section>

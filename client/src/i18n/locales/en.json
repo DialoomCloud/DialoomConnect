@@ -14,8 +14,8 @@
     "editProfile": "Edit Profile",
     "multimedia": "Multimedia Content",
     "add": "Add",
-    "searchHosts": "Search Experts",
-    "searchHostsDesc": "Find experts for video calls",
+    "searchHosts": "Search Hosts",
+    "searchHostsDesc": "Find hosts for video calls",
     "myProfile": "My Profile",
     "myProfileDesc": "Edit your personal information",
     "myDashboard": "My Dashboard",
@@ -93,16 +93,16 @@
     "deleteError": "Could not delete content. Please try again."
   },
   "hosts": {
-    "title": "Available Experts",
-    "subtitle": "Find the perfect expert for your consultation",
+    "title": "Available Hosts",
+    "subtitle": "Find the perfect host for your consultation",
     "viewProfile": "View Profile",
-    "noResults": "No experts found",
+    "noResults": "No hosts found",
     "searching": "Searching...",
-    "expertIn": "Expert in",
+    "expertIn": "Host specialist in",
     "aiSearchActive": "Smart search activated",
-    "aiSearchHint": "Use natural language: \"astronauts\", \"cooking experts\", etc.",
-    "searchPlaceholder": "Search experts by area, profession or skill...",
-    "foundResults": "Found {count} experts using smart search",
+    "aiSearchHint": "Use natural language: \"astronauts\", \"cooking hosts\", etc.",
+    "searchPlaceholder": "Search hosts by area, profession or skill...",
+    "foundResults": "Found {count} hosts using smart search",
     "analyzing": "Analyzing your search with AI...",
     "relevant": "% relevant"
   },
@@ -199,17 +199,17 @@
   },
   "landing": {
     "hero": {
-      "title": "Connect with Experts Worldwide",
+      "title": "Connect with Hosts Worldwide",
       "subtitle": "Get direct access to the best professionals and creators through personalized video calls",
       "cta": "Get Started",
-      "searchExperts": "Search Experts"
+      "searchExperts": "Search Hosts"
     },
     "features": {
       "title": "Why choose Dialoom?",
       "subtitle": "The leading platform for professional connections",
       "directAccess": {
         "title": "Direct access without intermediaries",
-        "description": "Connect directly with experts without complications"
+        "description": "Connect directly with hosts without complications"
       },
       "personalizedExperience": {
         "title": "Personalized experience",
@@ -226,8 +226,44 @@
     },
     "finalCta": {
       "title": "Ready to connect?",
-      "subtitle": "Join thousands of users who have already found their ideal expert",
+      "subtitle": "Join thousands of users who have already found their ideal host",
       "button": "Book your first call"
+    }
+  },
+  "experts": {
+    "hero": {
+      "commission": "Only 0% commission for the first 3 months",
+      "title": "Turn Your Expertise into Income",
+      "subtitle": "Join the most trusted professional host platform. Connect with global clients and monetize your knowledge.",
+      "cta": "Start as a Host"
+    },
+    "benefits": {
+      "title": "Why Choose Dialoom as a Host?",
+      "flexibleIncome": {
+        "title": "Flexible Income",
+        "description": "Set your own prices and schedule. Work when you want and earn what you deserve."
+      },
+      "globalAudience": {
+        "title": "Global Audience",
+        "description": "Access clients from around the world. Expand your reach beyond your geographic location."
+      },
+      "professionalGrowth": {
+        "title": "Professional Growth",
+        "description": "Develop your personal brand and build a solid reputation in your area of expertise."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works?",
+      "step1": "Create your professional profile and set your availability",
+      "step2": "Clients find you and book sessions with you",
+      "step3": "Conduct video calls directly on the platform",
+      "step4": "Receive automatic payments after each session",
+      "step5": "Build your reputation and increase your income"
+    },
+    "finalCta": {
+      "title": "Ready to Get Started?",
+      "subtitle": "Join thousands of hosts already generating income on Dialoom",
+      "button": "Register as a Host"
     }
   },
   "footer": {

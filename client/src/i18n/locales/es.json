@@ -14,8 +14,8 @@
     "editProfile": "Editar Perfil",
     "multimedia": "Contenido Multimedia",
     "add": "Agregar",
-    "searchHosts": "Buscar Expertos",
-    "searchHostsDesc": "Encuentra expertos para videollamadas",
+    "searchHosts": "Buscar Hosts",
+    "searchHostsDesc": "Encuentra hosts para videollamadas",
     "myProfile": "Mi Perfil",
     "myProfileDesc": "Edita tu información personal",
     "myDashboard": "Mi Panel de Control",
@@ -93,16 +93,16 @@
     "deleteError": "No se pudo eliminar el contenido. Por favor intenta de nuevo."
   },
   "hosts": {
-    "title": "Expertos Disponibles",
-    "subtitle": "Encuentra el experto perfecto para tu consulta",
+    "title": "Hosts Disponibles",
+    "subtitle": "Encuentra el host perfecto para tu consulta",
     "viewProfile": "Ver Perfil",
-    "noResults": "No se encontraron expertos",
+    "noResults": "No se encontraron hosts",
     "searching": "Buscando...",
-    "expertIn": "Experto en",
+    "expertIn": "Host especialista en",
     "aiSearchActive": "Búsqueda inteligente activada",
-    "aiSearchHint": "Usa lenguaje natural: \"astronautas\", \"expertos en cocina\", etc.",
-    "searchPlaceholder": "Busca expertos por área, profesión o habilidad...",
-    "foundResults": "Encontrados {count} expertos usando búsqueda inteligente",
+    "aiSearchHint": "Usa lenguaje natural: \"astronautas\", \"hosts de cocina\", etc.",
+    "searchPlaceholder": "Busca hosts por área, profesión o habilidad...",
+    "foundResults": "Encontrados {count} hosts usando búsqueda inteligente",
     "analyzing": "Analizando tu búsqueda con IA...",
     "relevant": "% relevante"
   },
@@ -199,17 +199,17 @@
   },
   "landing": {
     "hero": {
-      "title": "Conecta con Expertos de Todo el Mundo",
+      "title": "Conecta con Hosts de Todo el Mundo",
       "subtitle": "Accede directamente a los mejores profesionales y creadores a través de videollamadas personalizadas",
       "cta": "Comenzar Ahora",
-      "searchExperts": "Buscar Expertos"
+      "searchExperts": "Buscar Hosts"
     },
     "features": {
       "title": "¿Por qué elegir Dialoom?",
       "subtitle": "La plataforma líder para conexiones profesionales",
       "directAccess": {
         "title": "Acceso directo sin intermediarios",
-        "description": "Conecta directamente con expertos sin complicaciones"
+        "description": "Conecta directamente con hosts sin complicaciones"
       },
       "personalizedExperience": {
         "title": "Experiencia personalizada",
@@ -226,8 +226,44 @@
     },
     "finalCta": {
       "title": "¿Listo para conectar?",
-      "subtitle": "Únete a miles de usuarios que ya han encontrado su experto ideal",
+      "subtitle": "Únete a miles de usuarios que ya han encontrado su host ideal",
       "button": "Reserva tu primera llamada"
+    }
+  },
+  "experts": {
+    "hero": {
+      "commission": "Solo 0% de comisión los primeros 3 meses",
+      "title": "Convierte tu Expertise en Ingresos",
+      "subtitle": "Únete a la plataforma de hosts profesionales más confiable. Conecta con clientes globales y monetiza tu conocimiento.",
+      "cta": "Comenzar como Host"
+    },
+    "benefits": {
+      "title": "¿Por qué elegir Dialoom como Host?",
+      "flexibleIncome": {
+        "title": "Ingresos Flexibles",
+        "description": "Establece tus propios precios y horarios. Trabaja cuando quieras y gana lo que mereces."
+      },
+      "globalAudience": {
+        "title": "Audiencia Global",
+        "description": "Accede a clientes de todo el mundo. Expande tu alcance más allá de tu ubicación geográfica."
+      },
+      "professionalGrowth": {
+        "title": "Crecimiento Profesional",
+        "description": "Desarrolla tu marca personal y construye una reputación sólida en tu área de expertise."
+      }
+    },
+    "howItWorks": {
+      "title": "¿Cómo Funciona?",
+      "step1": "Crea tu perfil profesional y configura tu disponibilidad",
+      "step2": "Los clientes te encuentran y reservan sesiones contigo",
+      "step3": "Realiza videollamadas directamente en la plataforma",
+      "step4": "Recibe pagos automáticos después de cada sesión",
+      "step5": "Construye tu reputación y aumenta tus ingresos"
+    },
+    "finalCta": {
+      "title": "¿Listo para Empezar?",
+      "subtitle": "Únete a miles de hosts que ya están generando ingresos en Dialoom",
+      "button": "Registrarse como Host"
     }
   },
   "footer": {
