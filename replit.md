@@ -146,3 +146,15 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Service Add-ons System (July 31, 2025)**: Transformed service add-ons from host-configured to client-selectable during booking. Created BookingModal component allowing clients to select additional services with checkboxes. Updated pricing in admin_config table. Services now appear as "Available Additional Services" in public profiles with prices clearly displayed
 - **Video Calling Integration (July 31, 2025)**: Implemented complete Agora video calling system with VideoCall component and VideoCallRoom page. Added token generation in backend, video controls (mute, camera, screen sharing), and integration with booking system. Hosts and guests can join video calls directly from dashboard. System ready for Agora credentials (AGORA_APP_ID and AGORA_APP_CERTIFICATE)
 - **Admin Panel Hooks Fix (July 31, 2025)**: Fixed React hooks ordering error in admin dashboard that caused crashes when logging in. Moved useQuery hooks before conditional returns to ensure consistent hook execution order
+
+## Email System Migration to Resend (August 1, 2025)
+- **Successfully migrated from SendGrid to Resend**: Replaced SendGrid with Resend email service for improved reliability and deliverability
+- **API Integration**: Implemented Resend API with simplified configuration and better error handling
+- **Email Templates Initialized**: All default email templates are now active and ready for production:
+  - User Registration: Welcome emails for new users
+  - Booking Received: Notification to hosts when they receive a booking
+  - Booking Created: Confirmation to guests when they create a booking
+  - User Message: Notification when hosts receive messages through their profile
+- **Production Ready**: Test email successfully sent to nachosaladrigas@gmail.com confirming system functionality
+- **Admin Management**: Email templates can be edited, activated/deactivated, and managed through the admin panel
+- **Email History**: Complete logging and tracking of all sent emails with status updates

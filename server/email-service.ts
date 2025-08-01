@@ -1,4 +1,4 @@
-import { MailService } from '@sendgrid/mail';
+import { Resend } from 'resend';
 import { storage } from './storage';
 import { 
   EmailTemplate, 
@@ -7,12 +7,10 @@ import {
   emailTemplateTypeEnum
 } from '@shared/schema';
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error("SENDGRID_API_KEY environment variable must be set");
-}
+// Use the Resend API key provided by the user
+const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_iviC2Zia_FTJS6qWTn4hk9dLVtARnz4Qw';
 
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
+const resend = new Resend(RESEND_API_KEY);
 
 export interface EmailVariables {
   [key: string]: string | number | boolean;
@@ -81,10 +79,10 @@ class EmailService {
 
       const notification = await storage.createEmailNotification(notificationData);
 
-      // Send email via SendGrid
-      await mailService.send({
+      // Send email via Resend
+      await resend.emails.send({
+        from: 'Dialoom <notifications@dialoom.cloud>',
         to: params.recipientEmail,
-        from: 'notifications@dialoom.cloud', // TODO: Make this configurable
         subject,
         html: htmlContent,
         text: textContent,
