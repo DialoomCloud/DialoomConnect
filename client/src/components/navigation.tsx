@@ -49,17 +49,6 @@ export function Navigation() {
                 {t('navigation.home')}
               </Button>
             </Link>
-            
-            <Link href="/profile">
-              <Button
-                variant={isActive("/profile") ? "default" : "ghost"}
-                size="sm"
-                className={isActive("/profile") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
-              >
-                <UserIcon className="w-4 h-4 mr-2" />
-                {t('navigation.profile')}
-              </Button>
-            </Link>
 
             <Link href="/hosts">
               <Button
@@ -72,7 +61,20 @@ export function Navigation() {
               </Button>
             </Link>
             
-            {(user?.isAdmin || user?.role === 'admin') && (
+            {user && (
+              <Link href="/profile">
+                <Button
+                  variant={isActive("/profile") ? "default" : "ghost"}
+                  size="sm"
+                  className={isActive("/profile") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                >
+                  <UserIcon className="w-4 h-4 mr-2" />
+                  {t('navigation.profile')}
+                </Button>
+              </Link>
+            )}
+            
+            {user && (user.isAdmin || user.role === 'admin') && (
               <Link href="/admin-dashboard">
                 <Button
                   variant={isActive("/admin-dashboard") ? "default" : "ghost"}
@@ -89,18 +91,31 @@ export function Navigation() {
           {/* Desktop Right Side */}
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSelector />
-            <span className="text-sm text-gray-600 animate-float">
-              {user?.firstName || user?.email}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 hover-lift"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              {t('navigation.logout')}
-            </Button>
+            {user ? (
+              <>
+                <span className="text-sm text-gray-600 animate-float">
+                  {user.firstName || user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 hover-lift"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  {t('navigation.logout')}
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => window.location.href = "/api/login"}
+                className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
+              >
+                {t('navigation.login')}
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -135,17 +150,6 @@ export function Navigation() {
                   {t('navigation.home')}
                 </Button>
               </Link>
-              
-              <Link href="/profile" onClick={closeMobileMenu}>
-                <Button
-                  variant={isActive("/profile") ? "default" : "ghost"}
-                  size="sm"
-                  className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                >
-                  <UserIcon className="w-4 h-4 mr-2" />
-                  {t('navigation.profile')}
-                </Button>
-              </Link>
 
               <Link href="/hosts" onClick={closeMobileMenu}>
                 <Button
@@ -154,11 +158,24 @@ export function Navigation() {
                   className={`w-full justify-start ${isActive("/hosts") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                 >
                   <Users className="w-4 h-4 mr-2" />
-                  {t('home.searchHosts')}
+                  {t('hosts.title')}
                 </Button>
               </Link>
               
-              {(user?.isAdmin || user?.role === 'admin') && (
+              {user && (
+                <Link href="/profile" onClick={closeMobileMenu}>
+                  <Button
+                    variant={isActive("/profile") ? "default" : "ghost"}
+                    size="sm"
+                    className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                  >
+                    <UserIcon className="w-4 h-4 mr-2" />
+                    {t('navigation.profile')}
+                  </Button>
+                </Link>
+              )}
+              
+              {user && (user.isAdmin || user.role === 'admin') && (
                 <Link href="/admin-dashboard" onClick={closeMobileMenu}>
                   <Button
                     variant={isActive("/admin-dashboard") ? "default" : "ghost"}
@@ -172,18 +189,31 @@ export function Navigation() {
               )}
 
               <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
-                <div className="text-sm text-gray-600 mb-3 px-3">
-                  {user?.firstName || user?.email}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  {t('navigation.logout')}
-                </Button>
+                {user ? (
+                  <>
+                    <div className="text-sm text-gray-600 mb-3 px-3">
+                      {user.firstName || user.email}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      {t('navigation.logout')}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => window.location.href = "/api/login"}
+                    className="w-full justify-start bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
+                  >
+                    {t('navigation.login')}
+                  </Button>
+                )}
               </div>
             </div>
           </div>

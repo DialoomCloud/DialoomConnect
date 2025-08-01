@@ -30,6 +30,7 @@ import NewsArticlePage from "@/pages/news-article";
 import Experts from "@/pages/experts";
 import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 
 function Router() {
@@ -52,16 +53,36 @@ function Router() {
           <Route path="/about" component={About} />
           
           {/* Routes that require authentication */}
-          {isAuthenticated && !isLoading && (
-            <>
-              <Route path="/home" component={Home} />
-              <Route path="/profile" component={Profile} />
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/admin" component={Admin} />
-              <Route path="/admin-panel" component={AdminPanel} />
-              <Route path="/video-call/:bookingId" component={VideoCallRoom} />
-            </>
-          )}
+          <Route path="/home">
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/profile">
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/dashboard">
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin">
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin-panel">
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/video-call/:bookingId">
+            <ProtectedRoute>
+              <VideoCallRoom />
+            </ProtectedRoute>
+          </Route>
           
           {/* Legal and help pages accessible to all */}
           <Route path="/legal/privacy" component={PrivacyPolicy} />

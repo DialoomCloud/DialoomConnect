@@ -4,6 +4,7 @@
     "profile": "Profile",
     "admin": "Admin",
     "logout": "Log Out",
+    "login": "Login",
     "availability": "Availability"
   },
   "home": {
