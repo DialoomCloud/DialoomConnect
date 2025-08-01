@@ -139,7 +139,7 @@ export default function HostSearch() {
               >
                 <CardContent className="p-6">
                   <div className="text-center mb-4">
-                    <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)] animate-glow">
+                    <div className="w-48 h-48 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)] animate-glow">
                       {host.profileImageUrl ? (
                         <img 
                           src={host.profileImageUrl.startsWith('http') || host.profileImageUrl.startsWith('/') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`} 
@@ -147,7 +147,7 @@ export default function HostSearch() {
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
-                        <User className="w-12 h-12 text-gray-400" />
+                        <User className="w-24 h-24 text-gray-400" />
                       )}
                     </div>
                     <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">

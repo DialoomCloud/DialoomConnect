@@ -2417,5 +2417,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Stripe Connect payment endpoints
+  app.post('/api/payments/create-connect-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const { hostId, amount, currency, description, payment_method_types } = req.body;
+
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: "Stripe no está configurado" });
+      }
+
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+      // Get host information
+      const host = await storage.getUser(hostId);
+      if (!host) {
+        return res.status(404).json({ message: "Host no encontrado" });
+      }
+
+      // Create payment intent with Stripe Connect
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount, // Amount in cents
+        currency: currency || 'eur',
+        payment_method_types: payment_method_types || ['card', 'google_pay', 'apple_pay'],
+        description: description,
+        metadata: {
+          hostId: hostId,
+          bookingUserId: req.user.claims.sub,
+          bookingDescription: description
+        },
+        // Enable automatic payment methods for better UX
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        // Application fee for platform (if using connected accounts)
+        // application_fee_amount: Math.round(amount * 0.05), // 5% platform fee
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+
+    } catch (error) {
+      console.error("Error creating Stripe Connect payment:", error);
+      res.status(500).json({ message: "Error al crear el pago" });
+    }
+  });
+
+  // Stripe webhook endpoint for payment confirmation
+  app.post('/api/payments/stripe-webhook', async (req, res) => {
+    try {
+      const sig = req.headers['stripe-signature'];
+      const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+      if (!endpointSecret) {
+        return res.status(400).json({ message: "Webhook secret no configurado" });
+      }
+
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      let event;
+
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+      } catch (err: any) {
+        console.error('Webhook signature verification failed:', err.message);
+        return res.status(400).json({ message: 'Webhook error: ' + err.message });
+      }
+
+      // Handle the event
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          console.log('PaymentIntent succeeded:', paymentIntent.id);
+          
+          // Here you would typically:
+          // 1. Update booking status in database
+          // 2. Send confirmation emails
+          // 3. Create calendar events
+          // 4. Transfer funds to host (if using Connect)
+          
+          break;
+        case 'payment_intent.payment_failed':
+          const failedPayment = event.data.object;
+          console.log('PaymentIntent failed:', failedPayment.id);
+          break;
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Stripe webhook error:", error);
+      res.status(500).json({ message: "Error procesando webhook" });
+    }
+  });
+
+  // Get payment methods available for a host
+  app.get('/api/payments/methods/:hostId', async (req, res) => {
+    try {
+      const { hostId } = req.params;
+      
+      // For now, return standard payment methods
+      // In a real implementation, you might check if the host has Stripe Connect enabled
+      const paymentMethods = [
+        {
+          id: 'card',
+          name: 'Tarjeta de Crédito/Débito',
+          enabled: true,
+          fee: 0.029, // 2.9%
+          fixed_fee: 0.30
+        },
+        {
+          id: 'google_pay',
+          name: 'Google Pay',
+          enabled: true,
+          fee: 0.029,
+          fixed_fee: 0.30
+        },
+        {
+          id: 'apple_pay',
+          name: 'Apple Pay',
+          enabled: true,
+          fee: 0.029,
+          fixed_fee: 0.30
+        },
+        {
+          id: 'sepa_debit',
+          name: 'SEPA Domiciliación',
+          enabled: true,
+          fee: 0.008, // 0.8%
+          fixed_fee: 0
+        }
+      ];
+
+      res.json({ methods: paymentMethods });
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      res.status(500).json({ message: "Error al obtener métodos de pago" });
+    }
+  });
+
   return httpServer;
 }

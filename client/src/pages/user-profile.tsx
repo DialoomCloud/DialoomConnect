@@ -11,6 +11,8 @@ import { MediaEmbed } from "@/components/media-embed";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { BookingModal } from "@/components/booking-modal";
 import { DateTimeSelector } from "@/components/date-time-selector";
+import { PaymentMethods } from "@/components/payment-methods";
+import { StripeConnectCheckout } from "@/components/stripe-connect-checkout";
 import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { useState } from "react";
@@ -30,6 +32,9 @@ export default function UserProfile() {
   const [showDateTimeSelector, setShowDateTimeSelector] = useState(false);
   const [selectedBookingDate, setSelectedBookingDate] = useState<Date | null>(null);
   const [selectedBookingTime, setSelectedBookingTime] = useState<string | null>(null);
+  const [showPaymentMethods, setShowPaymentMethods] = useState(false);
+  const [showStripeCheckout, setShowStripeCheckout] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -111,11 +116,11 @@ export default function UserProfile() {
                   <img
                     src={user.profileImageUrl.startsWith('http') || user.profileImageUrl.startsWith('/') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`}
                     alt={`${user.firstName} ${user.lastName}`}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-[hsl(188,100%,38%)]"
+                    className="w-64 h-64 rounded-full object-cover border-4 border-[hsl(188,100%,38%)]"
                   />
                 ) : (
-                  <div className="w-32 h-32 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center">
-                    <UserIcon className="w-16 h-16 text-[hsl(188,100%,38%)]" />
+                  <div className="w-64 h-64 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center">
+                    <UserIcon className="w-32 h-32 text-[hsl(188,100%,38%)]" />
                   </div>
                 )}
                 {user.isVerified && (

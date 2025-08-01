@@ -282,5 +282,25 @@
     "madeWith": "Hecho con",
     "in": "en Barcelona",
     "gdprCompliant": "Cumplimos con RGPD"
+  },
+  "payment": {
+    "selectMethod": "Selecciona método de pago",
+    "securePayment": "Pago seguro",
+    "stripeConnectEnabled": "Stripe Connect habilitado",
+    "stripeConnectDesc": "Pagos procesados de forma segura con tecnología Stripe",
+    "processingFee": "Comisión",
+    "total": "Total",
+    "securityTitle": "Pago 100% seguro",
+    "securityDesc": "Tus datos están protegidos con encriptación de nivel bancario",
+    "poweredBy": "Procesado por",
+    "stripeSecure": "Certificado PCI DSS y encriptación SSL/TLS",
+    "completePayment": "Completar pago",
+    "processing": "Procesando...",
+    "pay": "Pagar",
+    "success": "¡Pago exitoso!",
+    "successMessage": "Tu reserva ha sido confirmada",
+    "error": "Error en el pago",
+    "generalError": "Ocurrió un error inesperado",
+    "preparing": "Preparando pago seguro..."
   }
 }
