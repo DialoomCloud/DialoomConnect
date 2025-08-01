@@ -15,52 +15,32 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-4">Dialoom</h3>
             <p className="text-sm text-gray-400">
-              {i18n.language === 'es' 
-                ? 'Plataforma profesional de videollamadas y consultas online.'
-                : i18n.language === 'ca'
-                ? 'Plataforma professional de videotrucades i consultes en línia.'
-                : 'Professional video calls and online consultations platform.'}
+              {t('footer.description')}
             </p>
           </div>
 
           {/* Legal Links */}
           <div>
             <h3 className="font-semibold text-white mb-4">
-              {i18n.language === 'es' 
-                ? 'Legal'
-                : i18n.language === 'ca'
-                ? 'Legal'
-                : 'Legal'}
+              {t('footer.legal')}
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/legal/privacy" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <Shield className="w-3 h-3" />
-                  {i18n.language === 'es' 
-                    ? 'Política de Privacidad'
-                    : i18n.language === 'ca'
-                    ? 'Política de Privadesa'
-                    : 'Privacy Policy'}
+                  {t('footer.privacyPolicy')}
                 </Link>
               </li>
               <li>
                 <Link href="/legal/terms" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <FileText className="w-3 h-3" />
-                  {i18n.language === 'es' 
-                    ? 'Términos de Servicio'
-                    : i18n.language === 'ca'
-                    ? 'Termes de Servei'
-                    : 'Terms of Service'}
+                  {t('footer.termsOfService')}
                 </Link>
               </li>
               <li>
                 <Link href="/legal/cookies" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <Cookie className="w-3 h-3" />
-                  {i18n.language === 'es' 
-                    ? 'Política de Cookies'
-                    : i18n.language === 'ca'
-                    ? 'Política de Cookies'
-                    : 'Cookie Policy'}
+                  {t('footer.cookiePolicy')}
                 </Link>
               </li>
               <li>
@@ -75,38 +55,22 @@ export function Footer() {
           {/* GDPR Compliance */}
           <div>
             <h3 className="font-semibold text-white mb-4">
-              {i18n.language === 'es' 
-                ? 'Protección de Datos'
-                : i18n.language === 'ca'
-                ? 'Protecció de Dades'
-                : 'Data Protection'}
+              {t('footer.dataProtection')}
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/gdpr-rights" className="text-sm text-gray-400 hover:text-white">
-                  {i18n.language === 'es' 
-                    ? 'Tus Derechos RGPD'
-                    : i18n.language === 'ca'
-                    ? 'Els teus Drets RGPD'
-                    : 'Your GDPR Rights'}
+                  {t('footer.gdprRights')}
                 </Link>
               </li>
               <li>
                 <Link href="/data-request" className="text-sm text-gray-400 hover:text-white">
-                  {i18n.language === 'es' 
-                    ? 'Solicitar mis Datos'
-                    : i18n.language === 'ca'
-                    ? 'Sol·licitar les meves Dades'
-                    : 'Request my Data'}
+                  {t('footer.requestData')}
                 </Link>
               </li>
               <li>
                 <Link href="/delete-account" className="text-sm text-gray-400 hover:text-white">
-                  {i18n.language === 'es' 
-                    ? 'Eliminar mi Cuenta'
-                    : i18n.language === 'ca'
-                    ? 'Eliminar el meu Compte'
-                    : 'Delete my Account'}
+                  {t('footer.deleteAccount')}
                 </Link>
               </li>
             </ul>
@@ -115,21 +79,13 @@ export function Footer() {
           {/* Contact & Support */}
           <div>
             <h3 className="font-semibold text-white mb-4">
-              {i18n.language === 'es' 
-                ? 'Soporte'
-                : i18n.language === 'ca'
-                ? 'Suport'
-                : 'Support'}
+              {t('footer.support')}
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/help" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <HelpCircle className="w-3 h-3" />
-                  {i18n.language === 'es' 
-                    ? 'Centro de Ayuda'
-                    : i18n.language === 'ca'
-                    ? 'Centre d\'Ajuda'
-                    : 'Help Center'}
+                  {t('footer.helpCenter')}
                 </Link>
               </li>
               <li>
@@ -151,26 +107,14 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
           <p>
-            © {currentYear} Dialoom. {i18n.language === 'es' 
-              ? 'Todos los derechos reservados.'
-              : i18n.language === 'ca'
-              ? 'Tots els drets reservats.'
-              : 'All rights reserved.'}
+            © {currentYear} Dialoom. {t('footer.allRightsReserved')}
           </p>
           
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <span className="flex items-center gap-1">
-              {i18n.language === 'es' 
-                ? 'Hecho con'
-                : i18n.language === 'ca'
-                ? 'Fet amb'
-                : 'Made with'}
+              {t('footer.madeWith')}
               <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-              {i18n.language === 'es' 
-                ? 'en Barcelona'
-                : i18n.language === 'ca'
-                ? 'a Barcelona'
-                : 'in Barcelona'}
+              {t('footer.in')}
             </span>
             
             <span className="text-xs">

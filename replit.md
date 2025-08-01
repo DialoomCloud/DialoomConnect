@@ -31,6 +31,7 @@ The application adopts a monorepo structure, separating client, server, and shar
 -   **GDPR Compliance**: Includes features for data export, deletion requests, and field privacy controls.
 -   **Email Notifications**: Utilizes Resend for transactional emails (welcome, booking confirmations, messages).
 -   **SEO & Marketing**: Conversion-focused landing page redesign with structured content, social proof, and multilingual support.
+-   **Translation System**: Complete i18n implementation with comprehensive translation files (Spanish, English, Catalan) covering all application features and components.
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL (serverless with connection pooling)

@@ -13,7 +13,7 @@
     "editProfile": "Edit Profile",
     "multimedia": "Multimedia Content",
     "add": "Add",
-    "searchHosts": "Search Hosts",
+    "searchHosts": "Search Experts",
     "searchHostsDesc": "Find experts for video calls",
     "myProfile": "My Profile",
     "myProfileDesc": "Edit your personal information",
@@ -25,6 +25,37 @@
     "noContent": "You haven't added any multimedia content yet",
     "noContentSub": "Add your first video or image to showcase your work"
   },
+  "userProfile": {
+    "notFound": "User not found",
+    "notFoundDesc": "The profile you're looking for is not available.",
+    "noMedia": "This user hasn't added any multimedia content yet",
+    "title": "Title",
+    "description": "Description",
+    "languages": "Languages",
+    "selectLanguages": "Select spoken languages",
+    "languagesSpoken": "Languages spoken",
+    "skills": "Skills",
+    "selectSkills": "Select your skills",
+    "availability": "Availability",
+    "pricing": "Pricing",
+    "bookCall": "Book Call",
+    "viewDetails": "View Details",
+    "additionalServices": "Additional Services Available",
+    "screenSharing": "Screen Sharing",
+    "simultaneousTranslation": "Simultaneous Translation",
+    "recording": "Recording",
+    "transcription": "Transcription",
+    "selectDateTime": "Select Date & Time",
+    "selectDuration": "Select Duration",
+    "selectServices": "Select Services",
+    "totalPrice": "Total Price",
+    "proceedToPayment": "Proceed to Payment",
+    "bookingSuccess": "Booking Successful",
+    "bookingError": "Booking Error",
+    "multimediaContent": "Multimedia Content",
+    "noAvailability": "No availability configured",
+    "noPricing": "No pricing configured"
+  },
   "profile": {
     "title": "My Profile",
     "subtitle": "Manage your personal information and multimedia content",
@@ -32,7 +63,7 @@
     "profilePhoto": "Profile Photo",
     "firstName": "First Name",
     "lastName": "Last Name",
-    "title": "Professional Title",
+    "professionalTitle": "Professional Title",
     "email": "Email",
     "phone": "Phone",
     "description": "Description",
@@ -61,28 +92,50 @@
     "deleteError": "Could not delete content. Please try again."
   },
   "hosts": {
-    "title": "Available Hosts",
+    "title": "Available Experts",
     "viewProfile": "View Profile",
-    "noResults": "No hosts found",
-    "searching": "Searching..."
-  },
-  "profile": {
-    "notFound": "User not found",
-    "notFoundDesc": "The profile you're looking for is not available.",
-    "noMedia": "This user hasn't added any multimedia content yet",
-    "title": "Title",
-    "description": "Description",
-    "languages": "Languages",
-    "selectLanguages": "Select spoken languages",
-    "languagesSpoken": "Languages spoken",
-    "skills": "Skills",
-    "selectSkills": "Select your skills"
+    "noResults": "No experts found",
+    "searching": "Searching...",
+    "expertIn": "Expert in"
   },
   "common": {
     "error": "Error",
     "loading": "Loading...",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "add": "Add",
+    "remove": "Remove",
+    "select": "Select",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "upload": "Upload",
+    "download": "Download",
+    "share": "Share",
+    "copy": "Copy",
+    "paste": "Paste",
+    "cut": "Cut",
+    "undo": "Undo",
+    "redo": "Redo",
+    "refresh": "Refresh",
+    "reset": "Reset",
+    "submit": "Submit",
+    "send": "Send",
+    "receive": "Receive",
+    "accept": "Accept",
+    "reject": "Reject",
+    "approve": "Approve",
+    "deny": "Deny"
   },
   "availability": {
     "title": "Availability Configuration",
@@ -119,5 +172,71 @@
     "saveError": "Could not save pricing",
     "freeSession": "Free Session",
     "pricing": "Pricing"
+  },
+  "admin": {
+    "title": "Administration Panel",
+    "subtitle": "Manage global platform configuration",
+    "systemConfig": "System Configuration",
+    "userManagement": "User Management",
+    "servicePricing": "Additional Service Pricing",
+    "commission": "Commission",
+    "vatRate": "VAT Rate",
+    "screenSharePrice": "Screen Share Price",
+    "translationPrice": "Translation Price",
+    "recordingPrice": "Recording Price",
+    "transcriptionPrice": "Transcription Price",
+    "saveConfig": "Save Configuration",
+    "configSaved": "Configuration saved",
+    "configError": "Error saving configuration"
+  },
+  "landing": {
+    "hero": {
+      "title": "Connect with Experts Worldwide",
+      "subtitle": "Get direct access to the best professionals and creators through personalized video calls",
+      "cta": "Get Started",
+      "searchExperts": "Search Experts"
+    },
+    "features": {
+      "title": "Why choose Dialoom?",
+      "subtitle": "The leading platform for professional connections",
+      "directAccess": {
+        "title": "Direct access without intermediaries",
+        "description": "Connect directly with experts without complications"
+      },
+      "personalizedExperience": {
+        "title": "Personalized experience",
+        "description": "Each call is tailored to your specific needs"
+      },
+      "securePayment": {
+        "title": "Secure payment and guaranteed refund",
+        "description": "Stripe technology with satisfaction guarantee"
+      }
+    },
+    "testimonial": {
+      "quote": "I saved €14,000 thanks to designer Shawn H.'s advice.",
+      "author": "Erika P., LA"
+    },
+    "finalCta": {
+      "title": "Ready to connect?",
+      "subtitle": "Join thousands of users who have already found their ideal expert",
+      "button": "Book your first call"
+    }
+  },
+  "footer": {
+    "description": "Professional video calls and online consultations platform.",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "cookiePolicy": "Cookie Policy",
+    "dataProtection": "Data Protection",
+    "gdprRights": "Your GDPR Rights",
+    "requestData": "Request my Data",
+    "deleteAccount": "Delete my Account",
+    "support": "Support",
+    "helpCenter": "Help Center",
+    "allRightsReserved": "All rights reserved.",
+    "madeWith": "Made with",
+    "in": "in Barcelona",
+    "gdprCompliant": "GDPR Compliant"
   }
 }

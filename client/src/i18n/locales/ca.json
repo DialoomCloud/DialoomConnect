@@ -13,17 +13,48 @@
     "editProfile": "Editar Perfil",
     "multimedia": "Contingut Multimèdia",
     "add": "Afegir",
-    "searchHosts": "Cercar Hosts",
+    "searchHosts": "Cercar Experts",
     "searchHostsDesc": "Troba experts per videotrucades",
-    "myAvailability": "La Meva Disponibilitat",
-    "myAvailabilityDesc": "Configura el teu horari i preus",
     "myProfile": "El Meu Perfil",
     "myProfileDesc": "Edita la teva informació personal",
+    "myDashboard": "El Meu Tauler de Control",
+    "myDashboardDesc": "Gestiona trucades i facturació",
     "videoCalls": "Videotrucades",
     "comingSoon": "Properament",
     "searchPlaceholder": "Cercar per nom o email...",
     "noContent": "Encara no has afegit contingut multimèdia",
     "noContentSub": "Afegeix el teu primer vídeo o imatge per mostrar el teu treball"
+  },
+  "userProfile": {
+    "notFound": "Usuari no trobat",
+    "notFoundDesc": "El perfil que cerques no està disponible.",
+    "noMedia": "Aquest usuari encara no ha afegit contingut multimèdia",
+    "title": "Títol",
+    "description": "Descripció",
+    "languages": "Idiomes",
+    "selectLanguages": "Selecciona idiomes parlats",
+    "languagesSpoken": "Idiomes parlats",
+    "skills": "Habilitats",
+    "selectSkills": "Selecciona les teves habilitats",
+    "availability": "Disponibilitat",
+    "pricing": "Preus",
+    "bookCall": "Reservar Trucada",
+    "viewDetails": "Veure Detalls",
+    "additionalServices": "Serveis Addicionals Disponibles",
+    "screenSharing": "Compartir Pantalla",
+    "simultaneousTranslation": "Traducció Simultània",
+    "recording": "Gravació",
+    "transcription": "Transcripció",
+    "selectDateTime": "Seleccionar Data i Hora",
+    "selectDuration": "Seleccionar Durada",
+    "selectServices": "Seleccionar Serveis",
+    "totalPrice": "Preu Total",
+    "proceedToPayment": "Procedir al Pagament",
+    "bookingSuccess": "Reserva Exitosa",
+    "bookingError": "Error en la Reserva",
+    "multimediaContent": "Contingut Multimèdia",
+    "noAvailability": "Sense disponibilitat configurada",
+    "noPricing": "Sense preus configurats"
   },
   "profile": {
     "title": "El Meu Perfil",
@@ -32,7 +63,7 @@
     "profilePhoto": "Foto de Perfil",
     "firstName": "Nom",
     "lastName": "Cognom",
-    "title": "Títol Professional",
+    "professionalTitle": "Títol Professional",
     "email": "Correu Electrònic",
     "phone": "Telèfon",
     "description": "Descripció",
@@ -61,28 +92,50 @@
     "deleteError": "No s'ha pogut esborrar el contingut. Si us plau, torna-ho a provar."
   },
   "hosts": {
-    "title": "Hosts Disponibles",
+    "title": "Experts Disponibles",
     "viewProfile": "Veure Perfil",
-    "noResults": "No s'han trobat hosts",
-    "searching": "Cercant..."
-  },
-  "profile": {
-    "notFound": "Usuari no trobat",
-    "notFoundDesc": "El perfil que cerques no està disponible.",
-    "noMedia": "Aquest usuari encara no ha afegit contingut multimèdia",
-    "title": "Títol",
-    "description": "Descripció",
-    "languages": "Idiomes",
-    "selectLanguages": "Selecciona idiomes parlats",
-    "languagesSpoken": "Idiomes parlats",
-    "skills": "Habilitats",
-    "selectSkills": "Selecciona les teves habilitats"
+    "noResults": "No s'han trobat experts",
+    "searching": "Cercant...",
+    "expertIn": "Expert en"
   },
   "common": {
     "error": "Error",
     "loading": "Carregant...",
     "save": "Desar",
-    "cancel": "Cancel·lar"
+    "cancel": "Cancel·lar",
+    "close": "Tancar",
+    "back": "Tornar",
+    "next": "Següent",
+    "previous": "Anterior",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "edit": "Editar",
+    "delete": "Esborrar",
+    "view": "Veure",
+    "add": "Afegir",
+    "remove": "Eliminar",
+    "select": "Seleccionar",
+    "search": "Cercar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "upload": "Pujar",
+    "download": "Descarregar",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "paste": "Enganxar",
+    "cut": "Tallar",
+    "undo": "Desfer",
+    "redo": "Refer",
+    "refresh": "Actualitzar",
+    "reset": "Restablir",
+    "submit": "Enviar",
+    "send": "Enviar",
+    "receive": "Rebre",
+    "accept": "Acceptar",
+    "reject": "Rebutjar",
+    "approve": "Aprovar",
+    "deny": "Denegar"
   },
   "availability": {
     "title": "Configuració de Disponibilitat",
@@ -119,5 +172,71 @@
     "saveError": "No s'han pogut desar els preus",
     "freeSession": "Sessió gratuïta",
     "pricing": "Preus"
+  },
+  "admin": {
+    "title": "Panell d'Administració",
+    "subtitle": "Gestiona la configuració global de la plataforma",
+    "systemConfig": "Configuració del Sistema",
+    "userManagement": "Gestió d'Usuaris",
+    "servicePricing": "Preus de Serveis Addicionals",
+    "commission": "Comissió",
+    "vatRate": "Taxa d'IVA",
+    "screenSharePrice": "Preu Compartir Pantalla",
+    "translationPrice": "Preu Traducció",
+    "recordingPrice": "Preu Gravació",
+    "transcriptionPrice": "Preu Transcripció",
+    "saveConfig": "Desar Configuració",
+    "configSaved": "Configuració desada",
+    "configError": "Error desant configuració"
+  },
+  "landing": {
+    "hero": {
+      "title": "Connecta amb Experts de Tot el Món",
+      "subtitle": "Accedeix directament als millors professionals i creadors a través de videotrucades personalitzades",
+      "cta": "Començar Ara",
+      "searchExperts": "Cercar Experts"
+    },
+    "features": {
+      "title": "Per què triar Dialoom?",
+      "subtitle": "La plataforma líder per connexions professionals",
+      "directAccess": {
+        "title": "Accés directe sense intermediaris",
+        "description": "Connecta directament amb experts sense complicacions"
+      },
+      "personalizedExperience": {
+        "title": "Experiència personalitzada",
+        "description": "Cada trucada s'adapta a les teves necessitats específiques"
+      },
+      "securePayment": {
+        "title": "Pagament segur i reemborsament garantit",
+        "description": "Tecnologia Stripe amb garantia de satisfacció"
+      }
+    },
+    "testimonial": {
+      "quote": "Vaig estalviar €14,000 gràcies al consell del dissenyador Shawn H.",
+      "author": "Erika P., LA"
+    },
+    "finalCta": {
+      "title": "Preparat per connectar?",
+      "subtitle": "Uneix-te a milers d'usuaris que ja han trobat el seu expert ideal",
+      "button": "Reserva la teva primera trucada"
+    }
+  },
+  "footer": {
+    "description": "Plataforma professional de videotrucades i consultes en línia.",
+    "legal": "Legal",
+    "privacyPolicy": "Política de Privadesa",
+    "termsOfService": "Termes de Servei",
+    "cookiePolicy": "Política de Cookies",
+    "dataProtection": "Protecció de Dades",
+    "gdprRights": "Els teus Drets RGPD",
+    "requestData": "Sol·licitar les meves Dades",
+    "deleteAccount": "Eliminar el meu Compte",
+    "support": "Suport",
+    "helpCenter": "Centre d'Ajuda",
+    "allRightsReserved": "Tots els drets reservats.",
+    "madeWith": "Fet amb",
+    "in": "a Barcelona",
+    "gdprCompliant": "Complim amb RGPD"
   }
 }

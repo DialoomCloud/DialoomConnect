@@ -14,177 +14,6 @@ export default function NewLanding() {
 
   const currentLang = i18n.language || 'es';
 
-  const content = {
-    es: {
-      hero: {
-        title: "Habla cara a cara con la persona que más admiras",
-        subtitle: "Videollamadas 1-a-1 con expertos, creadores e ídolos en menos de 60 segundos.",
-        cta: "Reserva tu primera llamada",
-        ctaSecondary: "Ver cómo funciona"
-      },
-      howItWorks: {
-        title: "¿Cómo funciona?",
-        subtitle: "Conecta con expertos en 3 simples pasos",
-        steps: [
-          {
-            number: "1",
-            title: "Encuentra",
-            description: "Busca y encuentra el experto perfecto para ti",
-            icon: <Users className="h-8 w-8" />
-          },
-          {
-            number: "2", 
-            title: "Reserva",
-            description: "Reserva tu slot y paga de forma segura con Stripe",
-            icon: <Clock className="h-8 w-8" />
-          },
-          {
-            number: "3",
-            title: "Conéctate",
-            description: "Conéctate y recibe consejos en directo",
-            icon: <Video className="h-8 w-8" />
-          }
-        ]
-      },
-      forWho: {
-        title: "Para quién",
-        subtitle: "Perfecto para diferentes necesidades",
-        segments: [
-          {
-            title: "Fans",
-            description: "Fans que sueñan con conocer a su artista favorito",
-            icon: <Heart className="h-6 w-6" />
-          },
-          {
-            title: "Profesionales", 
-            description: "Profesionales que buscan mentoría especializada",
-            icon: <Users className="h-6 w-6" />
-          },
-          {
-            title: "Creadores",
-            description: "Creadores que desean monetizar su expertise",
-            icon: <Star className="h-6 w-6" />
-          }
-        ]
-      },
-      benefits: {
-        title: "Beneficios clave",
-        subtitle: "¿Por qué elegir Dialoom?",
-        items: [
-          {
-            title: "Acceso directo y sin intermediarios",
-            description: "Conecta directamente con expertos sin complicaciones",
-            icon: <CheckCircle className="h-6 w-6 text-green-600" />
-          },
-          {
-            title: "Experiencia personalizada",
-            description: "Cada llamada está adaptada a tus necesidades específicas",
-            icon: <CheckCircle className="h-6 w-6 text-green-600" />
-          },
-          {
-            title: "Pago seguro y reembolso garantizado",
-            description: "Tecnología Stripe con garantía de satisfacción",
-            icon: <CheckCircle className="h-6 w-6 text-green-600" />
-          }
-        ]
-      },
-      testimonial: {
-        quote: "Me ahorré 14 000 € gracias a los consejos del diseñador Shawn H.",
-        author: "Erika P., LA"
-      },
-      finalCta: {
-        title: "¿Listo para conectar?",
-        subtitle: "Únete a miles de usuarios que ya han encontrado a su experto ideal",
-        button: "Reserva tu primera llamada ya"
-      }
-    },
-    en: {
-      hero: {
-        title: "Talk face-to-face with the person you admire most",
-        subtitle: "1-on-1 video calls with experts, creators and idols in less than 60 seconds.",
-        cta: "Book your first call",
-        ctaSecondary: "See how it works"
-      },
-      howItWorks: {
-        title: "How it works?",
-        subtitle: "Connect with experts in 3 simple steps",
-        steps: [
-          {
-            number: "1",
-            title: "Find",
-            description: "Search and find the perfect expert for you",
-            icon: <Users className="h-8 w-8" />
-          },
-          {
-            number: "2",
-            title: "Book", 
-            description: "Reserve your slot and pay securely with Stripe",
-            icon: <Clock className="h-8 w-8" />
-          },
-          {
-            number: "3",
-            title: "Connect",
-            description: "Connect and receive live advice",
-            icon: <Video className="h-8 w-8" />
-          }
-        ]
-      },
-      forWho: {
-        title: "For whom",
-        subtitle: "Perfect for different needs",
-        segments: [
-          {
-            title: "Fans",
-            description: "Fans who dream of meeting their favorite artist",
-            icon: <Heart className="h-6 w-6" />
-          },
-          {
-            title: "Professionals",
-            description: "Professionals seeking specialized mentorship", 
-            icon: <Users className="h-6 w-6" />
-          },
-          {
-            title: "Creators",
-            description: "Creators who want to monetize their expertise",
-            icon: <Star className="h-6 w-6" />
-          }
-        ]
-      },
-      benefits: {
-        title: "Key benefits",
-        subtitle: "Why choose Dialoom?",
-        items: [
-          {
-            title: "Direct access without intermediaries",
-            description: "Connect directly with experts without complications",
-            icon: <CheckCircle className="h-6 w-6 text-green-600" />
-          },
-          {
-            title: "Personalized experience",
-            description: "Each call is tailored to your specific needs",
-            icon: <CheckCircle className="h-6 w-6 text-green-600" />
-          },
-          {
-            title: "Secure payment and guaranteed refund",
-            description: "Stripe technology with satisfaction guarantee",
-            icon: <CheckCircle className="h-6 w-6 text-green-600" />
-          }
-        ]
-      },
-      testimonial: {
-        quote: "I saved €14,000 thanks to designer Shawn H.'s advice.",
-        author: "Erika P., LA"
-      },
-      finalCta: {
-        title: "Ready to connect?",
-        subtitle: "Join thousands of users who have already found their ideal expert",
-        button: "Book your first call now"
-      }
-    }
-  };
-
-  const text = content[currentLang as keyof typeof content] || content.es;
-
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -196,8 +25,8 @@ export default function NewLanding() {
                 <img 
                   src="/uploads/images/dialoomblue.png"
                   alt="Dialoom" 
-                  className="h-8 w-auto object-contain"
-                  style={{ maxWidth: '140px' }}
+                  className="h-12 w-auto object-contain"
+                  style={{ maxWidth: '200px' }}
                 />
               </div>
             </div>
@@ -205,12 +34,12 @@ export default function NewLanding() {
             <div className="flex items-center space-x-4">
               <Link href="/hosts">
                 <Button variant="ghost" className="text-gray-600 hover:text-primary font-medium">
-                  {currentLang === 'es' ? 'Expertos' : 'Experts'}
+                  {t('hosts.title')}
                 </Button>
               </Link>
               <Link href="/news">
                 <Button variant="ghost" className="text-gray-600 hover:text-primary font-medium">
-                  {currentLang === 'es' ? 'Blog' : 'Blog'}
+                  Blog
                 </Button>
               </Link>
               <Button 
@@ -218,13 +47,13 @@ export default function NewLanding() {
                 onClick={handleLogin}
                 className="text-gray-600 hover:text-primary font-medium"
               >
-                {currentLang === 'es' ? 'Iniciar Sesión' : 'Login'}
+                {currentLang === 'es' ? 'Iniciar Sesión' : currentLang === 'ca' ? 'Iniciar Sessió' : 'Login'}
               </Button>
               <Button 
                 onClick={handleLogin}
                 className="bg-primary hover:bg-primary/90 text-white font-medium px-6"
               >
-                {text.hero.cta}
+                {t('landing.hero.cta')}
               </Button>
             </div>
           </div>
@@ -232,147 +61,145 @@ export default function NewLanding() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/5 to-secondary/5 pt-20 pb-32">
+      <section className="bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
+            <Badge 
+              variant="secondary" 
+              className="mb-4 px-4 py-2 text-sm font-medium bg-blue-100 text-blue-800 border-blue-200"
+            >
+              ✨ {currentLang === 'es' ? 'Nueva plataforma' : currentLang === 'ca' ? 'Nova plataforma' : 'New platform'}
+            </Badge>
+            
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              {text.hero.title}
+              {t('landing.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-10 max-w-4xl mx-auto leading-relaxed">
-              {text.hero.subtitle}
+            
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+              {t('landing.hero.subtitle')}
             </p>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
-                size="lg" 
+                size="lg"
                 onClick={handleLogin}
-                className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-4 text-lg"
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 animate-pulse"
               >
-                {text.hero.cta}
+                <Video className="mr-2 h-5 w-5" />
+                {t('landing.hero.cta')}
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 font-semibold px-8 py-4 text-lg"
-              >
-                <Play className="h-5 w-5 mr-2" />
-                {text.hero.ctaSecondary}
-              </Button>
+              
+              <Link href="/hosts">
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 text-lg font-semibold transition-all duration-200"
+                >
+                  <Globe className="mr-2 h-5 w-5" />
+                  {t('landing.hero.searchExperts')}
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {text.howItWorks.title}
+              {t('landing.features.title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              {text.howItWorks.subtitle}
+              {t('landing.features.subtitle')}
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-12">
-            {text.howItWorks.steps.map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
-                  <span className="text-primary font-bold text-xl">{step.number}</span>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="border-2 hover:border-primary/30 transition-all duration-200 hover:shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="h-8 w-8 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.description}</p>
-              </div>
-            ))}
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {t('landing.features.directAccess.title')}
+                </h3>
+                <p className="text-gray-600">
+                  {t('landing.features.directAccess.description')}
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 hover:border-primary/30 transition-all duration-200 hover:shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Heart className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {t('landing.features.personalizedExperience.title')}
+                </h3>
+                <p className="text-gray-600">
+                  {t('landing.features.personalizedExperience.description')}
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 hover:border-primary/30 transition-all duration-200 hover:shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Shield className="h-8 w-8 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {t('landing.features.securePayment.title')}
+                </h3>
+                <p className="text-gray-600">
+                  {t('landing.features.securePayment.description')}
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* For Who */}
+      {/* Testimonial Section */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {text.forWho.title}
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              {text.forWho.subtitle}
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {text.forWho.segments.map((segment, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-8 text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-6">
-                    <span className="text-primary">{segment.icon}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">{segment.title}</h3>
-                  <p className="text-gray-600">{segment.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {text.benefits.title}
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              {text.benefits.subtitle}
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {text.benefits.items.map((benefit, index) => (
-              <div key={index} className="flex items-start space-x-4">
-                <div className="flex-shrink-0 mt-1">
-                  {benefit.icon}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-gray-600">{benefit.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonial */}
-      <section className="py-20 bg-primary/5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <blockquote className="text-2xl md:text-3xl font-medium text-gray-900 mb-8 italic">
-            "{text.testimonial.quote}"
-          </blockquote>
-          <cite className="text-lg text-gray-600 font-medium">
-            — {text.testimonial.author}
-          </cite>
+          <div className="bg-white rounded-2xl shadow-xl p-12">
+            <div className="flex justify-center mb-6">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-6 w-6 text-yellow-400 fill-current" />
+              ))}
+            </div>
+            
+            <blockquote className="text-2xl font-medium text-gray-900 mb-6">
+              "{t('landing.testimonial.quote')}"
+            </blockquote>
+            
+            <cite className="text-lg text-gray-600 font-medium">
+              — {t('landing.testimonial.author')}
+            </cite>
+          </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-primary to-secondary">
+      {/* Final CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-primary to-cyan-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            {text.finalCta.title}
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            {t('landing.finalCta.title')}
           </h2>
-          <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-            {text.finalCta.subtitle}
+          
+          <p className="text-xl mb-8 opacity-90">
+            {t('landing.finalCta.subtitle')}
           </p>
+          
           <Button 
-            size="lg" 
+            size="lg"
             onClick={handleLogin}
-            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-4 text-lg"
+            className="bg-white text-primary hover:bg-gray-100 px-8 py-3 text-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            {text.finalCta.button}
+            {t('landing.finalCta.button')}
           </Button>
         </div>
       </section>

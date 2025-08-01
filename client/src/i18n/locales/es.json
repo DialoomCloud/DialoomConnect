@@ -13,7 +13,7 @@
     "editProfile": "Editar Perfil",
     "multimedia": "Contenido Multimedia",
     "add": "Agregar",
-    "searchHosts": "Buscar Hosts",
+    "searchHosts": "Buscar Expertos",
     "searchHostsDesc": "Encuentra expertos para videollamadas",
     "myProfile": "Mi Perfil",
     "myProfileDesc": "Edita tu información personal",
@@ -25,6 +25,37 @@
     "noContent": "Aún no has agregado contenido multimedia",
     "noContentSub": "Agrega tu primer video o imagen para mostrar tu trabajo"
   },
+  "userProfile": {
+    "notFound": "Usuario no encontrado",
+    "notFoundDesc": "El perfil que buscas no está disponible.",
+    "noMedia": "Este usuario aún no ha agregado contenido multimedia",
+    "title": "Título",
+    "description": "Descripción",
+    "languages": "Idiomas",
+    "selectLanguages": "Selecciona idiomas hablados",
+    "languagesSpoken": "Idiomas hablados",
+    "skills": "Habilidades",
+    "selectSkills": "Selecciona tus habilidades",
+    "availability": "Disponibilidad",
+    "pricing": "Precios",
+    "bookCall": "Reservar Llamada",
+    "viewDetails": "Ver Detalles",
+    "additionalServices": "Servicios Adicionales Disponibles",
+    "screenSharing": "Compartir Pantalla",
+    "simultaneousTranslation": "Traducción Simultánea",
+    "recording": "Grabación",
+    "transcription": "Transcripción",
+    "selectDateTime": "Seleccionar Fecha y Hora",
+    "selectDuration": "Seleccionar Duración",
+    "selectServices": "Seleccionar Servicios",
+    "totalPrice": "Precio Total",
+    "proceedToPayment": "Proceder al Pago",
+    "bookingSuccess": "Reserva Exitosa",
+    "bookingError": "Error en la Reserva",
+    "multimediaContent": "Contenido Multimedia",
+    "noAvailability": "Sin disponibilidad configurada",
+    "noPricing": "Sin precios configurados"
+  },
   "profile": {
     "title": "Mi Perfil",
     "subtitle": "Gestiona tu información personal y contenido multimedia",
@@ -32,7 +63,7 @@
     "profilePhoto": "Foto de Perfil",
     "firstName": "Nombre",
     "lastName": "Apellido",
-    "title": "Título Profesional",
+    "professionalTitle": "Título Profesional",
     "email": "Correo Electrónico",
     "phone": "Teléfono",
     "description": "Descripción",
@@ -61,28 +92,50 @@
     "deleteError": "No se pudo eliminar el contenido. Por favor intenta de nuevo."
   },
   "hosts": {
-    "title": "Hosts Disponibles",
+    "title": "Expertos Disponibles",
     "viewProfile": "Ver Perfil",
-    "noResults": "No se encontraron hosts",
-    "searching": "Buscando..."
-  },
-  "profile": {
-    "notFound": "Usuario no encontrado",
-    "notFoundDesc": "El perfil que buscas no está disponible.",
-    "noMedia": "Este usuario aún no ha agregado contenido multimedia",
-    "title": "Título",
-    "description": "Descripción",
-    "languages": "Idiomas",
-    "selectLanguages": "Selecciona idiomas hablados",
-    "languagesSpoken": "Idiomas hablados",
-    "skills": "Habilidades",
-    "selectSkills": "Selecciona tus habilidades"
+    "noResults": "No se encontraron expertos",
+    "searching": "Buscando...",
+    "expertIn": "Experto en"
   },
   "common": {
     "error": "Error",
     "loading": "Cargando...",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "view": "Ver",
+    "add": "Agregar",
+    "remove": "Eliminar",
+    "select": "Seleccionar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "upload": "Subir",
+    "download": "Descargar",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "paste": "Pegar",
+    "cut": "Cortar",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "refresh": "Actualizar",
+    "reset": "Restablecer",
+    "submit": "Enviar",
+    "send": "Enviar",
+    "receive": "Recibir",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "approve": "Aprobar",
+    "deny": "Denegar"
   },
   "availability": {
     "title": "Configuración de Disponibilidad",
@@ -119,5 +172,71 @@
     "saveError": "No se pudieron guardar los precios",
     "freeSession": "Sesión gratuita",
     "pricing": "Precios"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "subtitle": "Gestiona la configuración global de la plataforma",
+    "systemConfig": "Configuración del Sistema",
+    "userManagement": "Gestión de Usuarios",
+    "servicePricing": "Precios de Servicios Adicionales",
+    "commission": "Comisión",
+    "vatRate": "Tasa de IVA",
+    "screenSharePrice": "Precio Compartir Pantalla",
+    "translationPrice": "Precio Traducción",
+    "recordingPrice": "Precio Grabación",
+    "transcriptionPrice": "Precio Transcripción",
+    "saveConfig": "Guardar Configuración",
+    "configSaved": "Configuración guardada",
+    "configError": "Error al guardar configuración"
+  },
+  "landing": {
+    "hero": {
+      "title": "Conecta con Expertos de Todo el Mundo",
+      "subtitle": "Accede directamente a los mejores profesionales y creadores a través de videollamadas personalizadas",
+      "cta": "Comenzar Ahora",
+      "searchExperts": "Buscar Expertos"
+    },
+    "features": {
+      "title": "¿Por qué elegir Dialoom?",
+      "subtitle": "La plataforma líder para conexiones profesionales",
+      "directAccess": {
+        "title": "Acceso directo sin intermediarios",
+        "description": "Conecta directamente con expertos sin complicaciones"
+      },
+      "personalizedExperience": {
+        "title": "Experiencia personalizada",
+        "description": "Cada llamada se adapta a tus necesidades específicas"
+      },
+      "securePayment": {
+        "title": "Pago seguro y reembolso garantizado",
+        "description": "Tecnología Stripe con garantía de satisfacción"
+      }
+    },
+    "testimonial": {
+      "quote": "Ahorré €14,000 gracias al consejo del diseñador Shawn H.",
+      "author": "Erika P., LA"
+    },
+    "finalCta": {
+      "title": "¿Listo para conectar?",
+      "subtitle": "Únete a miles de usuarios que ya han encontrado su experto ideal",
+      "button": "Reserva tu primera llamada"
+    }
+  },
+  "footer": {
+    "description": "Plataforma profesional de videollamadas y consultas online.",
+    "legal": "Legal",
+    "privacyPolicy": "Política de Privacidad",
+    "termsOfService": "Términos de Servicio",
+    "cookiePolicy": "Política de Cookies",
+    "dataProtection": "Protección de Datos",
+    "gdprRights": "Tus Derechos RGPD",
+    "requestData": "Solicitar mis Datos",
+    "deleteAccount": "Eliminar mi Cuenta",
+    "support": "Soporte",
+    "helpCenter": "Centro de Ayuda",
+    "allRightsReserved": "Todos los derechos reservados.",
+    "madeWith": "Hecho con",
+    "in": "en Barcelona",
+    "gdprCompliant": "Cumplimos con RGPD"
   }
 }

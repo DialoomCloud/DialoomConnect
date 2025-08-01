@@ -6,7 +6,7 @@ import { HelpCircle, MessageCircle, Video, Calendar, CreditCard, UserCheck, Sett
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export default function Help() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -135,17 +135,13 @@ export default function Help() {
                 <AccordionTrigger className="text-lg font-semibold">
                   <span className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-[hsl(188,100%,38%)]" />
-                    {i18n.language === 'es' ? 'Para Clientes' : 
-                     i18n.language === 'ca' ? 'Per a Clients' : 
-                     'For Clients'}
+                    {t('help.forClients')}
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                   <div>
                     <h4 className="font-semibold mb-2">
-                      {i18n.language === 'es' ? '¿Cómo reservo una videollamada?' : 
-                       i18n.language === 'ca' ? 'Com reservo una videotrucada?' : 
-                       'How do I book a video call?'}
+                      {t('help.howToBook')}
                     </h4>
                     <p className="text-gray-600">
                       {i18n.language === 'es' ? 

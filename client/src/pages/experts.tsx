@@ -14,125 +14,6 @@ export default function Experts() {
 
   const currentLang = i18n.language || 'es';
 
-  const content = {
-    es: {
-      hero: {
-        title: "Conviértete en experto en Dialoom",
-        subtitle: "Monetiza tu conocimiento y conecta con personas que necesitan tu experiencia",
-        cta: "Comenzar como experto",
-        commission: "Solo 10% de comisión"
-      },
-      benefits: {
-        title: "Beneficios de ser experto",
-        items: [
-          {
-            title: "Ingresos flexibles",
-            description: "Establece tus propias tarifas y horarios. Gana dinero compartiendo tu expertise.",
-            icon: <DollarSign className="h-6 w-6 text-green-600" />
-          },
-          {
-            title: "Audiencia global",
-            description: "Accede a usuarios de todo el mundo que buscan tu conocimiento específico.",
-            icon: <Users className="h-6 w-6 text-blue-600" />
-          },
-          {
-            title: "Crecimiento profesional",
-            description: "Construye tu reputación y expande tu red profesional internacional.",
-            icon: <TrendingUp className="h-6 w-6 text-purple-600" />
-          }
-        ]
-      },
-      howItWorks: {
-        title: "Cómo funciona para expertos",
-        steps: [
-          "Crea tu perfil completo con tu experiencia",
-          "Establece tus tarifas y disponibilidad",
-          "Recibe solicitudes de videollamadas",
-          "Conecta y comparte tu conocimiento",
-          "Recibe pagos automáticamente"
-        ]
-      },
-      requirements: {
-        title: "Requisitos",
-        items: [
-          "Experiencia demostrable en tu área",
-          "Conexión estable a internet",
-          "Cámara y micrófono de calidad",
-          "Disponibilidad mínima de 5 horas semanales"
-        ]
-      },
-      commission: {
-        title: "Estructura de comisión",
-        description: "Mantenemos solo un 10% de comisión para mantener la plataforma. El 90% restante es tuyo.",
-        features: [
-          "Pagos automáticos cada semana",
-          "Transferencias directas a tu cuenta",
-          "Facturas automáticas generadas",
-          "Panel de control de ingresos"
-        ]
-      }
-    },
-    en: {
-      hero: {
-        title: "Become an expert on Dialoom",
-        subtitle: "Monetize your knowledge and connect with people who need your expertise",
-        cta: "Start as an expert",
-        commission: "Only 10% commission"
-      },
-      benefits: {
-        title: "Benefits of being an expert",
-        items: [
-          {
-            title: "Flexible income",
-            description: "Set your own rates and schedules. Earn money sharing your expertise.",
-            icon: <DollarSign className="h-6 w-6 text-green-600" />
-          },
-          {
-            title: "Global audience",
-            description: "Access users from around the world looking for your specific knowledge.",
-            icon: <Users className="h-6 w-6 text-blue-600" />
-          },
-          {
-            title: "Professional growth",
-            description: "Build your reputation and expand your international professional network.",
-            icon: <TrendingUp className="h-6 w-6 text-purple-600" />
-          }
-        ]
-      },
-      howItWorks: {
-        title: "How it works for experts",
-        steps: [
-          "Create your complete profile with your experience",
-          "Set your rates and availability",
-          "Receive video call requests",
-          "Connect and share your knowledge",
-          "Receive payments automatically"
-        ]
-      },
-      requirements: {
-        title: "Requirements",
-        items: [
-          "Demonstrable experience in your area",
-          "Stable internet connection",
-          "Quality camera and microphone",
-          "Minimum availability of 5 hours per week"
-        ]
-      },
-      commission: {
-        title: "Commission structure",
-        description: "We keep only 10% commission to maintain the platform. The remaining 90% is yours.",
-        features: [
-          "Automatic payments every week",
-          "Direct transfers to your account",
-          "Automatically generated invoices",
-          "Income control panel"
-        ]
-      }
-    }
-  };
-
-  const text = content[currentLang as keyof typeof content] || content.es;
-
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -140,12 +21,12 @@ export default function Experts() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/">
+              <Link href="/" className="flex items-center">
                 <img 
                   src="/uploads/images/dialoomblue.png"
                   alt="Dialoom" 
-                  className="h-8 w-auto object-contain cursor-pointer"
-                  style={{ maxWidth: '140px' }}
+                  className="h-12 w-auto object-contain"
+                  style={{ maxWidth: '200px' }}
                 />
               </Link>
             </div>
@@ -153,14 +34,21 @@ export default function Experts() {
             <div className="flex items-center space-x-4">
               <Link href="/">
                 <Button variant="ghost" className="text-gray-600 hover:text-primary font-medium">
-                  {currentLang === 'es' ? 'Inicio' : 'Home'}
+                  {t('navigation.home')}
                 </Button>
               </Link>
+              <Button 
+                variant="ghost" 
+                onClick={handleLogin}
+                className="text-gray-600 hover:text-primary font-medium"
+              >
+                {currentLang === 'es' ? 'Iniciar Sesión' : currentLang === 'ca' ? 'Iniciar Sessió' : 'Login'}
+              </Button>
               <Button 
                 onClick={handleLogin}
                 className="bg-primary hover:bg-primary/90 text-white font-medium px-6"
               >
-                {text.hero.cta}
+                {t('experts.hero.cta')}
               </Button>
             </div>
           </div>
@@ -168,137 +56,152 @@ export default function Experts() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/5 to-secondary/5 pt-20 pb-32">
+      <section className="bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <Badge className="mb-6 bg-green-100 text-green-800 text-sm px-4 py-2">
-              {text.hero.commission}
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              {text.hero.title}
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-10 max-w-4xl mx-auto leading-relaxed">
-              {text.hero.subtitle}
-            </p>
-            <Button 
-              size="lg" 
-              onClick={handleLogin}
-              className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-4 text-lg"
+            <Badge 
+              variant="secondary" 
+              className="mb-4 px-4 py-2 text-sm font-medium bg-green-100 text-green-800 border-green-200"
             >
-              {text.hero.cta}
+              {t('experts.hero.commission')}
+            </Badge>
+            
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              {t('experts.hero.title')}
+            </h1>
+            
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+              {t('experts.hero.subtitle')}
+            </p>
+            
+            <Button 
+              size="lg"
+              onClick={handleLogin}
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Video className="mr-2 h-5 w-5" />
+              {t('experts.hero.cta')}
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
+      {/* Benefits Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {text.benefits.title}
+              {t('experts.benefits.title')}
             </h2>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {text.benefits.items.map((benefit, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-8 text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-6">
-                    {benefit.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">{benefit.title}</h3>
-                  <p className="text-gray-600">{benefit.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {text.howItWorks.title}
-            </h2>
-          </div>
-          
-          <div className="max-w-3xl mx-auto">
-            {text.howItWorks.steps.map((step, index) => (
-              <div key={index} className="flex items-start mb-8">
-                <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold mr-4">
-                  {index + 1}
+            <Card className="border-2 hover:border-primary/30 transition-all duration-200 hover:shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <DollarSign className="h-8 w-8 text-green-600" />
                 </div>
-                <p className="text-lg text-gray-700">{step}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Requirements */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
-                {text.requirements.title}
-              </h2>
-              <ul className="space-y-4">
-                {text.requirements.items.map((requirement, index) => (
-                  <li key={index} className="flex items-start">
-                    <CheckCircle className="h-6 w-6 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-lg text-gray-700">{requirement}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {t('experts.benefits.flexibleIncome.title')}
+                </h3>
+                <p className="text-gray-600">
+                  {t('experts.benefits.flexibleIncome.description')}
+                </p>
+              </CardContent>
+            </Card>
             
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl text-center">
-                  {text.commission.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-gray-600 mb-6">{text.commission.description}</p>
-                <ul className="space-y-3 text-left">
-                  {text.commission.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <Star className="h-5 w-5 text-yellow-500 mr-3" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+            <Card className="border-2 hover:border-primary/30 transition-all duration-200 hover:shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {t('experts.benefits.globalAudience.title')}
+                </h3>
+                <p className="text-gray-600">
+                  {t('experts.benefits.globalAudience.description')}
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 hover:border-primary/30 transition-all duration-200 hover:shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="h-8 w-8 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {t('experts.benefits.professionalGrowth.title')}
+                </h3>
+                <p className="text-gray-600">
+                  {t('experts.benefits.professionalGrowth.description')}
+                </p>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              {t('experts.howItWorks.title')}
+            </h2>
+          </div>
+          
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-start mb-8">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold mr-4">
+                1
+              </div>
+              <p className="text-lg text-gray-700">{t('experts.howItWorks.step1')}</p>
+            </div>
+            <div className="flex items-start mb-8">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold mr-4">
+                2
+              </div>
+              <p className="text-lg text-gray-700">{t('experts.howItWorks.step2')}</p>
+            </div>
+            <div className="flex items-start mb-8">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold mr-4">
+                3
+              </div>
+              <p className="text-lg text-gray-700">{t('experts.howItWorks.step3')}</p>
+            </div>
+            <div className="flex items-start mb-8">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold mr-4">
+                4
+              </div>
+              <p className="text-lg text-gray-700">{t('experts.howItWorks.step4')}</p>
+            </div>
+            <div className="flex items-start mb-8">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold mr-4">
+                5
+              </div>
+              <p className="text-lg text-gray-700">{t('experts.howItWorks.step5')}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary to-secondary">
+      <section className="py-20 bg-gradient-to-r from-primary to-cyan-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            {currentLang === 'es' 
-              ? '¿Listo para comenzar?' 
-              : 'Ready to get started?'
-            }
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            {t('experts.finalCta.title')}
           </h2>
-          <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-            {currentLang === 'es' 
-              ? 'Únete a nuestra comunidad de expertos y comienza a monetizar tu conocimiento hoy mismo'
-              : 'Join our community of experts and start monetizing your knowledge today'
-            }
+          
+          <p className="text-xl mb-8 opacity-90">
+            {t('experts.finalCta.subtitle')}
           </p>
+          
           <Button 
-            size="lg" 
+            size="lg"
             onClick={handleLogin}
-            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-4 text-lg"
+            className="bg-white text-primary hover:bg-gray-100 px-8 py-3 text-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            {text.hero.cta}
+            {t('experts.finalCta.button')}
           </Button>
         </div>
       </section>

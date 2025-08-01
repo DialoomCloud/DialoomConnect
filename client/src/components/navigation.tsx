@@ -68,7 +68,7 @@ export function Navigation() {
                 className={isActive("/hosts") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
               >
                 <Users className="w-4 h-4 mr-2" />
-                {t('home.searchHosts')}
+                {t('hosts.title')}
               </Button>
             </Link>
             
