@@ -19,6 +19,8 @@ import {
   emailNotifications,
   userMessages,
   newsArticles,
+  socialPlatforms,
+  userSocialProfiles,
   type User,
   type UpsertUser,
   type MediaContent,
@@ -56,6 +58,9 @@ import {
   type InsertNewsArticle,
   type CreateNewsArticle,
   type UpdateNewsArticle,
+  type SocialPlatform,
+  type UserSocialProfile,
+  type InsertUserSocialProfile,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, asc, sql, gte, lte } from "drizzle-orm";
@@ -219,6 +224,27 @@ export interface IStorage {
   incrementArticleViews(id: string): Promise<void>;
   publishNewsArticle(id: string): Promise<NewsArticle>;
   generateSlugFromTitle(title: string): Promise<string>;
+
+  // Social platforms operations
+  getSocialPlatforms(): Promise<any[]>;
+  
+  // User social profiles operations  
+  getUserSocialProfiles(userId: string): Promise<any[]>;
+  updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string}[]): Promise<void>;
+  
+  // User categories operations
+  getUserCategories(userId: string): Promise<any[]>;
+  updateUserCategories(userId: string, categoryIds: number[]): Promise<void>;
+
+  // Skills by name operations
+  getSkillByName(name: string): Promise<any | undefined>;
+  createSkill(skill: any): Promise<any>;
+  addUserSkill(userId: string, skillId: number): Promise<void>;
+
+  // Categories by name operations
+  getCategoryByName(name: string): Promise<any | undefined>;
+  createCategory(category: any): Promise<any>;
+  addUserCategory(userId: string, categoryId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1321,6 +1347,110 @@ export class DatabaseStorage implements IStorage {
     }
     
     return slug;
+  }
+
+  // Social platforms operations
+  async getSocialPlatforms(): Promise<SocialPlatform[]> {
+    return await db.select().from(socialPlatforms).where(eq(socialPlatforms.isActive, true)).orderBy(socialPlatforms.displayOrder);
+  }
+
+  // User social profiles operations
+  async getUserSocialProfiles(userId: string): Promise<UserSocialProfile[]> {
+    return await db.select().from(userSocialProfiles).where(eq(userSocialProfiles.userId, userId));
+  }
+
+  async updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string}[]): Promise<void> {
+    // Delete existing social profiles
+    await db.delete(userSocialProfiles).where(eq(userSocialProfiles.userId, userId));
+    
+    // Insert new social profiles
+    if (profiles.length > 0) {
+      await db.insert(userSocialProfiles).values(
+        profiles.map(profile => ({
+          userId,
+          platformId: profile.platformId,
+          username: profile.username,
+          url: `https://example.com/${profile.username}`, // This should be constructed based on platform
+          isVisible: true
+        }))
+      );
+    }
+  }
+
+  // User categories operations
+  async getUserCategories(userId: string): Promise<{ categoryId: number }[]> {
+    return await db.select({ categoryId: userCategories.categoryId }).from(userCategories).where(eq(userCategories.userId, userId));
+  }
+
+  async updateUserCategories(userId: string, categoryIds: number[]): Promise<void> {
+    // Delete existing categories
+    await db.delete(userCategories).where(eq(userCategories.userId, userId));
+    
+    // Insert new categories
+    if (categoryIds.length > 0) {
+      await db.insert(userCategories).values(
+        categoryIds.map(categoryId => ({
+          userId,
+          categoryId
+        }))
+      );
+    }
+  }
+
+  // Skills by name operations
+  async getSkillByName(name: string): Promise<any | undefined> {
+    const [skill] = await db.select().from(skills).where(eq(skills.name, name));
+    return skill;
+  }
+
+  async createSkill(skillData: any): Promise<any> {
+    const [newSkill] = await db.insert(skills).values({
+      name: skillData.name,
+      category: skillData.category,
+      description: skillData.description,
+      isActive: skillData.isActive ?? true
+    }).returning();
+    return newSkill;
+  }
+
+  async addUserSkill(userId: string, skillId: number): Promise<void> {
+    // Check if association already exists
+    const existing = await db.select().from(userSkills).where(
+      and(eq(userSkills.userId, userId), eq(userSkills.skillId, skillId))
+    );
+    
+    if (existing.length === 0) {
+      await db.insert(userSkills).values({ userId, skillId });
+    }
+  }
+
+  // Categories by name operations
+  async getCategoryByName(name: string): Promise<any | undefined> {
+    const [category] = await db.select().from(categories).where(eq(categories.name, name));
+    return category;
+  }
+
+  async createCategory(categoryData: any): Promise<any> {
+    const [newCategory] = await db.insert(categories).values({
+      name: categoryData.name,
+      description: categoryData.description,
+      imageUrl: categoryData.imageUrl,
+      iconUrl: categoryData.iconUrl,
+      displayOrder: categoryData.displayOrder ?? 0,
+      isActive: categoryData.isActive ?? true
+    }).returning();
+    return newCategory;
+  }
+
+  async addUserCategory(userId: string, categoryId: number): Promise<void> {
+    // Check if association already exists
+    const existing = await db.select().from(userCategories).where(
+      and(eq(userCategories.userId, userId), eq(userCategories.categoryId, categoryId))
+    );
+    
+    if (existing.length === 0) {
+      await db.insert(userCategories).values({ userId, categoryId });
+    }
   }
 }
 

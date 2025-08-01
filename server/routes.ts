@@ -2316,5 +2316,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Social platforms endpoints
+  app.get('/api/social-platforms', async (req, res) => {
+    try {
+      const platforms = await storage.getSocialPlatforms();
+      res.json(platforms);
+    } catch (error) {
+      console.error("Error fetching social platforms:", error);
+      res.status(500).json({ message: "Error al obtener plataformas sociales" });
+    }
+  });
+
+  // User social profiles endpoints
+  app.get('/api/user/social-profiles/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const socialProfiles = await storage.getUserSocialProfiles(userId);
+      res.json(socialProfiles);
+    } catch (error) {
+      console.error("Error fetching user social profiles:", error);
+      res.status(500).json({ message: "Error al obtener perfiles sociales" });
+    }
+  });
+
+  // User categories endpoints
+  app.get('/api/user/categories/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const categories = await storage.getUserCategories(userId);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching user categories:", error);
+      res.status(500).json({ message: "Error al obtener categorías del usuario" });
+    }
+  });
+
+  // AI description improvement endpoint (protected)
+  app.post('/api/ai/improve-description', isAuthenticated, async (req: any, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description || description.trim().length < 10) {
+        return res.status(400).json({ 
+          message: "Se requiere una descripción de al menos 10 caracteres" 
+        });
+      }
+
+      // Use unified Loomia system for description improvement
+      const { loomiaAI } = await import("./loomia-chat");
+      const improvedDescription = await loomiaAI.improveDescription(description);
+
+      res.json({ improvedDescription });
+    } catch (error) {
+      console.error("Error improving description:", error);
+      res.status(500).json({ message: "Error al mejorar la descripción" });
+    }
+  });
+
+  // Public AI testing endpoints for demo purposes
+  app.post('/api/test/ai/improve-description', async (req, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description || description.trim().length < 10) {
+        return res.status(400).json({ 
+          message: "Se requiere una descripción de al menos 10 caracteres" 
+        });
+      }
+
+      // Use unified Loomia system for description improvement
+      const { loomiaAI } = await import("./loomia-chat");
+      const improvedDescription = await loomiaAI.improveDescription(description);
+
+      res.json({ improvedDescription });
+    } catch (error) {
+      console.error("Error improving description:", error);
+      res.status(500).json({ message: "Error al mejorar la descripción" });
+    }
+  });
+
+  app.post('/api/test/ai/suggestions', async (req, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description || description.trim().length < 10) {
+        return res.status(400).json({ 
+          message: "Se requiere una descripción de al menos 10 caracteres" 
+        });
+      }
+
+      // Use unified Loomia system for suggestions
+      const { loomiaAI } = await import("./loomia-chat");
+      const categories = await loomiaAI.generateCategorySuggestions(description);
+      const skills = await loomiaAI.generateSkillSuggestions(description);
+
+      res.json({ categories, skills });
+    } catch (error) {
+      console.error("Error generating suggestions:", error);
+      res.status(500).json({ message: "Error al generar sugerencias" });
+    }
+  });
+
   return httpServer;
 }

@@ -31,6 +31,7 @@ import NewsArticlePage from "@/pages/news-article";
 import Experts from "@/pages/experts";
 import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
+import TestAIFeatures from "@/pages/test-ai-features";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 
@@ -52,6 +53,7 @@ function Router() {
           <Route path="/experts" component={Experts} />
           <Route path="/pricing" component={Pricing} />
           <Route path="/about" component={About} />
+          <Route path="/test-ai" component={TestAIFeatures} />
           
           {/* Routes that require authentication */}
           <Route path="/home">

@@ -1,7 +1,7 @@
 # Dialoom - Plataforma de Videollamadas con Expertos
 
 ## Overview
-Dialoom is a comprehensive multilingual web application designed as a professional video call booking marketplace. It facilitates user profile management, multimedia content sharing, and integrates a fully functional video calling system. Key capabilities include Stripe payment integration, advanced content management with a visual email template editor, a complete news/article system, YouTube video integration, conversion-optimized marketing landing pages, and AI-powered intelligent host search using natural language processing. The project aims to provide a robust platform for connecting users with experts via video calls, supporting a global audience with multilingual capabilities.
+Dialoom is a comprehensive multilingual web application designed as a professional video call booking marketplace. It facilitates user profile management, multimedia content sharing, and integrates a fully functional video calling system. Key capabilities include Stripe payment integration, advanced content management with a visual email template editor, a complete news/article system, YouTube video integration, conversion-optimized marketing landing pages, AI-powered intelligent host search using natural language processing, comprehensive social media integration, and a fully integrated AI assistant called "Loomia" that enhances user profiles and provides intelligent suggestions. The project aims to provide a robust platform for connecting users with experts via video calls, supporting a global audience with multilingual capabilities.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language (non-technical users).
@@ -36,6 +36,8 @@ The application adopts a monorepo structure, separating client, server, and shar
 -   **Email Notifications**: Utilizes Resend for transactional emails (welcome, booking confirmations, messages).
 -   **SEO & Marketing**: Conversion-focused landing page design with structured content, social proof, and multilingual support.
 -   **Translation System**: Complete i18n implementation across all application features and components.
+-   **Social Media Integration**: Comprehensive support for 10 major social platforms (LinkedIn, Instagram, X/Twitter, Facebook, GitHub, YouTube, ArtStation, Behance, Discord, Dribbble) with user profile linking and management.
+-   **AI Assistant "Loomia"**: Fully integrated OpenAI-powered assistant providing description enhancement, professional category suggestions, skill recommendations, and general platform support with contextual understanding.
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL

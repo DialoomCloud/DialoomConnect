@@ -125,6 +125,31 @@ export const userSkills = pgTable("user_skills", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Social media platforms reference table
+export const socialPlatforms = pgTable("social_platforms", {
+  id: integer("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull(),
+  displayName: varchar("display_name", { length: 50 }).notNull(),
+  iconUrl: varchar("icon_url"),
+  baseUrl: varchar("base_url"),
+  placeholder: varchar("placeholder", { length: 200 }),
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User social media profiles junction table
+export const userSocialProfiles = pgTable("user_social_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  platformId: integer("platform_id").notNull().references(() => socialPlatforms.id),
+  username: varchar("username", { length: 100 }).notNull(),
+  url: varchar("url", { length: 500 }),
+  isVisible: boolean("is_visible").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // User categories junction table
 export const userCategories = pgTable("user_categories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -223,7 +248,23 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   mediaContent: many(mediaContent),
   userLanguages: many(userLanguages),
+  userSocialProfiles: many(userSocialProfiles),
   userSkills: many(userSkills),
+}));
+
+export const userSocialProfilesRelations = relations(userSocialProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [userSocialProfiles.userId],
+    references: [users.id],
+  }),
+  platform: one(socialPlatforms, {
+    fields: [userSocialProfiles.platformId],
+    references: [socialPlatforms.id],
+  }),
+}));
+
+export const socialPlatformsRelations = relations(socialPlatforms, ({ many }) => ({
+  userSocialProfiles: many(userSocialProfiles),
 }));
 
 export const userLanguagesRelations = relations(userLanguages, ({ one }) => ({
@@ -287,6 +328,9 @@ export type Skill = typeof skills.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type UserLanguage = typeof userLanguages.$inferSelect;
 export type UserSkill = typeof userSkills.$inferSelect;
+export type SocialPlatform = typeof socialPlatforms.$inferSelect;
+export type UserSocialProfile = typeof userSocialProfiles.$inferSelect;
+export type InsertUserSocialProfile = typeof userSocialProfiles.$inferInsert;
 
 export const insertMediaContentSchema = createInsertSchema(mediaContent).omit({
   id: true,

@@ -1,156 +1,157 @@
 import OpenAI from "openai";
-import { generateProfessionalSuggestions } from "./ai-suggestions";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable must be set");
 }
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-// Loomia - Asistente IA unificado de Dialoom (chat + sugerencias + análisis)
 export class LoomiaAI {
-  private systemPrompt = `
-Eres Loomia, el asistente IA oficial de Dialoom - una plataforma de videoconsultas 1-a-1 con hosts profesionales.
-
-## Identidad y Propósito
-- Nombre: Loomia
-- Propósito: Ayudar con dudas sobre Dialoom y sus procesos internos
-- Personalidad: Profesional, útil, conciso, en español por defecto
-
-## Conocimiento Principal
-1. **Funcionalidades de Dialoom**: Videollamadas con hosts, sistema de reservas, pagos Stripe, perfiles de hosts
-2. **Para Usuarios**: Ayudar a reservar, pagar y valorar sesiones con hosts
-3. **Para Hosts**: Orientar en creación de perfiles, configuración de disponibilidad y precios
-4. **Para Administradores**: Guiar sobre configuraciones del sistema
-
-## Capacidades Técnicas
-- Análisis de perfiles profesionales con sugerencias automáticas de categorías y skills
-- Búsqueda inteligente de hosts con puntuación de relevancia
-- Ayuda con configuración de perfiles de host, precios y disponibilidad
-- Guía para reservas, pagos con Stripe y videollamadas
-- Asistencia con todas las funcionalidades de la plataforma Dialoom
-
-## Formato de Respuesta
-- Respuestas concisas y estructuradas
-- Pasos numerados cuando sea apropiado
-- Ejemplos prácticos cuando sea relevante
-- Siempre en lenguaje natural y accesible
-
-## Limitaciones
-- No proporcionar asesoramiento legal ni médico
-- Redirigir al soporte humano para temas fuera del dominio
-- No compartir información sensible o datos privados
-
-Responde siempre de manera útil, profesional y centrada en ayudar al usuario con Dialoom.
-`;
-
-  async generateResponse(userMessage: string, userRole?: string, conversationHistory?: Array<{role: string, content: string}>): Promise<string> {
-    try {
-      const messages: Array<{role: "system" | "user" | "assistant", content: string}> = [
-        { role: "system", content: this.systemPrompt }
-      ];
-
-      // Add conversation history if provided
-      if (conversationHistory && conversationHistory.length > 0) {
-        conversationHistory.forEach(msg => {
-          if (msg.role === "user" || msg.role === "assistant") {
-            messages.push({ role: msg.role as "user" | "assistant", content: msg.content });
-          }
-        });
-      }
-
-      // Add current user message with role context if provided
-      const contextualMessage = userRole 
-        ? `[Rol: ${userRole}] ${userMessage}`
-        : userMessage;
-      
-      messages.push({ role: "user", content: contextualMessage });
-
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages,
-        max_tokens: 1000,
-        temperature: 0.7,
-      });
-
-      return response.choices[0].message.content || "Lo siento, no pude generar una respuesta en este momento.";
-    } catch (error) {
-      console.error("Error generating Loomia response:", error);
-      throw new Error("Error al procesar tu consulta. Por favor, inténtalo de nuevo.");
-    }
-  }
-
-  async analyzeUserIntent(message: string): Promise<{
-    intent: "booking" | "profile_setup" | "technical_help" | "general_info" | "support";
-    confidence: number;
-    suggestedActions?: string[];
-  }> {
+  async improveDescription(description: string): Promise<string> {
     try {
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           {
             role: "system",
-            content: `Analiza el siguiente mensaje del usuario y determina su intención principal en el contexto de Dialoom (plataforma de videoconsultas). 
-            
-            Devuelve un JSON con:
-            - intent: "booking" | "profile_setup" | "technical_help" | "general_info" | "support"
-            - confidence: número entre 0 y 1
-            - suggestedActions: array de acciones sugeridas (opcional)
-            
-            Ejemplos de intents:
-            - booking: "quiero reservar una sesión", "cómo pago"
-            - profile_setup: "cómo crear mi perfil de host", "configurar precios"
-            - technical_help: "error en la videollamada", "problemas con el pago"
-            - general_info: "qué es Dialoom", "cómo funciona"
-            - support: "necesito ayuda urgente", "reportar problema"`
+            content: `Eres Loomia, el asistente inteligente de Dialoom. Tu tarea es mejorar las descripciones profesionales de los Hosts para que sean más atractivas y completas.
+
+Instrucciones:
+- Mejora la descripción manteniendo la información original
+- Hazla más profesional y atractiva
+- Añade estructura si es necesaria (párrafos, puntos clave)
+- Mantén un tono profesional pero cercano
+- Enfócate en las fortalezas y experiencia del profesional
+- Sugiere cómo puede ayudar a los clientes
+- Limita la respuesta a un máximo de 300 palabras
+- Responde ÚNICAMENTE con la descripción mejorada, sin explicaciones adicionales
+
+La descripción debe estar en español y ser adecuada para un perfil profesional de videollamadas de consultoría.`
           },
           {
             role: "user",
-            content: message
+            content: `Mejora esta descripción profesional: "${description}"`
           }
         ],
-        response_format: { type: "json_object" },
+        max_tokens: 400,
+        temperature: 0.7,
       });
 
-      return JSON.parse(response.choices[0].message.content || '{"intent": "general_info", "confidence": 0.5}');
+      return response.choices[0]?.message?.content?.trim() || description;
     } catch (error) {
-      console.error("Error analyzing user intent:", error);
-      return { intent: "general_info", confidence: 0.5 };
+      console.error("Error improving description with Loomia:", error);
+      throw new Error("No se pudo mejorar la descripción en este momento");
     }
   }
 
-  // Unified method for professional suggestions (integrates with existing AI suggestions)
-  async generateProfessionalSuggestions(description: string, categories: any[], skills: any[]) {
-    return await generateProfessionalSuggestions(description, categories, skills);
+  async generateCategorySuggestions(description: string): Promise<string[]> {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `Eres Loomia, el asistente inteligente de Dialoom. Analiza la descripción profesional y sugiere categorías profesionales relevantes.
+
+Categorías disponibles: Tecnología, Negocios, Marketing, Diseño, Educación, Salud, Finanzas, Legal, Recursos Humanos, Consultoría, Desarrollo Personal, Arte y Creatividad, Ciencias, Ingeniería, Medicina, Psicología, Coaching, Ventas, Administración, Comunicación.
+
+Responde con un JSON que contenga un array de categorías sugeridas (máximo 3):
+{"categories": ["Categoría1", "Categoría2", "Categoría3"]}`
+          },
+          {
+            role: "user",
+            content: `Analiza esta descripción y sugiere categorías: "${description}"`
+          }
+        ],
+        max_tokens: 200,
+        temperature: 0.3,
+        response_format: { type: "json_object" }
+      });
+
+      const result = JSON.parse(response.choices[0]?.message?.content || '{"categories": []}');
+      return result.categories || [];
+    } catch (error) {
+      console.error("Error generating category suggestions:", error);
+      return [];
+    }
   }
 
-  // Enhanced chat response that can handle profile suggestions
-  async handleProfileSuggestionRequest(description: string, categories: any[], skills: any[]) {
+  async generateSkillSuggestions(description: string): Promise<string[]> {
     try {
-      const suggestions = await this.generateProfessionalSuggestions(description, categories, skills);
-      
-      const response = `He analizado tu descripción profesional y he generado las siguientes sugerencias:
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `Eres Loomia, el asistente inteligente de Dialoom. Analiza la descripción profesional y sugiere habilidades específicas relevantes.
 
-**Categorías recomendadas:**
-${suggestions.categories.map((cat: any, index: number) => 
-  `${index + 1}. **${cat.name}**: ${cat.description}`
-).join('\n')}
+Sugiere habilidades técnicas, blandas y profesionales que sean relevantes para el perfil descrito.
 
-**Skills sugeridas:**
-${suggestions.skills.map((skill: any, index: number) => 
-  `${index + 1}. **${skill.name}** (${skill.category}): ${skill.description}`
-).join('\n')}
+Responde con un JSON que contenga un array de habilidades sugeridas (máximo 8):
+{"skills": ["Habilidad1", "Habilidad2", "Habilidad3"]}`
+          },
+          {
+            role: "user",
+            content: `Analiza esta descripción y sugiere habilidades: "${description}"`
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.3,
+        response_format: { type: "json_object" }
+      });
 
-Estas sugerencias están basadas en tu experiencia como "${description}". Puedes seleccionar las que mejor representen tu perfil profesional.`;
-
-      return { response, suggestions };
+      const result = JSON.parse(response.choices[0]?.message?.content || '{"skills": []}');
+      return result.skills || [];
     } catch (error) {
-      console.error("Error generating profile suggestions:", error);
-      return {
-        response: "Lo siento, tuve un problema al generar sugerencias para tu perfil. ¿Podrías intentar describir tu experiencia de otra manera?",
-        suggestions: null
-      };
+      console.error("Error generating skill suggestions:", error);
+      return [];
+    }
+  }
+
+  async chatResponse(message: string, context?: string): Promise<string> {
+    try {
+      const systemMessage = `Eres Loomia, el asistente inteligente de Dialoom, una plataforma de videollamadas profesionales que conecta expertos con clientes.
+
+Tu personalidad:
+- Profesional pero cercano y amigable
+- Conocedor de la plataforma Dialoom y sus características
+- Siempre dispuesto a ayudar con consultas sobre la plataforma
+- Eficiente y directo en tus respuestas
+- Capaz de ayudar con perfiles, reservas, pagos y uso general
+
+Funciones de Dialoom que conoces:
+- Reserva de videollamadas con Hosts expertos
+- Perfiles profesionales detallados
+- Sistema de pagos con Stripe
+- Categorías profesionales variadas
+- Disponibilidad de horarios flexible
+- Soporte multiidioma (ES, EN, CA)
+
+Responde siempre en español y mantén las respuestas concisas pero útiles.`;
+
+      const messages: any[] = [
+        { role: "system", content: systemMessage }
+      ];
+
+      if (context) {
+        messages.push({ role: "system", content: `Contexto adicional: ${context}` });
+      }
+
+      messages.push({ role: "user", content: message });
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages,
+        max_tokens: 500,
+        temperature: 0.7,
+      });
+
+      return response.choices[0]?.message?.content?.trim() || "No pude procesar tu consulta en este momento.";
+    } catch (error) {
+      console.error("Error generating chat response:", error);
+      return "Lo siento, no puedo responder en este momento. Por favor intenta de nuevo.";
     }
   }
 }
