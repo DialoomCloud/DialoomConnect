@@ -1378,6 +1378,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ received: true });
   });
 
+  // Resend webhook endpoint
+  app.post('/api/webhooks/resend', async (req, res) => {
+    try {
+      const event = req.body;
+      
+      // Log the webhook event
+      console.log('Resend webhook event:', event.type, event.data);
+      
+      // Handle different event types
+      switch (event.type) {
+        case 'email.sent':
+        case 'email.delivered':
+        case 'email.delivery_delayed':
+        case 'email.complained':
+        case 'email.bounced':
+        case 'email.opened':
+        case 'email.clicked':
+          // Update email notification status if we have the email ID
+          if (event.data && event.data.email_id) {
+            // Find notification by resend ID
+            const notifications = await storage.getEmailNotificationsByResendId(event.data.email_id);
+            if (notifications && notifications.length > 0) {
+              for (const notification of notifications) {
+                await storage.updateEmailNotification(notification.id, {
+                  status: event.type.replace('email.', ''),
+                  sentAt: event.type === 'email.sent' ? new Date() : notification.sentAt,
+                });
+              }
+            }
+          }
+          break;
+          
+        default:
+          console.log(`Unhandled Resend event type: ${event.type}`);
+      }
+      
+      res.status(200).json({ received: true });
+    } catch (error) {
+      console.error('Resend webhook processing error:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
+
   // Invoice routes
   app.get('/api/invoices', isAuthenticated, async (req: any, res) => {
     try {

@@ -182,6 +182,7 @@ export interface IStorage {
   createEmailNotification(notification: InsertEmailNotification): Promise<EmailNotification>;
   updateEmailNotification(id: string, updates: Partial<InsertEmailNotification>): Promise<EmailNotification>;
   getEmailNotifications(userId?: string, limit?: number): Promise<EmailNotification[]>;
+  getEmailNotificationsByResendId(resendId: string): Promise<EmailNotification[]>;
   
   createUserMessage(message: InsertUserMessage): Promise<UserMessage>;
   getUserMessages(recipientId: string, isRead?: boolean): Promise<UserMessage[]>;
@@ -1070,6 +1071,12 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await query.orderBy(desc(emailNotifications.createdAt)).limit(limit);
+  }
+
+  async getEmailNotificationsByResendId(resendId: string): Promise<EmailNotification[]> {
+    // For now, we'll search by email ID in the status field or return empty array
+    // In the future, we should add a resendId column to the emailNotifications table
+    return [];
   }
 
   async createUserMessage(message: InsertUserMessage): Promise<UserMessage> {
