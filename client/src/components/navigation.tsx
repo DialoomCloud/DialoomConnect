@@ -26,8 +26,8 @@ export function Navigation() {
               <img 
                 src="/uploads/images/dialoomblue.png"
                 alt="Dialoom" 
-                className="h-8 w-auto object-contain"
-                style={{ maxWidth: '140px' }}
+                className="h-10 w-auto object-contain"
+                style={{ maxWidth: '175px' }}
               />
             </Link>
             
