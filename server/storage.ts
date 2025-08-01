@@ -91,7 +91,17 @@ export interface IStorage {
   // Additional user operations
   getAllUsers(): Promise<User[]>;
   getAllUsersForAdmin(): Promise<User[]>;
-  updateUserStatus(userId: string, updates: { role?: string, isActive?: boolean, isVerified?: boolean }): Promise<void>;
+  updateUserStatus(userId: string, updates: { 
+    firstName?: string, 
+    lastName?: string, 
+    email?: string, 
+    username?: string, 
+    role?: string, 
+    isHost?: boolean, 
+    isAdmin?: boolean, 
+    isActive?: boolean, 
+    isVerified?: boolean 
+  }): Promise<void>;
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
   updateUserStripeConnect(userId: string, accountId: string, onboardingCompleted: boolean): Promise<User>;
@@ -332,10 +342,26 @@ export class DatabaseStorage implements IStorage {
     return allUsers;
   }
 
-  async updateUserStatus(userId: string, updates: { role?: string, isActive?: boolean, isVerified?: boolean }): Promise<void> {
+  async updateUserStatus(userId: string, updates: { 
+    firstName?: string, 
+    lastName?: string, 
+    email?: string, 
+    username?: string, 
+    role?: string, 
+    isHost?: boolean, 
+    isAdmin?: boolean, 
+    isActive?: boolean, 
+    isVerified?: boolean 
+  }): Promise<void> {
     const updateData: any = { updatedAt: new Date() };
     
+    if (updates.firstName !== undefined) updateData.firstName = updates.firstName;
+    if (updates.lastName !== undefined) updateData.lastName = updates.lastName;
+    if (updates.email !== undefined) updateData.email = updates.email;
+    if (updates.username !== undefined) updateData.username = updates.username;
     if (updates.role !== undefined) updateData.role = updates.role;
+    if (updates.isHost !== undefined) updateData.isHost = updates.isHost;
+    if (updates.isAdmin !== undefined) updateData.isAdmin = updates.isAdmin;
     if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
     if (updates.isVerified !== undefined) updateData.isVerified = updates.isVerified;
     

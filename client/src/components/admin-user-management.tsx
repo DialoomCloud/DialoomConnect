@@ -9,13 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserCheck, UserX, Shield, Users, User as UserIcon } from "lucide-react";
+import { Search, UserCheck, UserX, Shield, Users, User as UserIcon, Edit } from "lucide-react";
 import type { User } from "@shared/schema";
 
 export function AdminUserManagement() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
@@ -23,10 +27,7 @@ export function AdminUserManagement() {
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ userId, updates }: { userId: string, updates: any }) => {
-      const response = await apiRequest(`/api/admin/users/${userId}`, {
-        method: "PUT",
-        body: updates,
-      });
+      const response = await apiRequest("PUT", `/api/admin/users/${userId}`, updates);
       return response.json();
     },
     onSuccess: () => {
@@ -35,6 +36,7 @@ export function AdminUserManagement() {
         title: "Usuario actualizado",
         description: "Los cambios se han guardado correctamente",
       });
+      setEditDialogOpen(false);
     },
     onError: (error) => {
       toast({
@@ -52,14 +54,24 @@ export function AdminUserManagement() {
     user.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getRoleBadge = (user: User) => {
+  const getRoleBadges = (user: User) => {
+    const badges = [];
+    
+    // Multiple role support
     if (user.isAdmin || user.role === 'admin') {
-      return <Badge variant="destructive">Admin</Badge>;
-    } else if (user.role === 'host') {
-      return <Badge variant="default">Host</Badge>;
-    } else {
-      return <Badge variant="secondary">Guest</Badge>;
+      badges.push(<Badge key="admin" variant="destructive" className="mr-1">Admin</Badge>);
     }
+    if (user.role === 'host' || user.isHost) {
+      badges.push(<Badge key="host" variant="default" className="mr-1">Host</Badge>);
+    }
+    if (user.role === 'registered' || (!user.role && user.email)) {
+      badges.push(<Badge key="registered" variant="outline" className="mr-1">Registrado</Badge>);
+    }
+    if (!badges.length || user.role === 'guest') {
+      badges.push(<Badge key="guest" variant="secondary" className="mr-1">Guest</Badge>);
+    }
+    
+    return <div className="flex flex-wrap">{badges}</div>;
   };
 
   const getStatusBadge = (user: User) => {
@@ -112,18 +124,40 @@ export function AdminUserManagement() {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        {user.profileImageUrl ? (
-                          <img 
-                            src={user.profileImageUrl} 
-                            alt={`${user.firstName} ${user.lastName}`}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                            <UserIcon className="w-4 h-4 text-gray-500" />
-                          </div>
-                        )}
+                      <div 
+                        className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded p-2 transition-colors"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setEditDialogOpen(true);
+                        }}
+                      >
+                        <div className="relative">
+                          {user.profileImageUrl ? (
+                            <>
+                              <img 
+                                src={user.profileImageUrl.startsWith('/storage/') 
+                                  ? user.profileImageUrl 
+                                  : `/storage/${user.profileImageUrl}`
+                                } 
+                                alt={`${user.firstName} ${user.lastName}`}
+                                className="w-8 h-8 rounded-full object-cover"
+                                onError={(e) => {
+                                  const img = e.target as HTMLImageElement;
+                                  img.style.display = 'none';
+                                  const fallback = img.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center" style={{display: 'none'}}>
+                                <UserIcon className="w-4 h-4 text-gray-500" />
+                              </div>
+                            </>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                              <UserIcon className="w-4 h-4 text-gray-500" />
+                            </div>
+                          )}
+                        </div>
                         <div>
                           <div className="font-medium">
                             {user.firstName} {user.lastName}
@@ -137,41 +171,7 @@ export function AdminUserManagement() {
                       </div>
                     </TableCell>
                     <TableCell>{user.email || '-'}</TableCell>
-                    <TableCell>
-                      <Select
-                        value={user.role || 'guest'}
-                        onValueChange={(value) => {
-                          updateUserMutation.mutate({
-                            userId: user.id,
-                            updates: { role: value }
-                          });
-                        }}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="guest">
-                            <div className="flex items-center gap-2">
-                              <UserIcon className="w-4 h-4" />
-                              Guest
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="host">
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4" />
-                              Host
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="admin">
-                            <div className="flex items-center gap-2">
-                              <Shield className="w-4 h-4" />
-                              Admin
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
+                    <TableCell>{getRoleBadges(user)}</TableCell>
                     <TableCell>{getStatusBadge(user)}</TableCell>
                     <TableCell>
                       <Switch
@@ -186,6 +186,17 @@ export function AdminUserManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setEditDialogOpen(true);
+                          }}
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Editar
+                        </Button>
                         <Button
                           size="sm"
                           variant={user.isVerified ? "outline" : "default"}
@@ -217,6 +228,160 @@ export function AdminUserManagement() {
           </div>
         )}
       </CardContent>
+
+      {/* User Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar Usuario</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <UserEditForm 
+              user={selectedUser} 
+              onSave={(updates) => {
+                updateUserMutation.mutate({
+                  userId: selectedUser.id,
+                  updates
+                });
+              }}
+              isLoading={updateUserMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
+  );
+}
+
+// User Edit Form Component
+function UserEditForm({ user, onSave, isLoading }: {
+  user: User;
+  onSave: (updates: any) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    firstName: user.firstName || '',
+    lastName: user.lastName || '',
+    email: user.email || '',
+    username: user.username || '',
+    role: user.role || 'guest',
+    isHost: user.isHost || false,
+    isAdmin: user.isAdmin || false,
+    isActive: user.isActive !== false,
+    isVerified: user.isVerified || false,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="firstName">Nombre</Label>
+          <Input
+            id="firstName"
+            value={formData.firstName}
+            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label htmlFor="lastName">Apellido</Label>
+          <Input
+            id="lastName"
+            value={formData.lastName}
+            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="username">Usuario</Label>
+        <Input
+          id="username"
+          value={formData.username}
+          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="role">Rol Principal</Label>
+        <Select
+          value={formData.role}
+          onValueChange={(value) => setFormData({ ...formData, role: value })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="guest">Guest</SelectItem>
+            <SelectItem value="registered">Registrado</SelectItem>
+            <SelectItem value="host">Host</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-3">
+        <Label>Roles Adicionales</Label>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="isHost"
+            checked={formData.isHost}
+            onCheckedChange={(checked) => setFormData({ ...formData, isHost: Boolean(checked) })}
+          />
+          <Label htmlFor="isHost">Es Host</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="isAdmin"
+            checked={formData.isAdmin}
+            onCheckedChange={(checked) => setFormData({ ...formData, isAdmin: Boolean(checked) })}
+          />
+          <Label htmlFor="isAdmin">Es Admin</Label>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <Label>Estado</Label>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="isActive"
+            checked={formData.isActive}
+            onCheckedChange={(checked) => setFormData({ ...formData, isActive: Boolean(checked) })}
+          />
+          <Label htmlFor="isActive">Usuario Activo</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="isVerified"
+            checked={formData.isVerified}
+            onCheckedChange={(checked) => setFormData({ ...formData, isVerified: Boolean(checked) })}
+          />
+          <Label htmlFor="isVerified">Usuario Verificado</Label>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={() => window.location.reload()}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+        </Button>
+      </div>
+    </form>
   );
 }

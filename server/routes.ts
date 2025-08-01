@@ -1515,10 +1515,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/users/:targetUserId', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { targetUserId } = req.params;
-      const { role, isActive, isVerified } = req.body;
+      const { 
+        firstName, 
+        lastName, 
+        email, 
+        username, 
+        role, 
+        isHost, 
+        isAdmin, 
+        isActive, 
+        isVerified 
+      } = req.body;
 
       await storage.updateUserStatus(targetUserId, {
+        firstName,
+        lastName,
+        email,
+        username,
         role,
+        isHost,
+        isAdmin,
         isActive,
         isVerified
       });
