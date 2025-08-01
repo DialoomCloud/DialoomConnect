@@ -83,7 +83,7 @@ export default function NewLanding() {
               <Button 
                 size="lg"
                 onClick={handleLogin}
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 animate-pulse"
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 animate-glow hover-lift"
               >
                 <Video className="mr-2 h-5 w-5" />
                 {t('landing.hero.cta')}
