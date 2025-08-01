@@ -25,19 +25,19 @@ export default function NewLanding() {
                 <img 
                   src="/uploads/images/dialoomblue.png"
                   alt="Dialoom" 
-                  className="h-12 w-auto object-contain"
-                  style={{ maxWidth: '200px' }}
+                  className="h-10 sm:h-12 w-auto object-contain"
+                  style={{ maxWidth: '150px' }}
                 />
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Link href="/hosts">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/hosts" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-600 hover:text-primary font-medium">
                   {t('hosts.title')}
                 </Button>
               </Link>
-              <Link href="/news">
+              <Link href="/news" className="hidden sm:block">
                 <Button variant="ghost" className="text-gray-600 hover:text-primary font-medium">
                   Blog
                 </Button>
@@ -45,15 +45,16 @@ export default function NewLanding() {
               <Button 
                 variant="ghost" 
                 onClick={handleLogin}
-                className="text-gray-600 hover:text-primary font-medium"
+                className="text-gray-600 hover:text-primary font-medium text-sm sm:text-base px-2 sm:px-4"
               >
-                {currentLang === 'es' ? 'Iniciar Sesión' : currentLang === 'ca' ? 'Iniciar Sessió' : 'Login'}
+                <span className="hidden sm:inline">{currentLang === 'es' ? 'Iniciar Sesión' : currentLang === 'ca' ? 'Iniciar Sessió' : 'Login'}</span>
+                <span className="sm:hidden">{currentLang === 'es' ? 'Entrar' : currentLang === 'ca' ? 'Entrar' : 'Login'}</span>
               </Button>
               <Button 
                 onClick={handleLogin}
-                className="bg-primary hover:bg-primary/90 text-white font-medium px-6"
+                className="bg-primary hover:bg-primary/90 text-white font-medium px-3 sm:px-6 py-2 text-sm sm:text-base"
               >
-                {t('landing.hero.cta')}
+                <span className="whitespace-nowrap">{t('landing.hero.cta')}</span>
               </Button>
             </div>
           </div>
@@ -79,24 +80,24 @@ export default function NewLanding() {
               {t('landing.hero.subtitle')}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
               <Button 
                 size="lg"
                 onClick={handleLogin}
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 animate-glow hover-lift"
+                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-6 sm:px-8 py-3 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 animate-glow hover-lift"
               >
-                <Video className="mr-2 h-5 w-5" />
-                {t('landing.hero.cta')}
+                <Video className="mr-2 h-5 w-5 flex-shrink-0" />
+                <span className="whitespace-nowrap">{t('landing.hero.cta')}</span>
               </Button>
               
-              <Link href="/hosts">
+              <Link href="/hosts" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 text-lg font-semibold transition-all duration-200"
+                  className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-white px-6 sm:px-8 py-3 text-base sm:text-lg font-semibold transition-all duration-200"
                 >
-                  <Globe className="mr-2 h-5 w-5" />
-                  {t('landing.hero.searchExperts')}
+                  <Globe className="mr-2 h-5 w-5 flex-shrink-0" />
+                  <span className="whitespace-nowrap">{t('landing.hero.searchExperts')}</span>
                 </Button>
               </Link>
             </div>
@@ -197,9 +198,9 @@ export default function NewLanding() {
           <Button 
             size="lg"
             onClick={handleLogin}
-            className="bg-white text-primary hover:bg-gray-100 px-8 py-3 text-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            className="bg-white text-primary hover:bg-gray-100 px-6 py-3 text-lg sm:text-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 max-w-full"
           >
-            {t('landing.finalCta.button')}
+            <span className="whitespace-nowrap">{t('landing.finalCta.button')}</span>
           </Button>
         </div>
       </section>
