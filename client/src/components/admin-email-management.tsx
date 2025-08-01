@@ -13,7 +13,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Mail, Plus, Edit, Trash2, Send, Eye, Clock, Settings } from "lucide-react";
+import { 
+  Mail, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Send, 
+  Eye, 
+  Clock, 
+  Settings, 
+  FileText, 
+  Type, 
+  Code, 
+  Info, 
+  X, 
+  Save, 
+  Loader2 
+} from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -78,9 +94,7 @@ export function AdminEmailManagement() {
   // Create template mutation
   const createTemplateMutation = useMutation({
     mutationFn: async (template: any) => {
-      const response = await apiRequest('POST', '/api/admin/email-templates', {
-        body: template
-      });
+      const response = await apiRequest('POST', '/api/admin/email-templates', template);
       return response.json();
     },
     onSuccess: () => {
@@ -104,9 +118,7 @@ export function AdminEmailManagement() {
   // Update template mutation
   const updateTemplateMutation = useMutation({
     mutationFn: async ({ id, ...template }: any) => {
-      const response = await apiRequest('PUT', `/api/admin/email-templates/${id}`, {
-        body: template
-      });
+      const response = await apiRequest('PUT', `/api/admin/email-templates/${id}`, template);
       return response.json();
     },
     onSuccess: () => {
@@ -448,58 +460,282 @@ export function AdminEmailManagement() {
       {/* Edit Template Dialog */}
       {editingTemplate && (
         <Dialog open={!!editingTemplate} onOpenChange={() => setEditingTemplate(null)}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden">
             <DialogHeader>
-              <DialogTitle>Editar Plantilla de Email</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Editar Plantilla de Email
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Tipo de Email</Label>
-                <div className="p-2 bg-muted rounded">
-                  {getTypeLabel(editingTemplate.type)}
+            
+            <div className="grid grid-cols-2 gap-6 h-[75vh]">
+              {/* Editor Panel */}
+              <div className="space-y-4 overflow-y-auto pr-2">
+                <div className="space-y-2">
+                  <Label>Tipo de Email</Label>
+                  <div className="p-3 bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-teal-600" />
+                      <span className="font-medium text-teal-800">
+                        {getTypeLabel(editingTemplate.type)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-subject" className="flex items-center gap-2">
+                    <span>Asunto del Email</span>
+                    <span className="text-xs text-muted-foreground">(Se mostrará en la bandeja de entrada)</span>
+                  </Label>
+                  <Input
+                    id="edit-subject"
+                    value={editingTemplate.subject}
+                    onChange={(e) => setEditingTemplate({ ...editingTemplate, subject: e.target.value })}
+                    className="font-medium"
+                    placeholder="Escribe el asunto del email..."
+                  />
+                </div>
+
+                <Tabs defaultValue="html" className="space-y-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="html" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Contenido HTML
+                    </TabsTrigger>
+                    <TabsTrigger value="text" className="flex items-center gap-2">
+                      <Type className="h-4 w-4" />
+                      Texto Plano
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="html" className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="edit-htmlContent">Contenido HTML Visual</Label>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            const template = editingTemplate.htmlContent;
+                            const formatted = template
+                              .replace(/></g, '>\n<')
+                              .replace(/^\s+|\s+$/gm, '')
+                              .split('\n')
+                              .map(line => line.trim() ? '  '.repeat((line.match(/^<[^/]/g) || []).length) + line : line)
+                              .join('\n');
+                            setEditingTemplate({ ...editingTemplate, htmlContent: formatted });
+                          }}
+                        >
+                          <Code className="h-3 w-3 mr-1" />
+                          Formatear
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            const variables = [
+                              '{{user_name}}', '{{platform_name}}', '{{login_url}}', 
+                              '{{host_name}}', '{{guest_name}}', '{{call_date}}', 
+                              '{{call_time}}', '{{call_duration}}', '{{total_price}}',
+                              '{{message_content}}', '{{sender_name}}'
+                            ];
+                            setEditingTemplate({ 
+                              ...editingTemplate, 
+                              htmlContent: editingTemplate.htmlContent + '\n\n<!-- Variables disponibles:\n' + variables.join(', ') + '\n-->'
+                            });
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Variables
+                        </Button>
+                      </div>
+                    </div>
+                    <Textarea
+                      id="edit-htmlContent"
+                      value={editingTemplate.htmlContent}
+                      onChange={(e) => setEditingTemplate({ ...editingTemplate, htmlContent: e.target.value })}
+                      rows={12}
+                      className="font-mono text-sm"
+                      placeholder="<html>&#10;<head>&#10;  <title>{{subject}}</title>&#10;</head>&#10;<body>&#10;  <h1>¡Hola {{user_name}}!</h1>&#10;  <p>Tu contenido aquí...</p>&#10;</body>&#10;</html>"
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="text" className="space-y-2">
+                    <Label htmlFor="edit-textContent">Versión de Texto Plano (fallback)</Label>
+                    <Textarea
+                      id="edit-textContent"
+                      value={editingTemplate.textContent}
+                      onChange={(e) => setEditingTemplate({ ...editingTemplate, textContent: e.target.value })}
+                      rows={10}
+                      placeholder="Versión en texto plano del email para clientes que no soportan HTML..."
+                    />
+                  </TabsContent>
+                </Tabs>
+
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="edit-isActive"
+                      checked={editingTemplate.isActive}
+                      onChange={(e) => setEditingTemplate({ ...editingTemplate, isActive: e.target.checked })}
+                      className="rounded"
+                    />
+                    <Label htmlFor="edit-isActive" className="font-medium">
+                      Plantilla activa
+                    </Label>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {editingTemplate.isActive ? "✅ Visible para usuarios" : "⚠️ Oculta"}
+                  </span>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-subject">Asunto</Label>
-                <Input
-                  id="edit-subject"
-                  value={editingTemplate.subject}
-                  onChange={(e) => setEditingTemplate({ ...editingTemplate, subject: e.target.value })}
-                />
+
+              {/* Preview Panel */}
+              <div className="border-l border-gray-200 pl-6 overflow-y-auto">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Eye className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-semibold text-lg">Vista Previa del Email</h3>
+                  </div>
+
+                  {/* Email Header Preview */}
+                  <div className="bg-white border rounded-lg shadow-sm">
+                    <div className="border-b bg-gray-50 px-4 py-3 rounded-t-lg">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        <span className="font-medium">De:</span>
+                        <span>api@dialoom.com (Dialoom)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        <span className="font-medium">Para:</span>
+                        <span>usuario@ejemplo.com</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-800">Asunto:</span>
+                        <span className="text-gray-900">
+                          {editingTemplate.subject || "Sin asunto"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Email Content Preview */}
+                    <div className="p-4">
+                      <Tabs defaultValue="html-preview" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-4">
+                          <TabsTrigger value="html-preview">Vista HTML</TabsTrigger>
+                          <TabsTrigger value="text-preview">Vista Texto</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="html-preview">
+                          <div className="border rounded-lg p-4 bg-white min-h-[300px]">
+                            {editingTemplate.htmlContent ? (
+                              <div 
+                                dangerouslySetInnerHTML={{ 
+                                  __html: editingTemplate.htmlContent
+                                    .replace(/\{\{user_name\}\}/g, 'Juan Pérez')
+                                    .replace(/\{\{platform_name\}\}/g, 'Dialoom')
+                                    .replace(/\{\{login_url\}\}/g, 'https://dialoom.com/login')
+                                    .replace(/\{\{host_name\}\}/g, 'Ana García')
+                                    .replace(/\{\{guest_name\}\}/g, 'Carlos López')
+                                    .replace(/\{\{call_date\}\}/g, '15 de Agosto, 2025')
+                                    .replace(/\{\{call_time\}\}/g, '10:00 AM')
+                                    .replace(/\{\{call_duration\}\}/g, '60 minutos')
+                                    .replace(/\{\{total_price\}\}/g, '€50.00')
+                                    .replace(/\{\{message_content\}\}/g, 'Hola, me interesa tu perfil...')
+                                    .replace(/\{\{sender_name\}\}/g, 'María Rodríguez')
+                                }} 
+                                className="prose prose-sm max-w-none"
+                              />
+                            ) : (
+                              <div className="text-center text-gray-400 py-8">
+                                <Mail className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p>Escribe contenido HTML para ver la vista previa</p>
+                              </div>
+                            )}
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="text-preview">
+                          <div className="border rounded-lg p-4 bg-gray-50 min-h-[300px] font-mono text-sm whitespace-pre-wrap">
+                            {editingTemplate.textContent ? (
+                              editingTemplate.textContent
+                                .replace(/\{\{user_name\}\}/g, 'Juan Pérez')
+                                .replace(/\{\{platform_name\}\}/g, 'Dialoom')
+                                .replace(/\{\{login_url\}\}/g, 'https://dialoom.com/login')
+                                .replace(/\{\{host_name\}\}/g, 'Ana García')
+                                .replace(/\{\{guest_name\}\}/g, 'Carlos López')
+                                .replace(/\{\{call_date\}\}/g, '15 de Agosto, 2025')
+                                .replace(/\{\{call_time\}\}/g, '10:00 AM')
+                                .replace(/\{\{call_duration\}\}/g, '60 minutos')
+                                .replace(/\{\{total_price\}\}/g, '€50.00')
+                                .replace(/\{\{message_content\}\}/g, 'Hola, me interesa tu perfil...')
+                                .replace(/\{\{sender_name\}\}/g, 'María Rodríguez')
+                            ) : (
+                              <div className="text-center text-gray-400 py-8">
+                                <Type className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p>Escribe contenido de texto para ver la vista previa</p>
+                              </div>
+                            )}
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </div>
+
+                  {/* Variables Help */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
+                      <Info className="h-4 w-4" />
+                      Variables Disponibles
+                    </h4>
+                    <div className="grid grid-cols-1 gap-1 text-xs text-blue-800">
+                      <div><code>{`{{user_name}}`}</code> - Nombre del usuario</div>
+                      <div><code>{`{{platform_name}}`}</code> - Nombre de la plataforma</div>
+                      <div><code>{`{{login_url}}`}</code> - URL de inicio de sesión</div>
+                      <div><code>{`{{host_name}}`}</code> - Nombre del host</div>
+                      <div><code>{`{{guest_name}}`}</code> - Nombre del invitado</div>
+                      <div><code>{`{{call_date}}`}</code> - Fecha de la llamada</div>
+                      <div><code>{`{{call_time}}`}</code> - Hora de la llamada</div>
+                      <div><code>{`{{total_price}}`}</code> - Precio total</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-htmlContent">Contenido HTML</Label>
-                <Textarea
-                  id="edit-htmlContent"
-                  value={editingTemplate.htmlContent}
-                  onChange={(e) => setEditingTemplate({ ...editingTemplate, htmlContent: e.target.value })}
-                  rows={8}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-textContent">Contenido de Texto</Label>
-                <Textarea
-                  id="edit-textContent"
-                  value={editingTemplate.textContent}
-                  onChange={(e) => setEditingTemplate({ ...editingTemplate, textContent: e.target.value })}
-                  rows={6}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="edit-isActive"
-                  checked={editingTemplate.isActive}
-                  onChange={(e) => setEditingTemplate({ ...editingTemplate, isActive: e.target.checked })}
-                />
-                <Label htmlFor="edit-isActive">Plantilla activa</Label>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setEditingTemplate(null)}>
-                  Cancelar
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-between items-center pt-4 border-t">
+              <Button variant="outline" onClick={() => setEditingTemplate(null)}>
+                <X className="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    // Send test email logic could go here
+                    toast({
+                      title: "Función en desarrollo",
+                      description: "La función de envío de prueba estará disponible pronto.",
+                    });
+                  }}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Enviar Prueba
                 </Button>
                 <Button onClick={handleUpdateTemplate} disabled={updateTemplateMutation.isPending}>
-                  {updateTemplateMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+                  {updateTemplateMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Guardar Cambios
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
