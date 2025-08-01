@@ -31,6 +31,16 @@ export default function Profile() {
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
   const queryClient = useQueryClient();
 
+  // Cleanup effect - close all modals when component unmounts
+  useEffect(() => {
+    return () => {
+      setShowProfileModal(false);
+      setShowUploadModal(false);
+      setShowEditModal(false);
+      setShowViewerModal(false);
+    };
+  }, []);
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {

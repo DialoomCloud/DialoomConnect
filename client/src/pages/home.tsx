@@ -146,8 +146,8 @@ export default function Home() {
     );
   }
 
-  // Show loading state while user data is being fetched
-  if (userLoading || !user) {
+  // Show loading state while user data is being fetched but navigation is ready
+  if (isAuthenticated && (userLoading || !user)) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)]">
         <Navigation />
@@ -233,7 +233,7 @@ export default function Home() {
               <CardContent className="p-6">
                 <div className="text-center mb-6">
                   <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)]">
-                    {user.profileImageUrl ? (
+                    {user?.profileImageUrl ? (
                       <img 
                         src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`} 
                         alt="Profile" 
@@ -244,11 +244,11 @@ export default function Home() {
                     )}
                   </div>
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)]">
-                    {user.firstName && user.lastName 
+                    {user?.firstName && user?.lastName 
                       ? `${user.firstName} ${user.lastName}` 
-                      : user.email}
+                      : user?.email || 'Usuario'}
                   </h3>
-                  {user.title && (
+                  {user?.title && (
                     <p className="text-gray-600">{user.title}</p>
                   )}
                   <div className="flex justify-center mt-3">
@@ -260,19 +260,19 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  {user.email && (
+                  {user?.email && (
                     <div className="flex items-center text-gray-600">
                       <Mail className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span className="truncate">{user.email}</span>
                     </div>
                   )}
-                  {user.phone && (
+                  {user?.phone && (
                     <div className="flex items-center text-gray-600">
                       <Phone className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span>{user.phone}</span>
                     </div>
                   )}
-                  {user.address && (
+                  {user?.address && (
                     <div className="flex items-center text-gray-600">
                       <MapPin className="w-5 h-5 mr-3 text-[hsl(188,100%,38%)]" />
                       <span className="text-sm">{user.address}</span>
@@ -280,12 +280,14 @@ export default function Home() {
                   )}
                 </div>
 
-                <Link href="/profile">
-                  <Button className="w-full mt-6 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] glow-button relative overflow-hidden">
-                    <Edit className="w-4 h-4 mr-2 relative z-10" />
-                    <span className="relative z-10">{t('home.editProfile')}</span>
-                  </Button>
-                </Link>
+                {user && (
+                  <Link href="/profile">
+                    <Button className="w-full mt-6 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] glow-button relative overflow-hidden">
+                      <Edit className="w-4 h-4 mr-2 relative z-10" />
+                      <span className="relative z-10">{t('home.editProfile')}</span>
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           </div>
