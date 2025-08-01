@@ -8,7 +8,7 @@ import {
 } from '@shared/schema';
 
 // Use the Resend API key provided by the user
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_iviC2Zia_FTJS6qWTn4hk9dLVtARnz4Qw';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_bmsEnzkT_7dowzu3nYecSZBTEE5UTGcUR';
 
 const resend = new Resend(RESEND_API_KEY);
 
