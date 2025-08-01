@@ -150,6 +150,7 @@ The application is designed to be deployed on Replit with automatic database pro
 ## Email System Migration to Resend (August 1, 2025)
 - **Successfully migrated from SendGrid to Resend**: Replaced SendGrid with Resend email service for improved reliability and deliverability
 - **API Integration**: Implemented Resend API with simplified configuration and better error handling
+- **Domain Configuration**: Verified domain `dialoom.com` for email sending, using `api@dialoom.com` as sender address
 - **Email Templates Initialized**: All default email templates are now active and ready for production:
   - User Registration: Welcome emails for new users
   - Booking Received: Notification to hosts when they receive a booking
@@ -158,3 +159,4 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Production Ready**: Test email successfully sent to nachosaladrigas@gmail.com confirming system functionality
 - **Admin Management**: Email templates can be edited, activated/deactivated, and managed through the admin panel
 - **Email History**: Complete logging and tracking of all sent emails with status updates
+- **API Key**: Using Resend API key re_J1kjyvgF_EvCgVLwrMXx364p3m2ryg6QX with verified domain dialoom.com
