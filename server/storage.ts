@@ -7,6 +7,7 @@ import {
   categories,
   userLanguages,
   userSkills,
+  userCategories,
   hostAvailability,
   hostPricing,
   stripePayments,
@@ -475,8 +476,50 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(skills).where(eq(skills.isActive, true));
   }
 
+  async getSkillByName(name: string): Promise<Skill | undefined> {
+    const [skill] = await db.select().from(skills).where(eq(skills.name, name));
+    return skill;
+  }
+
+  async createSkill(skillData: any): Promise<Skill> {
+    const [skill] = await db.insert(skills).values(skillData).returning();
+    return skill;
+  }
+
+  async addUserCategory(userId: string, categoryId: number): Promise<void> {
+    // Check if relationship already exists
+    const existing = await db.select()
+      .from(userCategories)
+      .where(and(eq(userCategories.userId, userId), eq(userCategories.categoryId, categoryId)));
+    
+    if (existing.length === 0) {
+      await db.insert(userCategories).values({ userId, categoryId });
+    }
+  }
+
+  async addUserSkill(userId: string, skillId: number): Promise<void> {
+    // Check if relationship already exists
+    const existing = await db.select()
+      .from(userSkills)
+      .where(and(eq(userSkills.userId, userId), eq(userSkills.skillId, skillId)));
+    
+    if (existing.length === 0) {
+      await db.insert(userSkills).values({ userId, skillId });
+    }
+  }
+
   async getCategories(): Promise<Category[]> {
     return await db.select().from(categories).where(eq(categories.isActive, true));
+  }
+
+  async getCategoryByName(name: string): Promise<Category | undefined> {
+    const [category] = await db.select().from(categories).where(eq(categories.name, name));
+    return category;
+  }
+
+  async createCategory(categoryData: any): Promise<Category> {
+    const [category] = await db.insert(categories).values(categoryData).returning();
+    return category;
   }
 
   // User relations methods

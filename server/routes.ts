@@ -695,6 +695,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-powered suggestions for professional categories and skills
+  app.post('/api/ai/suggest-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description || description.trim().length < 10) {
+        return res.status(400).json({ 
+          message: "Se requiere una descripción de al menos 10 caracteres" 
+        });
+      }
+
+      // Get current categories and skills from database
+      const [categories, skills] = await Promise.all([
+        storage.getCategories(),
+        storage.getSkills()
+      ]);
+
+      // Generate AI suggestions
+      const { generateProfessionalSuggestions } = await import("./ai-suggestions");
+      const suggestions = await generateProfessionalSuggestions(
+        description,
+        categories,
+        skills
+      );
+
+      res.json(suggestions);
+    } catch (error) {
+      console.error("Error generating AI suggestions:", error);
+      res.status(500).json({ message: "Error al generar sugerencias" });
+    }
+  });
+
+  // Add new category suggested by AI
+  app.post('/api/categories', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { name, description, subcategories } = req.body;
+      
+      if (!name || !description) {
+        return res.status(400).json({ message: "Nombre y descripción son requeridos" });
+      }
+
+      const newCategory = await storage.createCategory({
+        name,
+        description,
+        isActive: true
+      });
+
+      // Add subcategories if provided
+      if (subcategories && Array.isArray(subcategories)) {
+        for (const subcat of subcategories) {
+          await storage.createCategory({
+            name: subcat,
+            description: `Subcategoría de ${name}`,
+            parentId: newCategory.id,
+            isActive: true
+          });
+        }
+      }
+
+      res.json(newCategory);
+    } catch (error) {
+      console.error("Error creating category:", error);
+      res.status(500).json({ message: "Error al crear categoría" });
+    }
+  });
+
+  // Add new skill suggested by AI
+  app.post('/api/skills', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { name, category, description } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Nombre es requerido" });
+      }
+
+      const newSkill = await storage.createSkill({
+        name,
+        category: category || "",
+        description: description || "",
+        isActive: true
+      });
+
+      res.json(newSkill);
+    } catch (error) {
+      console.error("Error creating skill:", error);
+      res.status(500).json({ message: "Error al crear skill" });
+    }
+  });
+
+  // Approve and add AI suggestions to database
+  app.post('/api/ai/approve-suggestions', isAuthenticated, async (req: any, res) => {
+    try {
+      const { categories, skills } = req.body;
+      const userId = req.user.claims.sub;
+
+      const results = {
+        addedCategories: [],
+        addedSkills: [],
+        errors: []
+      };
+
+      // Add approved categories
+      if (categories && Array.isArray(categories)) {
+        for (const category of categories) {
+          try {
+            // Check if category already exists
+            const existing = await storage.getCategoryByName(category.name);
+            if (!existing) {
+              const newCategory = await storage.createCategory({
+                name: category.name,
+                description: category.description,
+                isActive: true
+              });
+              results.addedCategories.push(newCategory);
+
+              // Add user to this category
+              await storage.addUserCategory(userId, newCategory.id);
+            }
+          } catch (error) {
+            results.errors.push(`Error adding category ${category.name}: ${error.message}`);
+          }
+        }
+      }
+
+      // Add approved skills
+      if (skills && Array.isArray(skills)) {
+        for (const skill of skills) {
+          try {
+            // Check if skill already exists
+            const existing = await storage.getSkillByName(skill.name);
+            let skillId;
+            
+            if (!existing) {
+              const newSkill = await storage.createSkill({
+                name: skill.name,
+                category: skill.category || "",
+                description: skill.description || "",
+                isActive: true
+              });
+              results.addedSkills.push(newSkill);
+              skillId = newSkill.id;
+            } else {
+              skillId = existing.id;
+            }
+
+            // Add user to this skill
+            await storage.addUserSkill(userId, skillId);
+          } catch (error) {
+            results.errors.push(`Error adding skill ${skill.name}: ${error.message}`);
+          }
+        }
+      }
+
+      res.json(results);
+    } catch (error) {
+      console.error("Error approving AI suggestions:", error);
+      res.status(500).json({ message: "Error al aprobar sugerencias" });
+    }
+  });
+
   // Private document upload route (requires verification)
   app.post('/api/upload/private-document', isAuthenticated, upload.single('document'), async (req: any, res) => {
     try {

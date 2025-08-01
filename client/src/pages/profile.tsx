@@ -9,6 +9,7 @@ import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaEmbed } from "@/components/media-embed";
 import { SortableMediaGrid } from "@/components/sortable-media-grid";
 import { HostAvailabilitySection } from "@/components/host-availability-section";
+import { AIProfileSuggestions } from "@/components/ai-profile-suggestions";
 import type { User, MediaContent } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -296,6 +297,19 @@ export default function Profile() {
         <div className="mt-8">
           <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-6">Disponibilidad y Precios</h3>
           <HostAvailabilitySection />
+        </div>
+
+        {/* AI Profile Suggestions Section */}
+        <div className="mt-8">
+          <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-6">Sugerencias Inteligentes</h3>
+          <AIProfileSuggestions 
+            onSuggestionsApproved={(data) => {
+              // Refresh user profile and related data
+              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
+            }}
+          />
         </div>
       </div>
 

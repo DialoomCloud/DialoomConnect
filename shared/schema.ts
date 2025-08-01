@@ -125,6 +125,14 @@ export const userSkills = pgTable("user_skills", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// User categories junction table
+export const userCategories = pgTable("user_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  categoryId: integer("category_id").notNull().references(() => categories.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Email template types
 export const emailTemplateTypeEnum = pgEnum("email_template_type", [
   "user_registration",
