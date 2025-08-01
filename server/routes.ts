@@ -250,6 +250,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to get service prices (no auth required)
+  app.get('/api/config/service-prices', async (req, res) => {
+    try {
+      const configs = await storage.getAllAdminConfig();
+      
+      const prices = {
+        screenSharing: 10,
+        translation: 25,
+        recording: 10,
+        transcription: 5
+      };
+      
+      configs.forEach((config: any) => {
+        const value = parseFloat(config.value);
+        switch (config.key) {
+          case 'screen_sharing_price':
+            prices.screenSharing = value;
+            break;
+          case 'translation_price':
+            prices.translation = value;
+            break;
+          case 'recording_price':
+            prices.recording = value;
+            break;
+          case 'transcription_price':
+            prices.transcription = value;
+            break;
+        }
+      });
+      
+      res.json(prices);
+    } catch (error) {
+      console.error('Error fetching service prices:', error);
+      // Return default prices if there's an error
+      res.json({
+        screenSharing: 10,
+        translation: 25,
+        recording: 10,
+        transcription: 5
+      });
+    }
+  });
+
   // User relations routes
   app.get('/api/user/languages/:userId', isAuthenticated, async (req: any, res) => {
     try {

@@ -55,40 +55,9 @@ export default function UserProfile() {
     enabled: !!userId,
   });
   
-  // Fetch service prices from admin configuration
+  // Fetch service prices from public endpoint
   const { data: servicePrices } = useQuery({
-    queryKey: ["/api/admin/config/service-prices"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/config", {});
-      const configs = await response.json();
-      
-      const prices = {
-        screenSharing: 10,
-        translation: 25,
-        recording: 10,
-        transcription: 5
-      };
-      
-      configs.forEach((config: any) => {
-        const value = parseFloat(config.value);
-        switch (config.key) {
-          case 'screen_sharing_price':
-            prices.screenSharing = value;
-            break;
-          case 'translation_price':
-            prices.translation = value;
-            break;
-          case 'recording_price':
-            prices.recording = value;
-            break;
-          case 'transcription_price':
-            prices.transcription = value;
-            break;
-        }
-      });
-      
-      return prices;
-    },
+    queryKey: ["/api/config/service-prices"],
   });
 
   if (userError) {
