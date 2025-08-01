@@ -595,9 +595,18 @@ function NewsManagement() {
 function ThemeEditor() {
   const { i18n } = useTranslation();
   const { toast } = useToast();
-  const [primaryColor, setPrimaryColor] = useState('#008B9A');
-  const [secondaryColor, setSecondaryColor] = useState('#00B8CC');
-  const [accentColor, setAccentColor] = useState('#B8DCE1');
+  const queryClient = useQueryClient();
+  
+  // Default theme colors
+  const defaultColors = {
+    primary: '#008B9A',
+    secondary: '#00B8CC',
+    accent: '#B8DCE1'
+  };
+  
+  const [primaryColor, setPrimaryColor] = useState(defaultColors.primary);
+  const [secondaryColor, setSecondaryColor] = useState(defaultColors.secondary);
+  const [accentColor, setAccentColor] = useState(defaultColors.accent);
   
   // Load theme configuration from database
   const { data: themeConfig, isLoading } = useQuery({
@@ -608,14 +617,58 @@ function ThemeEditor() {
       const theme = configs.find((c: any) => c.key === 'theme_colors');
       if (theme) {
         const colors = JSON.parse(theme.value);
-        setPrimaryColor(colors.primary || '#008B9A');
-        setSecondaryColor(colors.secondary || '#00B8CC');
-        setAccentColor(colors.accent || '#B8DCE1');
+        setPrimaryColor(colors.primary || defaultColors.primary);
+        setSecondaryColor(colors.secondary || defaultColors.secondary);
+        setAccentColor(colors.accent || defaultColors.accent);
+        
+        // Apply the loaded colors to CSS immediately
+        applyColorsToCSS({
+          primary: colors.primary || defaultColors.primary,
+          secondary: colors.secondary || defaultColors.secondary,
+          accent: colors.accent || defaultColors.accent,
+        });
+        
         return colors;
       }
       return null;
     },
   });
+
+  // Apply colors to CSS variables
+  const applyColorsToCSS = (colors: { primary: string; secondary: string; accent: string }) => {
+    const root = document.documentElement;
+    
+    // Convert hex to HSL for CSS variables
+    const hexToHsl = (hex: string) => {
+      const r = parseInt(hex.slice(1, 3), 16) / 255;
+      const g = parseInt(hex.slice(3, 5), 16) / 255;
+      const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+
+      return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+    };
+
+    root.style.setProperty('--primary', hexToHsl(colors.primary));
+    root.style.setProperty('--primary-foreground', '0 0% 100%');
+    root.style.setProperty('--secondary', hexToHsl(colors.secondary));
+    root.style.setProperty('--secondary-foreground', '0 0% 100%');
+    root.style.setProperty('--accent', hexToHsl(colors.accent));
+    root.style.setProperty('--accent-foreground', '0 0% 9%');
+  };
 
   // Save theme configuration mutation
   const saveThemeMutation = useMutation({
@@ -631,14 +684,21 @@ function ThemeEditor() {
       };
       
       await apiRequest("POST", "/api/admin/config", themeData);
+      
+      // Apply the colors immediately
+      applyColorsToCSS({
+        primary: primaryColor,
+        secondary: secondaryColor,
+        accent: accentColor,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/config"] });
       toast({
         title: i18n.language === 'es' ? "Tema actualizado" : "Theme updated",
         description: i18n.language === 'es' 
-          ? "Los colores del tema se han guardado correctamente"
-          : "Theme colors have been saved successfully",
+          ? "Los colores del tema se han guardado correctamente. Recarga la página para ver todos los cambios."
+          : "Theme colors have been saved successfully. Reload the page to see all changes.",
       });
     },
     onError: () => {
@@ -651,6 +711,20 @@ function ThemeEditor() {
       });
     },
   });
+
+  // Reset to default colors
+  const resetToDefaults = () => {
+    setPrimaryColor(defaultColors.primary);
+    setSecondaryColor(defaultColors.secondary);
+    setAccentColor(defaultColors.accent);
+    applyColorsToCSS(defaultColors);
+    toast({
+      title: i18n.language === 'es' ? "Colores restaurados" : "Colors reset",
+      description: i18n.language === 'es' 
+        ? "Se han restaurado los colores por defecto"
+        : "Default colors have been restored",
+    });
+  };
   
   return (
     <div className="space-y-4">
@@ -711,15 +785,57 @@ function ThemeEditor() {
             </div>
           </div>
           
-          <Button 
-            className="w-full" 
-            onClick={() => saveThemeMutation.mutate()}
-            disabled={saveThemeMutation.isPending}
-          >
-            {saveThemeMutation.isPending 
-              ? (i18n.language === 'es' ? 'Guardando...' : 'Saving...')
-              : (i18n.language === 'es' ? 'Aplicar Cambios' : 'Apply Changes')}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              className="flex-1" 
+              onClick={() => saveThemeMutation.mutate()}
+              disabled={saveThemeMutation.isPending}
+            >
+              {saveThemeMutation.isPending 
+                ? (i18n.language === 'es' ? 'Guardando...' : 'Saving...')
+                : (i18n.language === 'es' ? 'Aplicar Cambios' : 'Apply Changes')}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={resetToDefaults}
+              disabled={saveThemeMutation.isPending}
+            >
+              {i18n.language === 'es' ? 'Resetear' : 'Reset'}
+            </Button>
+          </div>
+          
+          {/* Live Preview */}
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <h4 className="text-sm font-medium mb-3">
+              {i18n.language === 'es' ? 'Vista Previa' : 'Preview'}
+            </h4>
+            <div className="flex gap-2">
+              <div 
+                className="w-12 h-12 rounded border border-gray-200 flex items-center justify-center text-white text-xs font-medium"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {i18n.language === 'es' ? 'PRIM' : 'PRIM'}
+              </div>
+              <div 
+                className="w-12 h-12 rounded border border-gray-200 flex items-center justify-center text-white text-xs font-medium"
+                style={{ backgroundColor: secondaryColor }}
+              >
+                {i18n.language === 'es' ? 'SEC' : 'SEC'}
+              </div>
+              <div 
+                className="w-12 h-12 rounded border border-gray-200 flex items-center justify-center text-gray-800 text-xs font-medium"
+                style={{ backgroundColor: accentColor }}
+              >
+                {i18n.language === 'es' ? 'ACE' : 'ACC'}
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-sm text-gray-500 text-center">
+            {i18n.language === 'es' 
+              ? 'Los cambios se aplicarán inmediatamente al guardar'
+              : 'Changes will be applied immediately when saved'}
+          </div>
         </CardContent>
       </Card>
     </div>
