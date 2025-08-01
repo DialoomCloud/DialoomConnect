@@ -18,11 +18,13 @@ import {
   Activity,
   Video,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Mail
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AdminUserManagement } from "@/components/admin-user-management";
+import { AdminEmailManagement } from "@/components/admin-email-management";
 
 export default function AdminDashboard() {
   const { i18n } = useTranslation();
@@ -34,7 +36,7 @@ export default function AdminDashboard() {
   const { data: stats } = useQuery({
     queryKey: ["/api/admin/stats"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/stats");
+      const response = await apiRequest("GET", "/api/admin/stats", {});
       return response.json();
     },
     enabled: !!adminUser && !isLoading, // Only fetch when adminUser exists
@@ -145,7 +147,7 @@ export default function AdminDashboard() {
 
         {/* Main Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-7 w-full">
+          <TabsList className="grid grid-cols-8 w-full">
             <TabsTrigger value="overview">
               <BarChart3 className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
@@ -186,6 +188,12 @@ export default function AdminDashboard() {
                 {i18n.language === 'es' ? 'Tema' : 'Theme'}
               </span>
             </TabsTrigger>
+            <TabsTrigger value="emails">
+              <Mail className="w-4 h-4 mr-2" />
+              <span className="hidden md:inline">
+                {i18n.language === 'es' ? 'Emails' : 'Emails'}
+              </span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -221,6 +229,11 @@ export default function AdminDashboard() {
           {/* Theme Editor Tab */}
           <TabsContent value="theme" className="space-y-4">
             <ThemeEditor />
+          </TabsContent>
+
+          {/* Email Management Tab */}
+          <TabsContent value="emails" className="space-y-4">
+            <AdminEmailManagement />
           </TabsContent>
         </Tabs>
       </div>
@@ -281,7 +294,7 @@ function HostsManagement() {
   const { data: hosts } = useQuery({
     queryKey: ["/api/admin/hosts"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/hosts");
+      const response = await apiRequest("GET", "/api/admin/hosts", {});
       return response.json();
     },
   });
@@ -354,7 +367,7 @@ function AdminSettings() {
   const { data: config } = useQuery({
     queryKey: ["/api/admin/config"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/config");
+      const response = await apiRequest("GET", "/api/admin/config", {});
       return response.json();
     },
   });

@@ -125,6 +125,17 @@ export const userSkills = pgTable("user_skills", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Email template types
+export const emailTemplateTypeEnum = pgEnum("email_template_type", [
+  "user_registration",
+  "password_change", 
+  "account_deletion",
+  "account_deactivation",
+  "booking_created",
+  "booking_received",
+  "user_message"
+]);
+
 // Media content type enum
 export const mediaTypeEnum = pgEnum('media_type', ['youtube', 'video', 'image']);
 
@@ -143,6 +154,49 @@ export const mediaContent = pgTable("media_content", {
   displayOrder: integer("display_order").default(0), // For drag-and-drop ordering
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Email templates table for customizable notifications
+export const emailTemplates = pgTable("email_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: emailTemplateTypeEnum("type").notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content"),
+  variables: text("variables"), // JSON array of available variables
+  isActive: boolean("is_active").default(true),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Email notifications log
+export const emailNotifications = pgTable("email_notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  recipientEmail: varchar("recipient_email").notNull(),
+  templateId: varchar("template_id").references(() => emailTemplates.id),
+  templateType: emailTemplateTypeEnum("template_type").notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, sent, failed
+  errorMessage: text("error_message"),
+  sentAt: timestamp("sent_at"),
+  variables: jsonb("variables"), // Variables used in the email
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User messages table for contact/inquiry system
+export const userMessages = pgTable("user_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  senderEmail: varchar("sender_email").notNull(),
+  senderName: varchar("sender_name").notNull(),
+  recipientId: varchar("recipient_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  repliedAt: timestamp("replied_at"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Relations
@@ -458,3 +512,41 @@ export const updateAdminConfigSchema = createInsertSchema(adminConfig).omit({
 export type CreateStripePayment = z.infer<typeof createStripePaymentSchema>;
 export type CreateInvoice = z.infer<typeof createInvoiceSchema>;
 export type UpdateAdminConfig = z.infer<typeof updateAdminConfigSchema>;
+
+// Email system types
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+export type EmailNotification = typeof emailNotifications.$inferSelect;
+export type InsertEmailNotification = typeof emailNotifications.$inferInsert;
+export type UserMessage = typeof userMessages.$inferSelect;
+export type InsertUserMessage = typeof userMessages.$inferInsert;
+
+// Email template validation schemas
+export const createEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial();
+
+export const createEmailNotificationSchema = createInsertSchema(emailNotifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const createUserMessageSchema = createInsertSchema(userMessages).omit({
+  id: true,
+  createdAt: true,
+  isRead: true,
+  repliedAt: true,
+});
+
+export type CreateEmailTemplate = z.infer<typeof createEmailTemplateSchema>;
+export type UpdateEmailTemplate = z.infer<typeof updateEmailTemplateSchema>;
+export type CreateEmailNotification = z.infer<typeof createEmailNotificationSchema>;
+export type CreateUserMessage = z.infer<typeof createUserMessageSchema>;

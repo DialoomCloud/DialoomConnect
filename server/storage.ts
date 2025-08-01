@@ -14,6 +14,9 @@ import {
   adminConfig,
   adminAuditLog,
   bookings,
+  emailTemplates,
+  emailNotifications,
+  userMessages,
   type User,
   type UpsertUser,
   type MediaContent,
@@ -41,6 +44,12 @@ import {
   type InsertAdminAuditLog,
   type Booking,
   type InsertBooking,
+  type EmailTemplate,
+  type InsertEmailTemplate,
+  type EmailNotification,
+  type InsertEmailNotification,
+  type UserMessage,
+  type InsertUserMessage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, asc } from "drizzle-orm";
@@ -161,6 +170,22 @@ export interface IStorage {
   getAllHosts(): Promise<User[]>;
   getAdminConfig(): Promise<any>;
   updateAdminConfig(config: any, userId: string): Promise<any>;
+
+  // Email system operations
+  getEmailTemplate(type: string): Promise<EmailTemplate | null>;
+  getEmailTemplateById(id: string): Promise<EmailTemplate | undefined>;
+  getAllEmailTemplates(): Promise<EmailTemplate[]>;
+  createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate>;
+  updateEmailTemplate(id: string, updates: Partial<InsertEmailTemplate>): Promise<EmailTemplate>;
+  deleteEmailTemplate(id: string): Promise<boolean>;
+  
+  createEmailNotification(notification: InsertEmailNotification): Promise<EmailNotification>;
+  updateEmailNotification(id: string, updates: Partial<InsertEmailNotification>): Promise<EmailNotification>;
+  getEmailNotifications(userId?: string, limit?: number): Promise<EmailNotification[]>;
+  
+  createUserMessage(message: InsertUserMessage): Promise<UserMessage>;
+  getUserMessages(recipientId: string, isRead?: boolean): Promise<UserMessage[]>;
+  markMessageAsRead(id: string): Promise<UserMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -979,6 +1004,99 @@ export class DatabaseStorage implements IStorage {
     }
 
     return this.getAdminConfig();
+  }
+
+  // Email system operations
+  async getEmailTemplate(type: string): Promise<EmailTemplate | null> {
+    const [template] = await db
+      .select()
+      .from(emailTemplates)
+      .where(and(
+        eq(emailTemplates.type, type as any),
+        eq(emailTemplates.isActive, true)
+      ))
+      .orderBy(desc(emailTemplates.isDefault), desc(emailTemplates.createdAt));
+    
+    return template || null;
+  }
+
+  async getEmailTemplateById(id: string): Promise<EmailTemplate | undefined> {
+    const [template] = await db.select().from(emailTemplates).where(eq(emailTemplates.id, id));
+    return template;
+  }
+
+  async getAllEmailTemplates(): Promise<EmailTemplate[]> {
+    return await db.select().from(emailTemplates).orderBy(emailTemplates.type, emailTemplates.name);
+  }
+
+  async createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate> {
+    const [newTemplate] = await db.insert(emailTemplates).values(template).returning();
+    return newTemplate;
+  }
+
+  async updateEmailTemplate(id: string, updates: Partial<InsertEmailTemplate>): Promise<EmailTemplate> {
+    const [updated] = await db
+      .update(emailTemplates)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(emailTemplates.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteEmailTemplate(id: string): Promise<boolean> {
+    const result = await db.delete(emailTemplates).where(eq(emailTemplates.id, id));
+    return result.rowCount > 0;
+  }
+
+  async createEmailNotification(notification: InsertEmailNotification): Promise<EmailNotification> {
+    const [newNotification] = await db.insert(emailNotifications).values(notification).returning();
+    return newNotification;
+  }
+
+  async updateEmailNotification(id: string, updates: Partial<InsertEmailNotification>): Promise<EmailNotification> {
+    const [updated] = await db
+      .update(emailNotifications)
+      .set(updates)
+      .where(eq(emailNotifications.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getEmailNotifications(userId?: string, limit: number = 50): Promise<EmailNotification[]> {
+    const query = db.select().from(emailNotifications);
+    
+    if (userId) {
+      query.where(eq(emailNotifications.userId, userId));
+    }
+    
+    return await query.orderBy(desc(emailNotifications.createdAt)).limit(limit);
+  }
+
+  async createUserMessage(message: InsertUserMessage): Promise<UserMessage> {
+    const [newMessage] = await db.insert(userMessages).values(message).returning();
+    return newMessage;
+  }
+
+  async getUserMessages(recipientId: string, isRead?: boolean): Promise<UserMessage[]> {
+    const query = db.select().from(userMessages).where(eq(userMessages.recipientId, recipientId));
+    
+    if (typeof isRead === 'boolean') {
+      query.where(and(
+        eq(userMessages.recipientId, recipientId),
+        eq(userMessages.isRead, isRead)
+      ));
+    }
+    
+    return await query.orderBy(desc(userMessages.createdAt));
+  }
+
+  async markMessageAsRead(id: string): Promise<UserMessage> {
+    const [updated] = await db
+      .update(userMessages)
+      .set({ isRead: true })
+      .where(eq(userMessages.id, id))
+      .returning();
+    return updated;
   }
 }
 

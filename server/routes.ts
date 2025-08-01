@@ -14,6 +14,13 @@ import { replitStorage } from "./object-storage";
 import Stripe from "stripe";
 import session from "express-session";
 import { generateAgoraToken } from "./agora-token";
+import { emailService } from "./email-service";
+import { initializeEmailTemplates } from "./email-templates-init";
+import { 
+  createEmailTemplateSchema, 
+  updateEmailTemplateSchema,
+  createUserMessageSchema 
+} from "@shared/schema";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -1051,6 +1058,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Booking creation endpoint
+  app.post('/api/bookings', isAuthenticated, async (req: any, res) => {
+    try {
+      const guestId = req.user.claims.sub;
+      const { hostId, scheduledDate, startTime, duration, price, services, notes } = req.body;
+
+      // Create booking
+      const booking = await storage.createBooking({
+        hostId,
+        guestId,
+        scheduledDate,
+        startTime,
+        duration,
+        price,
+        status: 'pending',
+        notes,
+        services: services ? JSON.stringify(services) : null,
+      });
+
+      // Get host and guest details
+      const host = await storage.getUser(hostId);
+      const guest = await storage.getUser(guestId);
+
+      if (host?.email && guest) {
+        // Send booking confirmation emails
+        await emailService.sendBookingConfirmationEmail(
+          host.email,
+          host.firstName || 'Host',
+          guest.firstName || 'Usuario',
+          guest.email || '',
+          scheduledDate,
+          startTime,
+          duration,
+          parseFloat(price),
+          services || {},
+          booking.id
+        );
+
+        await emailService.sendBookingNotificationEmail(
+          guest.email || '',
+          guest.firstName || 'Usuario',
+          host.firstName || 'Host',
+          scheduledDate,
+          startTime,
+          duration,
+          parseFloat(price),
+          services || {},
+          booking.id
+        );
+      }
+
+      res.status(201).json(booking);
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      res.status(500).json({ message: 'Error al crear la reserva' });
+    }
+  });
+
+  // Cancel booking endpoint
+  app.put('/api/bookings/:id/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const bookingId = req.params.id;
+      const userId = req.user.claims.sub;
+      
+      // Get booking and verify user has permission to cancel
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: 'Reserva no encontrada' });
+      }
+      
+      if (booking.hostId !== userId && booking.guestId !== userId) {
+        return res.status(403).json({ message: 'No tienes permisos para cancelar esta reserva' });
+      }
+      
+      // Update booking status to cancelled
+      await storage.updateBookingStatus(bookingId, 'cancelled');
+      
+      // Get host and guest details for notifications
+      const host = await storage.getUser(booking.hostId);
+      const guest = await storage.getUser(booking.guestId);
+      
+      if (host?.email && guest?.email) {
+        const cancelledBy = booking.hostId === userId ? 'host' : 'guest';
+        
+        // Send cancellation notification to both parties
+        await emailService.sendBookingCancellationEmail(
+          host.email,
+          host.firstName || 'Host',
+          guest.firstName || 'Usuario',
+          booking.scheduledDate,
+          booking.startTime,
+          booking.duration,
+          cancelledBy,
+          bookingId
+        );
+        
+        await emailService.sendBookingCancellationEmail(
+          guest.email,
+          guest.firstName || 'Usuario',
+          host.firstName || 'Host',
+          booking.scheduledDate,
+          booking.startTime,
+          booking.duration,
+          cancelledBy,
+          bookingId
+        );
+      }
+      
+      res.json({ message: 'Reserva cancelada exitosamente' });
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      res.status(500).json({ message: 'Error al cancelar la reserva' });
+    }
+  });
+
+  // Get user bookings
+  app.get('/api/bookings/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const role = req.query.role; // 'host' or 'guest'
+      
+      let bookings;
+      if (role === 'host') {
+        bookings = await storage.getHostBookings(userId);
+      } else if (role === 'guest') {
+        bookings = await storage.getGuestBookings(userId);
+      } else {
+        // Get all bookings for user (both as host and guest)
+        const hostBookings = await storage.getHostBookings(userId);
+        const guestBookings = await storage.getGuestBookings(userId);
+        bookings = [...hostBookings, ...guestBookings];
+      }
+      
+      res.json(bookings);
+    } catch (error) {
+      console.error('Error fetching user bookings:', error);
+      res.status(500).json({ message: 'Error al obtener las reservas' });
+    }
+  });
+
   // Stripe payment routes
   app.post('/api/stripe/create-payment-intent', isAuthenticated, async (req: any, res) => {
     try {
@@ -1164,11 +1311,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const paymentIntent = event.data.object;
           await storage.updateStripePaymentStatus(paymentIntent.id, 'succeeded');
           
-          // Generate invoice
+          // Generate invoice and send payment confirmation emails
           const payment = await storage.getStripePaymentByIntent(paymentIntent.id);
           if (payment) {
             const booking = await storage.getBookingById(payment.bookingId);
             if (booking) {
+              // Update booking status to confirmed
+              await storage.updateBookingStatus(booking.id, 'confirmed');
+              
+              // Generate invoice
               const invoiceNumber = await storage.generateNextInvoiceNumber();
               await storage.createInvoice({
                 invoiceNumber,
@@ -1177,6 +1328,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 hostId: booking.hostId,
                 issueDate: new Date().toISOString().split('T')[0],
               });
+
+              // Get user details and send confirmation emails
+              const host = await storage.getUser(booking.hostId);
+              const guest = await storage.getUser(booking.guestId);
+              
+              if (host?.email && guest?.email) {
+                // Send payment confirmation to guest
+                await emailService.sendPaymentConfirmationEmail(
+                  guest.email,
+                  guest.firstName || 'Usuario',
+                  host.firstName || 'Host',
+                  booking.scheduledDate,
+                  booking.startTime,
+                  booking.duration,
+                  parseFloat(payment.amount),
+                  booking.id,
+                  invoiceNumber
+                );
+
+                // Send booking confirmed notification to host
+                await emailService.sendBookingConfirmedEmail(
+                  host.email,
+                  host.firstName || 'Host',
+                  guest.firstName || 'Usuario',
+                  booking.scheduledDate,
+                  booking.startTime,
+                  booking.duration,
+                  parseFloat(payment.amount),
+                  booking.id
+                );
+              }
             }
           }
           break;
@@ -1415,6 +1597,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error ending video call:", error);
       res.status(500).json({ message: "Failed to end video call" });
+    }
+  });
+
+  // Email template management endpoints (Admin only)
+  app.get('/api/admin/email-templates', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userRecord = await storage.getUser(user.claims.sub);
+      if (!userRecord?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const templates = await storage.getAllEmailTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching email templates:", error);
+      res.status(500).json({ message: "Failed to fetch email templates" });
+    }
+  });
+
+  app.post('/api/admin/email-templates', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userRecord = await storage.getUser(user.claims.sub);
+      if (!userRecord?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const validatedData = createEmailTemplateSchema.parse(req.body);
+      const template = await storage.createEmailTemplate(validatedData);
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating email template:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid template data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create email template" });
+    }
+  });
+
+  app.put('/api/admin/email-templates/:id', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userRecord = await storage.getUser(user.claims.sub);
+      if (!userRecord?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      const validatedData = updateEmailTemplateSchema.parse(req.body);
+      const template = await storage.updateEmailTemplate(id, validatedData);
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating email template:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid template data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update email template" });
+    }
+  });
+
+  app.delete('/api/admin/email-templates/:id', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userRecord = await storage.getUser(user.claims.sub);
+      if (!userRecord?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      const success = await storage.deleteEmailTemplate(id);
+      if (success) {
+        res.json({ message: "Template deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Template not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting email template:", error);
+      res.status(500).json({ message: "Failed to delete email template" });
+    }
+  });
+
+  // Initialize default email templates
+  app.post("/api/admin/initialize-email-templates", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userRecord = await storage.getUser(user.claims.sub);
+      if (!userRecord?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      await initializeEmailTemplates();
+      res.json({ message: "Email templates initialized successfully" });
+    } catch (error) {
+      console.error("Error initializing email templates:", error);
+      res.status(500).json({ message: "Failed to initialize email templates" });
+    }
+  });
+
+  // Email notifications log (Admin only)
+  app.get('/api/admin/email-notifications', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userRecord = await storage.getUser(user.claims.sub);
+      if (!userRecord?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const limit = parseInt(req.query.limit as string) || 50;
+      const notifications = await storage.getEmailNotifications(undefined, limit);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching email notifications:", error);
+      res.status(500).json({ message: "Failed to fetch email notifications" });
+    }
+  });
+
+  // User messages endpoint
+  app.post('/api/users/:userId/messages', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const validatedData = createUserMessageSchema.parse(req.body);
+
+      // Get recipient user
+      const recipient = await storage.getUser(userId);
+      if (!recipient) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Create message record
+      const message = await storage.createUserMessage({
+        ...validatedData,
+        recipientId: userId,
+      });
+
+      // Send email notification to the host
+      await emailService.sendUserMessageEmail(
+        recipient.email || '',
+        recipient.firstName || 'Usuario',
+        validatedData.senderName,
+        validatedData.senderEmail,
+        validatedData.subject,
+        validatedData.message,
+        userId
+      );
+
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error creating user message:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // Get user messages (authenticated user only)
+  app.get('/api/user/messages', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const isRead = req.query.isRead === 'true' ? true : req.query.isRead === 'false' ? false : undefined;
+      const messages = await storage.getUserMessages(user.claims.sub, isRead);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching user messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Mark message as read
+  app.put('/api/user/messages/:id/read', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { id } = req.params;
+      const message = await storage.markMessageAsRead(id);
+      res.json(message);
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ message: "Failed to mark message as read" });
     }
   });
 
