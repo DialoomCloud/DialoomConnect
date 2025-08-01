@@ -1,0 +1,354 @@
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { useRoute } from "wouter";
+import { Navigation } from "@/components/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/queryClient";
+import { Link } from "wouter";
+import { Clock, Eye, ArrowLeft, Newspaper, Share, User } from "lucide-react";
+import type { NewsArticle, User as UserType } from "@shared/schema";
+
+export default function NewsArticlePage() {
+  const { t } = useTranslation();
+  const [match, params] = useRoute('/news/:slug');
+  const slug = params?.slug;
+
+  // Fetch article by slug
+  const { data: article, isLoading, error } = useQuery<NewsArticle>({
+    queryKey: ['/api/news/articles', slug],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/news/articles/${slug}`, {});
+      if (!response.ok) {
+        throw new Error('Article not found');
+      }
+      return response.json();
+    },
+    enabled: !!slug,
+  });
+
+  // Fetch author information if available
+  const { data: author } = useQuery<UserType>({
+    queryKey: ['/api/users', article?.authorId],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/users/${article?.authorId}`, {});
+      return response.json();
+    },
+    enabled: !!article?.authorId,
+  });
+
+  // Fetch related articles
+  const { data: relatedArticles = [] } = useQuery<NewsArticle[]>({
+    queryKey: ['/api/news/articles', 'related', article?.id],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/news/articles?limit=3', {});
+      const articles = await response.json();
+      // Filter out current article
+      return articles.filter((a: NewsArticle) => a.id !== article?.id).slice(0, 3);
+    },
+    enabled: !!article,
+  });
+
+  // Share functionality
+  const handleShare = async () => {
+    if (navigator.share && article) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: article.excerpt || '',
+          url: window.location.href,
+        });
+      } catch (error) {
+        // Fallback to copying to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        // You could show a toast here if needed
+      }
+    } else if (article) {
+      // Fallback to copying to clipboard
+      await navigator.clipboard.writeText(window.location.href);
+      // You could show a toast here if needed
+    }
+  };
+
+  // Set page title
+  useEffect(() => {
+    if (article) {
+      document.title = `${article.title} - Dialoom News`;
+    }
+  }, [article]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-24 mb-6"></div>
+            <div className="h-12 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div className="aspect-video bg-gray-200 rounded-lg mb-8"></div>
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !article) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <Newspaper className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              {t('news.articleNotFound', 'Artículo no encontrado')}
+            </h1>
+            <p className="text-gray-600 mb-6">
+              {t('news.articleNotFoundDesc', 'El artículo que buscas no existe o ha sido eliminado')}
+            </p>
+            <Link href="/news">
+              <Button>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {t('news.backToNews', 'Volver a noticias')}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+      <Navigation />
+      
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Link href="/news">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {t('news.backToNews', 'Volver a noticias')}
+            </Button>
+          </Link>
+        </div>
+
+        {/* Article Header */}
+        <Card className="mb-8">
+          <CardHeader className="text-center">
+            {/* Article Meta */}
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mb-4">
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>
+                  {new Date(article.publishedAt || article.createdAt).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </span>
+              </div>
+              {article.viewCount > 0 && (
+                <div className="flex items-center gap-1">
+                  <Eye className="h-4 w-4" />
+                  <span>{article.viewCount} {t('news.views', 'visualizaciones')}</span>
+                </div>
+              )}
+              {author && (
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <span>{author.firstName} {author.lastName}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Title */}
+            <CardTitle className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              {article.title}
+            </CardTitle>
+
+            {/* Excerpt */}
+            {article.excerpt && (
+              <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto mb-6">
+                {article.excerpt}
+              </p>
+            )}
+
+            {/* Tags */}
+            {article.tags && article.tags.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                {article.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Share Button */}
+            <div className="flex justify-center">
+              <Button 
+                onClick={handleShare} 
+                variant="outline" 
+                size="sm"
+                className="hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
+              >
+                <Share className="h-4 w-4 mr-2" />
+                {t('news.share', 'Compartir')}
+              </Button>
+            </div>
+          </CardHeader>
+
+          {/* Featured Image */}
+          {article.featuredImage && (
+            <div className="px-6 pb-6">
+              <div className="aspect-video w-full overflow-hidden rounded-lg">
+                <img
+                  src={article.featuredImage}
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* Article Content */}
+        <Card className="mb-8">
+          <CardContent className="prose prose-lg max-w-none pt-6">
+            <div 
+              className="article-content"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Related Articles */}
+        {relatedArticles.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">
+                {t('news.relatedArticles', 'Artículos relacionados')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {relatedArticles.map((relatedArticle) => (
+                  <div key={relatedArticle.id} className="group">
+                    <Link href={`/news/${relatedArticle.slug}`}>
+                      <Card className="h-full hover:shadow-md transition-shadow duration-200">
+                        {relatedArticle.featuredImage && (
+                          <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                            <img
+                              src={relatedArticle.featuredImage}
+                              alt={relatedArticle.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            />
+                          </div>
+                        )}
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg line-clamp-2 group-hover:text-[hsl(188,100%,38%)] transition-colors">
+                            {relatedArticle.title}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              {new Date(relatedArticle.publishedAt || relatedArticle.createdAt).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                        </CardHeader>
+                        {relatedArticle.excerpt && (
+                          <CardContent className="pt-0">
+                            <p className="text-gray-600 line-clamp-2 text-sm">
+                              {relatedArticle.excerpt}
+                            </p>
+                          </CardContent>
+                        )}
+                      </Card>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </article>
+
+      {/* Custom styles for article content */}
+      <style jsx global>{`
+        .article-content {
+          line-height: 1.8;
+        }
+        
+        .article-content h2 {
+          font-size: 1.875rem;
+          font-weight: 700;
+          margin: 2rem 0 1rem 0;
+          color: #111827;
+        }
+        
+        .article-content h3 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin: 1.5rem 0 0.75rem 0;
+          color: #111827;
+        }
+        
+        .article-content p {
+          margin: 1rem 0;
+          color: #374151;
+        }
+        
+        .article-content ul, .article-content ol {
+          margin: 1rem 0;
+          padding-left: 1.5rem;
+        }
+        
+        .article-content li {
+          margin: 0.5rem 0;
+          color: #374151;
+        }
+        
+        .article-content a {
+          color: hsl(188, 100%, 38%);
+          text-decoration: underline;
+        }
+        
+        .article-content a:hover {
+          color: hsl(188, 100%, 32%);
+        }
+        
+        .article-content strong {
+          font-weight: 600;
+          color: #111827;
+        }
+        
+        .article-content em {
+          font-style: italic;
+        }
+        
+        .article-content .youtube-embed {
+          margin: 2rem 0;
+        }
+        
+        .article-content img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          margin: 1.5rem 0;
+        }
+      `}</style>
+    </div>
+  );
+}

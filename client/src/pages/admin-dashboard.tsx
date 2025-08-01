@@ -25,6 +25,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AdminUserManagement } from "@/components/admin-user-management";
 import { AdminEmailManagement } from "@/components/admin-email-management";
+import AdminNewsManagement from "@/components/admin-news-management";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -587,39 +588,7 @@ function HostApprovals() {
 
 // News Management Component
 function NewsManagement() {
-  const { i18n } = useTranslation();
-  
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>
-                {i18n.language === 'es' ? 'Gestor de Noticias' : 'News Manager'}
-              </CardTitle>
-              <CardDescription>
-                {i18n.language === 'es' 
-                  ? 'Crea y gestiona noticias y elementos destacados'
-                  : 'Create and manage news and highlights'}
-              </CardDescription>
-            </div>
-            <Button>
-              <Newspaper className="w-4 h-4 mr-2" />
-              {i18n.language === 'es' ? 'Nueva Noticia' : 'New Article'}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-gray-500">
-            {i18n.language === 'es' 
-              ? 'Sistema de publicación de contenido'
-              : 'Content publishing system'}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <AdminNewsManagement />;
 }
 
 // Theme Editor Component

@@ -17,6 +17,7 @@ import {
   emailTemplates,
   emailNotifications,
   userMessages,
+  newsArticles,
   type User,
   type UpsertUser,
   type MediaContent,
@@ -50,6 +51,10 @@ import {
   type InsertEmailNotification,
   type UserMessage,
   type InsertUserMessage,
+  type NewsArticle,
+  type InsertNewsArticle,
+  type CreateNewsArticle,
+  type UpdateNewsArticle,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, asc, sql, gte, lte } from "drizzle-orm";
@@ -190,6 +195,19 @@ export interface IStorage {
   createUserMessage(message: InsertUserMessage): Promise<UserMessage>;
   getUserMessages(recipientId: string, isRead?: boolean): Promise<UserMessage[]>;
   markMessageAsRead(id: string): Promise<UserMessage>;
+  
+  // News articles operations
+  getAllNewsArticles(status?: string): Promise<NewsArticle[]>;
+  getPublishedNewsArticles(limit?: number): Promise<NewsArticle[]>;
+  getFeaturedNewsArticles(limit?: number): Promise<NewsArticle[]>;
+  getNewsArticle(id: string): Promise<NewsArticle | undefined>;
+  getNewsArticleBySlug(slug: string): Promise<NewsArticle | undefined>;
+  createNewsArticle(article: CreateNewsArticle): Promise<NewsArticle>;
+  updateNewsArticle(id: string, updates: UpdateNewsArticle): Promise<NewsArticle>;
+  deleteNewsArticle(id: string): Promise<boolean>;
+  incrementArticleViews(id: string): Promise<void>;
+  publishNewsArticle(id: string): Promise<NewsArticle>;
+  generateSlugFromTitle(title: string): Promise<string>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1107,6 +1125,133 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userMessages.id, id))
       .returning();
     return updated;
+  }
+
+  // News articles operations
+  async getAllNewsArticles(status?: string): Promise<NewsArticle[]> {
+    const query = db.select().from(newsArticles);
+    
+    if (status) {
+      query.where(eq(newsArticles.status, status as any));
+    }
+    
+    return await query.orderBy(desc(newsArticles.createdAt));
+  }
+
+  async getPublishedNewsArticles(limit: number = 10): Promise<NewsArticle[]> {
+    return await db
+      .select()
+      .from(newsArticles)
+      .where(eq(newsArticles.status, 'published'))
+      .orderBy(desc(newsArticles.publishedAt))
+      .limit(limit);
+  }
+
+  async getFeaturedNewsArticles(limit: number = 5): Promise<NewsArticle[]> {
+    return await db
+      .select()
+      .from(newsArticles)
+      .where(and(
+        eq(newsArticles.status, 'published'),
+        eq(newsArticles.isFeatured, true)
+      ))
+      .orderBy(asc(newsArticles.displayOrder), desc(newsArticles.publishedAt))
+      .limit(limit);
+  }
+
+  async getNewsArticle(id: string): Promise<NewsArticle | undefined> {
+    const [article] = await db.select().from(newsArticles).where(eq(newsArticles.id, id));
+    return article;
+  }
+
+  async getNewsArticleBySlug(slug: string): Promise<NewsArticle | undefined> {
+    const [article] = await db.select().from(newsArticles).where(eq(newsArticles.slug, slug));
+    return article;
+  }
+
+  async createNewsArticle(article: CreateNewsArticle): Promise<NewsArticle> {
+    const slug = await this.generateSlugFromTitle(article.title);
+    const articleData = {
+      ...article,
+      slug,
+      publishedAt: article.status === 'published' ? new Date() : null,
+    };
+    
+    const [newArticle] = await db.insert(newsArticles).values(articleData).returning();
+    return newArticle;
+  }
+
+  async updateNewsArticle(id: string, updates: UpdateNewsArticle): Promise<NewsArticle> {
+    const updateData: any = { ...updates, updatedAt: new Date() };
+    
+    // Generate new slug if title is being updated
+    if (updates.title) {
+      updateData.slug = await this.generateSlugFromTitle(updates.title);
+    }
+    
+    // Set publishedAt if status is being changed to published
+    if (updates.status === 'published') {
+      const existing = await this.getNewsArticle(id);
+      if (existing && !existing.publishedAt) {
+        updateData.publishedAt = new Date();
+      }
+    }
+    
+    const [updated] = await db
+      .update(newsArticles)
+      .set(updateData)
+      .where(eq(newsArticles.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteNewsArticle(id: string): Promise<boolean> {
+    const result = await db.delete(newsArticles).where(eq(newsArticles.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async incrementArticleViews(id: string): Promise<void> {
+    await db
+      .update(newsArticles)
+      .set({ viewCount: sql`${newsArticles.viewCount} + 1` })
+      .where(eq(newsArticles.id, id));
+  }
+
+  async publishNewsArticle(id: string): Promise<NewsArticle> {
+    const [updated] = await db
+      .update(newsArticles)
+      .set({ 
+        status: 'published', 
+        publishedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(newsArticles.id, id))
+      .returning();
+    return updated;
+  }
+
+  async generateSlugFromTitle(title: string): Promise<string> {
+    // Generate base slug from title
+    let baseSlug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim('-');
+    
+    // Check for duplicates and add number suffix if needed
+    let slug = baseSlug;
+    let counter = 1;
+    
+    while (true) {
+      const existing = await this.getNewsArticleBySlug(slug);
+      if (!existing) break;
+      
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    
+    return slug;
   }
 }
 

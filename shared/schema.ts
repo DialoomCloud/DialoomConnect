@@ -521,6 +521,65 @@ export type InsertEmailNotification = typeof emailNotifications.$inferInsert;
 export type UserMessage = typeof userMessages.$inferSelect;
 export type InsertUserMessage = typeof userMessages.$inferInsert;
 
+// News/Articles system for home page
+export const newsStatusEnum = pgEnum('news_status', [
+  'draft', 'published', 'archived'
+]);
+
+export const newsArticles = pgTable("news_articles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(), // URL-friendly version
+  excerpt: text("excerpt"), // Short description for previews
+  content: text("content").notNull(), // Rich HTML content with embeds
+  featuredImage: text("featured_image"), // Main image URL
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  status: newsStatusEnum("status").default("draft"),
+  publishedAt: timestamp("published_at"),
+  displayOrder: integer("display_order").default(0), // For featured articles
+  isFeatured: boolean("is_featured").default(false), // Show prominently on home
+  viewCount: integer("view_count").default(0),
+  likesCount: integer("likes_count").default(0),
+  tags: text("tags").array(), // Array of tag strings
+  metaTitle: varchar("meta_title", { length: 255 }), // SEO
+  metaDescription: text("meta_description"), // SEO
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// News article relations
+export const newsArticlesRelations = relations(newsArticles, ({ one }) => ({
+  author: one(users, {
+    fields: [newsArticles.authorId],
+    references: [users.id],
+  }),
+}));
+
+// News article types
+export type NewsArticle = typeof newsArticles.$inferSelect;
+export type InsertNewsArticle = typeof newsArticles.$inferInsert;
+
+// News article validation schemas
+export const createNewsArticleSchema = createInsertSchema(newsArticles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  slug: true, // Auto-generated from title
+  viewCount: true,
+  likesCount: true,
+});
+
+export const updateNewsArticleSchema = createInsertSchema(newsArticles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  viewCount: true,
+  likesCount: true,
+}).partial();
+
+export type CreateNewsArticle = z.infer<typeof createNewsArticleSchema>;
+export type UpdateNewsArticle = z.infer<typeof updateNewsArticleSchema>;
+
 // Email template validation schemas
 export const createEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
   id: true,

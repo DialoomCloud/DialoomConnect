@@ -25,6 +25,8 @@ import DMCA from "@/pages/legal/dmca";
 import Help from "@/pages/help";
 import GdprRights from "@/pages/gdpr-rights";
 import VideoCallRoom from "@/pages/video-call-room";
+import NewsPage from "@/pages/news";
+import NewsArticlePage from "@/pages/news-article";
 import "./i18n/config";
 
 function Router() {
@@ -44,6 +46,8 @@ function Router() {
           <Route path="/user/:id" component={UserProfile} />
           <Route path="/admin-login" component={AdminLogin} />
           <Route path="/admin-dashboard" component={AdminDashboard} />
+          <Route path="/news" component={NewsPage} />
+          <Route path="/news/:slug" component={NewsArticlePage} />
           
           {/* Routes that require either user or admin authentication */}
           {isUserOrAdminAuthenticated && !isAnyLoading && (

@@ -19,7 +19,9 @@ import { initializeEmailTemplates } from "./email-templates-init";
 import { 
   createEmailTemplateSchema, 
   updateEmailTemplateSchema,
-  createUserMessageSchema 
+  createUserMessageSchema,
+  createNewsArticleSchema,
+  updateNewsArticleSchema 
 } from "@shared/schema";
 
 // Configure multer for file uploads
@@ -1812,6 +1814,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking message as read:", error);
       res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
+  // ========== NEWS ARTICLES API ROUTES ==========
+
+  // Get all news articles (public - for home page)
+  app.get('/api/news/articles', async (req, res) => {
+    try {
+      const status = req.query.status as string;
+      const featured = req.query.featured === 'true';
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      let articles;
+      if (featured) {
+        articles = await storage.getFeaturedNewsArticles(limit);
+      } else if (status) {
+        articles = await storage.getAllNewsArticles(status);
+      } else {
+        articles = await storage.getPublishedNewsArticles(limit);
+      }
+
+      res.json(articles);
+    } catch (error) {
+      console.error("Error fetching news articles:", error);
+      res.status(500).json({ message: "Failed to fetch articles" });
+    }
+  });
+
+  // Get single article by ID or slug (public)
+  app.get('/api/news/articles/:idOrSlug', async (req, res) => {
+    try {
+      const { idOrSlug } = req.params;
+      let article;
+
+      // Try to get by ID first, then by slug
+      article = await storage.getNewsArticle(idOrSlug);
+      if (!article) {
+        article = await storage.getNewsArticleBySlug(idOrSlug);
+      }
+
+      if (!article) {
+        return res.status(404).json({ message: "Article not found" });
+      }
+
+      // Increment view count for published articles
+      if (article.status === 'published') {
+        await storage.incrementArticleViews(article.id);
+        article.viewCount = (article.viewCount || 0) + 1;
+      }
+
+      res.json(article);
+    } catch (error) {
+      console.error("Error fetching article:", error);
+      res.status(500).json({ message: "Failed to fetch article" });
+    }
+  });
+
+  // Admin routes for news management
+  function isAdmin(req: any, res: any, next: any) {
+    const user = req.user as any;
+    if (!user?.claims?.sub) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Check if user is admin
+    storage.getUser(user.claims.sub).then(userData => {
+      if (!userData?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      next();
+    }).catch(() => {
+      res.status(500).json({ message: "Error checking admin status" });
+    });
+  }
+
+  // Get all articles for admin (includes drafts)
+  app.get('/api/admin/news/articles', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const status = req.query.status as string;
+      const articles = await storage.getAllNewsArticles(status);
+      res.json(articles);
+    } catch (error) {
+      console.error("Error fetching admin articles:", error);
+      res.status(500).json({ message: "Failed to fetch articles" });
+    }
+  });
+
+  // Create new article (admin only)
+  app.post('/api/admin/news/articles', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const validatedData = createNewsArticleSchema.parse({
+        ...req.body,
+        authorId: user.claims.sub,
+      });
+
+      const article = await storage.createNewsArticle(validatedData);
+      res.status(201).json(article);
+    } catch (error) {
+      console.error("Error creating article:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid article data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create article" });
+    }
+  });
+
+  // Update article (admin only)
+  app.put('/api/admin/news/articles/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = updateNewsArticleSchema.parse(req.body);
+
+      const article = await storage.updateNewsArticle(id, validatedData);
+      res.json(article);
+    } catch (error) {
+      console.error("Error updating article:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid article data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update article" });
+    }
+  });
+
+  // Delete article (admin only)
+  app.delete('/api/admin/news/articles/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteNewsArticle(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Article not found" });
+      }
+
+      res.json({ message: "Article deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting article:", error);
+      res.status(500).json({ message: "Failed to delete article" });
+    }
+  });
+
+  // Publish article (admin only)
+  app.put('/api/admin/news/articles/:id/publish', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const article = await storage.publishNewsArticle(id);
+      res.json(article);
+    } catch (error) {
+      console.error("Error publishing article:", error);
+      res.status(500).json({ message: "Failed to publish article" });
+    }
+  });
+
+  // Upload images for news articles (admin only)
+  app.post('/api/admin/news/upload-image', isAuthenticated, isAdmin, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const user = req.user as any;
+      const userId = user.claims.sub;
+      const timestamp = Date.now();
+      const filename = `news-${timestamp}-${req.file.originalname}`;
+
+      // Process image with Sharp
+      const processedImage = await sharp(req.file.buffer)
+        .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toBuffer();
+
+      // Save to Object Storage
+      const imagePath = `Objects/news/${filename.replace(/\.[^/.]+$/, ".webp")}`;
+      await replitStorage.upload(imagePath, processedImage, 'image/webp');
+
+      const imageUrl = `/storage/${imagePath}`;
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error("Error uploading news image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
     }
   });
 
