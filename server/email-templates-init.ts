@@ -2,7 +2,8 @@ import { storage } from "./storage";
 
 const DEFAULT_EMAIL_TEMPLATES = [
   {
-    type: 'registration',
+    type: 'user_registration',
+    name: 'Registro de Usuario',
     subject: 'Bienvenido a Dialoom - Tu cuenta ha sido creada',
     htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -46,7 +47,8 @@ const DEFAULT_EMAIL_TEMPLATES = [
     isActive: true
   },
   {
-    type: 'booking_confirmation',
+    type: 'booking_received',
+    name: 'Reserva Recibida por Host',
     subject: 'Nueva reserva de videollamada recibida - Dialoom',
     htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -116,7 +118,8 @@ const DEFAULT_EMAIL_TEMPLATES = [
     isActive: true
   },
   {
-    type: 'booking_notification',
+    type: 'booking_created',
+    name: 'Reserva Creada por Cliente',
     subject: 'Reserva de videollamada creada - Dialoom',
     htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -176,183 +179,8 @@ const DEFAULT_EMAIL_TEMPLATES = [
     isActive: true
   },
   {
-    type: 'payment_confirmation',
-    subject: 'Pago confirmado - Tu videollamada está confirmada',
-    htmlContent: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #28a745; color: white; padding: 20px; text-align: center;">
-          <h1>¡Pago Confirmado!</h1>
-        </div>
-        <div style="padding: 20px;">
-          <p>Hola {{guestName}},</p>
-          <p>Tu pago ha sido procesado exitosamente y tu videollamada está confirmada.</p>
-          
-          <div style="background-color: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #c3e6cb;">
-            <h3>Detalles de tu Videollamada</h3>
-            <p><strong>Host:</strong> {{hostName}}</p>
-            <p><strong>Fecha:</strong> {{date}}</p>
-            <p><strong>Hora:</strong> {{time}}</p>
-            <p><strong>Duración:</strong> {{duration}} minutos</p>
-            <p><strong>Monto pagado:</strong> €{{amount}}</p>
-            <p><strong>Factura:</strong> #{{invoiceNumber}}</p>
-            <p><strong>ID de Reserva:</strong> {{bookingId}}</p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{dashboardUrl}}" style="background-color: #00A1A7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
-              Acceder a la Videollamada
-            </a>
-          </div>
-          
-          <p><em>Recibirás un recordatorio antes de la hora programada.</em></p>
-        </div>
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-          © 2025 Dialoom. Todos los derechos reservados.
-        </div>
-      </div>
-    `,
-    textContent: `
-      ¡Pago Confirmado! - Dialoom
-      
-      Hola {{guestName}},
-      
-      Tu pago ha sido procesado exitosamente y tu videollamada está confirmada.
-      
-      DETALLES DE TU VIDEOLLAMADA
-      Host: {{hostName}}
-      Fecha: {{date}}
-      Hora: {{time}}
-      Duración: {{duration}} minutos
-      Monto pagado: €{{amount}}
-      Factura: #{{invoiceNumber}}
-      ID de Reserva: {{bookingId}}
-      
-      Acceder a la Videollamada: {{dashboardUrl}}
-      
-      Recibirás un recordatorio antes de la hora programada.
-      
-      © 2025 Dialoom. Todos los derechos reservados.
-    `,
-    isActive: true
-  },
-  {
-    type: 'booking_confirmed',
-    subject: 'Reserva confirmada - Pago recibido',
-    htmlContent: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #28a745; color: white; padding: 20px; text-align: center;">
-          <h1>¡Reserva Confirmada!</h1>
-        </div>
-        <div style="padding: 20px;">
-          <p>Hola {{hostName}},</p>
-          <p>El pago para tu videollamada ha sido recibido y la reserva está confirmada.</p>
-          
-          <div style="background-color: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #c3e6cb;">
-            <h3>Detalles de la Videollamada</h3>
-            <p><strong>Cliente:</strong> {{guestName}}</p>
-            <p><strong>Fecha:</strong> {{date}}</p>
-            <p><strong>Hora:</strong> {{time}}</p>
-            <p><strong>Duración:</strong> {{duration}} minutos</p>
-            <p><strong>Monto:</strong> €{{amount}}</p>
-            <p><strong>ID de Reserva:</strong> {{bookingId}}</p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{dashboardUrl}}" style="background-color: #00A1A7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
-              Preparar Videollamada
-            </a>
-          </div>
-          
-          <p><em>Te enviaremos un recordatorio antes de la hora programada.</em></p>
-        </div>
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-          © 2025 Dialoom. Todos los derechos reservados.
-        </div>
-      </div>
-    `,
-    textContent: `
-      ¡Reserva Confirmada! - Dialoom
-      
-      Hola {{hostName}},
-      
-      El pago para tu videollamada ha sido recibido y la reserva está confirmada.
-      
-      DETALLES DE LA VIDEOLLAMADA
-      Cliente: {{guestName}}
-      Fecha: {{date}}
-      Hora: {{time}}
-      Duración: {{duration}} minutos
-      Monto: €{{amount}}
-      ID de Reserva: {{bookingId}}
-      
-      Preparar Videollamada: {{dashboardUrl}}
-      
-      Te enviaremos un recordatorio antes de la hora programada.
-      
-      © 2025 Dialoom. Todos los derechos reservados.
-    `,
-    isActive: true
-  },
-  {
-    type: 'booking_cancellation',
-    subject: 'Reserva cancelada - Dialoom',
-    htmlContent: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #dc3545; color: white; padding: 20px; text-align: center;">
-          <h1>Reserva Cancelada</h1>
-        </div>
-        <div style="padding: 20px;">
-          <p>Hola {{userName}},</p>
-          <p>Una reserva de videollamada ha sido cancelada:</p>
-          
-          <div style="background-color: #f8d7da; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #f5c6cb;">
-            <h3>Detalles de la Reserva Cancelada</h3>
-            <p><strong>{{#if cancelledByHost}}Host{{else}}Cliente{{/if}}:</strong> {{otherPersonName}}</p>
-            <p><strong>Fecha:</strong> {{date}}</p>
-            <p><strong>Hora:</strong> {{time}}</p>
-            <p><strong>Duración:</strong> {{duration}} minutos</p>
-            <p><strong>Cancelada por:</strong> {{#if cancelledByHost}}Host{{else}}Cliente{{/if}}</p>
-            <p><strong>ID de Reserva:</strong> {{bookingId}}</p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="{{dashboardUrl}}" style="background-color: #00A1A7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
-              Ver Dashboard
-            </a>
-          </div>
-          
-          <p><em>Si hubo un pago procesado, se procederá con el reembolso correspondiente.</em></p>
-        </div>
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-          © 2025 Dialoom. Todos los derechos reservados.
-        </div>
-      </div>
-    `,
-    textContent: `
-      Reserva Cancelada - Dialoom
-      
-      Hola {{userName}},
-      
-      Una reserva de videollamada ha sido cancelada:
-      
-      DETALLES DE LA RESERVA CANCELADA
-      {{#if cancelledByHost}}Host{{else}}Cliente{{/if}}: {{otherPersonName}}
-      Fecha: {{date}}
-      Hora: {{time}}
-      Duración: {{duration}} minutos
-      Cancelada por: {{#if cancelledByHost}}Host{{else}}Cliente{{/if}}
-      ID de Reserva: {{bookingId}}
-      
-      Ver Dashboard: {{dashboardUrl}}
-      
-      Si hubo un pago procesado, se procederá con el reembolso correspondiente.
-      
-      © 2025 Dialoom. Todos los derechos reservados.
-    `,
-    isActive: true
-  },
-  {
     type: 'user_message',
+    name: 'Mensaje de Usuario',
     subject: 'Nuevo mensaje recibido - Dialoom',
     htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
