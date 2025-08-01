@@ -8,13 +8,13 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[hsl(17,12%,95%)] border-t border-[hsl(220,13%,90%)] mt-auto">
+    <footer className="bg-gray-900 text-white border-t border-gray-800 mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* About Section */}
           <div>
-            <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-4">Dialoom</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-semibold text-white mb-4">Dialoom</h3>
+            <p className="text-sm text-gray-400">
               {i18n.language === 'es' 
                 ? 'Plataforma profesional de videollamadas y consultas online.'
                 : i18n.language === 'ca'
@@ -25,7 +25,7 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-4">
+            <h3 className="font-semibold text-white mb-4">
               {i18n.language === 'es' 
                 ? 'Legal'
                 : i18n.language === 'ca'
@@ -34,7 +34,7 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/legal/privacy" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/legal/privacy" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <Shield className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Política de Privacidad'
@@ -44,7 +44,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/legal/terms" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/legal/terms" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <FileText className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Términos de Servicio'
@@ -54,7 +54,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/legal/cookies" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/legal/cookies" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <Cookie className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Política de Cookies'
@@ -64,7 +64,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/legal/dmca" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/legal/dmca" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <Copyright className="w-3 h-3" />
                   DMCA
                 </Link>
@@ -74,7 +74,7 @@ export function Footer() {
 
           {/* GDPR Compliance */}
           <div>
-            <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-4">
+            <h3 className="font-semibold text-white mb-4">
               {i18n.language === 'es' 
                 ? 'Protección de Datos'
                 : i18n.language === 'ca'
@@ -83,7 +83,7 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/gdpr-rights" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
+                <Link href="/gdpr-rights" className="text-sm text-gray-400 hover:text-white">
                   {i18n.language === 'es' 
                     ? 'Tus Derechos RGPD'
                     : i18n.language === 'ca'
@@ -92,7 +92,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/data-request" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
+                <Link href="/data-request" className="text-sm text-gray-400 hover:text-white">
                   {i18n.language === 'es' 
                     ? 'Solicitar mis Datos'
                     : i18n.language === 'ca'
@@ -101,7 +101,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/delete-account" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
+                <Link href="/delete-account" className="text-sm text-gray-400 hover:text-white">
                   {i18n.language === 'es' 
                     ? 'Eliminar mi Cuenta'
                     : i18n.language === 'ca'
@@ -114,7 +114,7 @@ export function Footer() {
 
           {/* Contact & Support */}
           <div>
-            <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-4">
+            <h3 className="font-semibold text-white mb-4">
               {i18n.language === 'es' 
                 ? 'Soporte'
                 : i18n.language === 'ca'
@@ -123,7 +123,7 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/help" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)] flex items-center gap-2">
+                <Link href="/help" className="text-sm text-gray-400 hover:text-white flex items-center gap-2">
                   <HelpCircle className="w-3 h-3" />
                   {i18n.language === 'es' 
                     ? 'Centro de Ayuda'
@@ -133,12 +133,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:support@dialoom.cloud" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
+                <a href="mailto:support@dialoom.cloud" className="text-sm text-gray-400 hover:text-white">
                   support@dialoom.cloud
                 </a>
               </li>
               <li>
-                <a href="mailto:privacy@dialoom.cloud" className="text-sm text-gray-600 hover:text-[hsl(188,100%,38%)]">
+                <a href="mailto:privacy@dialoom.cloud" className="text-sm text-gray-400 hover:text-white">
                   privacy@dialoom.cloud
                 </a>
               </li>
@@ -149,7 +149,7 @@ export function Footer() {
         <Separator className="mb-6" />
 
         {/* Bottom Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+        <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
           <p>
             © {currentYear} Dialoom. {i18n.language === 'es' 
               ? 'Todos los derechos reservados.'
