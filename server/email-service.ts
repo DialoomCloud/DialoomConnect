@@ -81,7 +81,7 @@ class EmailService {
 
       // Send email via Resend
       const emailResult = await resend.emails.send({
-        from: 'Dialoom <onboarding@resend.dev>',
+        from: 'Dialoom <no-reply@dialoom.cloud>',
         to: params.recipientEmail,
         subject,
         html: htmlContent,
