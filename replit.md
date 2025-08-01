@@ -161,3 +161,10 @@ The application is designed to be deployed on Replit with automatic database pro
 - **Admin Management**: Email templates can be edited, activated/deactivated, and managed through the admin panel
 - **Email History**: Complete logging and tracking of all sent emails with status updates
 - **API Key**: Using Resend API key re_J1kjyvgF_EvCgVLwrMXx364p3m2ryg6QX with verified domain dialoom.com
+
+## Admin Dashboard Authentication Integration (August 1, 2025)
+- **Unified Authentication**: Removed separate admin login system and integrated admin dashboard with main Replit Auth
+- **Role-Based Access**: Admin users can now access `/admin-dashboard` directly after main authentication
+- **API Consistency**: Fixed all admin API calls to use correct apiRequest function signature
+- **Simplified Architecture**: Eliminated AdminAuthProvider and redundant authentication layers
+- **Security Maintained**: Admin access still controlled by user roles and isAdmin flags in database

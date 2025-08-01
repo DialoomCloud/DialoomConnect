@@ -37,7 +37,7 @@ export default function AdminDashboard() {
   const { data: stats } = useQuery({
     queryKey: ["/api/admin/stats"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/stats", {});
+      const response = await apiRequest("/api/admin/stats");
       return response.json();
     },
     enabled: !!adminUser && !isLoading, // Only fetch when adminUser exists
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!isLoading && !adminUser) {
-      setLocation("/admin-login");
+      setLocation("/");
     }
   }, [isLoading, adminUser, setLocation]);
 
@@ -286,7 +286,7 @@ function HostsManagement() {
   const { data: hosts } = useQuery({
     queryKey: ["/api/admin/hosts"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/hosts", {});
+      const response = await apiRequest("/api/admin/hosts");
       return response.json();
     },
   });
@@ -370,7 +370,7 @@ function AdminSettings() {
   const { data: configs, isLoading } = useQuery({
     queryKey: ["/api/admin/config"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/config", {});
+      const response = await apiRequest("/api/admin/config");
       return response.json();
     },
   });
@@ -418,7 +418,7 @@ function AdminSettings() {
 
       // Save each config item
       for (const config of configs) {
-        await apiRequest("POST", "/api/admin/config", config);
+        await apiRequest("/api/admin/config", { method: "POST", body: config });
       }
     },
     onSuccess: () => {
@@ -575,7 +575,7 @@ function ThemeEditor() {
   const { data: themeConfig, isLoading } = useQuery({
     queryKey: ["/api/admin/config/theme"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/config", {});
+      const response = await apiRequest("/api/admin/config");
       const configs = await response.json();
       const theme = configs.find((c: any) => c.key === 'theme_colors');
       if (theme) {
@@ -646,7 +646,7 @@ function ThemeEditor() {
         description: 'Application theme colors',
       };
       
-      await apiRequest("POST", "/api/admin/config", themeData);
+      await apiRequest("/api/admin/config", { method: "POST", body: themeData });
       
       // Apply the colors immediately
       applyColorsToCSS({

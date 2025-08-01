@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import { AdminAuthProvider, useAdminAuth } from "@/hooks/useAdminAuth";
+
 import { Footer } from "@/components/footer";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
@@ -31,10 +31,6 @@ import "./i18n/config";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { adminUser, isLoading: isAdminLoading } = useAdminAuth();
-  
-  const isUserOrAdminAuthenticated = isAuthenticated || !!adminUser;
-  const isAnyLoading = isLoading || isAdminLoading;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -49,8 +45,8 @@ function Router() {
           <Route path="/news" component={NewsPage} />
           <Route path="/news/:slug" component={NewsArticlePage} />
           
-          {/* Routes that require either user or admin authentication */}
-          {isUserOrAdminAuthenticated && !isAnyLoading && (
+          {/* Routes that require authentication */}
+          {isAuthenticated && !isLoading && (
             <>
               <Route path="/home" component={Home} />
               <Route path="/profile" component={Profile} />
@@ -79,12 +75,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AdminAuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </AdminAuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
