@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
@@ -61,7 +62,32 @@ function ProfileManagement({ userId }: { userId?: string }) {
 
   return (
     <div className="space-y-6">
-      <ProfileForm user={userProfile} />
+      {/* Simple profile display for admin view */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Información del Perfil</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {userProfile ? (
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600">Nombre</p>
+                <p className="font-medium">{userProfile.firstName} {userProfile.lastName}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Email</p>
+                <p className="font-medium">{userProfile.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Teléfono</p>
+                <p className="font-medium">{userProfile.phone || 'No configurado'}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-500">Visualización de administrador - datos limitados</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -140,14 +166,22 @@ function ContentManagement({ userId }: { userId?: string }) {
       </div>
 
       {showUploadModal && (
-        <MediaUploadModal
-          isOpen={showUploadModal}
-          onClose={() => setShowUploadModal(false)}
-          onUploadComplete={() => {
-            setShowUploadModal(false);
-            queryClient.invalidateQueries({ queryKey: ['/api/media'] });
-          }}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Subir Contenido</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">Función de carga deshabilitada en vista de administrador</p>
+              <Button 
+                className="mt-4"
+                onClick={() => setShowUploadModal(false)}
+              >
+                Cerrar
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
@@ -182,11 +216,27 @@ function AvailabilityManagement({ userId }: { userId?: string }) {
         </TabsList>
         
         <TabsContent value="pricing" className="mt-6">
-          <HostPricingForm existingPricing={pricing} />
+          {/* Simplified pricing display for admin view */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuración de Precios</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">Vista de administrador - configuración de precios deshabilitada</p>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="schedule" className="mt-6">
-          <AvailabilitySchedule />
+          {/* Simplified availability display for admin view */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Horario de Disponibilidad</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">Vista de administrador - configuración de horarios deshabilitada</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
@@ -270,38 +320,58 @@ function InvoicesTab({ userId }: { userId?: string }) {
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user, isLoading: authLoading } = useAuth();
+  const { adminUser, isLoading: adminLoading } = useAdminAuth();
   const [selectedTab, setSelectedTab] = useState("overview");
+  
+  // Check if user is accessing as admin
+  const isAdmin = !!adminUser && !user;
+  const currentUser = user || (isAdmin ? { id: 'admin-view', name: 'Admin View', isAdmin: true } : null);
 
-  // Fetch bookings
+  // Fetch bookings - disabled for admin view
   const { data: bookings = [], isLoading: bookingsLoading } = useQuery<Booking[]>({
     queryKey: ["/api/bookings"],
-    enabled: !!user,
+    enabled: !!user && !isAdmin,
   });
 
   // Calculate statistics
   const stats = {
-    totalEarnings: bookings
+    totalEarnings: isAdmin ? 0 : bookings
       .filter(b => b.status === "completed" && b.hostId === user?.id)
       .reduce((sum, b) => sum + parseFloat(b.price), 0),
-    upcomingCalls: bookings
+    upcomingCalls: isAdmin ? 0 : bookings
       .filter(b => b.status === "confirmed" && new Date(b.scheduledDate) >= new Date())
       .length,
-    completedCalls: bookings.filter(b => b.status === "completed").length,
+    completedCalls: isAdmin ? 0 : bookings.filter(b => b.status === "completed").length,
     averageRating: 4.8, // This would come from reviews
   };
 
-  const upcomingBookings = bookings.filter(
+  const upcomingBookings = isAdmin ? [] : bookings.filter(
     b => b.status === "confirmed" && new Date(b.scheduledDate) >= new Date()
   );
 
-  const pastBookings = bookings.filter(
+  const pastBookings = isAdmin ? [] : bookings.filter(
     b => b.status === "completed" || new Date(b.scheduledDate) < new Date()
   );
 
-  if (authLoading || bookingsLoading) {
+  if ((authLoading || adminLoading) || (!isAdmin && bookingsLoading)) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
+      </div>
+    );
+  }
+  
+  // Show message if not authenticated
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Acceso Restringido</h2>
+          <p className="text-gray-600 mb-6">Debes iniciar sesión para acceder al panel de control</p>
+          <Button onClick={() => window.location.href = '/api/login'}>
+            Iniciar Sesión
+          </Button>
+        </div>
       </div>
     );
   }
@@ -311,6 +381,19 @@ export default function Dashboard() {
       <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Admin notice */}
+        {isAdmin && (
+          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-yellow-600" />
+              <p className="text-yellow-800">
+                <strong>Modo Administrador:</strong> Estás viendo este panel como administrador. 
+                Algunas funciones están deshabilitadas en este modo.
+              </p>
+            </div>
+          </div>
+        )}
+        
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">Panel de Control</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">

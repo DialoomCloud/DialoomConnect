@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import { AdminAuthProvider } from "@/hooks/useAdminAuth";
+import { AdminAuthProvider, useAdminAuth } from "@/hooks/useAdminAuth";
 import { Footer } from "@/components/footer";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
@@ -29,34 +29,34 @@ import "./i18n/config";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { adminUser, isLoading: isAdminLoading } = useAdminAuth();
+  
+  const isUserOrAdminAuthenticated = isAuthenticated || !!adminUser;
+  const isAnyLoading = isLoading || isAdminLoading;
 
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1">
         <Switch>
-          {isLoading || !isAuthenticated ? (
+          {/* Public routes available to everyone */}
+          <Route path="/" component={isAuthenticated && !isLoading ? Home : Landing} />
+          <Route path="/hosts" component={HostSearch} />
+          <Route path="/user/:id" component={UserProfile} />
+          <Route path="/admin-login" component={AdminLogin} />
+          <Route path="/admin-dashboard" component={AdminDashboard} />
+          
+          {/* Routes that require either user or admin authentication */}
+          {isUserOrAdminAuthenticated && !isAnyLoading && (
             <>
-              <Route path="/" component={Landing} />
-              <Route path="/hosts" component={HostSearch} />
-              <Route path="/user/:id" component={UserProfile} />
-              <Route path="/admin-login" component={AdminLogin} />
-              <Route path="/admin-dashboard" component={AdminDashboard} />
-            </>
-          ) : (
-            <>
-              <Route path="/" component={Home} />
               <Route path="/home" component={Home} />
               <Route path="/profile" component={Profile} />
-              <Route path="/hosts" component={HostSearch} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/admin" component={Admin} />
               <Route path="/admin-panel" component={AdminPanel} />
-              <Route path="/admin-dashboard" component={AdminDashboard} />
-              <Route path="/user/:id" component={UserProfile} />
-              <Route path="/admin-login" component={AdminLogin} />
               <Route path="/video-call/:bookingId" component={VideoCallRoom} />
             </>
           )}
+          
           {/* Legal and help pages accessible to all */}
           <Route path="/legal/privacy" component={PrivacyPolicy} />
           <Route path="/legal/terms" component={TermsOfService} />
