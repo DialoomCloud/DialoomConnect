@@ -93,10 +93,17 @@
   },
   "hosts": {
     "title": "Expertos Disponibles",
+    "subtitle": "Encuentra el experto perfecto para tu consulta",
     "viewProfile": "Ver Perfil",
     "noResults": "No se encontraron expertos",
     "searching": "Buscando...",
-    "expertIn": "Experto en"
+    "expertIn": "Experto en",
+    "aiSearchActive": "Búsqueda inteligente activada",
+    "aiSearchHint": "Usa lenguaje natural: \"astronautas\", \"expertos en cocina\", etc.",
+    "searchPlaceholder": "Busca expertos por área, profesión o habilidad...",
+    "foundResults": "Encontrados {count} expertos usando búsqueda inteligente",
+    "analyzing": "Analizando tu búsqueda con IA...",
+    "relevant": "% relevante"
   },
   "common": {
     "error": "Error",

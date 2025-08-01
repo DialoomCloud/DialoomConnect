@@ -16,6 +16,7 @@ import session from "express-session";
 import { generateAgoraToken } from "./agora-token";
 import { emailService } from "./email-service";
 import { initializeEmailTemplates } from "./email-templates-init";
+import { aiSearchService } from "./ai-search";
 import { 
   createEmailTemplateSchema, 
   updateEmailTemplateSchema,
@@ -249,6 +250,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching hosts:", error);
       res.status(500).json({ message: "Failed to fetch hosts" });
+    }
+  });
+
+  // AI-powered host search endpoint
+  app.post('/api/hosts/search', async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: "Query is required" });
+      }
+
+      // Get all hosts
+      const hosts = await storage.getAllUsers();
+      
+      // Convert to AI search format
+      const hostProfiles = hosts.map(host => ({
+        id: host.id,
+        firstName: host.firstName,
+        lastName: host.lastName,
+        title: host.title,
+        bio: host.bio,
+        professionalCategory: host.professionalCategory,
+        skills: [], // Will be populated from user skills relation
+        languages: [], // Will be populated from user languages relation
+        email: host.email
+      }));
+
+      // Get additional data for each host
+      for (const profile of hostProfiles) {
+        try {
+          const skills = await storage.getUserSkills(profile.id);
+          profile.skills = skills.map(s => s.name);
+          
+          const languages = await storage.getUserLanguages(profile.id);
+          profile.languages = languages.map(l => l.name);
+        } catch (error) {
+          console.error(`Error fetching additional data for host ${profile.id}:`, error);
+        }
+      }
+
+      // Use AI to search and rank hosts
+      const results = await aiSearchService.searchHosts(hostProfiles, query);
+      
+      // Return the ranked results with original host data
+      const rankedHosts = results.map(result => ({
+        ...hosts.find(h => h.id === result.host.id),
+        relevance: result.relevance
+      }));
+
+      res.json({
+        query,
+        results: rankedHosts,
+        count: rankedHosts.length
+      });
+    } catch (error) {
+      console.error("Error in AI host search:", error);
+      res.status(500).json({ message: "Failed to search hosts" });
     }
   });
 

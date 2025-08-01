@@ -93,10 +93,17 @@
   },
   "hosts": {
     "title": "Experts Disponibles",
+    "subtitle": "Troba l'expert perfecte per a la teva consulta",
     "viewProfile": "Veure Perfil",
     "noResults": "No s'han trobat experts",
     "searching": "Cercant...",
-    "expertIn": "Expert en"
+    "expertIn": "Expert en",
+    "aiSearchActive": "Cerca intel·ligent activada",
+    "aiSearchHint": "Usa llenguatge natural: \"astronautes\", \"experts en cuina\", etc.",
+    "searchPlaceholder": "Cerca experts per àrea, professió o habilitat...",
+    "foundResults": "Trobats {count} experts usant cerca intel·ligent",
+    "analyzing": "Analitzant la teva cerca amb IA...",
+    "relevant": "% rellevant"
   },
   "common": {
     "error": "Error",
