@@ -149,7 +149,7 @@ export default function AdminDashboard() {
 
         {/* Main Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-8 w-full">
+          <TabsList className="grid grid-cols-7 w-full">
             <TabsTrigger value="overview">
               <BarChart3 className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
@@ -170,12 +170,6 @@ export default function AdminDashboard() {
               <Settings className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
                 {i18n.language === 'es' ? 'Ajustes' : 'Settings'}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="approvals">
-              <UserCheck className="w-4 h-4 mr-2" />
-              <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'Aprobar' : 'Approve'}
               </span>
             </TabsTrigger>
             <TabsTrigger value="news">
@@ -218,10 +212,7 @@ export default function AdminDashboard() {
             <AdminSettings />
           </TabsContent>
 
-          {/* Host Approvals Tab */}
-          <TabsContent value="approvals" className="space-y-4">
-            <HostApprovals />
-          </TabsContent>
+
 
           {/* News Management Tab */}
           <TabsContent value="news" className="space-y-4">
