@@ -18,6 +18,7 @@ Preferred communication style: Simple, everyday language (non-technical users).
 - Verified database integrity: All tables properly configured with CASCADE foreign keys
 - Object Storage configured with bucket 'replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7'
 - Public assets served via `/storage/*` route with local filesystem fallback
+- Fixed blank page issue when navigating back from profile editor: Home page now shows loading skeleton instead of blank screen during data fetching
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.

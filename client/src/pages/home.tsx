@@ -123,7 +123,7 @@ export default function Home() {
     }
   };
 
-  if (authLoading || userLoading) {
+  if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
         <div className="relative">
@@ -134,8 +134,40 @@ export default function Home() {
     );
   }
 
-  if (!isAuthenticated || !user) {
-    return null;
+  // If not authenticated and not admin, user will be redirected by useEffect
+  if (!isAuthenticated && !adminUser) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
+          <div className="absolute inset-0 animate-glow rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while user data is being fetched
+  if (userLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-12">
+            <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-96 mx-auto animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+                <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
