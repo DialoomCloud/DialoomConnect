@@ -22,7 +22,7 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-8">
-            <Link href="/home" className="flex items-center hover-lift">
+            <Link href="/" className="flex items-center hover-lift">
               <img 
                 src="/uploads/images/dialoomblue.png"
                 alt="Dialoom" 
@@ -32,11 +32,11 @@ export function Navigation() {
             </Link>
             
             <div className="hidden md:flex items-center space-x-2">
-              <Link href="/home">
+              <Link href="/">
                 <Button
-                  variant={isActive("/home") ? "default" : "ghost"}
+                  variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
                   size="sm"
-                  className={isActive("/home") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                  className={isActive("/") || isActive("/home") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
                 >
                   <Home className="w-4 h-4 mr-2" />
                   {t('navigation.home')}

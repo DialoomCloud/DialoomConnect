@@ -190,28 +190,28 @@ export default function UserProfile() {
                           <Monitor className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Compartir Pantalla</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.screenSharing || 10}</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.screenSharing || 10}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Languages className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Traducción Simultánea</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.translation || 25}</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.translation || 25}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Video className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Grabación de Sesión</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.recording || 10}</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.recording || 10}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-[hsl(188,100%,38%)]" />
                           <span>Transcripción Automática</span>
                         </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices?.transcription || 5}</span>
+                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.transcription || 5}</span>
                       </div>
                     </div>
                   </div>
