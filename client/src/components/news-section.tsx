@@ -14,11 +14,15 @@ export function NewsSection() {
   const { data: articles = [], isLoading, error } = useQuery({
     queryKey: ["/api/news/articles", "featured"],
     queryFn: async () => {
+      console.log("NewsSection: Fetching articles...");
       const response = await fetch("/api/news/articles?featured=true&limit=3");
+      console.log("NewsSection: Response status:", response.status);
       if (!response.ok) {
         throw new Error('Failed to fetch articles');
       }
-      return response.json() as Promise<NewsArticle[]>;
+      const data = await response.json() as NewsArticle[];
+      console.log("NewsSection: Fetched articles:", data);
+      return data;
     },
   });
 
@@ -46,9 +50,17 @@ export function NewsSection() {
     );
   }
 
+  // Log current state
+  console.log("NewsSection: Current state", { 
+    isLoading, 
+    error: error?.message, 
+    articlesLength: articles.length,
+    articles 
+  });
+
   // Don't render if there's an error or no articles
   if (error || articles.length === 0) {
-    console.log("NewsSection: Error or no articles", { error, articlesLength: articles.length });
+    console.log("NewsSection: Not rendering - Error or no articles", { error, articlesLength: articles.length });
     return null;
   }
 
