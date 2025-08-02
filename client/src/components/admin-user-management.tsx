@@ -30,7 +30,10 @@ export function AdminUserManagement() {
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ userId, updates }: { userId: string, updates: any }) => {
-      const response = await apiRequest("PUT", `/api/admin/users/${userId}`, updates);
+      const response = await apiRequest(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        body: updates
+      });
       return response.json();
     },
     onSuccess: () => {

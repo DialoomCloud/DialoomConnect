@@ -141,7 +141,10 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   // Update mutation
   const updateUserMutation = useMutation({
     mutationFn: async (updates: any) => {
-      const response = await apiRequest("PUT", `/api/admin/users/${userId}/profile`, updates);
+      const response = await apiRequest(`/api/admin/users/${userId}/profile`, {
+        method: "PUT",
+        body: updates
+      });
       return response.json();
     },
     onSuccess: () => {
