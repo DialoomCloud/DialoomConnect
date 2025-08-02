@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   
   // Admin authentication middleware - using Replit Auth
-  const ADMIN_USERNAMES = ['dialoomroot', 'marcgarcia10', 'nachosaladrigas', 'nschosaladrigas'];
+  const ADMIN_USERNAMES = ['dialoomroot', 'marcgarcia10', 'nachosaladrigas'];
   
   // Admin check session endpoint - simplified for Replit Auth
   app.get('/api/admin/check-session', isAuthenticated, (req: any, res) => {
