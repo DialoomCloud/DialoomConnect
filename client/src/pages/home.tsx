@@ -13,7 +13,7 @@ import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
 import { NewsSection } from "@/components/news-section";
-import { BlogSection } from "@/components/blog-section";
+
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
@@ -36,20 +36,8 @@ export default function Home() {
 
   // Remove automatic admin redirect - users should navigate manually
 
-  // Redirect to login if not authenticated (and not admin)
-  useEffect(() => {
-    if (!authLoading && !adminLoading && !isAuthenticated && !adminUser) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, authLoading, adminLoading, adminUser, toast]);
+  // Only redirect to login if trying to access authenticated content
+  // Keep home page accessible to anonymous users
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -57,16 +45,9 @@ export default function Home() {
     enabled: isAuthenticated,
   });
 
-  // Handle user error
+  // Handle user error - only show error, don't redirect
   if (userError && isUnauthorizedError(userError as Error)) {
-    toast({
-      title: "Unauthorized",
-      description: "You are logged out. Logging in again...",
-      variant: "destructive",
-    });
-    setTimeout(() => {
-      window.location.href = "/api/login";
-    }, 500);
+    console.log("User not authenticated, showing limited content");
   }
 
   // Fetch media content
@@ -100,13 +81,47 @@ export default function Home() {
     );
   }
 
-  // If not authenticated and not admin, user will be redirected by useEffect
+  // Show public content for anonymous users
   if (!isAuthenticated && !adminUser) {
     return (
-      <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
-          <div className="absolute inset-0 animate-glow rounded-full"></div>
+      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+        <Navigation />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* News Section - visible to all */}
+          <NewsSection />
+          
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('home.title')}</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              {t('home.subtitle')}
+            </p>
+          </div>
+
+          {/* Call to action for anonymous users */}
+          <div className="text-center py-16">
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-4">
+                {t('home.joinDialoom', 'Únete a Dialoom')}
+              </h3>
+              <p className="text-gray-600 mb-8">
+                {t('home.joinDescription', 'Conecta con expertos o comparte tu conocimiento a través de videollamadas profesionales')}
+              </p>
+              <div className="space-x-4">
+                <Button 
+                  onClick={() => window.location.href = "/api/login"}
+                  className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] px-8 py-3"
+                >
+                  {t('nav.login', 'Iniciar Sesión')}
+                </Button>
+                <Link href="/hosts">
+                  <Button variant="outline" className="px-8 py-3">
+                    {t('home.exploreHosts', 'Explorar Expertos')}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -195,9 +210,11 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Information Card */}
-          <div className="lg:col-span-1">
+        {/* Only show user-specific content if authenticated */}
+        {isAuthenticated && user && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Profile Information Card */}
+            <div className="lg:col-span-1">
             <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
@@ -322,10 +339,10 @@ export default function Home() {
             </Card>
           </div>
         </div>
+        )}
       </div>
 
-      {/* Blog Section */}
-      <BlogSection />
+
 
       {/* Modals */}
       <MediaEditModal
@@ -339,7 +356,7 @@ export default function Home() {
         onClose={() => setShowViewerModal(false)}
         content={viewingContent}
         onEdit={(c) => {
-          setEditingContent(c);
+          setEditingContent(c as MediaContent);
           setShowEditModal(true);
           setShowViewerModal(false);
         }}

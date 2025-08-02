@@ -25,7 +25,10 @@
     "comingSoon": "Próximamente",
     "searchPlaceholder": "Buscar por nombre o email...",
     "noContent": "Aún no has agregado contenido multimedia",
-    "noContentSub": "Agrega tu primer video o imagen para mostrar tu trabajo"
+    "noContentSub": "Agrega tu primer video o imagen para mostrar tu trabajo",
+    "joinDialoom": "Únete a Dialoom",
+    "joinDescription": "Conecta con expertos o comparte tu conocimiento a través de videollamadas profesionales",
+    "exploreHosts": "Explorar Expertos"
   },
   "userProfile": {
     "notFound": "Usuario no encontrado",

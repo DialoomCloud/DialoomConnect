@@ -25,7 +25,10 @@
     "comingSoon": "Properament",
     "searchPlaceholder": "Cercar per nom o email...",
     "noContent": "Encara no has afegit contingut multimèdia",
-    "noContentSub": "Afegeix el teu primer vídeo o imatge per mostrar el teu treball"
+    "noContentSub": "Afegeix el teu primer vídeo o imatge per mostrar el teu treball",
+    "joinDialoom": "Uneix-te a Dialoom",
+    "joinDescription": "Connecta amb experts o comparteix el teu coneixement a través de videotrucades professionals",
+    "exploreHosts": "Explorar Experts"
   },
   "userProfile": {
     "notFound": "Usuari no trobat",
