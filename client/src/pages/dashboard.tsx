@@ -502,6 +502,10 @@ export default function Dashboard() {
                   <CreditCard className="w-4 h-4 mr-1" />
                   Stripe
                 </TabsTrigger>
+                <TabsTrigger value="verification">
+                  <Shield className="w-4 h-4 mr-1" />
+                  {t('dashboard.verification')}
+                </TabsTrigger>
               </TabsList>
 
               {/* Overview Tab */}
@@ -721,6 +725,11 @@ export default function Dashboard() {
               {/* Stripe Connect Tab */}
               <TabsContent value="stripe-connect" className="mt-6">
                 <StripeConnectOnboarding />
+              </TabsContent>
+
+              {/* Host Verification Tab */}
+              <TabsContent value="verification" className="mt-6">
+                <HostVerificationForm userId={user?.id} userStatus={user?.hostVerificationStatus} />
               </TabsContent>
             </Tabs>
           </CardContent>

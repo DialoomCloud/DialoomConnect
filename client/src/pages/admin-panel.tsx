@@ -8,8 +8,11 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Euro, Percent, HeadphonesIcon, Video, Share, FileText } from "lucide-react";
+import { Settings, Euro, Percent, HeadphonesIcon, Video, Share, FileText, Shield, CheckCircle, XCircle, Eye, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AdminConfig {
   id: string;
@@ -70,12 +73,34 @@ const configKeys = [
   }
 ];
 
+interface HostVerificationRequest {
+  id: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  hostVerificationStatus: string;
+  documents: {
+    id: string;
+    documentType: string;
+    documentTypeLabel?: string;
+    originalFileName: string;
+    fileSize: number;
+    verificationStatus: string;
+    uploadedAt: string;
+    objectPath: string;
+  }[];
+}
+
 export default function AdminPanel() {
   const { t } = useTranslation();
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingConfig, setEditingConfig] = useState<{ [key: string]: string }>({});
+  const [selectedVerification, setSelectedVerification] = useState<HostVerificationRequest | null>(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [approvalStatus, setApprovalStatus] = useState<'approved' | 'rejected'>('approved');
+  const [rejectionReason, setRejectionReason] = useState('');
 
   // Check if user is admin
   if (authLoading) {
@@ -106,6 +131,21 @@ export default function AdminPanel() {
   const { data: adminConfig, isLoading } = useQuery({
     queryKey: ['/api/admin/config'],
     retry: false,
+  });
+
+  const { data: pendingVerifications = [], isLoading: verificationsLoading } = useQuery<HostVerificationRequest[]>({
+    queryKey: ['/api/admin/host-verifications/pending'],
+    retry: false,
+    select: (data: any[]) => {
+      return data.map(user => ({
+        id: user.id,
+        userId: user.id,
+        userEmail: user.email,
+        userName: `${user.firstName} ${user.lastName}`,
+        hostVerificationStatus: user.hostVerificationStatus,
+        documents: user.verificationDocuments || []
+      }));
+    }
   });
 
   const updateConfigMutation = useMutation({
@@ -366,7 +406,213 @@ export default function AdminPanel() {
             })}
           </CardContent>
         </Card>
+
+        <Separator />
+
+        {/* Host Verification Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Verificación de Hosts
+            </CardTitle>
+            <CardDescription>
+              Revisa y aprueba las solicitudes de verificación de hosts
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {verificationsLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : pendingVerifications.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                No hay solicitudes de verificación pendientes
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {pendingVerifications.map((verification) => (
+                  <div key={verification.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h4 className="font-semibold">{verification.userName}</h4>
+                        <p className="text-sm text-muted-foreground">{verification.userEmail}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedVerification(verification);
+                            setReviewDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Revisar
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {verification.documents.length} documento(s) subido(s)
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Review Dialog */}
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Revisar Verificación de Host</DialogTitle>
+            <DialogDescription>
+              Revisa los documentos y decide si aprobar o rechazar la verificación
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedVerification && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-1">Información del Usuario</h4>
+                <p className="text-sm">Nombre: {selectedVerification.userName}</p>
+                <p className="text-sm">Email: {selectedVerification.userEmail}</p>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h4 className="font-semibold mb-3">Documentos Subidos</h4>
+                <div className="space-y-3">
+                  {selectedVerification.documents.map((doc) => (
+                    <div key={doc.id} className="border rounded p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{doc.documentTypeLabel || doc.documentType}</p>
+                          <p className="text-sm text-muted-foreground">{doc.originalFileName}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(doc.objectPath, '_blank')}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Ver
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <Label>Decisión</Label>
+                <Select
+                  value={approvalStatus}
+                  onValueChange={(value: 'approved' | 'rejected') => setApprovalStatus(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="approved">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        Aprobar
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="rejected">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-red-600" />
+                        Rechazar
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {approvalStatus === 'rejected' && (
+                  <div className="space-y-2">
+                    <Label>Razón del Rechazo (obligatorio)</Label>
+                    <Textarea
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                      placeholder="Explica por qué se rechaza la verificación..."
+                      rows={3}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!selectedVerification) return;
+                
+                if (approvalStatus === 'rejected' && !rejectionReason.trim()) {
+                  toast({
+                    title: "Error",
+                    description: "Debes proporcionar una razón para el rechazo",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+
+                try {
+                  if (approvalStatus === 'approved') {
+                    await apiRequest('POST', '/api/admin/host-verifications/approve', {
+                      userId: selectedVerification.userId
+                    });
+                  } else {
+                    await apiRequest('POST', '/api/admin/host-verifications/reject', {
+                      userId: selectedVerification.userId,
+                      reason: rejectionReason
+                    });
+                  }
+
+                  toast({
+                    title: "Verificación procesada",
+                    description: `La verificación ha sido ${approvalStatus === 'approved' ? 'aprobada' : 'rechazada'} correctamente`
+                  });
+
+                  queryClient.invalidateQueries({ queryKey: ['/api/admin/host-verifications/pending'] });
+                  setReviewDialogOpen(false);
+                  setSelectedVerification(null);
+                  setRejectionReason('');
+                  setApprovalStatus('approved');
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "No se pudo procesar la verificación",
+                    variant: "destructive"
+                  });
+                }
+              }}
+              disabled={approvalStatus === 'rejected' && !rejectionReason.trim()}
+            >
+              {approvalStatus === 'approved' ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Aprobar
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4 mr-1" />
+                  Rechazar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
