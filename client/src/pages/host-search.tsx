@@ -22,7 +22,7 @@ export default function HostSearch() {
   const [isAISearch, setIsAISearch] = useState(false);
   
   // Filter states
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<number[]>([0, 200]);
@@ -95,7 +95,7 @@ export default function HostSearch() {
     }
 
     // Category filter
-    if (selectedCategory && host.categoryId !== parseInt(selectedCategory)) {
+    if (selectedCategory && selectedCategory !== "all" && host.categoryId !== parseInt(selectedCategory)) {
       return false;
     }
 
@@ -188,11 +188,11 @@ export default function HostSearch() {
               {t('common.filter')}
             </Button>
             
-            {(selectedCategory || selectedSkills.length > 0 || selectedLanguages.length > 0) && (
+            {(selectedCategory && selectedCategory !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0) && (
               <Button
                 variant="ghost"
                 onClick={() => {
-                  setSelectedCategory("");
+                  setSelectedCategory("all");
                   setSelectedSkills([]);
                   setSelectedLanguages([]);
                   setPriceRange([0, 200]);
@@ -222,7 +222,7 @@ export default function HostSearch() {
                         <SelectValue placeholder={t('common.select')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">{t('hosts.allCategories')}</SelectItem>
+                        <SelectItem value="all">{t('hosts.allCategories')}</SelectItem>
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
                             {category.name}
