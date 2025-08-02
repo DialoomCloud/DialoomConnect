@@ -8,6 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { NewsArticle } from "@shared/schema";
 
 export function NewsSection() {
+  console.log("NewsSection: Component is rendering...");
   const { t } = useTranslation();
 
   // Fetch featured news articles - public API, no authentication required
