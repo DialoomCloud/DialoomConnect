@@ -2542,6 +2542,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user as any;
       const { autoTranslate = true, ...articleData } = req.body;
       
+      // Convert publishedAt string to Date if present
+      if (articleData.publishedAt) {
+        articleData.publishedAt = new Date(articleData.publishedAt);
+      }
+      
       const validatedData = createNewsArticleSchema.parse({
         ...articleData,
         authorId: user.claims.sub,
@@ -2613,6 +2618,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { autoTranslate = true, ...articleData } = req.body;
+      
+      // Convert publishedAt string to Date if present
+      if (articleData.publishedAt) {
+        articleData.publishedAt = new Date(articleData.publishedAt);
+      }
+      
       const validatedData = updateNewsArticleSchema.parse(articleData);
 
       const article = await storage.updateNewsArticle(id, validatedData);
