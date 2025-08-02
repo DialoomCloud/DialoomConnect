@@ -2592,28 +2592,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .webp({ quality: 85 })
         .toBuffer();
 
-      // Save to Object Storage
-      const imagePath = `news/${filename.replace(/\.[^/.]+$/, ".webp")}`;
+      // Save to Object Storage in Media folder
+      const imageFilename = `news-${timestamp}-${req.file.originalname.replace(/\.[^/.]+$/, ".webp")}`;
+      const imagePath = `Media/${imageFilename}`;
       
-      // Save to local filesystem first as primary storage
+      // Upload to Object Storage
+      try {
+        const result = await replitStorage._client.uploadFromBytes(imagePath, processedImage);
+        if (result.error) {
+          console.error(`Object Storage upload failed: ${result.error.message}`);
+          return res.status(500).json({ message: "Failed to upload image to storage" });
+        }
+        console.log(`News image uploaded to Object Storage: ${imagePath}`);
+      } catch (objectStorageError) {
+        console.error('Object Storage upload failed:', objectStorageError);
+        return res.status(500).json({ message: "Failed to upload image to storage" });
+      }
+
+      // Also save to local filesystem as backup
       const localPath = `uploads/${imagePath}`;
       await fs.mkdir(path.dirname(localPath), { recursive: true });
       await fs.writeFile(localPath, processedImage);
-      console.log(`News image saved locally: ${localPath}`);
+      console.log(`News image also saved locally: ${localPath}`);
 
-      // Try to upload to Object Storage as backup
-      try {
-        const result = await replitStorage._client.uploadFromBytes(`Objects/${imagePath}`, processedImage);
-        if (result.error) {
-          console.warn(`Object Storage upload failed: ${result.error.message}`);
-        } else {
-          console.log(`News image also uploaded to Object Storage: Objects/${imagePath}`);
-        }
-      } catch (objectStorageError) {
-        console.warn('Object Storage upload failed:', objectStorageError);
-      }
-
-      const imageUrl = `/storage/Objects/${imagePath}`;
+      const imageUrl = `/storage/${imagePath}`;
       res.json({ imageUrl });
     } catch (error) {
       console.error("Error uploading news image:", error);
@@ -2638,26 +2640,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timestamp = Date.now();
       const filename = `news-video-${timestamp}-${req.file.originalname}`;
 
-      // Save video to local filesystem
-      const videoPath = `news/videos/${filename}`;
+      // Save video to Object Storage in Media folder
+      const videoPath = `Media/videos/${filename}`;
+      
+      // Upload to Object Storage
+      try {
+        const result = await replitStorage._client.uploadFromBytes(videoPath, req.file.buffer);
+        if (result.error) {
+          console.error(`Object Storage upload failed: ${result.error.message}`);
+          return res.status(500).json({ message: "Failed to upload video to storage" });
+        }
+        console.log(`News video uploaded to Object Storage: ${videoPath}`);
+      } catch (objectStorageError) {
+        console.error('Object Storage upload failed:', objectStorageError);
+        return res.status(500).json({ message: "Failed to upload video to storage" });
+      }
+
+      // Also save to local filesystem as backup
       const localPath = `uploads/${videoPath}`;
       await fs.mkdir(path.dirname(localPath), { recursive: true });
       await fs.writeFile(localPath, req.file.buffer);
-      console.log(`News video saved locally: ${localPath}`);
+      console.log(`News video also saved locally: ${localPath}`);
 
-      // Try to upload to Object Storage as backup
-      try {
-        const result = await replitStorage._client.uploadFromBytes(`Objects/${videoPath}`, req.file.buffer);
-        if (result.error) {
-          console.warn(`Object Storage upload failed: ${result.error.message}`);
-        } else {
-          console.log(`News video also uploaded to Object Storage: Objects/${videoPath}`);
-        }
-      } catch (objectStorageError) {
-        console.warn('Object Storage upload failed:', objectStorageError);
-      }
-
-      const videoUrl = `/storage/Objects/${videoPath}`;
+      const videoUrl = `/storage/${videoPath}`;
       res.json({ videoUrl });
     } catch (error) {
       console.error("Error uploading news video:", error);
