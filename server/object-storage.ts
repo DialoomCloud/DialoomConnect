@@ -2,11 +2,12 @@ import { Client } from '@replit/object-storage';
 import sharp from 'sharp';
 
 export class ReplitObjectStorage {
-  private _client: Client;
+  public _client: Client;
 
   constructor() {
-    // Use the specific bucket "MetallicBoilingService" as requested
-    this._client = new Client('MetallicBoilingService');
+    // Use the default bucket from the object storage configuration
+    const bucketId = 'replit-objstore-0e2d05cd-3197-4482-900e-063db86b7a64';
+    this._client = new Client(bucketId);
   }
 
   /**
@@ -14,7 +15,8 @@ export class ReplitObjectStorage {
    */
   async initializeBucket(): Promise<void> {
     try {
-      console.log('Replit Object Storage initialized with bucket: MetallicBoilingService');
+      const bucketId = 'replit-objstore-0e2d05cd-3197-4482-900e-063db86b7a64';
+      console.log(`Replit Object Storage initialized with bucket: ${bucketId}`);
     } catch (error) {
       console.error('Error initializing Object Storage:', error);
       throw error;
@@ -229,6 +231,30 @@ export class ReplitObjectStorage {
       
     } catch (error) {
       console.error('Error downloading file from Object Storage:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete object from Object Storage
+   */
+  async deleteObject(objectPath: string): Promise<void> {
+    try {
+      // Remove leading slash if present
+      const cleanPath = objectPath.startsWith('/') ? objectPath.substring(1) : objectPath;
+      
+      // If path starts with /storage/, remove it
+      const storagePath = cleanPath.startsWith('storage/') ? cleanPath.substring(8) : cleanPath;
+      
+      const result = await this._client.delete(storagePath);
+      
+      if (result.error) {
+        throw new Error(`Delete failed: ${result.error.message}`);
+      }
+      
+      console.log(`Object deleted from Object Storage: ${storagePath}`);
+    } catch (error) {
+      console.error('Error deleting object from Object Storage:', error);
       throw error;
     }
   }

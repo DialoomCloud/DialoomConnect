@@ -149,21 +149,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Try Object Storage first
         fileBuffer = await replitStorage.getFile(objectPath);
+        console.log(`Served from Object Storage: ${objectPath}`);
       } catch (objectStorageError) {
         console.log('Object Storage failed, trying local fallback...');
         
         // Fallback to local file system
-        // Convert Object Storage path to local path
-        const localPath = objectPath.replace('Objects/', 'uploads/');
+        // Try multiple local path variations
+        const localPaths = [
+          `uploads/${objectPath}`,
+          objectPath.replace('Objects/', 'uploads/'),
+          objectPath.replace('Media/', 'uploads/Media/')
+        ];
         
-        try {
-          const fs = await import('fs/promises');
-          fileBuffer = await fs.readFile(localPath);
-          console.log(`Served from local filesystem: ${localPath}`);
-        } catch (localError) {
+        let fileFound = false;
+        for (const localPath of localPaths) {
+          try {
+            const fs = await import('fs/promises');
+            fileBuffer = await fs.readFile(localPath);
+            console.log(`Served from local filesystem: ${localPath}`);
+            fileFound = true;
+            break;
+          } catch (localError) {
+            // Continue to next path
+          }
+        }
+        
+        if (!fileFound) {
           console.error('Both Object Storage and local file failed:', {
-            objectStorageError: objectStorageError.message,
-            localError: localError.message
+            objectStorageError: (objectStorageError as Error).message,
+            paths: localPaths
           });
           return res.status(404).json({ message: 'File not found' });
         }
@@ -2667,6 +2681,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error uploading news video:", error);
       res.status(500).json({ message: "Failed to upload video" });
+    }
+  });
+
+  // Delete news featured image
+  app.delete("/api/admin/news/delete-image", isAdminAuthenticated, async (req, res) => {
+    try {
+      const { articleId } = req.body;
+      
+      if (!articleId) {
+        return res.status(400).json({ message: "Article ID is required" });
+      }
+
+      // Update the article to remove featured image
+      await storage.updateNewsArticle(articleId, {
+        featuredImage: null
+      });
+
+      res.json({ message: "Featured image deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting featured image:", error);
+      res.status(500).json({ message: "Failed to delete featured image" });
+    }
+  });
+
+  // Delete news featured video
+  app.delete("/api/admin/news/delete-video", isAdminAuthenticated, async (req, res) => {
+    try {
+      const { articleId } = req.body;
+      
+      if (!articleId) {
+        return res.status(400).json({ message: "Article ID is required" });
+      }
+
+      // Update the article to remove featured video
+      await storage.updateNewsArticle(articleId, {
+        featuredVideo: null
+      });
+
+      res.json({ message: "Featured video deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting featured video:", error);
+      res.status(500).json({ message: "Failed to delete featured video" });
     }
   });
 

@@ -588,6 +588,7 @@ export const newsArticles = pgTable("news_articles", {
   excerpt: text("excerpt"), // Short description for previews
   content: text("content").notNull(), // Rich HTML content with embeds
   featuredImage: text("featured_image"), // Main image URL
+  featuredVideo: text("featured_video"), // Main video URL (MP4)
   authorId: varchar("author_id").notNull().references(() => users.id),
   status: newsStatusEnum("status").default("draft"),
   publishedAt: timestamp("published_at"),

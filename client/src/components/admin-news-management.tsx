@@ -318,6 +318,7 @@ function ArticleEditor({
     excerpt: article?.excerpt || '',
     content: article?.content || '',
     featuredImage: article?.featuredImage || '',
+    featuredVideo: article?.featuredVideo || '',
     status: article?.status || 'draft',
     isFeatured: article?.isFeatured || false,
     tags: article?.tags?.join(', ') || '',
@@ -387,7 +388,7 @@ function ArticleEditor({
     },
   });
   
-  // Upload video mutation
+  // Upload video mutation for content
   const uploadVideoMutation = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
@@ -425,6 +426,86 @@ function ArticleEditor({
     },
   });
 
+  // Upload featured video mutation
+  const uploadFeaturedVideoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('video', file);
+      
+      const response = await fetch('/api/admin/news/upload-video', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) throw new Error('Failed to upload video');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setFormData(prev => ({ ...prev, featuredVideo: data.videoUrl }));
+      toast({
+        title: "Video destacado subido",
+        description: "El video destacado se subió exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Error al subir el video destacado",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete featured image mutation
+  const deleteFeaturedImageMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/news/delete-image', {
+        method: 'DELETE',
+        body: { articleId: article?.id }
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      setFormData(prev => ({ ...prev, featuredImage: '' }));
+      toast({
+        title: "Imagen eliminada",
+        description: "La imagen destacada se eliminó exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Error al eliminar la imagen",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete featured video mutation
+  const deleteFeaturedVideoMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/news/delete-video', {
+        method: 'DELETE',
+        body: { articleId: article?.id }
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      setFormData(prev => ({ ...prev, featuredVideo: '' }));
+      toast({
+        title: "Video eliminado",
+        description: "El video destacado se eliminó exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Error al eliminar el video",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -444,6 +525,21 @@ function ArticleEditor({
         return;
       }
       uploadVideoMutation.mutate(file);
+    }
+  };
+
+  const handleFeaturedVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+        toast({
+          title: "Error",
+          description: "El video no debe superar los 100MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      uploadFeaturedVideoMutation.mutate(file);
     }
   };
 
@@ -593,13 +689,6 @@ function ArticleEditor({
                   onChange={handleImageUpload}
                   className="hidden"
                 />
-                <input
-                  ref={videoInputRef}
-                  type="file"
-                  accept="video/mp4"
-                  onChange={handleVideoUpload}
-                  className="hidden"
-                />
                 <Button
                   type="button"
                   variant="outline"
@@ -626,10 +715,68 @@ function ArticleEditor({
                   <Button
                     type="button"
                     variant="destructive"
-                    size="sm"
-                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
-                    onClick={() => setFormData(prev => ({ ...prev, featuredImage: '' }))}
-                    title="Eliminar imagen"
+                    size="icon"
+                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6"
+                    onClick={() => deleteFeaturedImageMutation.mutate()}
+                    disabled={deleteFeaturedImageMutation.isPending}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Featured Video */}
+          <div>
+            <Label>Video destacado (MP4)</Label>
+            <div className="mt-2 flex gap-4 items-start">
+              <div className="flex-1">
+                <Input
+                  value={formData.featuredVideo}
+                  onChange={(e) => setFormData(prev => ({ ...prev, featuredVideo: e.target.value }))}
+                  placeholder="URL del video"
+                />
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/mp4"
+                  onChange={handleFeaturedVideoUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={uploadFeaturedVideoMutation.isPending}
+                >
+                  {uploadFeaturedVideoMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Video className="h-4 w-4 mr-2" />
+                  )}
+                  Subir video destacado
+                </Button>
+              </div>
+              {formData.featuredVideo && (
+                <div className="relative w-32 h-24 bg-gray-100 rounded-md overflow-hidden group">
+                  <video 
+                    src={formData.featuredVideo} 
+                    className="w-full h-full object-cover"
+                    muted
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <Video className="h-8 w-8 text-white opacity-50" />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6"
+                    onClick={() => deleteFeaturedVideoMutation.mutate()}
+                    disabled={deleteFeaturedVideoMutation.isPending}
                   >
                     <X className="h-3 w-3" />
                   </Button>
