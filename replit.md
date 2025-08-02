@@ -57,6 +57,14 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Resolved featured articles not displaying on home page despite being marked as published and featured
   - Fixed null safety issues in article date display and view count rendering
   - Featured articles now properly display on home page when marked as isFeatured=true
+- Created comprehensive WordPress-style blog section (August 2025):
+  - Fixed TypeScript errors in NewsSection component with proper type annotations
+  - Created new BlogSection component with WordPress-style layout and design
+  - Added comprehensive blog display with featured articles grid, recent articles, and call-to-action
+  - Implemented responsive design with proper image handling and hover effects
+  - Added complete multilingual support (ES/EN/CA) for all blog interface texts
+  - Integrated BlogSection into home page to prominently display admin-created articles
+  - Articles from admin dashboard now display in professional WordPress-style layout on home page
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.

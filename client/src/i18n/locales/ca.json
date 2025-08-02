@@ -394,5 +394,19 @@
       "start": "Començar Ara",
       "explore": "Explorar Experts"
     }
+  },
+  "blog": {
+    "title": "Blog de Dialoom",
+    "subtitle": "Descobreix les últimes notícies, consells i actualitzacions de la nostra plataforma",
+    "featured": "Articles Destacats",
+    "recent": "Articles Recents",
+    "views": "visualitzacions",
+    "readMore": "Llegir article",
+    "viewAll": "Veure tots",
+    "cta": {
+      "title": "Vols estar al dia?",
+      "subtitle": "Segueix el nostre blog per rebre les últimes notícies i consells de Dialoom",
+      "button": "Explorar Blog"
+    }
   }
 }

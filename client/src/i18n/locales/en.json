@@ -394,5 +394,19 @@
       "start": "Start Now",
       "explore": "Explore Experts"
     }
+  },
+  "blog": {
+    "title": "Dialoom Blog",
+    "subtitle": "Discover the latest news, tips and updates from our platform",
+    "featured": "Featured Articles",
+    "recent": "Recent Articles",
+    "views": "views",
+    "readMore": "Read article",
+    "viewAll": "View all",
+    "cta": {
+      "title": "Want to stay updated?",
+      "subtitle": "Follow our blog to receive the latest news and tips from Dialoom",
+      "button": "Explore Blog"
+    }
   }
 }

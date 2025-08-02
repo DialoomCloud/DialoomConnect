@@ -13,6 +13,7 @@ import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
 import { NewsSection } from "@/components/news-section";
+import { BlogSection } from "@/components/blog-section";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
@@ -323,7 +324,8 @@ export default function Home() {
         </div>
       </div>
 
-
+      {/* Blog Section */}
+      <BlogSection />
 
       {/* Modals */}
       <MediaEditModal
