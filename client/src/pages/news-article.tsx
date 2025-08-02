@@ -20,7 +20,7 @@ export default function NewsArticlePage() {
   const { data: article, isLoading, error } = useQuery<NewsArticle>({
     queryKey: ['/api/news/articles', slug],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/news/articles/${slug}`, {});
+      const response = await apiRequest(`/api/news/articles/${slug}`);
       if (!response.ok) {
         throw new Error('Article not found');
       }
@@ -33,7 +33,7 @@ export default function NewsArticlePage() {
   const { data: author } = useQuery<UserType>({
     queryKey: ['/api/users', article?.authorId],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/users/${article?.authorId}`, {});
+      const response = await apiRequest(`/api/users/${article?.authorId}`);
       return response.json();
     },
     enabled: !!article?.authorId,
@@ -43,7 +43,7 @@ export default function NewsArticlePage() {
   const { data: relatedArticles = [] } = useQuery<NewsArticle[]>({
     queryKey: ['/api/news/articles', 'related', article?.id],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/news/articles?limit=3', {});
+      const response = await apiRequest('/api/news/articles?limit=3');
       const articles = await response.json();
       // Filter out current article
       return articles.filter((a: NewsArticle) => a.id !== article?.id).slice(0, 3);
@@ -148,14 +148,16 @@ export default function NewsArticlePage() {
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 <span>
-                  {new Date(article.publishedAt || article.createdAt).toLocaleDateString('es-ES', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {article.publishedAt || article.createdAt ? 
+                    new Date(article.publishedAt || article.createdAt).toLocaleDateString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    }) : 
+                    ''}
                 </span>
               </div>
-              {article.viewCount > 0 && (
+              {article.viewCount && article.viewCount > 0 && (
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
                   <span>{article.viewCount} {t('news.views', 'visualizaciones')}</span>
@@ -260,11 +262,13 @@ export default function NewsArticlePage() {
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Clock className="h-3 w-3" />
                             <span>
-                              {new Date(relatedArticle.publishedAt || relatedArticle.createdAt).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
+                              {relatedArticle.publishedAt || relatedArticle.createdAt ?
+                                new Date(relatedArticle.publishedAt || relatedArticle.createdAt).toLocaleDateString('es-ES', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                }) :
+                                ''}
                             </span>
                           </div>
                         </CardHeader>
@@ -284,71 +288,6 @@ export default function NewsArticlePage() {
           </Card>
         )}
       </article>
-
-      {/* Custom styles for article content */}
-      <style jsx global>{`
-        .article-content {
-          line-height: 1.8;
-        }
-        
-        .article-content h2 {
-          font-size: 1.875rem;
-          font-weight: 700;
-          margin: 2rem 0 1rem 0;
-          color: #111827;
-        }
-        
-        .article-content h3 {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin: 1.5rem 0 0.75rem 0;
-          color: #111827;
-        }
-        
-        .article-content p {
-          margin: 1rem 0;
-          color: #374151;
-        }
-        
-        .article-content ul, .article-content ol {
-          margin: 1rem 0;
-          padding-left: 1.5rem;
-        }
-        
-        .article-content li {
-          margin: 0.5rem 0;
-          color: #374151;
-        }
-        
-        .article-content a {
-          color: hsl(188, 100%, 38%);
-          text-decoration: underline;
-        }
-        
-        .article-content a:hover {
-          color: hsl(188, 100%, 32%);
-        }
-        
-        .article-content strong {
-          font-weight: 600;
-          color: #111827;
-        }
-        
-        .article-content em {
-          font-style: italic;
-        }
-        
-        .article-content .youtube-embed {
-          margin: 2rem 0;
-        }
-        
-        .article-content img {
-          max-width: 100%;
-          height: auto;
-          border-radius: 0.5rem;
-          margin: 1.5rem 0;
-        }
-      `}</style>
     </div>
   );
 }
