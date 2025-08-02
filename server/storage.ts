@@ -64,6 +64,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, asc, sql, gte, lte } from "drizzle-orm";
+import { ReplitObjectStorage } from "./object-storage";
 
 // Interface for storage operations
 export interface IStorage {
@@ -475,9 +476,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMediaContent(id: string, userId: string): Promise<boolean> {
+    // First get the media content to get the file URL
+    const content = await db
+      .select()
+      .from(mediaContent)
+      .where(and(eq(mediaContent.id, id), eq(mediaContent.userId, userId)))
+      .limit(1);
+    
+    if (content.length === 0) {
+      return false;
+    }
+    
+    // Delete from database
     const result = await db
       .delete(mediaContent)
       .where(and(eq(mediaContent.id, id), eq(mediaContent.userId, userId)));
+    
+    // If deletion was successful and content has a URL (local file), delete from object storage
+    if ((result?.rowCount || 0) > 0 && content[0].url && content[0].type !== 'youtube') {
+      try {
+        const objectStorage = new ReplitObjectStorage();
+        await objectStorage.deleteFile(content[0].url);
+        console.log(`Deleted file from object storage: ${content[0].url}`);
+      } catch (error) {
+        console.error(`Failed to delete file from object storage: ${content[0].url}`, error);
+        // Continue even if file deletion fails
+      }
+    }
+    
     return (result?.rowCount || 0) > 0;
   }
 

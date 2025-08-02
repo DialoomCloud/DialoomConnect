@@ -58,18 +58,14 @@ function SortableMediaItem({ content, showEdit, onEdit, onView, onDelete, delete
       style={style}
       className="relative group"
     >
-      {/* Drag handle area */}
+      {/* Drag handle area - only in center to avoid button conflicts */}
       <div 
         {...attributes} 
         {...listeners}
-        className="absolute top-0 left-0 right-0 h-8 cursor-move z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 left-[40%] right-[40%] h-8 cursor-move z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
       >
-        <div className="bg-gray-700/80 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <polyline points="19 12 12 19 5 12"></polyline>
-          </svg>
-          Arrastrar
+        <div className="bg-gray-700/80 text-white px-2 py-1 rounded text-xs">
+          ⋮⋮
         </div>
       </div>
       
@@ -87,7 +83,9 @@ function SortableMediaItem({ content, showEdit, onEdit, onView, onDelete, delete
           className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-20"
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(content.id);
+            if (confirm('¿Estás seguro de que quieres eliminar este contenido multimedia?')) {
+              onDelete(content.id);
+            }
           }}
           disabled={deleteDisabled}
         >
