@@ -30,24 +30,26 @@ export function NewsSection() {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="mb-12">
-        <div className="flex items-center mb-6">
-          <Newspaper className="w-6 h-6 text-[hsl(188,100%,38%)] mr-3" />
-          <h2 className="text-2xl font-bold text-[hsl(17,12%,6%)]">
-            {t('news.latestNews', 'Últimas Noticias')}
-          </h2>
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center mb-8">
+            <Newspaper className="w-6 h-6 text-[hsl(188,100%,38%)] mr-3" />
+            <h2 className="text-2xl md:text-3xl font-bold text-[hsl(17,12%,6%)]">
+              {t('news.latestNews', 'Últimas Noticias')}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+                <div className="aspect-video bg-gray-200 rounded mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded mb-1"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
-              <div className="aspect-video bg-gray-200 rounded mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded mb-1"></div>
-              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-            </div>
-          ))}
-        </div>
-      </div>
+      </section>
     );
   }
 
@@ -66,13 +68,14 @@ export function NewsSection() {
   }
 
   return (
-    <div className="mb-12">
-      <div className="flex items-center mb-6">
-        <Newspaper className="w-6 h-6 text-[hsl(188,100%,38%)] mr-3" />
-        <h2 className="text-2xl font-bold text-[hsl(17,12%,6%)]">
-          {t('news.latestNews', 'Últimas Noticias')}
-        </h2>
-      </div>
+    <section className="py-16 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center mb-8">
+          <Newspaper className="w-6 h-6 text-[hsl(188,100%,38%)] mr-3" />
+          <h2 className="text-2xl md:text-3xl font-bold text-[hsl(17,12%,6%)]">
+            {t('news.latestNews', 'Últimas Noticias')}
+          </h2>
+        </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {articles.map((article: NewsArticle, index: number) => (
@@ -143,6 +146,7 @@ export function NewsSection() {
           </Card>
         ))}
       </div>
-    </div>
+      </div>
+    </section>
   );
 }
