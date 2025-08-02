@@ -52,6 +52,11 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Fixed article management authorization: Changed from dual middleware system (isAuthenticated + isAdmin) to unified isAdminAuthenticated
   - Theme editor now properly saves color changes without authentication errors
   - News article management (create, update, delete, publish) now works correctly with proper admin authentication
+- Fixed home page news display (January 2025):
+  - Corrected NewsSection component API call syntax: Fixed apiRequest usage from 3-parameter to correct 1-parameter format
+  - Resolved featured articles not displaying on home page despite being marked as published and featured
+  - Fixed null safety issues in article date display and view count rendering
+  - Featured articles now properly display on home page when marked as isFeatured=true
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.

@@ -369,7 +369,7 @@ function NewsSection() {
   const { data: featuredArticles = [], isLoading } = useQuery<NewsArticle[]>({
     queryKey: ['/api/news/articles', 'featured'],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/news/articles?featured=true&limit=3', {});
+      const response = await apiRequest('/api/news/articles?featured=true&limit=3');
       return response.json();
     },
   });
@@ -405,13 +405,13 @@ function NewsSection() {
               <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                 <Clock className="h-4 w-4" />
                 <span>
-                  {new Date(article.publishedAt || article.createdAt).toLocaleDateString('es-ES', {
+                  {new Date(article.publishedAt || article.createdAt || new Date()).toLocaleDateString('es-ES', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                   })}
                 </span>
-                {article.viewCount > 0 && (
+                {article.viewCount && article.viewCount > 0 && (
                   <>
                     <span className="mx-2">•</span>
                     <Eye className="h-4 w-4" />
