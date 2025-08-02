@@ -1,34 +1,49 @@
 # Solución para Cambiar de Cuenta Email en Replit Auth
 
-## El Problema
-Replit Auth no soporta el parámetro `prompt=select_account` y persiste con la cuenta anterior.
+## El Problema Principal
+**Replit Auth SIEMPRE envía email de verificación para acceso externo**. Esto es una característica de seguridad obligatoria, no un error.
 
-## Soluciones Disponibles
+### Comportamiento Normal de Replit Auth:
+1. Usuario accede desde fuera del entorno Replit
+2. Replit detecta acceso externo → envía email de verificación
+3. Usuario debe verificar desde el email para continuar
+4. Una vez verificado, puede usar la aplicación normalmente
+
+## Limitaciones Técnicas
+- Replit Auth NO soporta `prompt=select_account`
+- El email de verificación es OBLIGATORIO para acceso externo
+- No hay manera de omitir este paso de seguridad
+
+## Soluciones para Cambiar de Cuenta
 
 ### 1. Usar Navegación Privada/Incógnito (RECOMENDADO)
-- Abre una ventana de navegación privada
-- Ve a la URL de tu aplicación 
-- Esto forzará un login completamente nuevo
+```
+1. Abre ventana privada/incógnito
+2. Ve a la URL de tu aplicación 
+3. Acepta que recibirás email de verificación
+4. Verifica desde el email
+```
 
 ### 2. Limpiar Cookies del Navegador
-1. Abre las herramientas de desarrollador (F12)
-2. Ve a la pestaña "Application" > "Cookies"
-3. Elimina todas las cookies de replit.com
-4. Recarga la página e intenta hacer login
+```
+1. F12 → Application → Cookies
+2. Elimina todas las cookies de replit.com
+3. Recarga e intenta login con otra cuenta
+4. Verifica desde el email que recibas
+```
 
-### 3. Usar el Endpoint de Limpieza de Sesión
-- Antes de hacer login, ve a: `/api/clear-session`
-- Esto elimina la sesión del servidor
-- Luego intenta hacer login normalmente
+### 3. Usar Endpoint de Limpieza de Sesión
+```
+1. Ve a: /api/clear-session
+2. Intenta login con otra cuenta
+3. Verifica desde el email
+```
 
-### 4. Logout Completo
-- Usa el endpoint `/api/logout` para cerrar sesión completamente
-- Esto debería redirigir y limpiar todas las cookies
+## Importante: Email de Verificación
+- **ES NORMAL** que Replit envíe email de verificación
+- **ES OBLIGATORIO** verificar desde el email
+- **NO SE PUEDE OMITIR** este paso de seguridad
+- Revisa tu bandeja de entrada y spam
 
-## Por qué No Funciona `select_account`
-Replit Auth devuelve el error: "unsupported prompt value requested"
-Esto significa que no soporta parámetros OAuth estándar como `select_account`.
-
-## Mejor Práctica
-Para desarrollo, usa navegación privada cuando necesites cambiar de cuenta.
-Para producción, implementa un flujo de logout más robusto si es necesario.
+## Recomendación Final
+Para desarrollo, acepta que necesitarás verificar por email cada vez que cambies de cuenta o uses navegación privada. Es el comportamiento de seguridad estándar de Replit Auth.

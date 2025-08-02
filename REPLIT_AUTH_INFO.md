@@ -26,3 +26,17 @@ Si necesitas trabajar localmente sin verificación por email:
 
 ## Nota Importante
 La verificación por email es una característica de seguridad de Replit Auth y no puede ser desactivada mediante configuración. Esto es intencional para proteger las cuentas de los usuarios.
+
+## Para Cambiar de Cuenta Email
+**REALIDAD**: Replit Auth SIEMPRE pedirá verificación por email cuando:
+- Cambies de cuenta de email
+- Uses navegación privada/incógnito  
+- Limpies cookies del navegador
+
+**NO ES UN ERROR** - es el comportamiento de seguridad normal. Para usar otra cuenta:
+1. Acepta que recibirás email de verificación
+2. Revisa tu email (incluyendo spam)
+3. Haz clic en el enlace de verificación
+4. Completa el login normalmente
+
+**Limitación técnica**: Replit Auth no soporta `prompt=select_account` por lo que no puedes "forzar" selección de cuenta sin verificación por email.
