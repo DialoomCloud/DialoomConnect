@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
@@ -56,16 +56,30 @@ function SortableMediaItem({ content, showEdit, onEdit, onView, onDelete, delete
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className="cursor-move relative group"
+      className="relative group"
     >
+      {/* Drag handle area */}
+      <div 
+        {...attributes} 
+        {...listeners}
+        className="absolute top-0 left-0 right-0 h-8 cursor-move z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <div className="bg-gray-700/80 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+          Arrastrar
+        </div>
+      </div>
+      
       <MediaEmbed
         content={content}
         showEdit={showEdit}
         onEdit={onEdit}
         onView={onView}
       />
+      
       {onDelete && (
         <Button
           variant="destructive"
@@ -164,9 +178,9 @@ export function SortableMediaGrid({ media, showEdit, onEdit, onView, onAddNew }:
   };
 
   // Update items when media prop changes
-  if (media.length !== items.length || media.some((m, i) => m.id !== items[i]?.id)) {
+  useEffect(() => {
     setItems(media);
-  }
+  }, [media]);
 
   return (
     <DndContext
