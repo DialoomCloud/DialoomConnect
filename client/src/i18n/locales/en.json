@@ -96,8 +96,9 @@
     "deleteError": "Could not delete content. Please try again."
   },
   "hosts": {
-    "title": "Available Hosts",
+    "title": "Hosts",
     "subtitle": "Find the perfect host for your consultation",
+    "exploreTitle": "Explore Hosts",
     "viewProfile": "View Profile",
     "noResults": "No hosts found",
     "searching": "Searching...",
@@ -107,7 +108,11 @@
     "searchPlaceholder": "Search hosts by area, profession or skill...",
     "foundResults": "Found {count} hosts using smart search",
     "analyzing": "Analyzing your search with AI...",
-    "relevant": "% relevant"
+    "relevant": "% relevant",
+    "filters": "Filters",
+    "allCategories": "All categories",
+    "priceRange": "Price range",
+    "clearFilters": "Clear filters"
   },
   "common": {
     "error": "Error",

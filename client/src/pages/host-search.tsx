@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, Mail, MapPin, CheckCircle, Eye, Sparkles, Brain } from "lucide-react";
+import { Search, User, Mail, MapPin, CheckCircle, Eye, Sparkles, Brain, Filter, X } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import type { User as UserType } from "@shared/schema";
+import type { User as UserType, Category, Skill, Language } from "@shared/schema";
 
 type SearchResult = UserType & { relevance?: number };
 
@@ -18,16 +20,41 @@ export default function HostSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [aiResults, setAiResults] = useState<SearchResult[]>([]);
   const [isAISearch, setIsAISearch] = useState(false);
+  
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 200]);
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: hosts, isLoading } = useQuery<UserType[]>({
     queryKey: ["/api/hosts"],
   });
 
+  // Fetch filter options
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+  });
+
+  const { data: skills = [] } = useQuery<Skill[]>({
+    queryKey: ["/api/skills"],
+  });
+
+  const { data: languages = [] } = useQuery<Language[]>({
+    queryKey: ["/api/languages"],
+  });
+
   // AI Search mutation
   const aiSearchMutation = useMutation({
     mutationFn: async (query: string) => {
-      const response = await apiRequest("POST", "/api/hosts/search", { query });
-      return response.json();
+      return await apiRequest("/api/hosts/search", {
+        method: "POST",
+        body: JSON.stringify({ query }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     },
     onSuccess: (data) => {
       setAiResults(data.results || []);
@@ -55,14 +82,38 @@ export default function HostSearch() {
   }, [searchTerm]);
 
   const filteredHosts = hosts?.filter((host) => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
-    return (
-      host.firstName?.toLowerCase().includes(search) ||
-      host.lastName?.toLowerCase().includes(search) ||
-      host.email?.toLowerCase().includes(search) ||
-      host.title?.toLowerCase().includes(search)
-    );
+    // Text search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      const textMatch = (
+        host.firstName?.toLowerCase().includes(search) ||
+        host.lastName?.toLowerCase().includes(search) ||
+        host.email?.toLowerCase().includes(search) ||
+        host.title?.toLowerCase().includes(search)
+      );
+      if (!textMatch) return false;
+    }
+
+    // Category filter
+    if (selectedCategory && host.categoryId !== parseInt(selectedCategory)) {
+      return false;
+    }
+
+    // Skills filter
+    if (selectedSkills.length > 0) {
+      // This would need to be adjusted based on how user skills are stored
+      // For now, we'll skip this filter or implement it based on the actual data structure
+    }
+
+    // Languages filter  
+    if (selectedLanguages.length > 0) {
+      // Similar to skills, this would need to be adjusted based on actual data structure
+    }
+
+    // Price range filter would need actual pricing data
+    // This would be implemented once we have access to pricing information
+
+    return true;
   });
 
   const displayHosts = isAISearch ? aiResults : filteredHosts;
@@ -73,7 +124,7 @@ export default function HostSearch() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-12 animate-fade-in-up">
-          <h1 className="text-4xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('hosts.title')}</h1>
+          <h1 className="text-4xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('hosts.exploreTitle')}</h1>
           <p className="text-lg text-gray-600 mb-6 max-w-3xl mx-auto">
             {t('hosts.subtitle')} <br />
             <span className="inline-flex items-center gap-1 text-[hsl(188,100%,38%)] font-medium">
@@ -122,6 +173,164 @@ export default function HostSearch() {
                 </p>
               )}
             </div>
+          )}
+        </div>
+
+        {/* Filters Section */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              {t('common.filter')}
+            </Button>
+            
+            {(selectedCategory || selectedSkills.length > 0 || selectedLanguages.length > 0) && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSelectedCategory("");
+                  setSelectedSkills([]);
+                  setSelectedLanguages([]);
+                  setPriceRange([0, 200]);
+                }}
+                className="text-red-600 hover:text-red-700"
+              >
+                <X className="w-4 h-4 mr-2" />
+                {t('hosts.clearFilters')}
+              </Button>
+            )}
+          </div>
+
+          {showFilters && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">{t('hosts.filters')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Category Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('profile.category')}
+                    </label>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('common.select')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">{t('hosts.allCategories')}</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id.toString()}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Skills Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('profile.skills')}
+                    </label>
+                    <Select value={selectedSkills[0] || ""} onValueChange={(value) => {
+                      if (value && !selectedSkills.includes(value)) {
+                        setSelectedSkills([...selectedSkills, value]);
+                      }
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('common.select')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {skills.map((skill) => (
+                          <SelectItem key={skill.id} value={skill.id.toString()}>
+                            {skill.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedSkills.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedSkills.map((skillId) => {
+                          const skill = skills.find(s => s.id.toString() === skillId);
+                          return skill ? (
+                            <Badge key={skillId} variant="secondary" className="text-xs">
+                              {skill.name}
+                              <X 
+                                className="w-3 h-3 ml-1 cursor-pointer" 
+                                onClick={() => setSelectedSkills(selectedSkills.filter(s => s !== skillId))}
+                              />
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Languages Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('profile.languages')}
+                    </label>
+                    <Select value={selectedLanguages[0] || ""} onValueChange={(value) => {
+                      if (value && !selectedLanguages.includes(value)) {
+                        setSelectedLanguages([...selectedLanguages, value]);
+                      }
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('common.select')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {languages.map((language) => (
+                          <SelectItem key={language.id} value={language.id.toString()}>
+                            {language.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedLanguages.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedLanguages.map((langId) => {
+                          const language = languages.find(l => l.id.toString() === langId);
+                          return language ? (
+                            <Badge key={langId} variant="secondary" className="text-xs">
+                              {language.name}
+                              <X 
+                                className="w-3 h-3 ml-1 cursor-pointer" 
+                                onClick={() => setSelectedLanguages(selectedLanguages.filter(l => l !== langId))}
+                              />
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Price Range Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('hosts.priceRange')} (€{priceRange[0]} - €{priceRange[1]})
+                    </label>
+                    <Slider
+                      value={priceRange}
+                      onValueChange={setPriceRange}
+                      max={200}
+                      min={0}
+                      step={10}
+                      className="mt-2"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>€0</span>
+                      <span>€200+</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 

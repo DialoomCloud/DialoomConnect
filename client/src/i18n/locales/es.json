@@ -96,8 +96,9 @@
     "deleteError": "No se pudo eliminar el contenido. Por favor intenta de nuevo."
   },
   "hosts": {
-    "title": "Hosts Disponibles",
+    "title": "Hosts",
     "subtitle": "Encuentra el host perfecto para tu consulta",
+    "exploreTitle": "Explore Hosts",
     "viewProfile": "Ver Perfil",
     "noResults": "No se encontraron hosts",
     "searching": "Buscando...",
@@ -107,7 +108,11 @@
     "searchPlaceholder": "Busca hosts por área, profesión o habilidad...",
     "foundResults": "Encontrados {count} hosts usando búsqueda inteligente",
     "analyzing": "Analizando tu búsqueda con IA...",
-    "relevant": "% relevante"
+    "relevant": "% relevante",
+    "filters": "Filtros",
+    "allCategories": "Todas las categorías",
+    "priceRange": "Rango de precios",
+    "clearFilters": "Limpiar filtros"
   },
   "common": {
     "error": "Error",
