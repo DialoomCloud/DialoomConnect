@@ -755,8 +755,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response = profileSuggestionResult.response;
         suggestions = profileSuggestionResult.suggestions;
       } else {
-        // Regular chat response with language support
-        response = await loomiaAI.chatResponse(message, null, language || 'es');
+        // Regular chat response with language support and article search
+        response = await loomiaAI.chatResponse(message, conversationHistory, language || 'es');
       }
 
       res.json({

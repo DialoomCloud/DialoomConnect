@@ -1,4 +1,7 @@
 import OpenAI from "openai";
+import { newsArticles } from "../shared/schema";
+import { db } from "./db";
+import { eq, and, like, or } from "drizzle-orm";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable must be set");
@@ -175,6 +178,52 @@ Devuelve un resumen breve y relevante de máximo 3 líneas.`
     }
   }
 
+  async searchArticles(query: string): Promise<any[]> {
+    try {
+      // Search articles by title, excerpt, or content
+      const searchTerm = `%${query}%`;
+      const articles = await db
+        .select()
+        .from(newsArticles)
+        .where(
+          and(
+            eq(newsArticles.status, "published"),
+            or(
+              like(newsArticles.title, searchTerm),
+              like(newsArticles.excerpt, searchTerm),
+              like(newsArticles.content, searchTerm)
+            )
+          )
+        )
+        .limit(5);
+      
+      return articles;
+    } catch (error) {
+      console.error("Error searching articles:", error);
+      return [];
+    }
+  }
+
+  async getArticleBySlug(slug: string): Promise<any | null> {
+    try {
+      const [article] = await db
+        .select()
+        .from(newsArticles)
+        .where(
+          and(
+            eq(newsArticles.slug, slug),
+            eq(newsArticles.status, "published")
+          )
+        )
+        .limit(1);
+      
+      return article || null;
+    } catch (error) {
+      console.error("Error getting article by slug:", error);
+      return null;
+    }
+  }
+
   async improveDescriptionWithSocialContext(
     currentDescription: string,
     socialUrls?: { platform: string; url: string }[]
@@ -237,6 +286,7 @@ IMPORTANTE: Devuelve SOLO la descripción mejorada, sin comillas ni explicacione
             - booking_inquiry: User is asking about booking a video call
             - payment_question: User has questions about payments, pricing, or commissions
             - technical_support: User needs technical help with the platform
+            - article_inquiry: User is asking about specific people, topics, or content that might be in articles
             - general_inquiry: Other general questions about Dialoom
             
             Return a JSON object with:
@@ -321,6 +371,20 @@ IMPORTANTE: Devuelve SOLO la descripción mejorada, sin comillas ni explicacione
 
   async chatResponse(message: string, context?: string, language: string = 'es'): Promise<string> {
     try {
+      // First, search for relevant articles if the message contains questions about specific topics
+      let articlesContext = "";
+      const searchKeywords = message.toLowerCase();
+      
+      // Search for articles that might contain relevant information
+      const articles = await this.searchArticles(searchKeywords);
+      
+      if (articles.length > 0) {
+        articlesContext = "\n\nArtículos relevantes encontrados en el blog de Dialoom:\n";
+        articles.forEach(article => {
+          articlesContext += `\n- Título: ${article.title}\n  Contenido: ${article.content}\n  URL: /news/${article.slug}\n`;
+        });
+      }
+
       const languageInstructions = {
         es: 'Responde siempre en español',
         en: 'Always respond in English',
@@ -347,11 +411,17 @@ Información clave de Dialoom:
 - Disponibilidad de horarios flexible
 - Soporte multiidioma (ES, EN, CA)
 
+IMPORTANTE: Tienes acceso a buscar y leer artículos del blog de Dialoom. Si alguien pregunta sobre un tema específico o una persona mencionada en los artículos, usa la información disponible en los artículos para responder de manera precisa y completa.
+
 ${languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.es}. Mantén las respuestas concisas pero útiles.`;
 
       const messages: any[] = [
         { role: "system", content: systemMessage }
       ];
+
+      if (articlesContext) {
+        messages.push({ role: "system", content: `Información de artículos relevantes que puedes usar para responder:${articlesContext}` });
+      }
 
       if (context) {
         messages.push({ role: "system", content: `Contexto adicional: ${context}` });
