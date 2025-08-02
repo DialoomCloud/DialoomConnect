@@ -78,12 +78,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   
   // Admin authentication middleware - using Replit Auth
-  const ADMIN_USERNAMES = ['dialoomroot', 'marcgarcia10', 'nachosaladrigas'];
+  const ADMIN_USERNAMES = ['marcgarcia10', 'nachosaladrigas'];
   
   // Admin check session endpoint - simplified for Replit Auth
   app.get('/api/admin/check-session', isAuthenticated, (req: any, res) => {
     const user = req.user;
-    const isAdmin = user && ADMIN_USERNAMES.includes(user.claims?.email?.split('@')[0] || '');
+    const userEmail = user?.claims?.email;
+    const emailPrefix = userEmail?.split('@')[0] || '';
+    const isAdmin = user && ADMIN_USERNAMES.includes(emailPrefix);
+    
+    console.log("Admin session check:", {
+      email: userEmail,
+      prefix: emailPrefix,
+      isAdmin: isAdmin
+    });
     
     if (isAdmin) {
       res.json({ 
@@ -102,16 +110,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   const isAdminAuthenticated: RequestHandler = async (req: any, res, next) => {
     if (!req.isAuthenticated()) {
+      console.log("Admin auth failed: Not authenticated");
       return res.status(401).json({ message: "Unauthorized - Login required" });
     }
 
     const user = req.user;
-    const isAdmin = user && ADMIN_USERNAMES.includes(user.claims?.email?.split('@')[0] || '');
+    const userEmail = user?.claims?.email;
+    const emailPrefix = userEmail?.split('@')[0] || '';
+    
+    console.log("Admin auth check:", {
+      email: userEmail,
+      prefix: emailPrefix,
+      adminUsernames: ADMIN_USERNAMES,
+      isAdmin: ADMIN_USERNAMES.includes(emailPrefix)
+    });
+    
+    const isAdmin = user && ADMIN_USERNAMES.includes(emailPrefix);
     
     if (!isAdmin) {
+      console.log("Admin auth failed: Not in admin list");
       return res.status(401).json({ message: "Unauthorized - Admin access required" });
     }
 
+    console.log("Admin auth success");
     req.adminUser = user;
     next();
   };
