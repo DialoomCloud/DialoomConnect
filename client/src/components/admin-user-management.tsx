@@ -12,14 +12,17 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserCheck, UserX, Shield, Users, User as UserIcon, Edit } from "lucide-react";
+import { Search, UserCheck, UserX, Shield, Users, User as UserIcon, Edit, Settings } from "lucide-react";
 import type { User } from "@shared/schema";
+import { AdminCompleteUserEditor } from "./admin-complete-user-editor";
 
 export function AdminUserManagement() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [completeEditorOpen, setCompleteEditorOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
@@ -199,6 +202,17 @@ export function AdminUserManagement() {
                         </Button>
                         <Button
                           size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setSelectedUserId(user.id);
+                            setCompleteEditorOpen(true);
+                          }}
+                        >
+                          <Settings className="w-4 h-4 mr-1" />
+                          Completo
+                        </Button>
+                        <Button
+                          size="sm"
                           variant={user.isVerified ? "outline" : "default"}
                           onClick={() => {
                             updateUserMutation.mutate({
@@ -249,6 +263,20 @@ export function AdminUserManagement() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Complete User Editor */}
+      {selectedUserId && (
+        <AdminCompleteUserEditor
+          userId={selectedUserId}
+          open={completeEditorOpen}
+          onOpenChange={(open) => {
+            setCompleteEditorOpen(open);
+            if (!open) {
+              setSelectedUserId(null);
+            }
+          }}
+        />
+      )}
     </Card>
   );
 }

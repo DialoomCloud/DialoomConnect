@@ -1740,7 +1740,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes - Update user status
+  // Admin routes - Get complete user profile
+  app.get('/api/admin/users/:targetUserId/complete-profile', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { targetUserId } = req.params;
+      const adminId = req.adminUser.claims.sub;
+      
+      // Get complete user data
+      const user = await storage.getUserWithPrivateInfo(targetUserId, adminId);
+      if (!user) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+      
+      // Get related data
+      const [skills, languages, categories, mediaContent, socialProfiles] = await Promise.all([
+        storage.getUserSkills(targetUserId),
+        storage.getUserLanguages(targetUserId),
+        storage.getUserCategories(targetUserId),
+        storage.getUserMediaContent(targetUserId),
+        storage.getUserSocialProfiles(targetUserId)
+      ]);
+      
+      res.json({
+        user,
+        skills,
+        languages,
+        categories,
+        mediaContent,
+        socialProfiles
+      });
+    } catch (error) {
+      console.error('Error fetching complete user profile:', error);
+      res.status(500).json({ message: 'Error al obtener perfil completo' });
+    }
+  });
+
+  // Admin routes - Update user status (basic info)
   app.put('/api/admin/users/:targetUserId', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { targetUserId } = req.params;
@@ -1772,6 +1807,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating user:', error);
       res.status(500).json({ message: 'Error al actualizar usuario' });
+    }
+  });
+
+  // Admin routes - Update user profile (complete profile data)
+  app.put('/api/admin/users/:targetUserId/profile', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { targetUserId } = req.params;
+      const { skillIds, languageIds, categoryIds, socialProfiles, ...profileData } = req.body;
+      
+      // Update basic profile data
+      if (Object.keys(profileData).length > 0) {
+        await storage.updateUserProfile(targetUserId, profileData);
+      }
+      
+      // Update skills if provided
+      if (Array.isArray(skillIds)) {
+        await storage.updateUserSkills(targetUserId, skillIds);
+      }
+      
+      // Update languages if provided
+      if (Array.isArray(languageIds)) {
+        await storage.updateUserLanguages(targetUserId, languageIds);
+      }
+      
+      // Update categories if provided
+      if (Array.isArray(categoryIds)) {
+        await storage.updateUserCategories(targetUserId, categoryIds);
+      }
+      
+      // Update social profiles if provided
+      if (Array.isArray(socialProfiles)) {
+        await storage.updateUserSocialProfiles(targetUserId, socialProfiles);
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Datos de perfil inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: 'Error al actualizar perfil' });
     }
   });
 

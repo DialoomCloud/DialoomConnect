@@ -235,6 +235,11 @@ export interface IStorage {
   // User categories operations
   getUserCategories(userId: string): Promise<any[]>;
   updateUserCategories(userId: string, categoryIds: number[]): Promise<void>;
+  
+  // User profile operations (for admin complete editing)
+  updateUserProfile(userId: string, profileData: any): Promise<User>;
+  updateUserSkills(userId: string, skillIds: number[]): Promise<void>;
+  updateUserLanguages(userId: string, languageIds: number[]): Promise<void>;
 
   // Skills by name operations
   getSkillByName(name: string): Promise<any | undefined>;
@@ -1392,6 +1397,49 @@ export class DatabaseStorage implements IStorage {
         categoryIds.map(categoryId => ({
           userId,
           categoryId
+        }))
+      );
+    }
+  }
+
+  // User profile operations (for admin complete editing)
+  async updateUserProfile(userId: string, profileData: any): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        ...profileData,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserSkills(userId: string, skillIds: number[]): Promise<void> {
+    // Delete existing skills
+    await db.delete(userSkills).where(eq(userSkills.userId, userId));
+    
+    // Insert new skills
+    if (skillIds.length > 0) {
+      await db.insert(userSkills).values(
+        skillIds.map(skillId => ({
+          userId,
+          skillId
+        }))
+      );
+    }
+  }
+
+  async updateUserLanguages(userId: string, languageIds: number[]): Promise<void> {
+    // Delete existing languages
+    await db.delete(userLanguages).where(eq(userLanguages.userId, userId));
+    
+    // Insert new languages
+    if (languageIds.length > 0) {
+      await db.insert(userLanguages).values(
+        languageIds.map(languageId => ({
+          userId,
+          languageId
         }))
       );
     }
