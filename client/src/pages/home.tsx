@@ -338,7 +338,10 @@ export default function Home() {
           setShowEditModal(true);
           setShowViewerModal(false);
         }}
-        onDelete={handleDeleteMedia}
+        onDelete={() => {
+          // Delete functionality handled by SortableMediaGrid
+          setShowViewerModal(false);
+        }}
         onReplace={(c) => {
           setReplacingContent(c);
           setShowUploadModal(true);
