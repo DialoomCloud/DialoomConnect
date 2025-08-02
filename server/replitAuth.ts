@@ -153,9 +153,18 @@ export async function setupAuth(app: Express) {
       });
     }
     
-    passport.authenticate(strategyName, {
+    // Use different parameters based on environment
+    const authOptions: any = {
       scope: ["openid", "email", "profile", "offline_access"]
-    })(req, res, next);
+    };
+    
+    // Add state parameter to track the authentication flow
+    authOptions.state = Buffer.from(JSON.stringify({
+      returnTo: req.query.returnTo || '/home',
+      timestamp: Date.now()
+    })).toString('base64');
+    
+    passport.authenticate(strategyName, authOptions)(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
