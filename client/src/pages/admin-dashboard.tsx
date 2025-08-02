@@ -83,71 +83,8 @@ export default function AdminDashboard() {
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Total Hosts' : 'Total Hosts'}
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalHosts || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                +{stats?.newHostsThisMonth || 0} este mes
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Videollamadas' : 'Video Calls'}
-              </CardTitle>
-              <Video className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalCalls || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats?.callsToday || 0} hoy
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Ingresos del Mes' : 'Monthly Revenue'}
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">€{stats?.monthlyRevenue || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                +{stats?.revenueGrowth || 0}% vs mes anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Tiempo Promedio' : 'Avg Time'}
-              </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.avgCallDuration || 0} min</div>
-              <p className="text-xs text-muted-foreground">
-                Por videollamada
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Main Admin Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 mb-8">
           <TabsList className="grid grid-cols-7 w-full">
             <TabsTrigger value="overview">
               <BarChart3 className="w-4 h-4 mr-2" />
@@ -228,6 +165,69 @@ export default function AdminDashboard() {
             <AdminEmailManagement />
           </TabsContent>
         </Tabs>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {i18n.language === 'es' ? 'Total Hosts' : 'Total Hosts'}
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.totalHosts || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                +{stats?.newHostsThisMonth || 0} este mes
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {i18n.language === 'es' ? 'Videollamadas' : 'Video Calls'}
+              </CardTitle>
+              <Video className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.totalCalls || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats?.callsToday || 0} hoy
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {i18n.language === 'es' ? 'Ingresos del Mes' : 'Monthly Revenue'}
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">€{stats?.monthlyRevenue || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                +{stats?.revenueGrowth || 0}% vs mes anterior
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {i18n.language === 'es' ? 'Tiempo Promedio' : 'Avg Time'}
+              </CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.avgCallDuration || 0} min</div>
+              <p className="text-xs text-muted-foreground">
+                Por videollamada
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
