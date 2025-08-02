@@ -91,6 +91,7 @@ export const users = pgTable("users", {
   categoryId: integer("category_id").references(() => categories.id),
   // Admin and authentication fields
   isAdmin: boolean("is_admin").default(false),
+  isHost: boolean("is_host").default(false),
   username: varchar("username"), // For admin login
   passwordHash: varchar("password_hash"), // Encrypted password for admin
   role: varchar("role").default("guest"), // guest, host, admin
