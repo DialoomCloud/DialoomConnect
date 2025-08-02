@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge as BadgeComponent } from "@/components/ui/badge";
 import { AdminCompleteUserEditor } from "@/components/admin-complete-user-editor";
+import { AdminObjectStorageBrowser } from "@/components/admin-object-storage-browser";
 import { Switch } from "@/components/ui/switch";
 
 interface AdminConfig {
@@ -769,6 +770,24 @@ export default function AdminPanel() {
                 })}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Separator />
+
+        {/* Object Storage Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Gestión de Archivos (Object Storage)
+            </CardTitle>
+            <CardDescription>
+              Explora y gestiona todos los archivos multimedia públicos y privados
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AdminObjectStorageBrowser />
           </CardContent>
         </Card>
       </div>

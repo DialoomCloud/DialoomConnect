@@ -1028,6 +1028,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Object Storage Management
+  app.get('/api/admin/object-storage', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { path = '', userId } = req.query;
+      const objectStorage = new ReplitObjectStorage();
+      
+      // Build the base path
+      let basePath = 'Objects';
+      if (userId && userId !== 'all') {
+        basePath = `Objects/users/${userId}`;
+      }
+      
+      const fullPath = path ? `${basePath}/${path}` : basePath;
+      
+      try {
+        // List files in the directory
+        const files = await objectStorage.listFiles(fullPath);
+        
+        // Process files to add metadata
+        const processedFiles = files.map(file => {
+          const isFolder = file.endsWith('/');
+          const name = isFolder ? file.slice(0, -1) : file;
+          
+          return {
+            name: name.split('/').pop() || name,
+            type: isFolder ? 'folder' : 'file',
+            size: 0, // Would need to fetch metadata for actual size
+            updated: new Date().toISOString(),
+            contentType: isFolder ? 'folder' : 'application/octet-stream',
+            url: isFolder ? null : `/storage/${fullPath}/${name}`
+          };
+        });
+        
+        // Create breadcrumbs
+        const breadcrumbs = path ? path.split('/').filter(Boolean) : [];
+        
+        res.json({
+          data: {
+            files: processedFiles,
+            currentPath: path,
+            breadcrumbs
+          }
+        });
+      } catch (error) {
+        console.log('Object storage not configured, returning empty list');
+        res.json({
+          data: {
+            files: [],
+            currentPath: path,
+            breadcrumbs: []
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error listing object storage:', error);
+      res.status(500).json({ message: 'Failed to list object storage' });
+    }
+  });
+
+  // Admin Object Storage Upload
+  app.post('/api/admin/object-storage/upload', isAdminAuthenticated, upload.single('file'), async (req: any, res) => {
+    try {
+      const { path = '' } = req.body;
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: 'No file provided' });
+      }
+      
+      const objectStorage = new ReplitObjectStorage();
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const fullPath = path ? `Objects/${path}/${fileName}` : `Objects/${fileName}`;
+      
+      try {
+        await objectStorage.uploadFile(fullPath, file.buffer);
+        res.json({ 
+          success: true, 
+          path: fullPath,
+          url: `/storage/${fullPath}`
+        });
+      } catch (error) {
+        console.error('Error uploading to object storage:', error);
+        res.status(500).json({ message: 'Failed to upload file' });
+      }
+    } catch (error) {
+      console.error('Error handling upload:', error);
+      res.status(500).json({ message: 'Failed to handle upload' });
+    }
+  });
+
+  // Admin Object Storage Delete
+  app.delete('/api/admin/object-storage', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { path } = req.body;
+      
+      if (!path) {
+        return res.status(400).json({ message: 'No path provided' });
+      }
+      
+      const objectStorage = new ReplitObjectStorage();
+      const fullPath = path.startsWith('Objects/') ? path : `Objects/${path}`;
+      
+      try {
+        await objectStorage.deleteFile(fullPath);
+        res.json({ success: true });
+      } catch (error) {
+        console.error('Error deleting from object storage:', error);
+        res.status(500).json({ message: 'Failed to delete file' });
+      }
+    } catch (error) {
+      console.error('Error handling delete:', error);
+      res.status(500).json({ message: 'Failed to handle delete' });
+    }
+  });
+
   // Admin - Get/Update configuration
   app.get('/api/admin/config', isAdminAuthenticated, async (req: any, res) => {
     try {

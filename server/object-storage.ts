@@ -267,9 +267,67 @@ export class ReplitObjectStorage {
   }
 
   /**
-   * Delete an object from storage
+   * List files in a directory
    */
-  async deleteObject(objectPath: string): Promise<void> {
+  async listFiles(prefix: string): Promise<string[]> {
+    try {
+      const result = await this._client.list({ prefix, delimiter: '/' });
+      
+      if (result.error) {
+        throw new Error(`List failed: ${result.error.message}`);
+      }
+      
+      const files: string[] = [];
+      
+      // Add files
+      if (result.data) {
+        result.data.forEach(obj => {
+          const relativePath = obj.path.substring(prefix.length);
+          if (relativePath && relativePath !== '/') {
+            files.push(relativePath);
+          }
+        });
+      }
+      
+      // Add folders (prefixes)
+      if (result.prefixes) {
+        result.prefixes.forEach(p => {
+          const folderName = p.substring(prefix.length);
+          if (folderName && folderName !== '/') {
+            files.push(folderName); // Folders end with /
+          }
+        });
+      }
+      
+      return files;
+    } catch (error) {
+      console.error('Error listing files:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload file from buffer
+   */
+  async uploadFile(objectPath: string, buffer: Buffer): Promise<void> {
+    try {
+      const result = await this._client.uploadFromBytes(objectPath, buffer);
+      
+      if (result.error) {
+        throw new Error(`Upload failed: ${result.error.message}`);
+      }
+      
+      console.log(`File uploaded to Object Storage: ${objectPath}`);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a file
+   */
+  async deleteFile(objectPath: string): Promise<void> {
     try {
       const result = await this._client.delete(objectPath);
       
