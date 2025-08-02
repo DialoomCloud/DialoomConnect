@@ -109,10 +109,52 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/profile",
-      failureRedirect: "/api/login",
-    })(req, res, next);
+    // Log query parameters to debug OAuth errors
+    console.log("OAuth callback received with params:", {
+      query: req.query,
+      hostname: req.hostname,
+      headers: req.headers,
+      url: req.url
+    });
+    
+    // Check if there's an error in the query params
+    if (req.query.error) {
+      console.error("OAuth server returned error:", {
+        error: req.query.error,
+        error_description: req.query.error_description,
+        state: req.query.state
+      });
+    }
+    
+    passport.authenticate(`replitauth:${req.hostname}`, 
+      (err: any, user: any, info: any) => {
+        if (err) {
+          console.error("OAuth callback error:", err);
+          console.error("Error details:", {
+            message: err.message,
+            stack: err.stack,
+            code: err.code,
+            error: err.error,
+            error_description: err.error_description
+          });
+          return res.redirect("/api/login?error=auth_failed");
+        }
+        
+        if (!user) {
+          console.error("OAuth callback - no user:", info);
+          return res.redirect("/api/login?error=no_user");
+        }
+        
+        req.logIn(user, (loginErr) => {
+          if (loginErr) {
+            console.error("Login error:", loginErr);
+            return res.redirect("/api/login?error=login_failed");
+          }
+          
+          return res.redirect("/profile");
+        });
+      }
+    )(req, res, next);
   });
 
   app.get("/api/logout", (req, res) => {
