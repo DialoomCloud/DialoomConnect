@@ -38,14 +38,11 @@ export default function NewLanding() {
                   {t('hosts.title')}
                 </Button>
               </Link>
-              <Button 
-                variant="ghost" 
-                onClick={handleLogin}
-                className="text-gray-600 hover:text-primary font-medium text-sm sm:text-base px-2 sm:px-4"
-              >
-                <span className="hidden sm:inline">{currentLang === 'es' ? 'Iniciar Sesión' : currentLang === 'ca' ? 'Iniciar Sessió' : 'Login'}</span>
-                <span className="sm:hidden">{currentLang === 'es' ? 'Entrar' : currentLang === 'ca' ? 'Entrar' : 'Login'}</span>
-              </Button>
+              <Link href="/how-it-works" className="hidden sm:block">
+                <Button variant="ghost" className="text-gray-600 hover:text-primary font-medium">
+                  {t('navigation.howItWorks', 'Cómo funciona')}
+                </Button>
+              </Link>
               <Button 
                 onClick={handleLogin}
                 className="bg-primary hover:bg-primary/90 text-white font-medium px-3 sm:px-6 py-2 text-sm sm:text-base"

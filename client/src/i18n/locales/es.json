@@ -5,7 +5,8 @@
     "admin": "Admin",
     "logout": "Cerrar Sesión",
     "login": "Iniciar Sesión",
-    "availability": "Disponibilidad"
+    "availability": "Disponibilidad",
+    "howItWorks": "Cómo funciona"
   },
   "home": {
     "title": "Tu Dashboard Personal",
@@ -364,5 +365,54 @@
     "error": "Error en el pago",
     "generalError": "Ocurrió un error inesperado",
     "preparing": "Preparando pago seguro..."
+  },
+  "howItWorks": {
+    "badge": "Proceso Simple",
+    "title": "Cómo Funciona Dialoom",
+    "subtitle": "Conectamos a profesionales con expertos de forma rápida, segura y eficiente. Descubre lo fácil que es obtener la ayuda que necesitas.",
+    "stepsTitle": "En 5 Pasos Simples",
+    "steps": {
+      "register": {
+        "title": "Regístrate",
+        "description": "Crea tu cuenta gratuita en Dialoom y completa tu perfil profesional"
+      },
+      "search": {
+        "title": "Busca Expertos",
+        "description": "Utiliza nuestra IA para encontrar el experto perfecto según tus necesidades"
+      },
+      "schedule": {
+        "title": "Programa tu Sesión",
+        "description": "Selecciona fecha, hora y duración que mejor se adapte a tu horario"
+      },
+      "pay": {
+        "title": "Pago Seguro",
+        "description": "Realiza el pago de forma segura con Stripe. Solo pagas cuando la sesión se completa"
+      },
+      "connect": {
+        "title": "Conéctate",
+        "description": "Únete a la videollamada HD con herramientas avanzadas de comunicación"
+      }
+    },
+    "benefitsTitle": "Por Qué Elegir Dialoom",
+    "benefits": {
+      "experts": {
+        "title": "Expertos Verificados",
+        "description": "Todos nuestros expertos pasan por un proceso de verificación riguroso"
+      },
+      "flexible": {
+        "title": "Horarios Flexibles",
+        "description": "Programa sesiones que se adapten a tu agenda, 24/7"
+      },
+      "secure": {
+        "title": "Pagos Seguros",
+        "description": "Transacciones protegidas con tecnología de cifrado avanzado"
+      }
+    },
+    "cta": {
+      "title": "¿Listo para Empezar?",
+      "subtitle": "Únete a miles de profesionales que ya confían en Dialoom",
+      "start": "Comenzar Ahora",
+      "explore": "Explorar Expertos"
+    }
   }
 }

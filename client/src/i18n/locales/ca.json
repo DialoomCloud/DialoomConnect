@@ -5,7 +5,8 @@
     "admin": "Admin",
     "logout": "Tancar Sessió",
     "login": "Iniciar Sessió",
-    "availability": "Disponibilitat"
+    "availability": "Disponibilitat",
+    "howItWorks": "Com funciona"
   },
   "home": {
     "title": "El Teu Tauler Personal",
@@ -343,6 +344,55 @@
       "error": "No s'han pogut generar els suggeriments",
       "categories": "Categories suggerides:",
       "skills": "Habilitats suggerides:"
+    }
+  },
+  "howItWorks": {
+    "badge": "Procés Simple",
+    "title": "Com Funciona Dialoom",
+    "subtitle": "Connectem professionals amb experts de manera ràpida, segura i eficient. Descobreix com és de fàcil obtenir l'ajuda que necessites.",
+    "stepsTitle": "En 5 Passos Simples",
+    "steps": {
+      "register": {
+        "title": "Registra't",
+        "description": "Crea el teu compte gratuït de Dialoom i completa el teu perfil professional"
+      },
+      "search": {
+        "title": "Cerca Experts",
+        "description": "Utilitza la nostra IA per trobar l'expert perfecte segons les teves necessitats"
+      },
+      "schedule": {
+        "title": "Programa la teva Sessió",
+        "description": "Selecciona data, hora i durada que millor s'adapti al teu horari"
+      },
+      "pay": {
+        "title": "Pagament Segur",
+        "description": "Realitza el pagament de manera segura amb Stripe. Només pagues quan la sessió es completa"
+      },
+      "connect": {
+        "title": "Connecta't",
+        "description": "Uneix-te a la videotrucada HD amb eines avançades de comunicació"
+      }
+    },
+    "benefitsTitle": "Per Què Elegir Dialoom",
+    "benefits": {
+      "experts": {
+        "title": "Experts Verificats",
+        "description": "Tots els nostres experts passen per un procés de verificació rigorós"
+      },
+      "flexible": {
+        "title": "Horaris Flexibles",
+        "description": "Programa sessions que s'adaptin a la teva agenda, 24/7"
+      },
+      "secure": {
+        "title": "Pagaments Segurs",
+        "description": "Transaccions protegides amb tecnologia de xifrat avançat"
+      }
+    },
+    "cta": {
+      "title": "Llest per Començar?",
+      "subtitle": "Uneix-te a milers de professionals que ja confien en Dialoom",
+      "start": "Començar Ara",
+      "explore": "Explorar Experts"
     }
   }
 }

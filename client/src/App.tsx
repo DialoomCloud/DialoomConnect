@@ -32,6 +32,7 @@ import NewsArticlePage from "@/pages/news-article";
 import Experts from "@/pages/experts";
 import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
+import HowItWorks from "@/pages/how-it-works";
 import TestAIFeatures from "@/pages/test-ai-features";
 import PaymentDemo from "@/pages/payment-demo";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -65,6 +66,7 @@ function Router() {
           <Route path="/experts" component={Experts} />
           <Route path="/pricing" component={Pricing} />
           <Route path="/about" component={About} />
+          <Route path="/how-it-works" component={HowItWorks} />
           <Route path="/test-ai" component={TestAIFeatures} />
           <Route path="/payment-demo" component={PaymentDemo} />
           
