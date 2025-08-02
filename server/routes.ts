@@ -967,7 +967,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { targetUserId } = req.params;
       const { isVerified, notes } = req.body;
 
-      await storage.verifyUser(targetUserId, isVerified, req.adminUser.id, notes);
+      const adminId = req.user.claims.sub;
+      await storage.verifyUser(targetUserId, isVerified, adminId, notes);
       
       res.json({
         message: isVerified ? "Usuario verificado exitosamente" : "Verificación de usuario denegada",
@@ -1024,7 +1025,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/admin/config', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const config = await storage.updateMultipleAdminConfigs(req.body, req.adminUser.id);
+      const adminId = req.user.claims.sub;
+      const config = await storage.updateMultipleAdminConfigs(req.body, adminId);
       res.json(config);
     } catch (error) {
       console.error("Error updating config:", error);
@@ -1036,11 +1038,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/config', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { key, value, description } = req.body;
-      const updatedConfig = await storage.updateAdminConfig(key, value, req.adminUser.id, description);
+      const adminId = req.user.claims.sub;
+      const updatedConfig = await storage.updateAdminConfig(key, value, adminId, description);
       
       // Create audit log
       await storage.createAuditLog({
-        adminId: req.adminUser.id,
+        adminId: adminId,
         action: 'update_config',
         targetTable: 'admin_config',
         targetId: key,
@@ -1880,12 +1883,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { key } = req.params;
       const { value, description } = req.body;
 
+      const adminId = req.user.claims.sub;
       const oldConfig = await storage.getAdminConfig(key);
-      const updatedConfig = await storage.updateAdminConfig(key, value, req.adminUser.id, description);
+      const updatedConfig = await storage.updateAdminConfig(key, value, adminId, description);
 
       // Create audit log
       await storage.createAuditLog({
-        adminId: req.adminUser.id,
+        adminId: adminId,
         action: 'update_config',
         targetTable: 'admin_config',
         targetId: key,
@@ -2291,7 +2295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Get all articles for admin (includes drafts)
-  app.get('/api/admin/news/articles', isAuthenticated, isAdmin, async (req, res) => {
+  app.get('/api/admin/news/articles', isAdminAuthenticated, async (req: any, res) => {
     try {
       const status = req.query.status as string;
       const articles = await storage.getAllNewsArticles(status);
@@ -2303,7 +2307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new article (admin only)
-  app.post('/api/admin/news/articles', isAuthenticated, isAdmin, async (req, res) => {
+  app.post('/api/admin/news/articles', isAdminAuthenticated, async (req: any, res) => {
     try {
       const user = req.user as any;
       const validatedData = createNewsArticleSchema.parse({
@@ -2323,7 +2327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update article (admin only)
-  app.put('/api/admin/news/articles/:id', isAuthenticated, isAdmin, async (req, res) => {
+  app.put('/api/admin/news/articles/:id', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       const validatedData = updateNewsArticleSchema.parse(req.body);
@@ -2340,7 +2344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete article (admin only)
-  app.delete('/api/admin/news/articles/:id', isAuthenticated, isAdmin, async (req, res) => {
+  app.delete('/api/admin/news/articles/:id', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteNewsArticle(id);
@@ -2357,7 +2361,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Publish article (admin only)
-  app.put('/api/admin/news/articles/:id/publish', isAuthenticated, isAdmin, async (req, res) => {
+  app.put('/api/admin/news/articles/:id/publish', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       const article = await storage.publishNewsArticle(id);
@@ -2369,7 +2373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload images for news articles (admin only)
-  app.post('/api/admin/news/upload-image', isAuthenticated, isAdmin, upload.single('image'), async (req, res) => {
+  app.post('/api/admin/news/upload-image', isAdminAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });

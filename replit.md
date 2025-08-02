@@ -33,6 +33,14 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Implemented proper file deletion from object storage when removing content (not just database records)
   - Fixed drag & drop functionality for reordering content with persistent order storage using displayOrder field
   - Added useEffect for proper synchronization between frontend and backend data
+- Fixed Admin Dashboard issues (January 2025):
+  - Resolved critical authentication error: Changed all `req.adminUser.id` references to `req.user.claims.sub` to fix null admin_id errors
+  - Fixed commission display: Now shows as percentage (21%) instead of decimal (0.21) in configuration
+  - Added individual host commission rate feature with database schema updates
+  - Implemented percentage conversion between database (decimal) and UI (percentage) representations
+  - Fixed article management authorization: Changed from dual middleware system (isAuthenticated + isAdmin) to unified isAdminAuthenticated
+  - Theme editor now properly saves color changes without authentication errors
+  - News article management (create, update, delete, publish) now works correctly with proper admin authentication
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.
