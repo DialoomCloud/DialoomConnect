@@ -57,13 +57,23 @@ class EmailService {
         textContent = template.textContent || undefined;
       }
 
+      // Get theme colors from admin config
+      const adminConfig = await storage.getAdminConfig();
+      const themeColors = adminConfig.find(config => config.key === 'theme_colors');
+      const primaryColor = themeColors?.value?.primary || '#008B9A';
+
+      // Add theme variables automatically
+      const themeVariables = {
+        primaryColor,
+        logoUrl: 'https://dialoom.replit.app/uploads/images/dialoomblue.png',
+        ...params.variables
+      };
+
       // Replace variables in content
-      if (params.variables) {
-        subject = this.replaceVariables(subject, params.variables);
-        htmlContent = this.replaceVariables(htmlContent, params.variables);
-        if (textContent) {
-          textContent = this.replaceVariables(textContent, params.variables);
-        }
+      subject = this.replaceVariables(subject, themeVariables);
+      htmlContent = this.replaceVariables(htmlContent, themeVariables);
+      if (textContent) {
+        textContent = this.replaceVariables(textContent, themeVariables);
       }
 
       // Log the email notification

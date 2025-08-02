@@ -7,7 +7,8 @@ const DEFAULT_EMAIL_TEMPLATES = [
     subject: 'Bienvenido a Dialoom - Tu cuenta ha sido creada',
     htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #00A1A7; color: white; padding: 20px; text-align: center;">
+        <div style="background-color: {{primaryColor}}; color: white; padding: 20px; text-align: center;">
+          <img src="{{logoUrl}}" alt="Dialoom" style="height: 40px; margin-bottom: 10px;" />
           <h1>¡Bienvenido a Dialoom!</h1>
         </div>
         <div style="padding: 20px;">
@@ -15,7 +16,7 @@ const DEFAULT_EMAIL_TEMPLATES = [
           <p>¡Tu cuenta en Dialoom ha sido creada exitosamente!</p>
           <p>Ya puedes comenzar a conectar con hosts y programar videollamadas profesionales.</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="{{dashboardUrl}}" style="background-color: #00A1A7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+            <a href="{{dashboardUrl}}" style="background-color: {{primaryColor}}; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
               Ir a mi Dashboard
             </a>
           </div>
@@ -52,7 +53,8 @@ const DEFAULT_EMAIL_TEMPLATES = [
     subject: 'Nueva reserva de videollamada recibida - Dialoom',
     htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #00A1A7; color: white; padding: 20px; text-align: center;">
+        <div style="background-color: {{primaryColor}}; color: white; padding: 20px; text-align: center;">
+          <img src="{{logoUrl}}" alt="Dialoom" style="height: 40px; margin-bottom: 10px;" />
           <h1>Nueva Reserva Recibida</h1>
         </div>
         <div style="padding: 20px;">
@@ -82,7 +84,7 @@ const DEFAULT_EMAIL_TEMPLATES = [
           {{/if}}
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="{{dashboardUrl}}" style="background-color: #00A1A7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+            <a href="{{dashboardUrl}}" style="background-color: {{primaryColor}}; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
               Ver en Dashboard
             </a>
           </div>

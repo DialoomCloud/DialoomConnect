@@ -2086,47 +2086,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Replace template variables with test data
       const testData = {
-        user_name: `${recipient.firstName} ${recipient.lastName}`,
-        platform_name: 'Dialoom',
-        login_url: `${req.protocol}://${req.get('host')}/auth/login`,
-        host_name: `${recipient.firstName} ${recipient.lastName}`,
-        guest_name: 'Usuario de Prueba',
-        call_date: new Date().toLocaleDateString('es-ES'),
-        call_time: '15:00',
-        total_price: '€50.00'
+        firstName: recipient.firstName || 'Usuario',
+        lastName: recipient.lastName || 'Prueba',
+        userName: `${recipient.firstName} ${recipient.lastName}`,
+        platformName: 'Dialoom',
+        dashboardUrl: `${req.protocol}://${req.get('host')}/profile`,
+        hostName: `${recipient.firstName} ${recipient.lastName}`,
+        guestName: 'Usuario de Prueba',
+        guestEmail: 'usuario@prueba.com',
+        date: new Date().toLocaleDateString('es-ES'),
+        time: '15:00',
+        duration: '60',
+        price: '50.00',
+        bookingId: 'TEST-12345',
+        primaryColor: '#008B9A',
+        logoUrl: `${req.protocol}://${req.get('host')}/uploads/images/dialoomblue.png`
       };
 
-      let htmlContent = template.htmlContent;
-      let textContent = template.textContent;
-      let subject = template.subject;
-
-      // Replace variables in all content
-      Object.entries(testData).forEach(([key, value]) => {
-        const placeholder = `{{${key}}}`;
-        htmlContent = htmlContent.replace(new RegExp(placeholder, 'g'), value);
-        textContent = textContent.replace(new RegExp(placeholder, 'g'), value);
-        subject = subject.replace(new RegExp(placeholder, 'g'), value);
-      });
-
-      // Send the email
+      // Send the email using the email service
       const emailSent = await emailService.sendEmail({
-        to: recipient.email,
-        subject: `[PRUEBA] ${subject}`,
-        html: htmlContent,
-        text: textContent,
+        recipientEmail: recipient.email,
+        templateType: template.type,
+        variables: testData,
+        userId: recipient.id,
+        customTemplate: {
+          subject: `[PRUEBA] ${template.subject}`,
+          htmlContent: template.htmlContent,
+          textContent: template.textContent
+        }
       });
 
       if (emailSent) {
-        // Log the email notification
-        await storage.createEmailNotification({
-          templateId: template.id,
-          recipientEmail: recipient.email,
-          subject: `[PRUEBA] ${subject}`,
-          status: 'sent',
-          sentAt: new Date(),
-          metadata: { isTest: true, recipientName: `${recipient.firstName} ${recipient.lastName}` }
-        });
-
         res.json({ message: "Test email sent successfully" });
       } else {
         res.status(500).json({ message: "Failed to send test email" });
