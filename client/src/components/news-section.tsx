@@ -128,15 +128,7 @@ export function NewsSection() {
                   {article.excerpt}
                 </p>
               )}
-              {article.tags && article.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {article.tags.slice(0, 2).map((tag: string) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+
               <Link href={`/news/${article.slug}`}>
                 <div className="text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] font-medium text-sm transition-colors cursor-pointer">
                   {t('news.readMore', 'Leer más')} →

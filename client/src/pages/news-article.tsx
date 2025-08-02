@@ -287,13 +287,7 @@ export default function NewsArticlePage() {
                       <FaXTwitter className="h-4 w-4 text-black" />
                       <span className="text-sm">X (Twitter)</span>
                     </button>
-                    <button
-                      onClick={() => handleSocialShare('instagram')}
-                      className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
-                    >
-                      <FaInstagram className="h-4 w-4 text-[#E4405F]" />
-                      <span className="text-sm">Instagram</span>
-                    </button>
+
                     <div className="border-t border-gray-200 my-1"></div>
                     <button
                       onClick={handleCopyLink}
