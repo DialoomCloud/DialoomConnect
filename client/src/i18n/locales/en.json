@@ -202,7 +202,7 @@
   "pricing": {
     "title": "Session Pricing",
     "free": "FREE",
-    "freeDesc": "First 15-minute consultation at no cost",
+    "freeDesc": "First 5-minute consultation at no cost",
     "minutes": "minutes",
     "savePricing": "Save Pricing",
     "saveSuccess": "Pricing saved",
@@ -215,6 +215,18 @@
     "pricing": "Pricing",
     "customDuration": "Custom Duration",
     "price": "Price"
+  },
+  "services": {
+    "title": "Additional Services",
+    "subtitle": "Configure the additional services you offer in your video calls",
+    "screenSharing": "Screen Sharing",
+    "screenSharingDesc": "Allow screen sharing during the call",
+    "translation": "Simultaneous Translation",
+    "translationDesc": "Offer real-time translation during the session",
+    "recording": "Session Recording",
+    "recordingDesc": "Allow recording the video call for future reference",
+    "transcription": "Transcription",
+    "transcriptionDesc": "Generate a written transcript of the conversation"
   },
   "admin": {
     "title": "Administration Panel",

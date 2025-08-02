@@ -202,7 +202,7 @@
   "pricing": {
     "title": "Preus de Sessions",
     "free": "GRATUÏT",
-    "freeDesc": "Primera consulta de 15 minuts sense cost",
+    "freeDesc": "Primera consulta de 5 minuts sense cost",
     "minutes": "minuts",
     "savePricing": "Desar Preus",
     "saveSuccess": "Preus desats",
@@ -215,6 +215,18 @@
     "pricing": "Preus",
     "customDuration": "Durada Personalitzada",
     "price": "Preu"
+  },
+  "services": {
+    "title": "Serveis Addicionals",
+    "subtitle": "Configura els serveis addicionals que ofereixes a les teves videotrucades",
+    "screenSharing": "Compartir Pantalla",
+    "screenSharingDesc": "Permet compartir la teva pantalla durant la trucada",
+    "translation": "Traducció Simultània",
+    "translationDesc": "Ofereix traducció en temps real durant la sessió",
+    "recording": "Gravació de Sessió",
+    "recordingDesc": "Permet gravar la videotrucada per referència futura",
+    "transcription": "Transcripció",
+    "transcriptionDesc": "Genera una transcripció escrita de la conversa"
   },
   "admin": {
     "title": "Panell d'Administració",

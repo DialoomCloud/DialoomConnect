@@ -8,13 +8,14 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Euro, Percent, HeadphonesIcon, Video, Share, FileText, Shield, CheckCircle, XCircle, Eye, Download, Users, Trash2, Plus, Badge, UserPlus, Edit } from "lucide-react";
+import { Settings, Euro, Percent, HeadphonesIcon, Video, Share, FileText, Shield, CheckCircle, XCircle, Eye, Download, Users, Trash2, Plus, Badge, UserPlus, Edit, ToggleLeft, ToggleRight, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge as BadgeComponent } from "@/components/ui/badge";
 import { AdminCompleteUserEditor } from "@/components/admin-complete-user-editor";
+import { Switch } from "@/components/ui/switch";
 
 interface AdminConfig {
   id: string;
@@ -72,6 +73,46 @@ const configKeys = [
     icon: FileText,
     type: 'price',
     defaultValue: '12.00'
+  },
+  {
+    key: 'host_can_select_screen_sharing',
+    label: 'Hosts pueden seleccionar Compartir Pantalla',
+    description: 'Permitir que los hosts ofrezcan compartir pantalla como servicio adicional',
+    icon: Share,
+    type: 'boolean',
+    defaultValue: 'true'
+  },
+  {
+    key: 'host_can_select_translation',
+    label: 'Hosts pueden seleccionar Traducción',
+    description: 'Permitir que los hosts ofrezcan traducción simultánea como servicio adicional',
+    icon: HeadphonesIcon,
+    type: 'boolean',
+    defaultValue: 'true'
+  },
+  {
+    key: 'host_can_select_recording',
+    label: 'Hosts pueden seleccionar Grabación',
+    description: 'Permitir que los hosts ofrezcan grabación de videollamada como servicio adicional',
+    icon: Video,
+    type: 'boolean',
+    defaultValue: 'true'
+  },
+  {
+    key: 'host_can_select_transcription',
+    label: 'Hosts pueden seleccionar Transcripción',
+    description: 'Permitir que los hosts ofrezcan transcripción automática como servicio adicional',
+    icon: FileText,
+    type: 'boolean',
+    defaultValue: 'true'
+  },
+  {
+    key: 'free_calls_enabled',
+    label: 'Llamadas gratuitas habilitadas',
+    description: 'Permitir que los hosts ofrezcan llamadas gratuitas de 5 minutos',
+    icon: Shield,
+    type: 'boolean',
+    defaultValue: 'true'
   }
 ];
 
@@ -266,9 +307,19 @@ export default function AdminPanel() {
     const value = editingConfig[key];
     const configDef = configKeys.find(k => k.key === key);
     
-    if (!value || !configDef) return;
+    if (value === undefined || !configDef) return;
 
-    // Validate value
+    // For boolean types, no validation needed
+    if (configDef.type === 'boolean') {
+      updateConfigMutation.mutate({
+        key,
+        value,
+        description: configDef.description,
+      });
+      return;
+    }
+
+    // Validate numeric values
     const numValue = parseFloat(value);
     if (isNaN(numValue) || numValue < 0) {
       toast({
@@ -509,6 +560,62 @@ export default function AdminPanel() {
                       €{parseFloat(currentValue).toFixed(2)}
                     </div>
                   )}
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        <Separator />
+
+        {/* Host Feature Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ToggleRight className="h-5 w-5" />
+              Configuración de Funciones para Hosts
+            </CardTitle>
+            <CardDescription>
+              Controla qué servicios pueden ofrecer los hosts en sus videollamadas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {configKeys.filter(k => k.type === 'boolean').map((configDef) => {
+              const currentValue = getConfigValue(configDef.key);
+              const Icon = configDef.icon;
+
+              return (
+                <div key={configDef.key} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <Label className="font-medium">{configDef.label}</Label>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {configDef.description}
+                        {configDef.key === 'free_calls_enabled' && (
+                          <span className="text-xs ml-1">(5 minutos de duración)</span>
+                        )}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={currentValue === 'true'}
+                      onCheckedChange={(checked) => {
+                        const newValue = checked ? 'true' : 'false';
+                        setEditingConfig({
+                          ...editingConfig,
+                          [configDef.key]: newValue,
+                        });
+                        // Auto-save on toggle
+                        setTimeout(() => {
+                          handleSave(configDef.key);
+                        }, 100);
+                      }}
+                      disabled={updateConfigMutation.isPending}
+                      className="ml-4"
+                    />
+                  </div>
                 </div>
               );
             })}

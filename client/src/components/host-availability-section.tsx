@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
-import { Plus, Trash2, Clock, DollarSign, CalendarDays, Monitor, Languages, Video, FileText } from "lucide-react";
+import { Plus, Trash2, Clock, DollarSign, CalendarDays, Monitor, Languages, Video, FileText, Settings } from "lucide-react";
 import type { HostAvailability, HostPricing } from "@shared/schema";
 import { format } from "date-fns";
 import { es, enUS, ca } from "date-fns/locale";
@@ -31,6 +31,11 @@ export function HostAvailabilitySection() {
   const [newTimeSlot, setNewTimeSlot] = useState<TimeSlot>({ startTime: "", endTime: "" });
   const [customDuration, setCustomDuration] = useState<number>(120);
   const [customPrice, setCustomPrice] = useState<number>(0);
+  
+  // Fetch admin config
+  const { data: adminConfig } = useQuery<Record<string, any>>({
+    queryKey: ['/api/admin/config'],
+  });
   
   // Get appropriate locale for date-fns
   const getDateLocale = () => {
@@ -205,17 +210,19 @@ export function HostAvailabilitySection() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Free tier */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <Label className="text-base font-medium">{t('availability.freeConsultation')}</Label>
-              <p className="text-sm text-gray-600">{t('pricing.freeDesc')}</p>
+          {/* Free tier - 5 minutes */}
+          {adminConfig?.allow_free_calls !== false && (
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div>
+                <Label className="text-base font-medium">{t('availability.freeConsultation')} (5 min)</Label>
+                <p className="text-sm text-gray-600">{t('pricing.freeDesc')}</p>
+              </div>
+              <Switch
+                checked={getPricingInfo(5)?.isActive || false}
+                onCheckedChange={(checked) => handlePricingToggle(5, checked)}
+              />
             </div>
-            <Switch
-              checked={getPricingInfo(0)?.isActive || false}
-              onCheckedChange={(checked) => handlePricingToggle(0, checked)}
-            />
-          </div>
+          )}
 
           {/* 30 minutes */}
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -358,6 +365,139 @@ export function HostAvailabilitySection() {
               ))}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Additional Services Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            {t('services.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-600 mb-4">{t('services.description')}</p>
+          
+          {/* Screen Sharing */}
+          {adminConfig?.allow_screen_sharing !== false && (
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <Monitor className="w-5 h-5 text-gray-600" />
+                <div>
+                  <Label className="text-base font-medium">{t('services.screenSharing')}</Label>
+                  <p className="text-sm text-gray-600">{t('services.screenSharingDesc')}</p>
+                </div>
+              </div>
+              <Switch
+                checked={pricing.some(p => p.includesScreenSharing)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.filter(p => p.isActive);
+                  activePricing.forEach(p => {
+                    updatePricingMutation.mutate({
+                      duration: p.duration,
+                      price: parseFloat(p.price),
+                      isActive: true,
+                      includesScreenSharing: checked,
+                      includesTranslation: p.includesTranslation,
+                      includesRecording: p.includesRecording,
+                      includesTranscription: p.includesTranscription,
+                    });
+                  });
+                }}
+              />
+            </div>
+          )}
+
+          {/* Translation */}
+          {adminConfig?.allow_translation !== false && (
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <Languages className="w-5 h-5 text-gray-600" />
+                <div>
+                  <Label className="text-base font-medium">{t('services.translation')}</Label>
+                  <p className="text-sm text-gray-600">{t('services.translationDesc')}</p>
+                </div>
+              </div>
+              <Switch
+                checked={pricing.some(p => p.includesTranslation)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.filter(p => p.isActive);
+                  activePricing.forEach(p => {
+                    updatePricingMutation.mutate({
+                      duration: p.duration,
+                      price: parseFloat(p.price),
+                      isActive: true,
+                      includesScreenSharing: p.includesScreenSharing,
+                      includesTranslation: checked,
+                      includesRecording: p.includesRecording,
+                      includesTranscription: p.includesTranscription,
+                    });
+                  });
+                }}
+              />
+            </div>
+          )}
+
+          {/* Recording */}
+          {adminConfig?.allow_recording !== false && (
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <Video className="w-5 h-5 text-gray-600" />
+                <div>
+                  <Label className="text-base font-medium">{t('services.recording')}</Label>
+                  <p className="text-sm text-gray-600">{t('services.recordingDesc')}</p>
+                </div>
+              </div>
+              <Switch
+                checked={pricing.some(p => p.includesRecording)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.filter(p => p.isActive);
+                  activePricing.forEach(p => {
+                    updatePricingMutation.mutate({
+                      duration: p.duration,
+                      price: parseFloat(p.price),
+                      isActive: true,
+                      includesScreenSharing: p.includesScreenSharing,
+                      includesTranslation: p.includesTranslation,
+                      includesRecording: checked,
+                      includesTranscription: p.includesTranscription,
+                    });
+                  });
+                }}
+              />
+            </div>
+          )}
+
+          {/* Transcription */}
+          {adminConfig?.allow_transcription !== false && (
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-gray-600" />
+                <div>
+                  <Label className="text-base font-medium">{t('services.transcription')}</Label>
+                  <p className="text-sm text-gray-600">{t('services.transcriptionDesc')}</p>
+                </div>
+              </div>
+              <Switch
+                checked={pricing.some(p => p.includesTranscription)}
+                onCheckedChange={(checked) => {
+                  const activePricing = pricing.filter(p => p.isActive);
+                  activePricing.forEach(p => {
+                    updatePricingMutation.mutate({
+                      duration: p.duration,
+                      price: parseFloat(p.price),
+                      isActive: true,
+                      includesScreenSharing: p.includesScreenSharing,
+                      includesTranslation: p.includesTranslation,
+                      includesRecording: p.includesRecording,
+                      includesTranscription: checked,
+                    });
+                  });
+                }}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

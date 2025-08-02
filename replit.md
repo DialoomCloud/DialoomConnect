@@ -13,6 +13,9 @@
 - **Translation Implementation**: Updated dashboard.tsx to use proper i18n keys instead of hardcoded Spanish text
 - **Live Session System**: Complete video call flow with pre-call lobby and post-session ratings
 - **Admin Dashboard**: Enhanced with interactive analytics and comprehensive session management
+- **Host Service Configuration**: Hosts can now enable/disable additional services (screen sharing, translation, recording, transcription)
+- **Admin Controls**: Admin can control which services hosts can offer through admin configuration settings
+- **Free Consultation Update**: Changed free consultation duration from 0 to 5 minutes with admin toggle
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Replit Auth for user authentication

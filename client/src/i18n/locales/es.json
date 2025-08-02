@@ -202,7 +202,7 @@
   "pricing": {
     "title": "Precios de Sesiones",
     "free": "GRATIS",
-    "freeDesc": "Primera consulta de 15 minutos sin costo",
+    "freeDesc": "Primera consulta de 5 minutos sin costo",
     "updateSuccess": "Precio actualizado",
     "updateSuccessDesc": "Los precios se han actualizado correctamente",
     "updateError": "No se pudo actualizar el precio",
@@ -215,6 +215,18 @@
     "pricing": "Precios",
     "customDuration": "Duración Personalizada",
     "price": "Precio"
+  },
+  "services": {
+    "title": "Servicios Adicionales",
+    "subtitle": "Configura los servicios adicionales que ofreces en tus videollamadas",
+    "screenSharing": "Compartir Pantalla",
+    "screenSharingDesc": "Permite compartir tu pantalla durante la llamada",
+    "translation": "Traducción Simultánea",
+    "translationDesc": "Ofrece traducción en tiempo real durante la sesión",
+    "recording": "Grabación de Sesión",
+    "recordingDesc": "Permite grabar la videollamada para referencia futura",
+    "transcription": "Transcripción",
+    "transcriptionDesc": "Genera una transcripción escrita de la conversación"
   },
   "admin": {
     "title": "Panel de Administración",
