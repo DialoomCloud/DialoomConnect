@@ -34,6 +34,9 @@ export default function Home() {
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
   const [replacingContent, setReplacingContent] = useState<MediaContent | null>(null);
 
+  // Debug authentication state
+  console.log("Home: Auth state", { isAuthenticated, authLoading, adminUser, adminLoading });
+
   // Remove automatic admin redirect - users should navigate manually
 
   // Only redirect to login if trying to access authenticated content
@@ -83,12 +86,14 @@ export default function Home() {
 
   // Show public content for anonymous users
   if (!isAuthenticated && !adminUser) {
+    console.log("Home: Rendering anonymous user view");
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)]">
         <Navigation />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* News Section - visible to all */}
+          {console.log("Home: About to render NewsSection")}
           <NewsSection />
           
           <div className="text-center mb-12">
