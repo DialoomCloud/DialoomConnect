@@ -74,6 +74,17 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, profile: UpdateUserProfile): Promise<User>;
+  deleteUser(id: string): Promise<boolean>;
+  createUserWithPassword(userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    isAdmin?: boolean;
+    isHost?: boolean;
+    isActive?: boolean;
+    isVerified?: boolean;
+  }): Promise<User>;
   
   // Media content operations
   getUserMediaContent(userId: string): Promise<MediaContent[]>;
@@ -1617,6 +1628,47 @@ export class DatabaseStorage implements IStorage {
 
   async generateHostActivationToken(userId: string): Promise<string> {
     return this.requestHostStatus(userId);
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    try {
+      // Delete user and all related data (cascade delete should handle related records)
+      const result = await db.delete(users).where(eq(users.id, id));
+      return (result?.rowCount || 0) > 0;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
+  }
+
+  async createUserWithPassword(userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    isAdmin?: boolean;
+    isHost?: boolean;
+    isActive?: boolean;
+    isVerified?: boolean;
+  }): Promise<User> {
+    const bcrypt = require('bcryptjs');
+    const passwordHash = await bcrypt.hash(userData.password, 10);
+    
+    const [newUser] = await db.insert(users).values({
+      id: crypto.randomUUID(),
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      passwordHash,
+      isAdmin: userData.isAdmin || false,
+      isHost: userData.isHost || false,
+      isActive: userData.isActive !== undefined ? userData.isActive : true,
+      isVerified: userData.isVerified || false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    
+    return newUser;
   }
 
 }

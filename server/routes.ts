@@ -1899,6 +1899,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes - Delete user
+  app.delete('/api/admin/users/:targetUserId', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { targetUserId } = req.params;
+      const adminId = req.user.claims.sub;
+      
+      // Prevent admin from deleting themselves
+      if (targetUserId === adminId) {
+        return res.status(400).json({ message: 'No puedes eliminarte a ti mismo' });
+      }
+      
+      // Delete user and all their data
+      await storage.deleteUser(targetUserId);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ message: 'Error al eliminar usuario' });
+    }
+  });
+
+  // Admin routes - Create new user
+  app.post('/api/admin/users', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { email, firstName, lastName, password, isAdmin, isHost } = req.body;
+      
+      // Validate required fields
+      if (!email || !firstName || !lastName || !password) {
+        return res.status(400).json({ message: 'Todos los campos son requeridos' });
+      }
+      
+      // Create new user
+      const newUser = await storage.createUserWithPassword({
+        email,
+        firstName,
+        lastName,
+        password,
+        isAdmin: isAdmin || false,
+        isHost: isHost || false,
+        isActive: true,
+        isVerified: false
+      });
+      
+      res.json({ success: true, userId: newUser.id });
+    } catch (error) {
+      console.error('Error creating user:', error);
+      if (error instanceof Error && error.message.includes('unique constraint')) {
+        return res.status(400).json({ message: 'El email ya está registrado' });
+      }
+      res.status(500).json({ message: 'Error al crear usuario' });
+    }
+  });
+
   // Admin routes - Update user profile (complete profile data)
   app.put('/api/admin/users/:targetUserId/profile', isAdminAuthenticated, async (req: any, res) => {
     try {

@@ -8,11 +8,13 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Euro, Percent, HeadphonesIcon, Video, Share, FileText, Shield, CheckCircle, XCircle, Eye, Download } from "lucide-react";
+import { Settings, Euro, Percent, HeadphonesIcon, Video, Share, FileText, Shield, CheckCircle, XCircle, Eye, Download, Users, Trash2, Plus, Badge, UserPlus, Edit } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge as BadgeComponent } from "@/components/ui/badge";
+import { AdminCompleteUserEditor } from "@/components/admin-complete-user-editor";
 
 interface AdminConfig {
   id: string;
@@ -91,9 +93,21 @@ interface HostVerificationRequest {
   }[];
 }
 
+interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isAdmin: boolean;
+  isHost: boolean;
+  createdAt: string;
+  profileImageUrl?: string;
+  phone?: string;
+}
+
 export default function AdminPanel() {
   const { t } = useTranslation();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user: authUser, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingConfig, setEditingConfig] = useState<{ [key: string]: string }>({});
@@ -101,6 +115,23 @@ export default function AdminPanel() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState<'approved' | 'rejected'>('approved');
   const [rejectionReason, setRejectionReason] = useState('');
+  
+  // User management states
+  const [userFilter, setUserFilter] = useState<'all' | 'admin' | 'host' | 'registered'>('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    password: '',
+    isAdmin: false,
+    isHost: false
+  });
 
   // Check if user is admin
   if (authLoading) {
@@ -111,7 +142,7 @@ export default function AdminPanel() {
     );
   }
 
-  if (!user?.isAdmin) {
+  if (!authUser?.isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">
@@ -146,6 +177,63 @@ export default function AdminPanel() {
         documents: user.verificationDocuments || []
       }));
     }
+  });
+
+  const { data: allUsers = [], isLoading: usersLoading } = useQuery<User[]>({
+    queryKey: ['/api/admin/users'],
+    retry: false,
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest('DELETE', `/api/admin/users/${userId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Usuario eliminado",
+        description: "El usuario ha sido eliminado correctamente.",
+      });
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      setDeleteConfirmation('');
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el usuario.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: typeof newUserData) => {
+      return apiRequest('POST', '/api/admin/users', userData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Usuario creado",
+        description: "El usuario ha sido creado correctamente.",
+      });
+      setCreateUserDialogOpen(false);
+      setNewUserData({
+        email: '',
+        firstName: '',
+        lastName: '',
+        password: '',
+        isAdmin: false,
+        isHost: false
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el usuario.",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateConfigMutation = useMutation({
@@ -220,6 +308,26 @@ export default function AdminPanel() {
     delete newEditing[key];
     setEditingConfig(newEditing);
   };
+
+  const getUserType = (user: User): string => {
+    if (user.isAdmin) return 'admin';
+    if (user.isHost) return 'host';
+    return 'registered';
+  };
+
+  const getUserBadgeVariant = (type: string): "default" | "secondary" | "destructive" => {
+    switch (type) {
+      case 'admin': return 'destructive';
+      case 'host': return 'default';
+      default: return 'secondary';
+    }
+  };
+
+  const filteredUsers = allUsers.filter((user) => {
+    if (userFilter === 'all') return true;
+    const userType = getUserType(user);
+    return userType === userFilter;
+  });
 
   if (isLoading) {
     return (
@@ -461,6 +569,101 @@ export default function AdminPanel() {
             )}
           </CardContent>
         </Card>
+
+        <Separator />
+
+        {/* User Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Gestión de Usuarios
+            </CardTitle>
+            <CardDescription>
+              Administra todos los usuarios registrados en la plataforma
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Select value={userFilter} onValueChange={(value: any) => setUserFilter(value)}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Filtrar usuarios" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los usuarios</SelectItem>
+                    <SelectItem value="admin">Solo administradores</SelectItem>
+                    <SelectItem value="host">Solo hosts</SelectItem>
+                    <SelectItem value="registered">Solo registrados</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={() => setCreateUserDialogOpen(true)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Añadir Usuario
+              </Button>
+            </div>
+
+            {usersLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                No hay usuarios que coincidan con el filtro seleccionado
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {filteredUsers.map((user) => {
+                  const userType = getUserType(user);
+                  return (
+                    <div key={user.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold">{user.firstName} {user.lastName}</h4>
+                              <BadgeComponent variant={getUserBadgeVariant(userType)}>
+                                {userType === 'admin' ? 'Administrador' : userType === 'host' ? 'Host' : 'Registrado'}
+                              </BadgeComponent>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                            {user.phone && (
+                              <p className="text-sm text-muted-foreground">{user.phone}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedUserId(user.id);
+                              setEditUserDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setUserToDelete(user);
+                              setDeleteDialogOpen(true);
+                            }}
+                            disabled={user.id === (authUser as any)?.id} // Can't delete yourself
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Review Dialog */}
@@ -613,6 +816,171 @@ export default function AdminPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar Usuario</DialogTitle>
+            <DialogDescription>
+              Esta acción es irreversible. Se eliminarán todos los datos del usuario.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {userToDelete && (
+            <div className="space-y-4">
+              <div className="border rounded p-3 bg-destructive/10">
+                <p className="font-semibold">{userToDelete.firstName} {userToDelete.lastName}</p>
+                <p className="text-sm text-muted-foreground">{userToDelete.email}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Escribe "Dialoom" para confirmar la eliminación</Label>
+                <Input
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="Escribe Dialoom aquí"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setDeleteDialogOpen(false);
+              setDeleteConfirmation('');
+            }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (userToDelete) {
+                  deleteUserMutation.mutate(userToDelete.id);
+                }
+              }}
+              disabled={deleteConfirmation !== 'Dialoom' || deleteUserMutation.isPending}
+            >
+              Eliminar Usuario
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createUserDialogOpen} onOpenChange={setCreateUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+            <DialogDescription>
+              Ingresa los datos del nuevo usuario
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Nombre</Label>
+                <Input
+                  value={newUserData.firstName}
+                  onChange={(e) => setNewUserData({ ...newUserData, firstName: e.target.value })}
+                  placeholder="Nombre"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Apellido</Label>
+                <Input
+                  value={newUserData.lastName}
+                  onChange={(e) => setNewUserData({ ...newUserData, lastName: e.target.value })}
+                  placeholder="Apellido"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                placeholder="email@ejemplo.com"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Contraseña</Label>
+              <Input
+                type="password"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                placeholder="Contraseña segura"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Tipo de Usuario</Label>
+              <div className="flex gap-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isAdmin"
+                    checked={newUserData.isAdmin}
+                    onChange={(e) => setNewUserData({ ...newUserData, isAdmin: e.target.checked })}
+                    className="rounded"
+                  />
+                  <Label htmlFor="isAdmin">Administrador</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isHost"
+                    checked={newUserData.isHost}
+                    onChange={(e) => setNewUserData({ ...newUserData, isHost: e.target.checked })}
+                    className="rounded"
+                  />
+                  <Label htmlFor="isHost">Host</Label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setCreateUserDialogOpen(false);
+              setNewUserData({
+                email: '',
+                firstName: '',
+                lastName: '',
+                password: '',
+                isAdmin: false,
+                isHost: false
+              });
+            }}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => createUserMutation.mutate(newUserData)}
+              disabled={!newUserData.email || !newUserData.firstName || !newUserData.lastName || !newUserData.password || createUserMutation.isPending}
+            >
+              Crear Usuario
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Complete User Editor */}
+      {selectedUserId && (
+        <AdminCompleteUserEditor
+          userId={selectedUserId}
+          open={editUserDialogOpen}
+          onOpenChange={(open) => {
+            setEditUserDialogOpen(open);
+            if (!open) {
+              setSelectedUserId(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
