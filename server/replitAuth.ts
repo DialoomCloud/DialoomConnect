@@ -163,15 +163,30 @@ export async function setupAuth(app: Express) {
         if (err) {
           console.error('Error destroying session:', err);
         }
-        // Clear session cookie
-        res.clearCookie('connect.sid');
-        // Force Replit to prompt for user selection on next login
-        res.redirect(
-          client.buildEndSessionUrl(config, {
-            client_id: process.env.REPL_ID!,
-            post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-          }).href
-        );
+        // Clear session cookie with all possible attributes
+        res.clearCookie('connect.sid', {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
+        });
+        
+        // Clear any other potential cookies
+        res.clearCookie('repl_session');
+        res.clearCookie('repl_identity');
+        
+        console.log('Session destroyed, redirecting to Replit logout...');
+        
+        // Force Replit to prompt for user selection on next login with additional parameters
+        const logoutUrl = client.buildEndSessionUrl(config, {
+          client_id: process.env.REPL_ID!,
+          post_logout_redirect_uri: `${req.protocol}://${req.get('host')}/`,
+          // Add prompt parameter to force re-authentication
+          state: 'force_logout_' + Date.now()
+        }).href;
+        
+        console.log('Logout URL:', logoutUrl);
+        res.redirect(logoutUrl);
       });
     });
   });

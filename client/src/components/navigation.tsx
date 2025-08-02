@@ -14,6 +14,11 @@ export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    // Clear any client-side cached data
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Force a complete page reload to logout
     window.location.href = "/api/logout";
   };
 
@@ -27,7 +32,7 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href={user ? "/home" : "/"} className="flex items-center">
               <img 
                 src="/uploads/images/dialoomblue.png"
                 alt="Dialoom" 
@@ -39,7 +44,7 @@ export function Navigation() {
             
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
-            <Link href="/">
+            <Link href={user ? "/home" : "/"}>
               <Button
                 variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
                 size="sm"
@@ -140,7 +145,7 @@ export function Navigation() {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-[hsl(220,13%,90%)] absolute left-0 right-0 top-16 shadow-lg z-40">
             <div className="px-4 py-4 space-y-2">
-              <Link href="/" onClick={closeMobileMenu}>
+              <Link href={user ? "/home" : "/"} onClick={closeMobileMenu}>
                 <Button
                   variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
                   size="sm"

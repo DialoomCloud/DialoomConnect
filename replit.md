@@ -7,7 +7,18 @@ Dialoom is a comprehensive multilingual web application designed as a profession
 Preferred communication style: Simple, everyday language (non-technical users).
 
 ## Recent Changes (January 2025)
-- Fixed navigation flow: Users now go to /home when clicking on Dialoom logo while authenticated (previously redirected to /profile)
+- Fixed navigation flow and authentication issues (January 2025):
+  - Logo navigation now correctly redirects to /home when user is authenticated, solving blank page issue
+  - Both desktop and mobile navigation updated to use conditional routing based on authentication status
+  - Enhanced logout functionality with complete session clearing (localStorage, sessionStorage, cookies)
+  - Improved Replit Auth logout to force account selection on next login attempt
+  - Added prompt=select_account parameter to login URL to force user selection
+  - Fixed all navigation components to consistently use /home for authenticated users
+- Updated email templates with theme integration (January 2025):
+  - Email templates now automatically use current theme colors instead of hardcoded green values
+  - Added Dialoom logo to all email templates with proper variable replacement
+  - Fixed test email sending functionality with proper variable substitution
+  - Email service now fetches theme colors from admin configuration dynamically
 - Updated Loomia AI to respond in the platform's selected language (ES/EN/CA)
 - Updated Loomia's context with current Dialoom payment information:
   - All payments processed through Stripe
