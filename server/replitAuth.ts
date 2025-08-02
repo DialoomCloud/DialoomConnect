@@ -138,24 +138,25 @@ export async function setupAuth(app: Express) {
   app.get("/api/login", (req, res, next) => {
     const hostname = req.hostname;
     console.log(`Login attempt for hostname: ${hostname}`);
-    console.log(`Available strategies: ${Object.keys(passport._strategies || {})}`);
+    console.log(`Available strategies: ${Object.keys((passport as any)._strategies || {})}`);
     
     const strategyName = `replitauth:${hostname}`;
     console.log(`Using strategy: ${strategyName}`);
     
     // Check if strategy exists
-    if (!passport._strategies[strategyName]) {
+    if (!(passport as any)._strategies[strategyName]) {
       console.error(`Strategy ${strategyName} not found!`);
       return res.status(500).json({ 
         error: "Authentication strategy not configured",
         hostname,
-        availableStrategies: Object.keys(passport._strategies || {})
+        availableStrategies: Object.keys((passport as any)._strategies || {})
       });
     }
     
-    // Use different parameters based on environment
+    // Force account selection to allow switching emails
     const authOptions: any = {
-      scope: ["openid", "email", "profile", "offline_access"]
+      scope: ["openid", "email", "profile", "offline_access"],
+      prompt: "select_account" // This forces Replit to show account selection
     };
     
     // Add state parameter to track the authentication flow
@@ -217,18 +218,24 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
+    console.log('Logout requested - clearing all session data');
+    
     req.logout(() => {
       // Clear the session completely
       req.session.destroy((err) => {
         if (err) {
           console.error('Error destroying session:', err);
         }
-        // Clear session cookie with all possible attributes
-        res.clearCookie('connect.sid', {
-          path: '/',
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax'
+        
+        // Clear all session-related cookies
+        const cookiesToClear = ['connect.sid', 'session', 'auth'];
+        cookiesToClear.forEach(cookieName => {
+          res.clearCookie(cookieName, {
+            path: '/',
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
+          });
         });
         
         // Clear any other potential cookies
@@ -237,13 +244,22 @@ export async function setupAuth(app: Express) {
         
         console.log('Session destroyed, redirecting to Replit logout...');
         
-        // Force Replit to prompt for user selection on next login with additional parameters
-        const logoutUrl = client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.get('host')}/`,
-          // Add prompt parameter to force re-authentication
-          state: 'force_logout_' + Date.now()
-        }).href;
+        // Force Replit to prompt for user selection on next login
+        const protocol = req.hostname === 'localhost' ? 'http' : 'https';
+        const host = req.hostname === 'localhost' ? 'localhost:5000' : req.get('host');
+        const redirectUri = `${protocol}://${host}/`;
+        
+        console.log('Logout redirect URI:', redirectUri);
+        
+        // Use endSessionUrl if available, otherwise redirect to home
+        let logoutUrl = redirectUri;
+        try {
+          if (config.endSessionEndpoint) {
+            logoutUrl = `${config.endSessionEndpoint}?client_id=${process.env.REPL_ID}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&state=force_logout_${Date.now()}`;
+          }
+        } catch (error) {
+          console.log('Could not build end session URL, using simple redirect');
+        }
         
         console.log('Logout URL:', logoutUrl);
         res.redirect(logoutUrl);
