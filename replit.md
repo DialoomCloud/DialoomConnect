@@ -81,6 +81,14 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Fixed logout flow to prevent persistent email verification issues
   - Created comprehensive guide for switching accounts using incognito mode or cookie clearing
   - Added /api/clear-session endpoint for manual session clearing
+  - Added /api/login-fresh endpoint for forcing clean authentication when Replit Auth resend email fails
+- Completed GDPR Rights implementation with full operational functionality (August 2025):
+  - Data export: Functional download button with file generation and automatic download
+  - Data deletion: Dialog with confirmation checkbox and 30-day deletion scheduling
+  - Privacy preferences: Live toggles for marketing emails, profile visibility, and data processing consent
+  - Processing restriction: Dialog form for submitting restriction requests under GDPR Article 18
+  - Profile rectification: Direct link to profile editing for data correction
+  - All features multilingual (ES/EN/CA) with proper error handling and loading states
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.

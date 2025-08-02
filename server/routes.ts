@@ -1911,6 +1911,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const userData = await storage.exportUserData(userId);
       
+      // Set headers for file download
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="dialoom-data-export-${userId}-${new Date().toISOString().split('T')[0]}.json"`);
+      
       res.json({
         message: "Datos de usuario exportados según GDPR",
         data: userData,
@@ -1919,6 +1923,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error exporting user data:", error);
       res.status(500).json({ message: "Error al exportar datos del usuario" });
+    }
+  });
+
+  // GDPR Data Deletion Request endpoint
+  app.post('/api/gdpr/request-deletion', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { confirmDeletion } = req.body;
+      
+      if (!confirmDeletion) {
+        return res.status(400).json({ error: 'Deletion confirmation required' });
+      }
+      
+      // Set deletion date to 30 days from now (GDPR compliance period)
+      const deletionDate = new Date();
+      deletionDate.setDate(deletionDate.getDate() + 30);
+      
+      await storage.requestDataDeletion(userId, deletionDate);
+      
+      res.json({ 
+        success: true, 
+        message: 'Data deletion requested',
+        deletionDate: deletionDate.toISOString()
+      });
+    } catch (error) {
+      console.error('Error requesting data deletion:', error);
+      res.status(500).json({ error: 'Failed to request data deletion' });
+    }
+  });
+
+  // GDPR Privacy Preferences endpoint
+  app.get('/api/gdpr/privacy-preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user's current privacy preferences
+      const user = await db.select({
+        marketingEmails: users.marketingEmails,
+        profileVisibility: users.profileVisibility,
+        dataProcessingConsent: users.dataProcessingConsent
+      }).from(users).where(eq(users.id, userId));
+      
+      if (user.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      res.json(user[0]);
+    } catch (error) {
+      console.error('Error fetching privacy preferences:', error);
+      res.status(500).json({ error: 'Failed to fetch privacy preferences' });
+    }
+  });
+
+  // GDPR Update Privacy Preferences endpoint
+  app.post('/api/gdpr/privacy-preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { marketingEmails, profileVisibility, dataProcessingConsent } = req.body;
+      
+      await db.update(users)
+        .set({
+          marketingEmails: marketingEmails,
+          profileVisibility: profileVisibility,
+          dataProcessingConsent: dataProcessingConsent,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId));
+      
+      res.json({ success: true, message: 'Privacy preferences updated' });
+    } catch (error) {
+      console.error('Error updating privacy preferences:', error);
+      res.status(500).json({ error: 'Failed to update privacy preferences' });
+    }
+  });
+
+  // GDPR Contact Support for Data Processing Restriction
+  app.post('/api/gdpr/restriction-request', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { requestType, details } = req.body;
+      
+      // Store restriction request as a user message
+      const messageData = {
+        id: crypto.randomUUID(),
+        userId,
+        type: 'gdpr_restriction' as const,
+        subject: `GDPR Restriction Request - ${requestType}`,
+        message: details || 'User requested data processing restriction under GDPR Article 18',
+        isRead: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      await db.insert(userMessages).values(messageData);
+      
+      res.json({ 
+        success: true, 
+        message: 'Restriction request submitted. Our team will review it within 48 hours.',
+        requestId: messageData.id
+      });
+    } catch (error) {
+      console.error('Error submitting restriction request:', error);
+      res.status(500).json({ error: 'Failed to submit restriction request' });
     }
   });
 
