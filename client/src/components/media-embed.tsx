@@ -139,7 +139,7 @@ export function MediaEmbed({ content, onEdit, onView, showEdit = false }: MediaE
             </div>
           
           {/* Action buttons overlay */}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2">
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2 z-10">
             {showEdit && onEdit && (
               <Button
                 variant="secondary"

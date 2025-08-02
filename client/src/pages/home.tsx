@@ -85,43 +85,7 @@ export default function Home() {
     }, 500);
   }
 
-  // Delete media mutation
-  const deleteMediaMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest('DELETE', `/api/media/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
-      toast({
-        title: t('media.deleteSuccess'),
-        description: t('media.deleteSuccessDesc'),
-      });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: t('common.error'),
-        description: t('media.deleteError'),
-        variant: "destructive",
-      });
-    },
-  });
 
-  const handleDeleteMedia = (id: string) => {
-    if (confirm(t('media.confirmDelete'))) {
-      deleteMediaMutation.mutate(id);
-    }
-  };
 
   if (authLoading || adminLoading) {
     return (

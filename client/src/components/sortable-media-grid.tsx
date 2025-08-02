@@ -70,7 +70,7 @@ function SortableMediaItem({ content, showEdit, onEdit, onView, onDelete, delete
         <Button
           variant="destructive"
           size="sm"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-20"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(content.id);
