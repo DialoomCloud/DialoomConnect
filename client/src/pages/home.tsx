@@ -12,6 +12,7 @@ import { SortableMediaGrid } from "@/components/sortable-media-grid";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
+import { NewsSection } from "@/components/news-section";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
@@ -139,6 +140,9 @@ export default function Home() {
       <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* News Section */}
+        <NewsSection />
+        
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('home.title')}</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -319,8 +323,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Featured News Section */}
-      <NewsSection />
+
 
       {/* Modals */}
       <MediaEditModal
@@ -357,114 +360,6 @@ export default function Home() {
         }}
         replaceContent={replacingContent}
       />
-    </div>
-  );
-}
-
-// News Section Component for displaying featured articles on home page
-function NewsSection() {
-  const { t } = useTranslation();
-  
-  // Fetch featured news articles
-  const { data: featuredArticles = [], isLoading } = useQuery<NewsArticle[]>({
-    queryKey: ['/api/news/articles', 'featured'],
-    queryFn: async () => {
-      const response = await apiRequest('/api/news/articles?featured=true&limit=3');
-      return response.json();
-    },
-  });
-
-  if (isLoading || featuredArticles.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          {t('home.featuredNews', 'Noticias Destacadas')}
-        </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          {t('home.featuredNewsDesc', 'Mantente al día con las últimas novedades y actualizaciones de Dialoom')}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {featuredArticles.map((article) => (
-          <Card key={article.id} className="h-full hover:shadow-lg transition-shadow duration-200">
-            {article.featuredImage && (
-              <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-                <img
-                  src={article.featuredImage}
-                  alt={article.title}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                />
-              </div>
-            )}
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                <Clock className="h-4 w-4" />
-                <span>
-                  {new Date(article.publishedAt || article.createdAt || new Date()).toLocaleDateString('es-ES', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </span>
-                {article.viewCount && article.viewCount > 0 && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <Eye className="h-4 w-4" />
-                    <span>{article.viewCount}</span>
-                  </>
-                )}
-              </div>
-              <CardTitle className="line-clamp-2 hover:text-[hsl(188,100%,38%)] transition-colors">
-                {article.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {article.excerpt && (
-                <p className="text-gray-600 line-clamp-3 mb-4">
-                  {article.excerpt}
-                </p>
-              )}
-              {article.tags && article.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {article.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              <Link href={`/news/${article.slug}`}>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
-                >
-                  <Newspaper className="h-4 w-4 mr-2" />
-                  {t('home.readMore', 'Leer más')}
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* View All News Button */}
-      <div className="text-center mt-8">
-        <Link href="/news">
-          <Button 
-            size="lg" 
-            className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
-          >
-            <Newspaper className="h-5 w-5 mr-2" />
-            {t('home.viewAllNews', 'Ver todas las noticias')}
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }

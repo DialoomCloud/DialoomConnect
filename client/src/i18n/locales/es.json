@@ -114,6 +114,12 @@
     "priceRange": "Rango de precios",
     "clearFilters": "Limpiar filtros"
   },
+  "news": {
+    "latestNews": "Últimas Noticias",
+    "featured": "Destacado",
+    "readMore": "Leer más",
+    "views": "visualizaciones"
+  },
   "common": {
     "error": "Error",
     "loading": "Cargando...",

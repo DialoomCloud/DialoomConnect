@@ -114,6 +114,12 @@
     "priceRange": "Rang de preus",
     "clearFilters": "Netejar filtres"
   },
+  "news": {
+    "latestNews": "Últimes Notícies",
+    "featured": "Destacat",
+    "readMore": "Llegir més",
+    "views": "visualitzacions"
+  },
   "common": {
     "error": "Error",
     "loading": "Carregant...",
