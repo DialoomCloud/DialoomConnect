@@ -496,7 +496,7 @@ export class DatabaseStorage implements IStorage {
     if ((result?.rowCount || 0) > 0 && content[0].url && content[0].type !== 'youtube') {
       try {
         const objectStorage = new ReplitObjectStorage();
-        await objectStorage.deleteFile(content[0].url);
+        await objectStorage.deleteObject(content[0].url);
         console.log(`Deleted file from object storage: ${content[0].url}`);
       } catch (error) {
         console.error(`Failed to delete file from object storage: ${content[0].url}`, error);
