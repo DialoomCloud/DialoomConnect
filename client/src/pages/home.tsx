@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MediaEmbed } from "@/components/media-embed";
+import { SortableMediaGrid } from "@/components/sortable-media-grid";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
@@ -306,78 +306,49 @@ export default function Home() {
                   </Link>
                 </div>
 
-                {/* Content Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {mediaLoading ? (
-                    <>
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
-                          <div className="h-4 bg-gray-300 rounded mb-3"></div>
-                          <div className="aspect-video bg-gray-300 rounded mb-3"></div>
-                          <div className="h-3 bg-gray-300 rounded mb-1"></div>
-                          <div className="h-3 bg-gray-300 rounded w-2/3"></div>
-                        </div>
-                      ))}
-                    </>
-                  ) : mediaContent.length > 0 ? (
-                    mediaContent.map((content: MediaContent) => (
-                      <div key={content.id} className="relative group">
-                        <MediaEmbed 
-                          content={content} 
-                          onEdit={(c) => {
-                            console.log('Edit handler called from home:', c);
-                            setEditingContent(c);
-                            setShowEditModal(true);
-                          }}
-                          onView={(c) => {
-                            console.log('View handler called from home:', c);
-                            setViewingContent(c);
-                            setShowViewerModal(true);
-                          }}
-                          showEdit={true}
-                        />
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteMedia(content.id);
-                          }}
-                          disabled={deleteMediaMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                {mediaLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
+                        <div className="h-4 bg-gray-300 rounded mb-3"></div>
+                        <div className="aspect-video bg-gray-300 rounded mb-3"></div>
+                        <div className="h-3 bg-gray-300 rounded mb-1"></div>
+                        <div className="h-3 bg-gray-300 rounded w-2/3"></div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="md:col-span-2 text-center py-12">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Plus className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">{t('home.noContent')}</h4>
-                      <p className="text-gray-600 mb-4">
-                        {t('home.noContentSub')}
-                      </p>
-                      <Link href="/profile">
-                        <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]">
-                          {t('home.add')} {t('home.multimedia')}
-                        </Button>
-                      </Link>
+                    ))}
+                  </div>
+                ) : mediaContent.length > 0 ? (
+                  <SortableMediaGrid
+                    media={mediaContent}
+                    showEdit={true}
+                    onEdit={(c) => {
+                      console.log('Edit handler called from home:', c);
+                      setEditingContent(c);
+                      setShowEditModal(true);
+                    }}
+                    onView={(c) => {
+                      console.log('View handler called from home:', c);
+                      setViewingContent(c);
+                      setShowViewerModal(true);
+                    }}
+                    onAddNew={() => setLocation("/profile")}
+                  />
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Plus className="w-8 h-8 text-gray-400" />
                     </div>
-                  )}
-
-                  {/* Add Content Placeholder - only show when there is content */}
-                  {mediaContent.length > 0 && (
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">{t('home.noContent')}</h4>
+                    <p className="text-gray-600 mb-4">
+                      {t('home.noContentSub')}
+                    </p>
                     <Link href="/profile">
-                      <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center aspect-video hover:border-[hsl(188,100%,38%)] transition-colors cursor-pointer">
-                        <Plus className="w-8 h-8 text-gray-400 mb-2" />
-                        <p className="text-gray-500 font-medium">Agregar nuevo contenido</p>
-                        <p className="text-sm text-gray-400 mt-1">YouTube, Instagram o TikTok</p>
-                      </div>
+                      <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]">
+                        {t('home.add')} {t('home.multimedia')}
+                      </Button>
                     </Link>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
