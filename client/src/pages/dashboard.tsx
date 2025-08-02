@@ -34,7 +34,8 @@ import {
   MapPin,
   Plus,
   CheckCircle2,
-  CreditCard
+  CreditCard,
+  Shield
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -44,6 +45,7 @@ import type { Booking, Invoice, MediaContent, User, HostPricing } from "@shared/
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
+import { SessionRatingModal } from "@/components/session-rating-modal";
 
 // Profile Management Component
 function ProfileManagement({ userId }: { userId?: string }) {
@@ -322,6 +324,7 @@ export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const { adminUser, isLoading: adminLoading } = useAdminAuth();
   const [selectedTab, setSelectedTab] = useState("overview");
+  const [ratingModalData, setRatingModalData] = useState<{ isOpen: boolean; bookingId: string; hostName: string } | null>(null);
   
   // Check if user is accessing as admin
   const isAdmin = !!adminUser && !user;
@@ -631,34 +634,61 @@ export default function Dashboard() {
                     No tienes llamadas pasadas
                   </div>
                 ) : (
-                  pastBookings.map((booking) => (
-                    <div key={booking.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">
-                              {format(new Date(booking.scheduledDate), "d 'de' MMMM 'de' yyyy", { locale: es })}
-                            </span>
-                            <Badge 
-                              variant={booking.status === "completed" ? "default" : "secondary"}
-                              className="ml-2"
-                            >
-                              {booking.status === "completed" ? "Completada" : "Cancelada"}
-                            </Badge>
+                  pastBookings.map((booking) => {
+                    const needsRating = booking.status === "completed" && booking.guestId === user?.id && !booking.hasRating;
+                    
+                    return (
+                      <div key={booking.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Calendar className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">
+                                {format(new Date(booking.scheduledDate), "d 'de' MMMM 'de' yyyy", { locale: es })}
+                              </span>
+                              <Badge 
+                                variant={booking.status === "completed" ? "default" : "secondary"}
+                                className="ml-2"
+                              >
+                                {booking.status === "completed" ? "Completada" : "Cancelada"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600">
+                              {booking.guestId === user?.id ? `Mentor: ${booking.hostName}` : `Invitado: Usuario #${booking.guestId}`}
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-600">Invitado: Usuario #{booking.guestId}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-[hsl(188,80%,42%)]">€{booking.price}</p>
-                          <Button size="sm" variant="outline" className="mt-2">
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Ver Reseña
-                          </Button>
+                          <div className="text-right">
+                            <p className="font-bold text-[hsl(188,80%,42%)]">€{booking.price}</p>
+                            {needsRating ? (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="mt-2"
+                                onClick={() => setRatingModalData({ 
+                                  isOpen: true, 
+                                  bookingId: booking.id, 
+                                  hostName: booking.hostName 
+                                })}
+                              >
+                                <Star className="w-4 h-4 mr-2" />
+                                Valorar sesión
+                              </Button>
+                            ) : booking.hasRating ? (
+                              <Button size="sm" variant="outline" className="mt-2" disabled>
+                                <CheckCircle2 className="w-4 h-4 mr-2" />
+                                Valorada
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="outline" className="mt-2">
+                                <MessageSquare className="w-4 h-4 mr-2" />
+                                Ver detalles
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </TabsContent>
                 </Tabs>

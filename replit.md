@@ -1,7 +1,12 @@
 # Dialoom - Plataforma de Videollamadas con Expertos
 
 ## Overview
-Dialoom is a comprehensive multilingual web application designed as a professional video call booking marketplace. It facilitates user profile management, multimedia content sharing, and integrates a fully functional video calling system. Key capabilities include Stripe payment integration, content management with a visual email template editor, a complete news/article system, YouTube video integration, conversion-optimized marketing landing pages, AI-powered intelligent host search using natural language processing, comprehensive social media integration, and a fully integrated AI assistant called "Loomia" that enhances user profiles and provides intelligent suggestions. The project aims to provide a robust platform for connecting users with experts via video calls, supporting a global audience with multilingual capabilities.
+Dialoom is a comprehensive multilingual web application designed as a professional video call booking marketplace. It facilitates user profile management, multimedia content sharing, and integrates a fully functional video calling system with pre-call lobby, live session management, and post-call rating capabilities. Key capabilities include Stripe payment integration, content management with a visual email template editor, a complete news/article system, YouTube video integration, conversion-optimized marketing landing pages, AI-powered intelligent host search using natural language processing, comprehensive social media integration, fully integrated AI assistant called "Loomia" that enhances user profiles and provides intelligent suggestions, and an advanced session management system with ratings and reviews. The project aims to provide a robust platform for connecting users with experts via video calls, supporting a global audience with multilingual capabilities.
+
+## Recent Changes (January 2025)
+- **Live Session Connection System**: Implemented complete video call flow with pre-call lobby for device testing, smooth transition to live calls, and post-session rating system
+- **Enhanced Admin Dashboard**: Added interactive analytics charts, comprehensive invoice management, and real-time session monitoring with calendar and list views
+- **Session Management**: Full integration of booking oversight, host workload tracking, and financial analytics for admin panel
 
 ## User Preferences
 Preferred communication style: Simple, everyday language (non-technical users).

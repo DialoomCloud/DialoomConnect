@@ -3,6 +3,8 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { VideoCall } from "@/components/video-call";
+import { VideoCallLobby } from "@/components/video-call-lobby";
+import { SessionRatingModal } from "@/components/session-rating-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle } from "lucide-react";
@@ -15,32 +17,43 @@ export default function VideoCallRoom() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isCallActive, setIsCallActive] = useState(false);
+  const [showLobby, setShowLobby] = useState(true);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   // Fetch booking details and token
   const { data: callData, error, isLoading } = useQuery({
     queryKey: ["/api/video-call/token", bookingId],
     queryFn: async () => {
-      const response = await apiRequest("POST", `/api/video-call/token`, {
-        bookingId: bookingId,
-        userId: user?.id
+      const response = await fetch("/api/video-call/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bookingId: bookingId,
+          userId: user && typeof user === 'object' && 'id' in user ? user.id : ""
+        }),
       });
-      return await response.json();
+      if (!response.ok) throw new Error("Failed to get call token");
+      return response.json();
     },
     enabled: !!user && !!bookingId,
   });
 
   const handleEndCall = async () => {
     try {
-      await apiRequest("POST", `/api/video-call/end`, {
-        bookingId: bookingId
-      });
+      await apiRequest("POST", `/api/video-call/end/${bookingId}`);
       
-      toast({
-        title: "Llamada finalizada",
-        description: "La videollamada ha terminado",
-      });
-      
-      setLocation("/dashboard");
+      // Show rating modal if user is the guest
+      if (callData && user && typeof user === 'object' && 'id' in user && user.id === callData.guestId) {
+        setShowRatingModal(true);
+      } else {
+        toast({
+          title: "Llamada finalizada",
+          description: "La videollamada ha terminado",
+        });
+        setLocation("/dashboard");
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -48,6 +61,15 @@ export default function VideoCallRoom() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleJoinCall = () => {
+    setShowLobby(false);
+    setIsCallActive(true);
+  };
+
+  const handleCancelLobby = () => {
+    setLocation("/dashboard");
   };
 
   if (isLoading) {
@@ -87,59 +109,59 @@ export default function VideoCallRoom() {
     );
   }
 
-  if (!isCallActive) {
+  // Show lobby if call is not active and lobby is enabled
+  if (!isCallActive && showLobby) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Videollamada con {callData.hostName}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-600">Fecha:</p>
-                <p className="font-medium">{new Date(callData.scheduledDate).toLocaleDateString('es-ES')}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Hora:</p>
-                <p className="font-medium">{callData.startTime}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Duración:</p>
-                <p className="font-medium">{callData.duration} minutos</p>
-              </div>
-              
-              {callData.services && callData.services.length > 0 && (
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Servicios adicionales:</p>
-                  <ul className="list-disc list-inside text-sm">
-                    {callData.services.map((service: string) => (
-                      <li key={service} className="text-gray-700">{service}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <Button 
-                onClick={() => setIsCallActive(true)}
-                className="w-full bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
-              >
-                Unirse a la Videollamada
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <VideoCallLobby
+          onJoinCall={handleJoinCall}
+          onCancel={handleCancelLobby}
+          hostName={callData.hostName}
+          sessionDetails={{
+            date: new Date(callData.scheduledDate).toLocaleDateString('es-ES'),
+            time: callData.startTime,
+            duration: callData.duration
+          }}
+        />
+        
+        {/* Rating Modal */}
+        {showRatingModal && (
+          <SessionRatingModal
+            isOpen={showRatingModal}
+            onClose={() => {
+              setShowRatingModal(false);
+              setLocation("/dashboard");
+            }}
+            bookingId={bookingId || ""}
+            hostName={callData.hostName}
+          />
+        )}
+      </>
     );
   }
 
   return (
-    <VideoCall
-      appId={callData.appId || ""}
-      channelName={callData.channelName}
-      token={callData.token}
-      userId={user?.id || ""}
-      onEndCall={handleEndCall}
-    />
+    <>
+      <VideoCall
+        appId={callData.appId || ""}
+        channelName={callData.channelName}
+        token={callData.token}
+        userId={user && typeof user === 'object' && 'id' in user ? String(user.id) : ""}
+        onEndCall={handleEndCall}
+      />
+      
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <SessionRatingModal
+          isOpen={showRatingModal}
+          onClose={() => {
+            setShowRatingModal(false);
+            setLocation("/dashboard");
+          }}
+          bookingId={bookingId || ""}
+          hostName={callData.hostName}
+        />
+      )}
+    </>
   );
 }
