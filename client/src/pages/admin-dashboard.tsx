@@ -382,7 +382,8 @@ function AdminSettings() {
         const value = typeof config.value === 'string' ? parseFloat(config.value) : config.value;
         switch (config.key) {
           case 'commission_rate':
-            setCommission(value);
+            // Convert from decimal to percentage (0.21 -> 21)
+            setCommission(value * 100);
             break;
           case 'screen_sharing_price':
             setScreenSharingFee(value);
@@ -397,7 +398,8 @@ function AdminSettings() {
             setTranscriptionFee(value);
             break;
           case 'vat_rate':
-            setVatRate(value);
+            // Convert from decimal to percentage (0.21 -> 21)
+            setVatRate(value * 100);
             break;
         }
       });
@@ -407,19 +409,20 @@ function AdminSettings() {
   // Save configuration mutation
   const saveConfigMutation = useMutation({
     mutationFn: async () => {
-      const configs = [
-        { key: 'commission_rate', value: commission.toString(), description: 'Platform commission percentage' },
-        { key: 'vat_rate', value: vatRate.toString(), description: 'VAT rate percentage' },
-        { key: 'screen_sharing_price', value: screenSharingFee.toString(), description: 'Screen sharing service fee in EUR' },
-        { key: 'translation_price', value: translationFee.toString(), description: 'Translation service fee in EUR' },
-        { key: 'recording_price', value: recordingFee.toString(), description: 'Recording service fee in EUR' },
-        { key: 'transcription_price', value: transcriptionFee.toString(), description: 'Transcription service fee in EUR' },
-      ];
+      const configData = {
+        commission: commission / 100, // Convert percentage to decimal
+        vatRate: vatRate / 100, // Convert percentage to decimal
+        screenSharePrice: screenSharingFee,
+        translationPrice: translationFee,
+        recordingPrice: recordingFee,
+        transcriptionPrice: transcriptionFee,
+      };
 
-      // Save each config item
-      for (const config of configs) {
-        await apiRequest("/api/admin/config", { method: "POST", body: config });
-      }
+      // Use PUT endpoint for multiple configs
+      await apiRequest("/api/admin/config", { 
+        method: "PUT", 
+        body: configData 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/config"] });

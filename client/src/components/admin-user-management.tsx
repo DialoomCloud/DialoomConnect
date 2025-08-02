@@ -121,6 +121,7 @@ export function AdminUserManagement() {
                   <TableHead>Usuario</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Rol</TableHead>
+                  <TableHead>Comisión</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Activo</TableHead>
                   <TableHead>Acciones</TableHead>
@@ -178,6 +179,18 @@ export function AdminUserManagement() {
                     </TableCell>
                     <TableCell>{user.email || '-'}</TableCell>
                     <TableCell>{getRoleBadges(user)}</TableCell>
+                    <TableCell>
+                      {user.isHost ? (
+                        <span className={user.commissionRate ? 'font-medium' : 'text-gray-500'}>
+                          {user.commissionRate 
+                            ? `${(parseFloat(user.commissionRate) * 100).toFixed(2)}%`
+                            : 'Global'
+                          }
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>{getStatusBadge(user)}</TableCell>
                     <TableCell>
                       <Switch
@@ -300,11 +313,17 @@ function UserEditForm({ user, onSave, isLoading }: {
     isAdmin: user.isAdmin || false,
     isActive: user.isActive !== false,
     isVerified: user.isVerified || false,
+    commissionRate: user.commissionRate ? parseFloat(user.commissionRate) * 100 : null, // Convert to percentage
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    const dataToSave = {
+      ...formData,
+      // Convert commission rate from percentage to decimal for database
+      commissionRate: formData.commissionRate !== null ? formData.commissionRate / 100 : null
+    };
+    onSave(dataToSave);
   };
 
   return (
@@ -384,6 +403,31 @@ function UserEditForm({ user, onSave, isLoading }: {
           <Label htmlFor="isAdmin">Es Admin</Label>
         </div>
       </div>
+
+      {/* Commission Rate Field - Only for Hosts */}
+      {formData.isHost && (
+        <div>
+          <Label htmlFor="commissionRate">
+            Comisión Individual (%) - Dejar vacío para usar la comisión global
+          </Label>
+          <Input
+            id="commissionRate"
+            type="number"
+            placeholder="Ej: 21 para 21%"
+            value={formData.commissionRate || ''}
+            onChange={(e) => setFormData({ 
+              ...formData, 
+              commissionRate: e.target.value ? parseFloat(e.target.value) : null 
+            })}
+            min="0"
+            max="100"
+            step="0.01"
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Si se deja vacío, se aplicará la comisión global configurada
+          </p>
+        </div>
+      )}
 
       <div className="space-y-3">
         <Label>Estado</Label>

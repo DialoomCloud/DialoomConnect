@@ -106,6 +106,8 @@ export const users = pgTable("users", {
   gdprConsent: boolean("gdpr_consent").default(false),
   gdprConsentDate: timestamp("gdpr_consent_date"),
   dataRetentionDate: timestamp("data_retention_date"),
+  // Custom commission rate for hosts (overrides global rate)
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 4 }), // e.g., 0.2100 for 21%
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
