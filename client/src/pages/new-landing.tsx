@@ -38,12 +38,6 @@ export default function NewLanding() {
                   {t('hosts.title')}
                 </Button>
               </Link>
-              <Link href="/news" className="hidden sm:block">
-                <Button variant="ghost" className="text-gray-600 hover:text-primary font-medium">
-                  Blog
-                </Button>
-              </Link>
-              <LanguageSelector />
               <Button 
                 variant="ghost" 
                 onClick={handleLogin}
@@ -58,6 +52,7 @@ export default function NewLanding() {
               >
                 <span className="whitespace-nowrap">{t('landing.hero.cta')}</span>
               </Button>
+              <LanguageSelector />
             </div>
           </div>
         </div>
