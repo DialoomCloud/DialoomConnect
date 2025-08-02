@@ -2391,10 +2391,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .toBuffer();
 
       // Save to Object Storage
-      const imagePath = `Objects/news/${filename.replace(/\.[^/.]+$/, ".webp")}`;
-      await replitStorage.upload(imagePath, processedImage, 'image/webp');
+      const imagePath = `news/${filename.replace(/\.[^/.]+$/, ".webp")}`;
+      
+      // Save to local filesystem first as primary storage
+      const localPath = `uploads/${imagePath}`;
+      await fs.mkdir(path.dirname(localPath), { recursive: true });
+      await fs.writeFile(localPath, processedImage);
+      console.log(`News image saved locally: ${localPath}`);
 
-      const imageUrl = `/storage/${imagePath}`;
+      // Try to upload to Object Storage as backup
+      try {
+        const result = await replitStorage._client.uploadFromBytes(`Objects/${imagePath}`, processedImage);
+        if (result.error) {
+          console.warn(`Object Storage upload failed: ${result.error.message}`);
+        } else {
+          console.log(`News image also uploaded to Object Storage: Objects/${imagePath}`);
+        }
+      } catch (objectStorageError) {
+        console.warn('Object Storage upload failed:', objectStorageError);
+      }
+
+      const imageUrl = `/storage/Objects/${imagePath}`;
       res.json({ imageUrl });
     } catch (error) {
       console.error("Error uploading news image:", error);

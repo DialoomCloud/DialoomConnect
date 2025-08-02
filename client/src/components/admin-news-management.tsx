@@ -63,7 +63,7 @@ export default function AdminNewsManagement() {
       const url = filterStatus === 'all' 
         ? '/api/admin/news/articles' 
         : `/api/admin/news/articles?status=${filterStatus}`;
-      const response = await apiRequest('GET', url);
+      const response = await apiRequest(url);
       return response.json();
     },
   });
