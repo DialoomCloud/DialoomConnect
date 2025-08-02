@@ -18,7 +18,10 @@ import {
   Video,
   Clock,
   TrendingUp,
-  Mail
+  Mail,
+  Calendar,
+  Filter,
+  AlertCircle
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -26,6 +29,7 @@ import { AdminUserManagement } from "@/components/admin-user-management";
 import { AdminEmailManagement } from "@/components/admin-email-management";
 import AdminNewsManagement from "@/components/admin-news-management";
 import { useToast } from "@/hooks/use-toast";
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function AdminDashboard() {
   const { i18n } = useTranslation();
@@ -85,7 +89,7 @@ export default function AdminDashboard() {
 
         {/* Main Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 mb-8">
-          <TabsList className="grid grid-cols-7 w-full">
+          <TabsList className="grid grid-cols-8 w-full">
             <TabsTrigger value="overview">
               <BarChart3 className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
@@ -95,6 +99,12 @@ export default function AdminDashboard() {
             <TabsTrigger value="hosts">
               <Users className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">Hosts</span>
+            </TabsTrigger>
+            <TabsTrigger value="sessions">
+              <Calendar className="w-4 h-4 mr-2" />
+              <span className="hidden md:inline">
+                {i18n.language === 'es' ? 'Sesiones' : 'Sessions'}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="invoices">
               <FileText className="w-4 h-4 mr-2" />
@@ -136,6 +146,11 @@ export default function AdminDashboard() {
           {/* Hosts Management Tab */}
           <TabsContent value="hosts" className="space-y-4">
             <AdminUserManagement />
+          </TabsContent>
+
+          {/* Sessions Management Tab */}
+          <TabsContent value="sessions" className="space-y-4">
+            <SessionsManagement />
           </TabsContent>
 
           {/* Invoices Tab */}
@@ -233,49 +248,291 @@ export default function AdminDashboard() {
   );
 }
 
-// Admin Overview Component
+// Admin Overview Component with Enhanced Analytics
 function AdminOverview() {
   const { i18n } = useTranslation();
   
+  // Fetch detailed statistics
+  const { data: analytics } = useQuery({
+    queryKey: ["/api/admin/analytics"],
+    queryFn: async () => {
+      const response = await apiRequest("/api/admin/analytics");
+      return response.json();
+    },
+  });
+
+  const { data: recentActivity } = useQuery({
+    queryKey: ["/api/admin/recent-activity"],
+    queryFn: async () => {
+      const response = await apiRequest("/api/admin/recent-activity");
+      return response.json();
+    },
+  });
+
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {i18n.language === 'es' ? 'Resumen de Actividad' : 'Activity Summary'}
-          </CardTitle>
-          <CardDescription>
-            {i18n.language === 'es' 
-              ? 'Métricas clave de los últimos 30 días'
-              : 'Key metrics from the last 30 days'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-green-500" />
-                <span>Tasa de Conversión</span>
+    <div className="space-y-6">
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              {i18n.language === 'es' ? 'Nuevos Registros' : 'New Registrations'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.newRegistrations?.week || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {i18n.language === 'es' ? 'Esta semana' : 'This week'}
+              <span className={`ml-2 ${(analytics?.newRegistrations?.growth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {(analytics?.newRegistrations?.growth || 0) >= 0 ? '+' : ''}{analytics?.newRegistrations?.growth || 0}%
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-green-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              {i18n.language === 'es' ? 'Sesiones Reservadas' : 'Sessions Booked'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.sessionsBooked?.month || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {i18n.language === 'es' ? 'Este mes' : 'This month'}
+              <span className="ml-2 text-green-600">
+                {analytics?.sessionsBooked?.completionRate || 0}% {i18n.language === 'es' ? 'completadas' : 'completed'}
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              {i18n.language === 'es' ? 'Tasa de Cancelación' : 'Cancellation Rate'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.cancellationRate || 0}%</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {i18n.language === 'es' ? 'Últimos 30 días' : 'Last 30 days'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-purple-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              {i18n.language === 'es' ? 'Retención de Usuarios' : 'User Retention'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.retentionRate || 0}%</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {i18n.language === 'es' ? 'Usuarios que repiten' : 'Returning users'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Analytics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {i18n.language === 'es' ? 'Análisis Financiero' : 'Financial Analytics'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">
+                  {i18n.language === 'es' ? 'Total Facturado' : 'Total Billed'}
+                </span>
+                <span className="font-bold text-lg">€{analytics?.revenue?.total || 0}</span>
               </div>
-              <span className="font-semibold">24.5%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-blue-500" />
-                <span>Crecimiento de Usuarios</span>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">
+                  {i18n.language === 'es' ? 'Comisiones Dialoom' : 'Dialoom Commissions'}
+                </span>
+                <span className="font-semibold text-green-600">€{analytics?.revenue?.commissions || 0}</span>
               </div>
-              <span className="font-semibold">+18%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Video className="w-4 h-4 text-purple-500" />
-                <span>Videollamadas Completadas</span>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">
+                  {i18n.language === 'es' ? 'Pagos a Hosts' : 'Host Payments'}
+                </span>
+                <span className="font-semibold">€{analytics?.revenue?.hostPayments || 0}</span>
               </div>
-              <span className="font-semibold">89%</span>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">
+                  {i18n.language === 'es' ? 'Pagos Pendientes' : 'Pending Payments'}
+                </span>
+                <span className="font-semibold text-orange-600">€{analytics?.revenue?.pendingPayments || 0}</span>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="border-t pt-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">
+                  {i18n.language === 'es' ? 'Ticket Promedio' : 'Average Ticket'}
+                </span>
+                <span className="font-bold">€{analytics?.revenue?.averageTicket || 0}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Performing Hosts */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {i18n.language === 'es' ? 'Hosts Más Solicitados' : 'Top Performing Hosts'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analytics?.topHosts?.map((host: any, index: number) => (
+                <div key={host.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                      index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-300'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{host.name}</p>
+                      <p className="text-xs text-gray-500">{host.category}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-sm">{host.sessions} {i18n.language === 'es' ? 'sesiones' : 'sessions'}</p>
+                    <p className="text-xs text-gray-500">€{host.revenue}</p>
+                  </div>
+                </div>
+              )) || (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  {i18n.language === 'es' ? 'No hay datos disponibles' : 'No data available'}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* User Growth Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {i18n.language === 'es' ? 'Crecimiento de Usuarios' : 'User Growth'}
+            </CardTitle>
+            <CardDescription>
+              {i18n.language === 'es' ? 'Últimos 6 meses' : 'Last 6 months'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <AreaChart data={analytics?.userGrowthData || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Area 
+                  type="monotone" 
+                  dataKey="users" 
+                  stroke="#00ACC1" 
+                  fill="#00ACC1" 
+                  fillOpacity={0.3} 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Revenue Trend Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {i18n.language === 'es' ? 'Tendencia de Ingresos' : 'Revenue Trend'}
+            </CardTitle>
+            <CardDescription>
+              {i18n.language === 'es' ? 'Por semana' : 'Weekly'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={analytics?.revenueTrendData || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="week" />
+                <YAxis />
+                <Tooltip />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#4CAF50" 
+                  strokeWidth={2} 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Sessions by Category */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {i18n.language === 'es' ? 'Sesiones por Categoría' : 'Sessions by Category'}
+            </CardTitle>
+            <CardDescription>
+              {i18n.language === 'es' ? 'Este mes' : 'This month'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={analytics?.sessionsByCategoryData || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="category" angle={-45} textAnchor="end" height={80} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="sessions" fill="#9C27B0" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {i18n.language === 'es' ? 'Actividad Reciente' : 'Recent Activity'}
+            </CardTitle>
+            <CardDescription>
+              {i18n.language === 'es' ? 'Últimas acciones en la plataforma' : 'Latest platform activities'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-[250px] overflow-y-auto">
+              {recentActivity?.activities?.slice(0, 10).map((activity: any, index: number) => (
+                <div key={index} className="flex items-center gap-3 text-sm">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                    activity.type === 'registration' ? 'bg-blue-500' :
+                    activity.type === 'booking' ? 'bg-green-500' :
+                    activity.type === 'cancellation' ? 'bg-red-500' :
+                    'bg-gray-500'
+                  }`} />
+                  <span className="text-gray-600 text-xs flex-shrink-0">{activity.timestamp}</span>
+                  <span className="flex-1 text-gray-700">{activity.description}</span>
+                </div>
+              )) || (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  {i18n.language === 'es' ? 'No hay actividad reciente' : 'No recent activity'}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -324,28 +581,521 @@ function HostsManagement() {
   );
 }
 
-// Invoices Management Component
+// Enhanced Financial Management Component
 function InvoicesManagement() {
   const { i18n } = useTranslation();
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   
+  // Fetch financial data
+  const { data: financialData } = useQuery({
+    queryKey: ["/api/admin/financial", selectedPeriod],
+    queryFn: async () => {
+      const response = await apiRequest(`/api/admin/financial?period=${selectedPeriod}`);
+      return response.json();
+    },
+  });
+
+  const { data: transactions } = useQuery({
+    queryKey: ["/api/admin/transactions", selectedStatus],
+    queryFn: async () => {
+      const response = await apiRequest(`/api/admin/transactions?status=${selectedStatus}`);
+      return response.json();
+    },
+  });
+
+  const { data: payouts } = useQuery({
+    queryKey: ["/api/admin/payouts"],
+    queryFn: async () => {
+      const response = await apiRequest("/api/admin/payouts");
+      return response.json();
+    },
+  });
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Financial Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-green-800">
+              {i18n.language === 'es' ? 'Ingresos Totales' : 'Total Revenue'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-900">
+              €{financialData?.totalRevenue || 0}
+            </div>
+            <p className="text-xs text-green-700 mt-1">
+              {selectedPeriod === 'month' 
+                ? (i18n.language === 'es' ? 'Este mes' : 'This month')
+                : (i18n.language === 'es' ? 'Este año' : 'This year')}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-blue-800">
+              {i18n.language === 'es' ? 'Comisiones Generadas' : 'Commissions Earned'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-900">
+              €{financialData?.commissionsEarned || 0}
+            </div>
+            <p className="text-xs text-blue-700 mt-1">
+              {financialData?.commissionRate || 0}% {i18n.language === 'es' ? 'promedio' : 'average'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-yellow-800">
+              {i18n.language === 'es' ? 'Pagos Pendientes' : 'Pending Payouts'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-900">
+              €{financialData?.pendingPayouts || 0}
+            </div>
+            <p className="text-xs text-yellow-700 mt-1">
+              {financialData?.pendingCount || 0} {i18n.language === 'es' ? 'hosts' : 'hosts'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-purple-800">
+              {i18n.language === 'es' ? 'Pagos Procesados' : 'Processed Payouts'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-900">
+              €{financialData?.processedPayouts || 0}
+            </div>
+            <p className="text-xs text-purple-700 mt-1">
+              {financialData?.processedCount || 0} {i18n.language === 'es' ? 'completados' : 'completed'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            {i18n.language === 'es' ? 'Gestión de Facturas' : 'Invoice Management'}
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>{i18n.language === 'es' ? 'Transacciones' : 'Transactions'}</CardTitle>
+            <div className="flex gap-2">
+              <select 
+                className="px-3 py-1 text-sm border rounded-md"
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+              >
+                <option value="month">{i18n.language === 'es' ? 'Este mes' : 'This month'}</option>
+                <option value="quarter">{i18n.language === 'es' ? 'Trimestre' : 'Quarter'}</option>
+                <option value="year">{i18n.language === 'es' ? 'Este año' : 'This year'}</option>
+              </select>
+              <select 
+                className="px-3 py-1 text-sm border rounded-md"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option value="all">{i18n.language === 'es' ? 'Todas' : 'All'}</option>
+                <option value="completed">{i18n.language === 'es' ? 'Completadas' : 'Completed'}</option>
+                <option value="pending">{i18n.language === 'es' ? 'Pendientes' : 'Pending'}</option>
+                <option value="refunded">{i18n.language === 'es' ? 'Reembolsadas' : 'Refunded'}</option>
+              </select>
+              <Button size="sm" variant="outline">
+                <FileText className="w-4 h-4 mr-2" />
+                {i18n.language === 'es' ? 'Exportar' : 'Export'}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Fecha' : 'Date'}</th>
+                  <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Cliente' : 'Client'}</th>
+                  <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Host' : 'Host'}</th>
+                  <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Importe' : 'Amount'}</th>
+                  <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Comisión' : 'Commission'}</th>
+                  <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Estado' : 'Status'}</th>
+                  <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Acciones' : 'Actions'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions?.transactions?.map((tx: any) => (
+                  <tr key={tx.id} className="border-b hover:bg-gray-50">
+                    <td className="py-2 px-3">{new Date(tx.date).toLocaleDateString()}</td>
+                    <td className="py-2 px-3">{tx.clientName}</td>
+                    <td className="py-2 px-3">{tx.hostName}</td>
+                    <td className="py-2 px-3 font-medium">€{tx.amount}</td>
+                    <td className="py-2 px-3">€{tx.commission}</td>
+                    <td className="py-2 px-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        tx.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        tx.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="py-2 px-3">
+                      <Button size="sm" variant="ghost">
+                        <FileText className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                )) || (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4 text-gray-500">
+                      {i18n.language === 'es' ? 'No hay transacciones' : 'No transactions'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Host Payouts Management */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>{i18n.language === 'es' ? 'Pagos a Hosts' : 'Host Payouts'}</CardTitle>
+              <CardDescription>
+                {i18n.language === 'es' 
+                  ? 'Gestiona los pagos pendientes a los hosts'
+                  : 'Manage pending payments to hosts'}
+              </CardDescription>
+            </div>
+            <Button className="bg-green-600 hover:bg-green-700">
+              <DollarSign className="w-4 h-4 mr-2" />
+              {i18n.language === 'es' ? 'Procesar Pagos' : 'Process Payouts'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {payouts?.pendingPayouts?.map((payout: any) => (
+              <div key={payout.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" className="w-4 h-4" />
+                  <div>
+                    <p className="font-medium">{payout.hostName}</p>
+                    <p className="text-sm text-gray-500">
+                      {payout.sessionCount} {i18n.language === 'es' ? 'sesiones' : 'sessions'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold">€{payout.amount}</p>
+                  <p className="text-xs text-gray-500">
+                    {i18n.language === 'es' ? 'Desde' : 'Since'} {new Date(payout.lastPayment).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            )) || (
+              <p className="text-center text-gray-500 py-4">
+                {i18n.language === 'es' ? 'No hay pagos pendientes' : 'No pending payouts'}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Sessions Management Component
+function SessionsManagement() {
+  const { i18n } = useTranslation();
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterDate, setFilterDate] = useState('today');
+  
+  // Fetch sessions data
+  const { data: sessions } = useQuery({
+    queryKey: ["/api/admin/sessions", filterStatus, filterDate],
+    queryFn: async () => {
+      const response = await apiRequest(`/api/admin/sessions?status=${filterStatus}&date=${filterDate}`);
+      return response.json();
+    },
+  });
+
+  const { data: sessionStats } = useQuery({
+    queryKey: ["/api/admin/session-stats"],
+    queryFn: async () => {
+      const response = await apiRequest("/api/admin/session-stats");
+      return response.json();
+    },
+  });
+
+  const handleCancelSession = useMutation({
+    mutationFn: async (sessionId: string) => {
+      await apiRequest(`/api/admin/sessions/${sessionId}/cancel`, { method: "POST" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sessions"] });
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Session Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="border-l-4 border-l-green-500">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              {i18n.language === 'es' ? 'Sesiones Hoy' : 'Sessions Today'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{sessionStats?.today || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {sessionStats?.todayCompleted || 0} {i18n.language === 'es' ? 'completadas' : 'completed'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              {i18n.language === 'es' ? 'Esta Semana' : 'This Week'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{sessionStats?.week || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {sessionStats?.weekPending || 0} {i18n.language === 'es' ? 'pendientes' : 'pending'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              {i18n.language === 'es' ? 'Cancelaciones' : 'Cancellations'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{sessionStats?.cancellations || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {sessionStats?.cancellationRate || 0}% {i18n.language === 'es' ? 'tasa' : 'rate'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-purple-500">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              {i18n.language === 'es' ? 'Duración Media' : 'Avg Duration'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{sessionStats?.avgDuration || 0} min</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {i18n.language === 'es' ? 'por sesión' : 'per session'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sessions Management */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>{i18n.language === 'es' ? 'Gestión de Sesiones' : 'Session Management'}</CardTitle>
+              <CardDescription>
+                {i18n.language === 'es' 
+                  ? 'Monitorea y gestiona todas las videollamadas'
+                  : 'Monitor and manage all video calls'}
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <FileText className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+              >
+                <Calendar className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Filters */}
+          <div className="flex gap-2 mb-4">
+            <select 
+              className="px-3 py-1 text-sm border rounded-md"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">{i18n.language === 'es' ? 'Todas' : 'All'}</option>
+              <option value="scheduled">{i18n.language === 'es' ? 'Programadas' : 'Scheduled'}</option>
+              <option value="ongoing">{i18n.language === 'es' ? 'En curso' : 'Ongoing'}</option>
+              <option value="completed">{i18n.language === 'es' ? 'Completadas' : 'Completed'}</option>
+              <option value="cancelled">{i18n.language === 'es' ? 'Canceladas' : 'Cancelled'}</option>
+            </select>
+            <select 
+              className="px-3 py-1 text-sm border rounded-md"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+            >
+              <option value="today">{i18n.language === 'es' ? 'Hoy' : 'Today'}</option>
+              <option value="week">{i18n.language === 'es' ? 'Esta semana' : 'This week'}</option>
+              <option value="month">{i18n.language === 'es' ? 'Este mes' : 'This month'}</option>
+              <option value="all">{i18n.language === 'es' ? 'Todo' : 'All time'}</option>
+            </select>
+            <Button size="sm" variant="outline">
+              <Filter className="w-4 h-4 mr-2" />
+              {i18n.language === 'es' ? 'Más filtros' : 'More filters'}
+            </Button>
+          </div>
+
+          {/* Sessions List View */}
+          {viewMode === 'list' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Fecha/Hora' : 'Date/Time'}</th>
+                    <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Cliente' : 'Client'}</th>
+                    <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Host' : 'Host'}</th>
+                    <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Duración' : 'Duration'}</th>
+                    <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Precio' : 'Price'}</th>
+                    <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Estado' : 'Status'}</th>
+                    <th className="text-left py-2 px-3">{i18n.language === 'es' ? 'Acciones' : 'Actions'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sessions?.sessions?.map((session: any) => (
+                    <tr key={session.id} className="border-b hover:bg-gray-50">
+                      <td className="py-2 px-3">
+                        <div>
+                          <p className="font-medium">{new Date(session.scheduledAt).toLocaleDateString()}</p>
+                          <p className="text-xs text-gray-500">{new Date(session.scheduledAt).toLocaleTimeString()}</p>
+                        </div>
+                      </td>
+                      <td className="py-2 px-3">{session.clientName}</td>
+                      <td className="py-2 px-3">{session.hostName}</td>
+                      <td className="py-2 px-3">{session.duration} min</td>
+                      <td className="py-2 px-3 font-medium">€{session.price}</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          session.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                          session.status === 'ongoing' ? 'bg-purple-100 text-purple-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {session.status}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3">
+                        <div className="flex gap-1">
+                          {session.status === 'scheduled' && (
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handleCancelSession.mutate(session.id)}
+                            >
+                              <AlertCircle className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost">
+                            <Video className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )) || (
+                    <tr>
+                      <td colSpan={7} className="text-center py-4 text-gray-500">
+                        {i18n.language === 'es' ? 'No hay sesiones' : 'No sessions'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Calendar View Placeholder */}
+          {viewMode === 'calendar' && (
+            <div className="min-h-[400px] flex items-center justify-center bg-gray-50 rounded-lg">
+              <div className="text-center">
+                <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500">
+                  {i18n.language === 'es' 
+                    ? 'Vista de calendario en desarrollo'
+                    : 'Calendar view coming soon'}
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Host Load Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{i18n.language === 'es' ? 'Carga de Hosts' : 'Host Workload'}</CardTitle>
           <CardDescription>
             {i18n.language === 'es' 
-              ? 'Visualiza y gestiona todas las facturas'
-              : 'View and manage all invoices'}
+              ? 'Monitorea la distribución de sesiones entre hosts'
+              : 'Monitor session distribution among hosts'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-gray-500">
-            {i18n.language === 'es' 
-              ? 'Sistema de facturas y reportes financieros'
-              : 'Invoice system and financial reports'}
+          <div className="space-y-3">
+            {sessionStats?.hostWorkload?.map((host: any) => (
+              <div key={host.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                    {host.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-medium">{host.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {host.sessionsToday} {i18n.language === 'es' ? 'sesiones hoy' : 'sessions today'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-32 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        host.utilization > 80 ? 'bg-red-500' :
+                        host.utilization > 60 ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`}
+                      style={{ width: `${host.utilization}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium">{host.utilization}%</span>
+                </div>
+              </div>
+            )) || (
+              <p className="text-center text-gray-500 py-4">
+                {i18n.language === 'es' ? 'No hay datos de carga' : 'No workload data'}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
