@@ -12,7 +12,6 @@ import { z } from "zod";
 import { storageBucket } from "./storage-bucket";
 import { replitStorage } from "./object-storage";
 import Stripe from "stripe";
-import session from "express-session";
 import { generateAgoraToken } from "./agora-token";
 import { emailService } from "./email-service";
 import { initializeEmailTemplates } from "./email-templates-init";
@@ -62,19 +61,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session for admin
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'dialoom-admin-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-  }));
-
-  // Auth middleware
+  // Auth middleware (includes session configuration)
   await setupAuth(app);
   
   // Admin authentication middleware - using Replit Auth
@@ -109,32 +96,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   const isAdminAuthenticated: RequestHandler = async (req: any, res, next) => {
-    if (!req.isAuthenticated()) {
-      console.log("Admin auth failed: Not authenticated");
-      return res.status(401).json({ message: "Unauthorized - Login required" });
-    }
+    // First check if user is authenticated using the proper Replit Auth middleware
+    return isAuthenticated(req, res, () => {
+      const user = req.user;
+      const userEmail = user?.claims?.email;
+      const emailPrefix = userEmail?.split('@')[0] || '';
+      
+      console.log("Admin auth check:", {
+        email: userEmail,
+        prefix: emailPrefix,
+        adminUsernames: ADMIN_USERNAMES,
+        isAdmin: ADMIN_USERNAMES.includes(emailPrefix)
+      });
+      
+      const isAdmin = user && ADMIN_USERNAMES.includes(emailPrefix);
+      
+      if (!isAdmin) {
+        console.log("Admin auth failed: Not in admin list");
+        return res.status(401).json({ message: "Unauthorized - Admin access required" });
+      }
 
-    const user = req.user;
-    const userEmail = user?.claims?.email;
-    const emailPrefix = userEmail?.split('@')[0] || '';
-    
-    console.log("Admin auth check:", {
-      email: userEmail,
-      prefix: emailPrefix,
-      adminUsernames: ADMIN_USERNAMES,
-      isAdmin: ADMIN_USERNAMES.includes(emailPrefix)
+      console.log("Admin auth success");
+      req.adminUser = user;
+      next();
     });
-    
-    const isAdmin = user && ADMIN_USERNAMES.includes(emailPrefix);
-    
-    if (!isAdmin) {
-      console.log("Admin auth failed: Not in admin list");
-      return res.status(401).json({ message: "Unauthorized - Admin access required" });
-    }
-
-    console.log("Admin auth success");
-    req.adminUser = user;
-    next();
   };
 
 
