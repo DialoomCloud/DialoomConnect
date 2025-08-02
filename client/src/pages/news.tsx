@@ -10,7 +10,7 @@ import { Newspaper, Calendar, User, Clock, ChevronLeft, ChevronRight } from 'luc
 import { format } from 'date-fns';
 import { es, enUS, ca } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import type { NewsArticle } from '@/shared/schema';
+import type { NewsArticle } from '@shared/schema';
 
 export default function NewsPage() {
   const { t, i18n } = useTranslation();
@@ -22,7 +22,7 @@ export default function NewsPage() {
     switch (i18n.language) {
       case 'es': return es;
       case 'ca': return ca;
-      default: return en;
+      default: return enUS;
     }
   };
 
@@ -104,7 +104,7 @@ export default function NewsPage() {
                       {/* Tags */}
                       {article.tags && article.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {article.tags.slice(0, 2).map((tag) => (
+                          {article.tags.slice(0, 2).map((tag: string) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
                               {tag}
                             </Badge>

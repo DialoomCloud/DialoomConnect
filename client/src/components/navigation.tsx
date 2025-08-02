@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./language-selector";
-import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon, Menu, X } from "lucide-react";
+import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon, Menu, X, Newspaper } from "lucide-react";
 import type { User } from "@shared/schema";
 import { useState } from "react";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
@@ -65,6 +65,17 @@ export function Navigation() {
               >
                 <Users className="w-4 h-4 mr-2" />
                 {t('hosts.title')}
+              </Button>
+            </Link>
+
+            <Link href="/news">
+              <Button
+                variant={isActive("/news") ? "default" : "ghost"}
+                size="sm"
+                className={isActive("/news") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+              >
+                <Newspaper className="w-4 h-4 mr-2" />
+                {t('navigation.news', 'Noticias')}
               </Button>
             </Link>
             
@@ -168,6 +179,17 @@ export function Navigation() {
                 >
                   <Users className="w-4 h-4 mr-2" />
                   {t('hosts.title')}
+                </Button>
+              </Link>
+
+              <Link href="/news" onClick={closeMobileMenu}>
+                <Button
+                  variant={isActive("/news") ? "default" : "ghost"}
+                  size="sm"
+                  className={`w-full justify-start ${isActive("/news") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                >
+                  <Newspaper className="w-4 h-4 mr-2" />
+                  {t('navigation.news', 'Noticias')}
                 </Button>
               </Link>
               
