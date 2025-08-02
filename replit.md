@@ -71,6 +71,10 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Added proper error handling and logging for authentication strategy registration
   - Eliminated email verification flow issues by ensuring correct domain-strategy mapping
   - Authentication now works seamlessly for both development (localhost) and production (Replit domain) environments
+- Fixed footer duplication issues (August 2025):
+  - Removed duplicate footer from "How it works" page that was conflicting with global footer
+  - Eliminated unnecessary Footer import from how-it-works.tsx component
+  - Global footer from App.tsx now handles all pages consistently without duplication
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.

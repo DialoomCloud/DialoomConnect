@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -186,8 +185,6 @@ export default function HowItWorks() {
           </CardContent>
         </Card>
       </div>
-      
-      <Footer />
     </div>
   );
 }
