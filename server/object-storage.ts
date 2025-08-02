@@ -5,8 +5,10 @@ export class ReplitObjectStorage {
   public _client: Client;
 
   constructor() {
-    // Use the default bucket from the object storage configuration
-    const bucketId = 'replit-objstore-0e2d05cd-3197-4482-900e-063db86b7a64';
+    // Get bucket name from environment variables
+    const publicPaths = process.env.PUBLIC_OBJECT_SEARCH_PATHS || '';
+    const bucketId = publicPaths.split('/')[1] || 'replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7';
+    console.log('Initializing Object Storage with bucket:', bucketId);
     this._client = new Client(bucketId);
   }
 
@@ -15,7 +17,8 @@ export class ReplitObjectStorage {
    */
   async initializeBucket(): Promise<void> {
     try {
-      const bucketId = 'replit-objstore-0e2d05cd-3197-4482-900e-063db86b7a64';
+      const publicPaths = process.env.PUBLIC_OBJECT_SEARCH_PATHS || '';
+      const bucketId = publicPaths.split('/')[1] || 'replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7';
       console.log(`Replit Object Storage initialized with bucket: ${bucketId}`);
     } catch (error) {
       console.error('Error initializing Object Storage:', error);
@@ -187,47 +190,18 @@ export class ReplitObjectStorage {
    */
   async getFile(objectPath: string): Promise<Buffer> {
     try {
-      // First try to check if file exists using list
-      const prefix = objectPath.substring(0, objectPath.lastIndexOf('/') + 1);
-      const listResult = await this._client.list({ prefix });
+      // Try to download the file directly
+      const result = await this._client.downloadAsBytes(objectPath);
       
-      if (listResult.error) {
-        throw new Error(`List failed: ${listResult.error.message}`);
-      }
-      
-      const fileExists = listResult.data?.some(obj => obj.path === objectPath);
-      if (!fileExists) {
-        throw new Error(`File not found in bucket: ${objectPath}`);
-      }
-      
-      // Try downloadAsStream first as it may be more reliable
-      const streamResult = await this._client.downloadAsStream(objectPath);
-      
-      if (streamResult.error) {
-        throw new Error(`Download failed: ${streamResult.error.message}`);
+      if (result.error) {
+        throw new Error(`Download failed: ${result.error.message}`);
       }
 
-      if (!streamResult.data) {
-        throw new Error('No stream data received from Object Storage');
+      if (!result.data) {
+        throw new Error('No data received from Object Storage');
       }
 
-      // Convert stream to buffer
-      const chunks: Buffer[] = [];
-      
-      return new Promise((resolve, reject) => {
-        streamResult.data.on('data', (chunk: Buffer) => {
-          chunks.push(chunk);
-        });
-        
-        streamResult.data.on('end', () => {
-          const buffer = Buffer.concat(chunks);
-          resolve(buffer);
-        });
-        
-        streamResult.data.on('error', (error: Error) => {
-          reject(new Error(`Stream error: ${error.message}`));
-        });
-      });
+      return result.data;
       
     } catch (error) {
       console.error('Error downloading file from Object Storage:', error);
