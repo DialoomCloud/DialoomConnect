@@ -165,13 +165,56 @@ export async function setupAuth(app: Express) {
       scope: ["openid", "email", "profile", "offline_access"]
     };
     
-    // Add state parameter to track the authentication flow
-    authOptions.state = Buffer.from(JSON.stringify({
-      returnTo: req.query.returnTo || '/home',
-      timestamp: Date.now()
-    })).toString('base64');
+    // Add timestamp to force fresh authentication if requested
+    if (req.query.fresh) {
+      authOptions.state = Buffer.from(JSON.stringify({
+        returnTo: req.query.returnTo || '/home',
+        timestamp: Date.now(),
+        fresh: true
+      })).toString('base64');
+    } else {
+      authOptions.state = Buffer.from(JSON.stringify({
+        returnTo: req.query.returnTo || '/home',
+        timestamp: Date.now()
+      })).toString('base64');
+    }
     
     passport.authenticate(strategyName, authOptions)(req, res, next);
+  });
+
+  // Alternative login endpoint that forces fresh authentication
+  app.get("/api/login-fresh", (req, res) => {
+    console.log('Fresh login requested - clearing all cached auth state');
+    
+    // Clear session first
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Error destroying session:', err);
+        }
+        
+        // Clear all auth cookies
+        const cookiesToClear = ['connect.sid', 'session', 'auth', 'repl_session', 'repl_identity'];
+        cookiesToClear.forEach(cookieName => {
+          res.clearCookie(cookieName, {
+            path: '/',
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
+          });
+        });
+        
+        // Redirect to fresh login with timestamp to bypass cache
+        const freshLoginUrl = `/api/login?fresh=true&timestamp=${Date.now()}&email=${req.query.email || ''}`;
+        console.log('Redirecting to fresh login:', freshLoginUrl);
+        res.redirect(freshLoginUrl);
+      });
+    } else {
+      // No session to destroy, go directly to fresh login
+      const freshLoginUrl = `/api/login?fresh=true&timestamp=${Date.now()}&email=${req.query.email || ''}`;
+      console.log('Redirecting to fresh login:', freshLoginUrl);
+      res.redirect(freshLoginUrl);
+    }
   });
 
   app.get("/api/callback", (req, res, next) => {
