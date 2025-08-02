@@ -76,10 +76,11 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Eliminated unnecessary Footer import from how-it-works.tsx component
   - Global footer from App.tsx now handles all pages consistently without duplication
 - Enhanced Replit Auth logout behavior (August 2025):
-  - Added prompt=select_account parameter to force account selection on login
+  - Removed unsupported prompt=select_account parameter (Replit Auth doesn't support it)
   - Improved session clearing to remove all authentication cookies
   - Fixed logout flow to prevent persistent email verification issues
-  - Users can now switch between different email accounts after logout
+  - Created comprehensive guide for switching accounts using incognito mode or cookie clearing
+  - Added /api/clear-session endpoint for manual session clearing
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.

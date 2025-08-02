@@ -115,23 +115,30 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  // Add endpoint to clear session before login
+  // Add endpoint to clear session and force new account selection
   app.get("/api/clear-session", (req, res) => {
+    console.log('Clear session requested');
     if (req.session) {
       req.session.destroy((err) => {
         if (err) {
           console.error('Error destroying session:', err);
         }
-        res.clearCookie('connect.sid', {
-          path: '/',
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax'
+        // Clear all authentication cookies
+        const cookiesToClear = ['connect.sid', 'session', 'auth', 'repl_session', 'repl_identity'];
+        cookiesToClear.forEach(cookieName => {
+          res.clearCookie(cookieName, {
+            path: '/',
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
+          });
         });
-        res.json({ success: true });
+        
+        console.log('Session cleared successfully');
+        res.json({ success: true, message: 'Session cleared' });
       });
     } else {
-      res.json({ success: true });
+      res.json({ success: true, message: 'No session to clear' });
     }
   });
 
@@ -153,10 +160,9 @@ export async function setupAuth(app: Express) {
       });
     }
     
-    // Force account selection to allow switching emails
+    // Remove unsupported prompt parameter - Replit Auth doesn't support select_account
     const authOptions: any = {
-      scope: ["openid", "email", "profile", "offline_access"],
-      prompt: "select_account" // This forces Replit to show account selection
+      scope: ["openid", "email", "profile", "offline_access"]
     };
     
     // Add state parameter to track the authentication flow
