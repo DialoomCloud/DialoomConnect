@@ -5,6 +5,7 @@ import { Shield, Users, Video, Clock, Star, CheckCircle, Play, Smartphone, Globe
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/language-selector";
+import { NewsSection } from "@/components/news-section";
 
 export default function NewLanding() {
   const { t, i18n } = useTranslation();
@@ -108,6 +109,9 @@ export default function NewLanding() {
           </div>
         </div>
       </section>
+
+      {/* News Section */}
+      <NewsSection />
 
       {/* Features Section */}
       <section className="py-20 bg-white">
