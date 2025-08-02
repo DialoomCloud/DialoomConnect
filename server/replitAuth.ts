@@ -14,10 +14,17 @@ if (!process.env.REPLIT_DOMAINS) {
 
 const getOidcConfig = memoize(
   async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
+    try {
+      console.log(`Attempting OIDC discovery with client_id: ${process.env.REPL_ID}`);
+      
+      return await client.discovery(
+        new URL("https://replit.com/oidc"),
+        process.env.REPL_ID!
+      );
+    } catch (error) {
+      console.error("OIDC discovery failed:", error);
+      throw error;
+    }
   },
   { maxAge: 3600 * 1000 }
 );
@@ -84,18 +91,25 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  // Add strategies for both Replit domains and localhost
+  const domains = [...process.env.REPLIT_DOMAINS!.split(","), "localhost"];
+  
+  for (const domain of domains) {
+    const isLocalhost = domain === "localhost";
+    const protocol = isLocalhost ? "http" : "https";
+    const port = isLocalhost ? ":5000" : "";
+    
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
         config,
         scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
+        callbackURL: `${protocol}://${domain}${port}/api/callback`,
       },
       verify,
     );
     passport.use(strategy);
+    console.log(`Registered strategy: replitauth:${domain} with callback: ${protocol}://${domain}${port}/api/callback`);
   }
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
@@ -122,7 +136,24 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const hostname = req.hostname;
+    console.log(`Login attempt for hostname: ${hostname}`);
+    console.log(`Available strategies: ${Object.keys(passport._strategies || {})}`);
+    
+    const strategyName = `replitauth:${hostname}`;
+    console.log(`Using strategy: ${strategyName}`);
+    
+    // Check if strategy exists
+    if (!passport._strategies[strategyName]) {
+      console.error(`Strategy ${strategyName} not found!`);
+      return res.status(500).json({ 
+        error: "Authentication strategy not configured",
+        hostname,
+        availableStrategies: Object.keys(passport._strategies || {})
+      });
+    }
+    
+    passport.authenticate(strategyName, {
       scope: ["openid", "email", "profile", "offline_access"]
     })(req, res, next);
   });

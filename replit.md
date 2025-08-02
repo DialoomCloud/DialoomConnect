@@ -65,6 +65,12 @@ Preferred communication style: Simple, everyday language (non-technical users).
   - Added complete multilingual support (ES/EN/CA) for all blog interface texts
   - Integrated BlogSection into home page to prominently display admin-created articles
   - Articles from admin dashboard now display in professional WordPress-style layout on home page
+- Fixed Replit Auth configuration issues (August 2025):
+  - Resolved "Unknown authentication strategy" error by registering strategies for both localhost and Replit domains
+  - Fixed OIDC discovery configuration to use correct Replit Auth endpoints
+  - Added proper error handling and logging for authentication strategy registration
+  - Eliminated email verification flow issues by ensuring correct domain-strategy mapping
+  - Authentication now works seamlessly for both development (localhost) and production (Replit domain) environments
 
 ## System Architecture
 The application adopts a monorepo structure, separating client, server, and shared components, utilizing a modern web stack for scalability and maintainability.
