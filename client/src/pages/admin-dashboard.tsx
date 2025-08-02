@@ -570,9 +570,13 @@ function ThemeEditor() {
     accent: '#B8DCE1'
   };
   
+  const defaultLogo = '/uploads/images/dialoomblue.png';
+  
   const [primaryColor, setPrimaryColor] = useState(defaultColors.primary);
   const [secondaryColor, setSecondaryColor] = useState(defaultColors.secondary);
   const [accentColor, setAccentColor] = useState(defaultColors.accent);
+  const [logoUrl, setLogoUrl] = useState(defaultLogo);
+  const [previewLogoUrl, setPreviewLogoUrl] = useState('');
   
   // Load theme configuration from database
   const { data: themeConfig, isLoading } = useQuery({
@@ -581,6 +585,8 @@ function ThemeEditor() {
       const response = await apiRequest("/api/admin/config");
       const configs = await response.json();
       const theme = configs.find((c: any) => c.key === 'theme_colors');
+      const logo = configs.find((c: any) => c.key === 'theme_logo');
+      
       if (theme) {
         const colors = JSON.parse(theme.value);
         setPrimaryColor(colors.primary || defaultColors.primary);
@@ -593,10 +599,14 @@ function ThemeEditor() {
           secondary: colors.secondary || defaultColors.secondary,
           accent: colors.accent || defaultColors.accent,
         });
-        
-        return colors;
       }
-      return null;
+      
+      if (logo) {
+        const logoPath = JSON.parse(logo.value).url;
+        setLogoUrl(logoPath || defaultLogo);
+      }
+      
+      return { theme, logo };
     },
   });
 
