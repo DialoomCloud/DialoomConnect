@@ -10,8 +10,8 @@ import type { NewsArticle } from "@shared/schema";
 export function NewsSection() {
   const { t } = useTranslation();
 
-  // Fetch featured news articles
-  const { data: articles = [], isLoading } = useQuery({
+  // Fetch featured news articles - public API, no authentication required
+  const { data: articles = [], isLoading, error } = useQuery({
     queryKey: ["/api/news/articles", "featured"],
     queryFn: async () => {
       const response = await fetch("/api/news/articles?featured=true&limit=3");
@@ -22,7 +22,33 @@ export function NewsSection() {
     },
   });
 
-  if (isLoading || articles.length === 0) {
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="mb-12">
+        <div className="flex items-center mb-6">
+          <Newspaper className="w-6 h-6 text-[hsl(188,100%,38%)] mr-3" />
+          <h2 className="text-2xl font-bold text-[hsl(17,12%,6%)]">
+            {t('news.latestNews', 'Últimas Noticias')}
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+              <div className="aspect-video bg-gray-200 rounded mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded mb-1"></div>
+              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if there's an error or no articles
+  if (error || articles.length === 0) {
+    console.log("NewsSection: Error or no articles", { error, articlesLength: articles.length });
     return null;
   }
 
