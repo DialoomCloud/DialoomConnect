@@ -223,6 +223,102 @@ IMPORTANTE: Devuelve SOLO la descripción mejorada, sin comillas ni explicacione
     }
   }
 
+  async analyzeUserIntent(message: string): Promise<{ intent: string; confidence: number }> {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `Analyze the user's message and determine their intent. 
+            
+            Possible intents:
+            - profile_setup: User is asking about setting up their profile, categories, skills, or description
+            - booking_inquiry: User is asking about booking a video call
+            - payment_question: User has questions about payments, pricing, or commissions
+            - technical_support: User needs technical help with the platform
+            - general_inquiry: Other general questions about Dialoom
+            
+            Return a JSON object with:
+            - intent: one of the above intents
+            - confidence: a number between 0 and 1 indicating your confidence`
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        max_tokens: 100,
+        temperature: 0.3,
+        response_format: { type: "json_object" }
+      });
+
+      const result = JSON.parse(response.choices[0]?.message?.content || '{}');
+      return {
+        intent: result.intent || 'general_inquiry',
+        confidence: result.confidence || 0.5
+      };
+    } catch (error) {
+      console.error("Error analyzing user intent:", error);
+      return { intent: 'general_inquiry', confidence: 0.5 };
+    }
+  }
+
+  async handleProfileSuggestionRequest(message: string, categories: any[], skills: any[]): Promise<{ response: string; suggestions: any }> {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `Eres Loomia, el asistente de IA de Dialoom. El usuario está pidiendo sugerencias para su perfil profesional.
+            
+            Basándote en el mensaje del usuario, sugiere:
+            1. Categorías profesionales relevantes (de la lista proporcionada)
+            2. Habilidades específicas (de la lista proporcionada)
+            3. Una descripción profesional mejorada si es aplicable
+            
+            Categorías disponibles: ${categories.map(c => c.name).join(', ')}
+            Habilidades disponibles: ${skills.map(s => s.name).join(', ')}
+            
+            Responde de forma amigable y profesional, explicando por qué sugieres cada elemento.`
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7,
+      });
+
+      const responseText = response.choices[0]?.message?.content || "";
+      
+      // Extract suggested categories and skills from the response
+      const suggestedCategories = categories.filter(cat => 
+        responseText.toLowerCase().includes(cat.name.toLowerCase())
+      ).slice(0, 3);
+      
+      const suggestedSkills = skills.filter(skill => 
+        responseText.toLowerCase().includes(skill.name.toLowerCase())
+      ).slice(0, 5);
+
+      return {
+        response: responseText,
+        suggestions: {
+          categories: suggestedCategories,
+          skills: suggestedSkills
+        }
+      };
+    } catch (error) {
+      console.error("Error handling profile suggestion request:", error);
+      return {
+        response: "Lo siento, no pude generar sugerencias en este momento. Por favor intenta de nuevo.",
+        suggestions: null
+      };
+    }
+  }
+
   async chatResponse(message: string, context?: string, language: string = 'es'): Promise<string> {
     try {
       const languageInstructions = {
