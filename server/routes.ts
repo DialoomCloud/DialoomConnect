@@ -16,6 +16,7 @@ import { generateAgoraToken } from "./agora-token";
 import { emailService } from "./email-service";
 import { initializeEmailTemplates } from "./email-templates-init";
 import { aiSearchService } from "./ai-search";
+import { translateArticle, detectLanguage } from "./translation-service";
 import { 
   createEmailTemplateSchema, 
   updateEmailTemplateSchema,
@@ -2407,12 +2408,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/news/articles', isAdminAuthenticated, async (req: any, res) => {
     try {
       const user = req.user as any;
+      const { autoTranslate = true, ...articleData } = req.body;
+      
       const validatedData = createNewsArticleSchema.parse({
-        ...req.body,
+        ...articleData,
         authorId: user.claims.sub,
       });
 
       const article = await storage.createNewsArticle(validatedData);
+      
+      // Auto-translate if enabled and OpenAI API key is available
+      if (autoTranslate && process.env.OPENAI_API_KEY) {
+        try {
+          // Detect source language from content
+          const sourceLanguage = await detectLanguage(article.content);
+          const targetLanguages = ['es', 'en', 'ca'].filter(lang => lang !== sourceLanguage);
+          
+          if (targetLanguages.length > 0) {
+            const translations = await translateArticle({
+              title: article.title,
+              excerpt: article.excerpt || undefined,
+              content: article.content,
+              tags: article.tags || undefined,
+              metaTitle: article.metaTitle || undefined,
+              metaDescription: article.metaDescription || undefined,
+              sourceLanguage,
+              targetLanguages
+            });
+            
+            // Create translated versions
+            for (const translation of translations) {
+              try {
+                const translatedArticle = {
+                  ...validatedData,
+                  title: translation.title,
+                  slug: `${article.slug}-${translation.language}`,
+                  excerpt: translation.excerpt,
+                  content: translation.content,
+                  tags: translation.tags,
+                  metaTitle: translation.metaTitle,
+                  metaDescription: translation.metaDescription,
+                  // Add a reference to the original article
+                  parentArticleId: article.id,
+                  language: translation.language
+                };
+                
+                await storage.createNewsArticle(translatedArticle);
+                console.log(`Created ${translation.language} translation for article ${article.id}`);
+              } catch (translationError) {
+                console.error(`Error creating ${translation.language} translation:`, translationError);
+              }
+            }
+          }
+        } catch (translationError) {
+          console.error("Error during automatic translation:", translationError);
+          // Continue without translations - don't fail the main article creation
+        }
+      }
+      
       res.status(201).json(article);
     } catch (error) {
       console.error("Error creating article:", error);
@@ -2427,9 +2480,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/news/articles/:id', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const validatedData = updateNewsArticleSchema.parse(req.body);
+      const { autoTranslate = true, ...articleData } = req.body;
+      const validatedData = updateNewsArticleSchema.parse(articleData);
 
       const article = await storage.updateNewsArticle(id, validatedData);
+      
+      // Auto-translate updates if enabled and OpenAI API key is available
+      if (autoTranslate && process.env.OPENAI_API_KEY && validatedData.content) {
+        try {
+          // Detect source language from updated content
+          const sourceLanguage = await detectLanguage(validatedData.content);
+          const targetLanguages = ['es', 'en', 'ca'].filter(lang => lang !== sourceLanguage);
+          
+          if (targetLanguages.length > 0) {
+            const translations = await translateArticle({
+              title: validatedData.title || article.title,
+              excerpt: validatedData.excerpt !== undefined ? validatedData.excerpt : article.excerpt,
+              content: validatedData.content,
+              tags: validatedData.tags !== undefined ? validatedData.tags : article.tags,
+              metaTitle: validatedData.metaTitle !== undefined ? validatedData.metaTitle : article.metaTitle,
+              metaDescription: validatedData.metaDescription !== undefined ? validatedData.metaDescription : article.metaDescription,
+              sourceLanguage,
+              targetLanguages
+            });
+            
+            // Update translated versions if they exist
+            for (const translation of translations) {
+              try {
+                // Find existing translation by parent article ID and language
+                const existingTranslations = await storage.getAllNewsArticles();
+                const existingTranslation = existingTranslations.find(
+                  (a: any) => a.parentArticleId === id && a.language === translation.language
+                );
+                
+                if (existingTranslation) {
+                  await storage.updateNewsArticle(existingTranslation.id, {
+                    title: translation.title,
+                    excerpt: translation.excerpt,
+                    content: translation.content,
+                    tags: translation.tags,
+                    metaTitle: translation.metaTitle,
+                    metaDescription: translation.metaDescription,
+                  });
+                  console.log(`Updated ${translation.language} translation for article ${id}`);
+                }
+              } catch (translationError) {
+                console.error(`Error updating ${translation.language} translation:`, translationError);
+              }
+            }
+          }
+        } catch (translationError) {
+          console.error("Error during automatic translation:", translationError);
+          // Continue without translations - don't fail the main article update
+        }
+      }
+      
       res.json(article);
     } catch (error) {
       console.error("Error updating article:", error);
@@ -2513,6 +2618,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error uploading news image:", error);
       res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
+  // Upload video for news articles
+  app.post('/api/admin/news/upload-video', isAdminAuthenticated, upload.single('video'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No video file provided" });
+      }
+
+      // Check file size (100MB limit)
+      if (req.file.size > 100 * 1024 * 1024) {
+        return res.status(400).json({ message: "Video file too large. Maximum size is 100MB" });
+      }
+
+      const user = req.user as any;
+      const userId = user.claims.sub;
+      const timestamp = Date.now();
+      const filename = `news-video-${timestamp}-${req.file.originalname}`;
+
+      // Save video to local filesystem
+      const videoPath = `news/videos/${filename}`;
+      const localPath = `uploads/${videoPath}`;
+      await fs.mkdir(path.dirname(localPath), { recursive: true });
+      await fs.writeFile(localPath, req.file.buffer);
+      console.log(`News video saved locally: ${localPath}`);
+
+      // Try to upload to Object Storage as backup
+      try {
+        const result = await replitStorage._client.uploadFromBytes(`Objects/${videoPath}`, req.file.buffer);
+        if (result.error) {
+          console.warn(`Object Storage upload failed: ${result.error.message}`);
+        } else {
+          console.log(`News video also uploaded to Object Storage: Objects/${videoPath}`);
+        }
+      } catch (objectStorageError) {
+        console.warn('Object Storage upload failed:', objectStorageError);
+      }
+
+      const videoUrl = `/storage/Objects/${videoPath}`;
+      res.json({ videoUrl });
+    } catch (error) {
+      console.error("Error uploading news video:", error);
+      res.status(500).json({ message: "Failed to upload video" });
     }
   });
 

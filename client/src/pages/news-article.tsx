@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useRoute } from "wouter";
@@ -8,13 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
-import { Clock, Eye, ArrowLeft, Newspaper, Share, User } from "lucide-react";
+import { Clock, Eye, ArrowLeft, Newspaper, Share, User, Edit, Copy, Linkedin } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { NewsArticle, User as UserType } from "@shared/schema";
+import { FaXTwitter } from "react-icons/fa6";
+import { FaInstagram } from "react-icons/fa";
 
 export default function NewsArticlePage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const { user } = useAuth();
   const [match, params] = useRoute('/news/:slug');
   const slug = params?.slug;
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
+  
+  // Check if user is admin
+  const isAdmin = user && (user as any).isAdmin;
 
   // Fetch article by slug
   const { data: article, isLoading, error } = useQuery<NewsArticle>({
@@ -53,23 +63,45 @@ export default function NewsArticlePage() {
 
   // Share functionality
   const handleShare = async () => {
-    if (navigator.share && article) {
-      try {
-        await navigator.share({
-          title: article.title,
-          text: article.excerpt || '',
-          url: window.location.href,
+    setShareMenuOpen(!shareMenuOpen);
+  };
+  
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    toast({
+      title: t('news.linkCopied', 'Enlace copiado'),
+      description: t('news.linkCopiedDesc', 'El enlace se ha copiado al portapapeles'),
+    });
+    setShareMenuOpen(false);
+  };
+  
+  const handleSocialShare = (platform: string) => {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(article?.title || '');
+    const text = encodeURIComponent(article?.excerpt || article?.title || '');
+    
+    let shareUrl = '';
+    switch (platform) {
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+        break;
+      case 'instagram':
+        // Instagram doesn't support direct URL sharing, so we'll copy the link
+        handleCopyLink();
+        toast({
+          title: t('news.instagramShare', 'Compartir en Instagram'),
+          description: t('news.instagramShareDesc', 'Enlace copiado. Pégalo en tu historia o publicación de Instagram'),
         });
-      } catch (error) {
-        // Fallback to copying to clipboard
-        await navigator.clipboard.writeText(window.location.href);
-        // You could show a toast here if needed
-      }
-    } else if (article) {
-      // Fallback to copying to clipboard
-      await navigator.clipboard.writeText(window.location.href);
-      // You could show a toast here if needed
+        return;
     }
+    
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+    setShareMenuOpen(false);
   };
 
   // Set page title
@@ -78,6 +110,19 @@ export default function NewsArticlePage() {
       document.title = `${article.title} - Dialoom News`;
     }
   }, [article]);
+  
+  // Close share menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (shareMenuOpen && !target.closest('.relative')) {
+        setShareMenuOpen(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [shareMenuOpen]);
 
   if (isLoading) {
     return (
@@ -148,13 +193,16 @@ export default function NewsArticlePage() {
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 <span>
-                  {article.publishedAt || article.createdAt ? 
-                    new Date(article.publishedAt || article.createdAt).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    }) : 
-                    ''}
+                  {(() => {
+                    const dateValue = article.publishedAt || article.createdAt;
+                    return dateValue ? 
+                      new Date(dateValue).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 
+                      '';
+                  })()}
                 </span>
               </div>
               {article.viewCount && article.viewCount > 0 && (
@@ -194,17 +242,69 @@ export default function NewsArticlePage() {
               </div>
             )}
 
-            {/* Share Button */}
-            <div className="flex justify-center">
-              <Button 
-                onClick={handleShare} 
-                variant="outline" 
-                size="sm"
-                className="hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
-              >
-                <Share className="h-4 w-4 mr-2" />
-                {t('news.share', 'Compartir')}
-              </Button>
+            {/* Action Buttons */}
+            <div className="flex justify-center items-center gap-2">
+              {/* Admin Edit Button */}
+              {isAdmin && article && (
+                <Link href={`/admin/dashboard/news/${article.id}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {t('news.edit', 'Editar')}
+                  </Button>
+                </Link>
+              )}
+              
+              {/* Share Button with Dropdown */}
+              <div className="relative">
+                <Button 
+                  onClick={handleShare} 
+                  variant="outline" 
+                  size="sm"
+                  className="hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
+                >
+                  <Share className="h-4 w-4 mr-2" />
+                  {t('news.share', 'Compartir')}
+                </Button>
+                
+                {/* Share Menu Dropdown */}
+                {shareMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+                    <button
+                      onClick={() => handleSocialShare('linkedin')}
+                      className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      <Linkedin className="h-4 w-4 text-[#0A66C2]" />
+                      <span className="text-sm">LinkedIn</span>
+                    </button>
+                    <button
+                      onClick={() => handleSocialShare('twitter')}
+                      className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      <FaXTwitter className="h-4 w-4 text-black" />
+                      <span className="text-sm">X (Twitter)</span>
+                    </button>
+                    <button
+                      onClick={() => handleSocialShare('instagram')}
+                      className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      <FaInstagram className="h-4 w-4 text-[#E4405F]" />
+                      <span className="text-sm">Instagram</span>
+                    </button>
+                    <div className="border-t border-gray-200 my-1"></div>
+                    <button
+                      onClick={handleCopyLink}
+                      className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      <Copy className="h-4 w-4 text-gray-600" />
+                      <span className="text-sm">{t('news.copyLink', 'Copiar enlace')}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </CardHeader>
 
@@ -262,13 +362,16 @@ export default function NewsArticlePage() {
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Clock className="h-3 w-3" />
                             <span>
-                              {relatedArticle.publishedAt || relatedArticle.createdAt ?
-                                new Date(relatedArticle.publishedAt || relatedArticle.createdAt).toLocaleDateString('es-ES', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric'
-                                }) :
-                                ''}
+                              {(() => {
+                                const dateValue = relatedArticle.publishedAt || relatedArticle.createdAt;
+                                return dateValue ?
+                                  new Date(dateValue).toLocaleDateString('es-ES', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  }) :
+                                  '';
+                              })()}
                             </span>
                           </div>
                         </CardHeader>

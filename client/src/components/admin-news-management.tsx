@@ -55,6 +55,7 @@ export default function AdminNewsManagement() {
   const [showEditor, setShowEditor] = useState(false);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [showTranslating, setShowTranslating] = useState(false);
 
   // Fetch all articles
   const { data: articles = [], isLoading } = useQuery({
@@ -311,6 +312,7 @@ function ArticleEditor({
 }) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: article?.title || '',
     excerpt: article?.excerpt || '',
@@ -384,11 +386,64 @@ function ArticleEditor({
       });
     },
   });
+  
+  // Upload video mutation
+  const uploadVideoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('video', file);
+      
+      const response = await fetch('/api/admin/news/upload-video', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) throw new Error('Failed to upload video');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Insert video embed code into content
+      const videoEmbed = `
+<div class="video-embed" style="position: relative; width: 100%; margin: 20px 0;">
+  <video controls style="width: 100%; height: auto; max-width: 800px; margin: 0 auto; display: block;">
+    <source src="${data.videoUrl}" type="video/mp4">
+    Tu navegador no soporta la reproducción de videos.
+  </video>
+</div>`;
+      insertAtCursor(videoEmbed);
+      toast({
+        title: "Video subido",
+        description: "El video se subió exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Error al subir el video",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       uploadImageMutation.mutate(file);
+    }
+  };
+  
+  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+        toast({
+          title: "Error",
+          description: "El video no debe superar los 100MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      uploadVideoMutation.mutate(file);
     }
   };
 
@@ -538,6 +593,13 @@ function ArticleEditor({
                   onChange={handleImageUpload}
                   className="hidden"
                 />
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/mp4"
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                />
                 <Button
                   type="button"
                   variant="outline"
@@ -555,12 +617,22 @@ function ArticleEditor({
                 </Button>
               </div>
               {formData.featuredImage && (
-                <div className="w-24 h-24 bg-gray-100 rounded-md overflow-hidden">
+                <div className="relative w-24 h-24 bg-gray-100 rounded-md overflow-hidden group">
                   <img 
                     src={formData.featuredImage} 
                     alt="Preview"
                     className="w-full h-full object-cover"
                   />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                    onClick={() => setFormData(prev => ({ ...prev, featuredImage: '' }))}
+                    title="Eliminar imagen"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
               )}
             </div>
@@ -661,6 +733,20 @@ function ArticleEditor({
                 title="Insertar video de YouTube"
               >
                 <Video className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => videoInputRef.current?.click()}
+                title="Subir video MP4"
+                disabled={uploadVideoMutation.isPending}
+              >
+                {uploadVideoMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
               </Button>
             </div>
             
