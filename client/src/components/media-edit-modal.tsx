@@ -49,7 +49,10 @@ export function MediaEditModal({ isOpen, onClose, content }: MediaEditModalProps
   const updateMediaMutation = useMutation({
     mutationFn: async (data: { title: string; description: string }) => {
       if (!content) return;
-      const response = await apiRequest("PUT", `/api/media/${content.id}`, data);
+      const response = await apiRequest(`/api/media/${content.id}`, { 
+        method: "PUT", 
+        body: data 
+      });
       return response.json();
     },
     onSuccess: () => {
