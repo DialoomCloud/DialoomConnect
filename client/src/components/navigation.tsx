@@ -94,7 +94,7 @@ export function Navigation() {
           </div>
 
           {/* Desktop Right Side */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
                 <span className="text-sm text-gray-600 animate-float">
@@ -120,11 +120,14 @@ export function Navigation() {
                 {t('navigation.login')}
               </Button>
             )}
-            <LanguageSelector />
+            <div className="ml-2">
+              <LanguageSelector />
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
+            <LanguageSelector />
             <Button
               variant="ghost"
               size="sm"
@@ -137,7 +140,6 @@ export function Navigation() {
                 <Menu className="w-6 h-6" />
               )}
             </Button>
-            <LanguageSelector />
           </div>
         </div>
 
