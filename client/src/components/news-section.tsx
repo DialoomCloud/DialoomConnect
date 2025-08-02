@@ -11,12 +11,12 @@ export function NewsSection() {
   console.log("NewsSection: Component is rendering...");
   const { t } = useTranslation();
 
-  // Fetch featured news articles - public API, no authentication required
+  // Fetch all news articles - public API, no authentication required
   const { data: articles = [], isLoading, error } = useQuery({
-    queryKey: ["/api/news/articles", "featured"],
+    queryKey: ["/api/news/articles", "limit=50"],
     queryFn: async () => {
       console.log("NewsSection: Fetching articles...");
-      const response = await fetch("/api/news/articles?featured=true&limit=3");
+      const response = await fetch("/api/news/articles?limit=50");
       console.log("NewsSection: Response status:", response.status);
       if (!response.ok) {
         throw new Error('Failed to fetch articles');
@@ -70,11 +70,18 @@ export function NewsSection() {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center mb-8">
-          <Newspaper className="w-6 h-6 text-[hsl(188,100%,38%)] mr-3" />
-          <h2 className="text-2xl md:text-3xl font-bold text-[hsl(17,12%,6%)]">
-            {t('news.latestNews', 'Últimas Noticias')}
-          </h2>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <Newspaper className="w-6 h-6 text-[hsl(188,100%,38%)] mr-3" />
+            <h2 className="text-2xl md:text-3xl font-bold text-[hsl(17,12%,6%)]">
+              {t('news.latestNews', 'Últimas Noticias')}
+            </h2>
+          </div>
+          <Link href="/news">
+            <span className="text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] font-medium text-sm transition-colors cursor-pointer">
+              Ver todas las noticias →
+            </span>
+          </Link>
         </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
