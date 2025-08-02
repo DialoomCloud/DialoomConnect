@@ -246,7 +246,7 @@ export default function NewsArticlePage() {
             <div className="flex justify-center items-center gap-2">
               {/* Admin Edit Button */}
               {isAdmin && article && (
-                <Link href={`/admin/dashboard/news/${article.id}`}>
+                <Link href={`/admin-dashboard/news/${article.id}`}>
                   <Button 
                     variant="outline" 
                     size="sm"
