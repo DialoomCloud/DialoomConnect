@@ -171,16 +171,16 @@ export default function UserProfile() {
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
                     <DollarSign className="w-5 h-5 mr-2 text-[hsl(188,80%,42%)]" />
-                    {t('availability.pricing')}
+                    {t('pricing.pricing')}
                   </h3>
                   <div className="space-y-3">
                     {pricing.filter(p => p.isActive).map((option) => (
                       <div key={option.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium">
-                          {option.duration === 0 ? t('availability.freeSession') : `${option.duration} ${t('availability.minutes')}`}
+                          {option.duration === 0 ? t('pricing.freeSession') : `${option.duration} ${t('pricing.minutes')}`}
                         </span>
                         <span className="text-[hsl(188,80%,42%)] font-bold">
-                          {option.price === "0.00" ? t('availability.free') : `€${option.price}`}
+                          {option.price === "0.00" ? t('pricing.free') : `€${option.price}`}
                         </span>
                       </div>
                     ))}
@@ -188,33 +188,33 @@ export default function UserProfile() {
 
                   {/* Service Options - Available for selection */}
                   <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm font-medium text-gray-600 mb-3">Servicios Adicionales Disponibles:</p>
+                    <p className="text-sm font-medium text-gray-600 mb-3">{t('userProfile.additionalServices')}:</p>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Monitor className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>Compartir Pantalla</span>
+                          <span>{t('userProfile.screenSharing')}</span>
                         </div>
                         <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.screenSharing || 10}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Languages className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>Traducción Simultánea</span>
+                          <span>{t('userProfile.simultaneousTranslation')}</span>
                         </div>
                         <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.translation || 25}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Video className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>Grabación de Sesión</span>
+                          <span>{t('userProfile.recording')}</span>
                         </div>
                         <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.recording || 10}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>Transcripción Automática</span>
+                          <span>{t('userProfile.transcription')}</span>
                         </div>
                         <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.transcription || 5}</span>
                       </div>
@@ -231,7 +231,7 @@ export default function UserProfile() {
                       }
                     }}
                   >
-                    Reservar Videollamada
+                    {t('userProfile.bookCall')}
                   </Button>
                 </CardContent>
               </Card>
@@ -248,7 +248,7 @@ export default function UserProfile() {
                   <div className="space-y-2">
                     {availability.map((slot) => (
                       <div key={slot.id} className="text-sm">
-                        <div className="font-medium text-gray-700">{slot.dayOfWeek !== null ? getDayName(slot.dayOfWeek) : format(new Date(slot.date!), "d 'de' MMMM", { locale: es })}</div>
+                        <div className="font-medium text-gray-700">{slot.dayOfWeek !== null ? getDayName(slot.dayOfWeek) : format(new Date(slot.date!), "PPP", { locale: es })}</div>
                         <div className="text-gray-600 flex items-center">
                           <Clock className="w-4 h-4 mr-1" />
                           {slot.startTime} - {slot.endTime}
