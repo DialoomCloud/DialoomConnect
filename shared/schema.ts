@@ -108,6 +108,13 @@ export const users = pgTable("users", {
   dataRetentionDate: timestamp("data_retention_date"),
   // Custom commission rate for hosts (overrides global rate)
   commissionRate: decimal("commission_rate", { precision: 5, scale: 4 }), // e.g., 0.2100 for 21%
+  // Host verification fields
+  hostVerificationStatus: varchar("host_verification_status").default('none'), // 'none', 'registered', 'active', 'verified', 'rejected'
+  hostVerificationDate: timestamp("host_verification_date"),
+  hostActivationToken: varchar("host_activation_token"),
+  hostActivationTokenExpiry: timestamp("host_activation_token_expiry"),
+  hostRequestedAt: timestamp("host_requested_at"),
+  hostRejectionReason: text("host_rejection_reason"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -667,3 +674,50 @@ export type CreateEmailTemplate = z.infer<typeof createEmailTemplateSchema>;
 export type UpdateEmailTemplate = z.infer<typeof updateEmailTemplateSchema>;
 export type CreateEmailNotification = z.infer<typeof createEmailNotificationSchema>;
 export type CreateUserMessage = z.infer<typeof createUserMessageSchema>;
+
+// Host verification documents table
+export const hostVerificationDocuments = pgTable("host_verification_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  documentType: varchar("document_type", { length: 50 }).notNull(), // 'passport', 'dni', 'academic_title', 'business_card', 'other'
+  documentTypeLabel: varchar("document_type_label", { length: 100 }), // User-provided label for 'other' type
+  documentUrl: text("document_url").notNull(), // Path to the private document
+  originalFileName: varchar("original_file_name", { length: 255 }),
+  fileSize: integer("file_size"), // In bytes
+  fileType: varchar("file_type", { length: 50 }), // 'pdf', 'jpg', 'png', 'webp'
+  verificationStatus: varchar("verification_status").default('pending'), // 'pending', 'approved', 'rejected'
+  verifiedBy: varchar("verified_by").references(() => users.id), // Admin who verified
+  verifiedAt: timestamp("verified_at"),
+  rejectionReason: text("rejection_reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Host verification document relations
+export const hostVerificationDocumentsRelations = relations(hostVerificationDocuments, ({ one }) => ({
+  user: one(users, {
+    fields: [hostVerificationDocuments.userId],
+    references: [users.id],
+  }),
+  verifier: one(users, {
+    fields: [hostVerificationDocuments.verifiedBy],
+    references: [users.id],
+  }),
+}));
+
+// Host verification document types
+export type HostVerificationDocument = typeof hostVerificationDocuments.$inferSelect;
+export type InsertHostVerificationDocument = typeof hostVerificationDocuments.$inferInsert;
+
+// Host verification document validation schemas
+export const createHostVerificationDocumentSchema = createInsertSchema(hostVerificationDocuments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  verificationStatus: true,
+  verifiedBy: true,
+  verifiedAt: true,
+  rejectionReason: true,
+});
+
+export type CreateHostVerificationDocument = z.infer<typeof createHostVerificationDocumentSchema>;

@@ -22,7 +22,8 @@ import {
   updateEmailTemplateSchema,
   createUserMessageSchema,
   createNewsArticleSchema,
-  updateNewsArticleSchema 
+  updateNewsArticleSchema,
+  hostVerificationDocuments 
 } from "@shared/schema";
 
 // Configure multer for file uploads
@@ -3045,6 +3046,291 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching payment methods:", error);
       res.status(500).json({ message: "Error al obtener métodos de pago" });
+    }
+  });
+
+  // Host verification endpoints
+  // Request to become a host
+  app.post('/api/host/request-verification', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+      
+      if (user.isHost) {
+        return res.status(400).json({ message: "Ya eres un host verificado" });
+      }
+      
+      // Generate activation token
+      const token = await storage.requestHostStatus(userId);
+      
+      // Send activation email
+      try {
+        const sendEmail = await import('./send-email');
+        await sendEmail.sendHostActivationEmail(user.email, user.firstName, token, userId);
+      } catch (emailError) {
+        console.error("Error sending activation email:", emailError);
+      }
+      
+      res.json({ 
+        message: "Solicitud de verificación iniciada. Por favor, revisa tu correo para activar tu cuenta.",
+        status: 'registered'
+      });
+    } catch (error) {
+      console.error("Error requesting host verification:", error);
+      res.status(500).json({ message: "Error al solicitar verificación de host" });
+    }
+  });
+  
+  // Activate host account via email token
+  app.get('/api/host/activate/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { userId } = req.query;
+      
+      if (!userId || typeof userId !== 'string') {
+        return res.status(400).json({ message: "ID de usuario inválido" });
+      }
+      
+      const success = await storage.activateHostAccount(userId, token);
+      
+      if (!success) {
+        return res.status(400).json({ message: "Token inválido o expirado" });
+      }
+      
+      res.json({ message: "Cuenta de host activada exitosamente", status: 'active' });
+    } catch (error) {
+      console.error("Error activating host account:", error);
+      res.status(500).json({ message: "Error al activar cuenta de host" });
+    }
+  });
+  
+  // Upload host verification document
+  app.post('/api/host/upload-document', isAuthenticated, upload.single('document'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se proporcionó documento" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { documentType, documentTypeLabel } = req.body;
+      
+      if (!documentType) {
+        return res.status(400).json({ message: "Tipo de documento requerido" });
+      }
+      
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ message: "Tipo de archivo no permitido. Solo PDF, JPG, PNG o WEBP" });
+      }
+      
+      // Generate unique filename
+      const timestamp = Date.now();
+      const filename = `verification-${userId}-${timestamp}-${req.file.originalname}`;
+      
+      // Save to private object storage
+      const privatePath = `host-verification/${userId}/${filename}`;
+      const fullPath = `/replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7/.private/${privatePath}`;
+      
+      try {
+        const result = await replitStorage._client.uploadFromBytes(fullPath, req.file.buffer);
+        if (result.error) {
+          console.error("Object Storage upload failed:", result.error.message);
+          return res.status(500).json({ message: "Error al subir documento" });
+        }
+      } catch (uploadError) {
+        console.error("Error uploading to Object Storage:", uploadError);
+        return res.status(500).json({ message: "Error al subir documento" });
+      }
+      
+      // Save document record in database
+      const document = await storage.createHostVerificationDocument({
+        userId,
+        documentType,
+        documentTypeLabel: documentType === 'other' ? documentTypeLabel : null,
+        documentUrl: fullPath,
+        originalFileName: req.file.originalname,
+        fileSize: req.file.size,
+        fileType: req.file.mimetype.split('/')[1]
+      });
+      
+      res.json({ 
+        message: "Documento subido exitosamente", 
+        document: {
+          id: document.id,
+          documentType: document.documentType,
+          originalFileName: document.originalFileName,
+          uploadedAt: document.createdAt
+        }
+      });
+    } catch (error) {
+      console.error("Error uploading verification document:", error);
+      res.status(500).json({ message: "Error al subir documento de verificación" });
+    }
+  });
+  
+  // Get user's verification documents
+  app.get('/api/host/verification-documents', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const documents = await storage.getHostVerificationDocuments(userId);
+      
+      // Don't expose the actual document URLs to users
+      const safeDocuments = documents.map(doc => ({
+        id: doc.id,
+        documentType: doc.documentType,
+        documentTypeLabel: doc.documentTypeLabel,
+        originalFileName: doc.originalFileName,
+        fileSize: doc.fileSize,
+        verificationStatus: doc.verificationStatus,
+        uploadedAt: doc.createdAt,
+        verifiedAt: doc.verifiedAt,
+        rejectionReason: doc.rejectionReason
+      }));
+      
+      res.json(safeDocuments);
+    } catch (error) {
+      console.error("Error fetching verification documents:", error);
+      res.status(500).json({ message: "Error al obtener documentos de verificación" });
+    }
+  });
+  
+  // Delete verification document
+  app.delete('/api/host/verification-documents/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.claims.sub;
+      
+      // Verify the document belongs to the user
+      const documents = await storage.getHostVerificationDocuments(userId);
+      const document = documents.find(doc => doc.id === id);
+      
+      if (!document) {
+        return res.status(404).json({ message: "Documento no encontrado" });
+      }
+      
+      if (document.verificationStatus === 'approved') {
+        return res.status(400).json({ message: "No se pueden eliminar documentos aprobados" });
+      }
+      
+      const success = await storage.deleteHostVerificationDocument(id);
+      
+      if (!success) {
+        return res.status(500).json({ message: "Error al eliminar documento" });
+      }
+      
+      res.json({ message: "Documento eliminado exitosamente" });
+    } catch (error) {
+      console.error("Error deleting verification document:", error);
+      res.status(500).json({ message: "Error al eliminar documento" });
+    }
+  });
+  
+  // Admin endpoints for host verification
+  // Get pending host verifications (admin only)
+  app.get('/api/admin/host-verifications/pending', isAdminAuthenticated, async (req, res) => {
+    try {
+      const pendingUsers = await storage.getPendingHostVerifications();
+      
+      // Get verification documents for each user
+      const usersWithDocuments = await Promise.all(
+        pendingUsers.map(async (user: any) => {
+          const documents = await storage.getHostVerificationDocuments(user.id);
+          return { ...user, verificationDocuments: documents };
+        })
+      );
+      
+      res.json(usersWithDocuments);
+    } catch (error) {
+      console.error("Error fetching pending verifications:", error);
+      res.status(500).json({ message: "Error al obtener verificaciones pendientes" });
+    }
+  });
+  
+  // View verification document (admin only)
+  app.get('/api/admin/host-verifications/document/:documentId', isAdminAuthenticated, async (req, res) => {
+    try {
+      const { documentId } = req.params;
+      
+      // Get document info from database
+      const documents = await db.select()
+        .from(hostVerificationDocuments)
+        .where(eq(hostVerificationDocuments.id, documentId));
+        
+      if (documents.length === 0) {
+        return res.status(404).json({ message: "Documento no encontrado" });
+      }
+      
+      const document = documents[0];
+      
+      // Download from object storage
+      try {
+        const file = await replitStorage.getFile(document.documentUrl);
+        const buffer = await file.download();
+        
+        res.setHeader('Content-Type', `image/${document.fileType}`);
+        res.setHeader('Content-Disposition', `inline; filename="${document.originalFileName}"`);
+        res.send(buffer);
+      } catch (downloadError) {
+        console.error("Error downloading document:", downloadError);
+        res.status(500).json({ message: "Error al descargar documento" });
+      }
+    } catch (error) {
+      console.error("Error viewing document:", error);
+      res.status(500).json({ message: "Error al ver documento" });
+    }
+  });
+  
+  // Approve host verification (admin only)
+  app.post('/api/admin/host-verifications/approve', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.body;
+      const adminId = req.user.claims.sub;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "ID de usuario requerido" });
+      }
+      
+      await storage.approveHostVerification(userId, adminId);
+      
+      // Get user info for email
+      const user = await storage.getUser(userId);
+      if (user && user.email) {
+        try {
+          const sendEmail = await import('./send-email');
+          await sendEmail.sendHostApprovalEmail(user.email, user.firstName);
+        } catch (emailError) {
+          console.error("Error sending approval email:", emailError);
+        }
+      }
+      
+      res.json({ message: "Host verificado exitosamente" });
+    } catch (error) {
+      console.error("Error approving host:", error);
+      res.status(500).json({ message: "Error al aprobar host" });
+    }
+  });
+  
+  // Reject host verification (admin only)
+  app.post('/api/admin/host-verifications/reject', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { userId, reason } = req.body;
+      const adminId = req.user.claims.sub;
+      
+      if (!userId || !reason) {
+        return res.status(400).json({ message: "ID de usuario y razón requeridos" });
+      }
+      
+      await storage.rejectHostVerification(userId, adminId, reason);
+      
+      res.json({ message: "Verificación de host rechazada" });
+    } catch (error) {
+      console.error("Error rejecting host:", error);
+      res.status(500).json({ message: "Error al rechazar host" });
     }
   });
 

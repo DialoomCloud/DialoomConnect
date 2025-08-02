@@ -251,6 +251,20 @@ export interface IStorage {
   getCategoryByName(name: string): Promise<any | undefined>;
   createCategory(category: any): Promise<any>;
   addUserCategory(userId: string, categoryId: number): Promise<void>;
+  
+  // Host verification document operations
+  getHostVerificationDocuments(userId: string): Promise<any[]>;
+  createHostVerificationDocument(document: any): Promise<any>;
+  updateHostVerificationDocument(id: string, updates: any): Promise<any>;
+  deleteHostVerificationDocument(id: string): Promise<boolean>;
+  getPendingHostVerifications(): Promise<any[]>;
+  approveHostVerification(userId: string, adminId: string): Promise<void>;
+  rejectHostVerification(userId: string, adminId: string, reason: string): Promise<void>;
+  
+  // Host verification flow operations
+  requestHostStatus(userId: string): Promise<string>;
+  activateHostAccount(userId: string, token: string): Promise<boolean>;
+  generateHostActivationToken(userId: string): Promise<string>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1471,6 +1485,139 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Host verification document operations
+  async getHostVerificationDocuments(userId: string): Promise<any[]> {
+    const { hostVerificationDocuments } = await import("@shared/schema");
+    return await db.select().from(hostVerificationDocuments).where(eq(hostVerificationDocuments.userId, userId));
+  }
+
+  async createHostVerificationDocument(document: any): Promise<any> {
+    const { hostVerificationDocuments } = await import("@shared/schema");
+    const [newDoc] = await db.insert(hostVerificationDocuments).values(document).returning();
+    return newDoc;
+  }
+
+  async updateHostVerificationDocument(id: string, updates: any): Promise<any> {
+    const { hostVerificationDocuments } = await import("@shared/schema");
+    const [updated] = await db.update(hostVerificationDocuments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(hostVerificationDocuments.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteHostVerificationDocument(id: string): Promise<boolean> {
+    const { hostVerificationDocuments } = await import("@shared/schema");
+    const result = await db.delete(hostVerificationDocuments).where(eq(hostVerificationDocuments.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getPendingHostVerifications(): Promise<any[]> {
+    return await db.select()
+      .from(users)
+      .where(and(
+        eq(users.hostVerificationStatus, 'registered'),
+        eq(users.isActive, true)
+      ));
+  }
+
+  async approveHostVerification(userId: string, adminId: string): Promise<void> {
+    const { hostVerificationDocuments } = await import("@shared/schema");
+    
+    // Update user to be a host
+    await db.update(users)
+      .set({
+        isHost: true,
+        role: 'host',
+        hostVerificationStatus: 'verified',
+        hostVerificationDate: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+      
+    // Update all their verification documents as approved
+    await db.update(hostVerificationDocuments)
+      .set({
+        verificationStatus: 'approved',
+        verifiedBy: adminId,
+        verifiedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(hostVerificationDocuments.userId, userId));
+  }
+
+  async rejectHostVerification(userId: string, adminId: string, reason: string): Promise<void> {
+    const { hostVerificationDocuments } = await import("@shared/schema");
+    
+    // Update user status
+    await db.update(users)
+      .set({
+        hostVerificationStatus: 'rejected',
+        hostRejectionReason: reason,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+      
+    // Update all their verification documents as rejected
+    await db.update(hostVerificationDocuments)
+      .set({
+        verificationStatus: 'rejected',
+        verifiedBy: adminId,
+        verifiedAt: new Date(),
+        rejectionReason: reason,
+        updatedAt: new Date()
+      })
+      .where(eq(hostVerificationDocuments.userId, userId));
+  }
+
+  // Host verification flow operations
+  async requestHostStatus(userId: string): Promise<string> {
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + 24); // 24 hour expiry
+    
+    await db.update(users)
+      .set({
+        hostVerificationStatus: 'registered',
+        hostActivationToken: token,
+        hostActivationTokenExpiry: expiry,
+        hostRequestedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+      
+    return token;
+  }
+
+  async activateHostAccount(userId: string, token: string): Promise<boolean> {
+    const [user] = await db.select()
+      .from(users)
+      .where(and(
+        eq(users.id, userId),
+        eq(users.hostActivationToken, token)
+      ));
+      
+    if (!user || !user.hostActivationTokenExpiry || user.hostActivationTokenExpiry < new Date()) {
+      return false;
+    }
+    
+    await db.update(users)
+      .set({
+        hostVerificationStatus: 'active',
+        hostActivationToken: null,
+        hostActivationTokenExpiry: null,
+        isActive: true,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+      
+    return true;
+  }
+
+  async generateHostActivationToken(userId: string): Promise<string> {
+    return this.requestHostStatus(userId);
+  }
 
 }
 

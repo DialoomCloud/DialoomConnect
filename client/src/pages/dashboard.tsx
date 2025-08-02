@@ -46,9 +46,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
 import { SessionRatingModal } from "@/components/session-rating-modal";
+import { HostVerificationForm } from "@/components/host-verification-form";
 
 // Profile Management Component
 function ProfileManagement({ userId }: { userId?: string }) {
+  const { t } = useTranslation();
   const { data: userProfile, isLoading } = useQuery<User>({
     queryKey: [`/api/users/${userId}`],
     enabled: !!userId,
