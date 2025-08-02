@@ -11,9 +11,15 @@ export function NewsSection() {
   const { t } = useTranslation();
 
   // Fetch featured news articles
-  const { data: articles = [], isLoading } = useQuery<NewsArticle[]>({
+  const { data: articles = [], isLoading } = useQuery({
     queryKey: ["/api/news/articles", "featured"],
-    queryFn: () => apiRequest("/api/news/articles?featured=true&limit=3"),
+    queryFn: async () => {
+      const response = await fetch("/api/news/articles?featured=true&limit=3");
+      if (!response.ok) {
+        throw new Error('Failed to fetch articles');
+      }
+      return response.json() as Promise<NewsArticle[]>;
+    },
   });
 
   if (isLoading || articles.length === 0) {
@@ -30,7 +36,7 @@ export function NewsSection() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {articles.map((article, index) => (
+        {articles.map((article: NewsArticle, index: number) => (
           <Card 
             key={article.id} 
             className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-all duration-300 hover-lift animate-fade-in-up group"
@@ -82,7 +88,7 @@ export function NewsSection() {
               )}
               {article.tags && article.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {article.tags.slice(0, 2).map((tag) => (
+                  {article.tags.slice(0, 2).map((tag: string) => (
                     <Badge key={tag} variant="secondary" className="text-xs">
                       {tag}
                     </Badge>
