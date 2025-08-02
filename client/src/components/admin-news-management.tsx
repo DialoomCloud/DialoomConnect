@@ -324,6 +324,7 @@ function ArticleEditor({
     tags: article?.tags?.join(', ') || '',
     metaTitle: article?.metaTitle || '',
     metaDescription: article?.metaDescription || '',
+    publishedAt: article?.publishedAt ? new Date(article.publishedAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
   });
 
   // Save article mutation
@@ -337,6 +338,7 @@ function ArticleEditor({
       const payload = {
         ...data,
         tags: data.tags ? data.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : [],
+        publishedAt: data.publishedAt ? new Date(data.publishedAt).toISOString() : new Date().toISOString(),
       };
       const response = await apiRequest(url, { method, body: payload });
       return response.json();
@@ -926,6 +928,21 @@ function ArticleEditor({
                 <SelectItem value="archived">Archivado</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Published Date */}
+          <div>
+            <Label htmlFor="publishedAt">Fecha de publicación</Label>
+            <Input
+              id="publishedAt"
+              type="datetime-local"
+              value={formData.publishedAt}
+              onChange={(e) => setFormData(prev => ({ ...prev, publishedAt: e.target.value }))}
+              className="mt-1"
+            />
+            <div className="mt-1 text-sm text-gray-500">
+              Define cuándo se publicará el artículo
+            </div>
           </div>
 
           {/* Featured */}

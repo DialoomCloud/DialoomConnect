@@ -1,37 +1,42 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { Navigation } from "@/components/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { apiRequest } from "@/lib/queryClient";
-import { Link } from "wouter";
-import { Clock, Eye, Search, Newspaper, ArrowLeft } from "lucide-react";
-import type { NewsArticle } from "@shared/schema";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Navigation } from '@/components/navigation';
+import { Link } from 'wouter';
+import { Newspaper, Calendar, User, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format } from 'date-fns';
+import { es, enUS, ca } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import type { NewsArticle } from '@/shared/schema';
 
 export default function NewsPage() {
-  const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  // Fetch published news articles
-  const { data: articles = [], isLoading } = useQuery<NewsArticle[]>({
-    queryKey: ['/api/news/articles'],
+  const { t, i18n } = useTranslation();
+  const [page, setPage] = useState(1);
+  const articlesPerPage = 12;
+
+  // Get locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'es': return es;
+      case 'ca': return ca;
+      default: return en;
+    }
+  };
+
+  // Fetch articles with pagination
+  const { data: articlesData, isLoading } = useQuery({
+    queryKey: ['/api/news/articles', page, articlesPerPage],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/news/articles', {});
+      const response = await apiRequest(`/api/news/articles?page=${page}&limit=${articlesPerPage}&status=published`);
       return response.json();
     },
   });
 
-  // Filter articles based on search term
-  const filteredArticles = articles.filter(article =>
-    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (article.excerpt && article.excerpt.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (article.tags && article.tags.some(tag => 
-      tag.toLowerCase().includes(searchTerm.toLowerCase())
-    ))
-  );
+  const articles = articlesData?.articles || [];
+  const totalPages = articlesData?.totalPages || 1;
 
   return (
     <div className="min-h-screen bg-[hsl(220,9%,98%)]">
@@ -41,165 +46,159 @@ export default function NewsPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="mr-4">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {t('common.back', 'Volver')}
-              </Button>
-            </Link>
-            <div className="w-16 h-16 bg-[hsl(188,100%,38%)] rounded-full flex items-center justify-center mb-4">
-              <Newspaper className="h-8 w-8 text-white" />
-            </div>
+            <Newspaper className="h-12 w-12 text-[hsl(188,100%,38%)]" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {t('news.title', 'Noticias y Actualizaciones')}
+          <h1 className="text-4xl font-bold text-[hsl(17,12%,6%)] mb-4">
+            {t('news.pageTitle', 'Noticias')}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {t('news.subtitle', 'Mantente informado sobre las últimas novedades, características y mejoras de Dialoom')}
+            {t('news.pageSubtitle', 'Mantente informado con las últimas noticias, actualizaciones y anuncios de Dialoom')}
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="max-w-md mx-auto mb-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder={t('news.searchPlaceholder', 'Buscar noticias...')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
         {/* Loading State */}
-        {isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="h-96 animate-pulse">
-                <div className="aspect-video w-full bg-gray-200 rounded-t-lg"></div>
-                <CardHeader>
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-6 bg-gray-200 rounded w-full"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                  </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <div className="aspect-video bg-gray-200"></div>
+                <CardContent className="p-6">
+                  <div className="h-4 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
                 </CardContent>
               </Card>
             ))}
           </div>
-        )}
-
-        {/* Articles Grid */}
-        {!isLoading && filteredArticles.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredArticles.map((article) => (
-              <Card key={article.id} className="h-full hover:shadow-lg transition-shadow duration-200">
-                {article.featuredImage && (
-                  <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-                    <img
-                      src={article.featuredImage}
-                      alt={article.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                    />
-                  </div>
-                )}
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      {new Date(article.publishedAt || article.createdAt).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                    {article.viewCount > 0 && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <Eye className="h-4 w-4" />
-                        <span>{article.viewCount}</span>
-                      </>
-                    )}
-                    {article.isFeatured && (
-                      <Badge className="ml-auto bg-[hsl(188,100%,38%)]">
-                        {t('news.featured', 'Destacado')}
-                      </Badge>
-                    )}
-                  </div>
-                  <CardTitle className="line-clamp-2 hover:text-[hsl(188,100%,38%)] transition-colors">
-                    <Link href={`/news/${article.slug}`}>
-                      {article.title}
-                    </Link>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 flex flex-col justify-between h-full">
-                  <div>
-                    {article.excerpt && (
-                      <p className="text-gray-600 line-clamp-3 mb-4">
-                        {article.excerpt}
-                      </p>
-                    )}
-                    {article.tags && article.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {article.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
+        ) : articles.length === 0 ? (
+          <Card className="text-center py-12">
+            <CardContent>
+              <Newspaper className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {t('news.noArticles', 'No hay artículos disponibles')}
+              </h3>
+              <p className="text-gray-600">
+                {t('news.checkBackLater', 'Vuelve pronto para ver las últimas noticias')}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Articles Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {articles.map((article: NewsArticle) => (
+                <Link key={article.id} href={`/news/${article.slug}`}>
+                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
+                    {/* Featured Image */}
+                    {article.featuredImage && (
+                      <div className="aspect-video overflow-hidden">
+                        <img
+                          src={article.featuredImage}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
                     )}
-                  </div>
-                  <Link href={`/news/${article.slug}`}>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors mt-auto"
-                    >
-                      <Newspaper className="h-4 w-4 mr-2" />
-                      {t('news.readMore', 'Leer más')}
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                    
+                    <CardContent className="p-6">
+                      {/* Tags */}
+                      {article.tags && article.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {article.tags.slice(0, 2).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
 
-        {/* No Results */}
-        {!isLoading && filteredArticles.length === 0 && articles.length > 0 && (
-          <div className="text-center py-12">
-            <Search className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {t('news.noResults', 'No se encontraron resultados')}
-            </h3>
-            <p className="text-gray-500 mb-4">
-              {t('news.noResultsDesc', 'Intenta con otros términos de búsqueda')}
-            </p>
-            <Button 
-              onClick={() => setSearchTerm("")}
-              variant="outline"
-            >
-              {t('news.clearSearch', 'Limpiar búsqueda')}
-            </Button>
-          </div>
-        )}
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-2 group-hover:text-[hsl(188,100%,38%)] transition-colors line-clamp-2">
+                        {article.title}
+                      </h3>
 
-        {/* No Articles */}
-        {!isLoading && articles.length === 0 && (
-          <div className="text-center py-12">
-            <Newspaper className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {t('news.noArticles', 'No hay noticias disponibles')}
-            </h3>
-            <p className="text-gray-500">
-              {t('news.noArticlesDesc', 'Vuelve pronto para ver las últimas actualizaciones')}
-            </p>
-          </div>
+                      {/* Excerpt */}
+                      {article.excerpt && (
+                        <p className="text-gray-600 mb-4 line-clamp-3">
+                          {article.excerpt}
+                        </p>
+                      )}
+
+                      {/* Meta Info */}
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            {format(new Date(article.publishedAt || article.createdAt), 'PP', { locale: getDateLocale() })}
+                          </span>
+                        </div>
+                        {article.viewCount > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{article.viewCount} {t('news.views', 'vistas')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  {t('common.previous', 'Anterior')}
+                </Button>
+                
+                <div className="flex items-center gap-2 mx-4">
+                  {[...Array(totalPages)].map((_, i) => {
+                    const pageNum = i + 1;
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      (pageNum >= page - 1 && pageNum <= page + 1)
+                    ) {
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setPage(pageNum)}
+                          className="w-10 h-10"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    } else if (
+                      pageNum === page - 2 ||
+                      pageNum === page + 2
+                    ) {
+                      return <span key={pageNum}>...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.min(totalPages, page + 1))}
+                  disabled={page === totalPages}
+                >
+                  {t('common.next', 'Siguiente')}
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
