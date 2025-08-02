@@ -646,9 +646,40 @@ function ThemeEditor() {
     root.style.setProperty('--accent-foreground', '0 0% 9%');
   };
 
+  // Upload logo mutation
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("logo", file);
+      
+      const response = await fetch("/api/admin/upload-logo", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      
+      if (!response.ok) throw new Error("Failed to upload logo");
+      const data = await response.json();
+      return data.logoUrl;
+    },
+    onSuccess: (newLogoUrl) => {
+      setPreviewLogoUrl(newLogoUrl);
+    },
+    onError: () => {
+      toast({
+        title: i18n.language === 'es' ? "Error" : "Error",
+        description: i18n.language === 'es' 
+          ? "Error al cargar el logo"
+          : "Failed to upload logo",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Save theme configuration mutation
   const saveThemeMutation = useMutation({
     mutationFn: async () => {
+      // Save theme colors
       const themeData = {
         key: 'theme_colors',
         value: JSON.stringify({
@@ -660,6 +691,21 @@ function ThemeEditor() {
       };
       
       await apiRequest("/api/admin/config", { method: "POST", body: themeData });
+      
+      // Save logo if changed
+      if (previewLogoUrl) {
+        const logoData = {
+          key: 'theme_logo',
+          value: JSON.stringify({
+            url: previewLogoUrl,
+          }),
+          description: 'Application logo',
+        };
+        
+        await apiRequest("/api/admin/config", { method: "POST", body: logoData });
+        setLogoUrl(previewLogoUrl);
+        setPreviewLogoUrl('');
+      }
       
       // Apply the colors immediately
       applyColorsToCSS({
@@ -693,12 +739,14 @@ function ThemeEditor() {
     setPrimaryColor(defaultColors.primary);
     setSecondaryColor(defaultColors.secondary);
     setAccentColor(defaultColors.accent);
+    setLogoUrl(defaultLogo);
+    setPreviewLogoUrl('');
     applyColorsToCSS(defaultColors);
     toast({
-      title: i18n.language === 'es' ? "Colores restaurados" : "Colors reset",
+      title: i18n.language === 'es' ? "Tema restaurado" : "Theme reset",
       description: i18n.language === 'es' 
-        ? "Se han restaurado los colores por defecto"
-        : "Default colors have been restored",
+        ? "Se han restaurado los colores y logo por defecto"
+        : "Default colors and logo have been restored",
     });
   };
   
@@ -716,6 +764,64 @@ function ThemeEditor() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Logo Section */}
+          <div>
+            <label className="text-sm font-medium">
+              {i18n.language === 'es' ? 'Logo / Icono' : 'Logo / Icon'}
+            </label>
+            <div className="flex items-center gap-4 mt-2">
+              <div className="relative">
+                <img 
+                  src={previewLogoUrl || logoUrl}
+                  alt="Current logo" 
+                  className="h-16 w-auto object-contain bg-gray-100 rounded p-2"
+                  style={{ maxWidth: '150px' }}
+                />
+                {previewLogoUrl && (
+                  <span className="absolute -top-2 -right-2 text-xs bg-yellow-500 text-white px-1 rounded">
+                    {i18n.language === 'es' ? 'Nuevo' : 'New'}
+                  </span>
+                )}
+              </div>
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      uploadLogoMutation.mutate(file);
+                    }
+                  }}
+                  className="hidden"
+                  id="logo-upload"
+                />
+                <label htmlFor="logo-upload">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="sm"
+                    asChild
+                    disabled={uploadLogoMutation.isPending}
+                  >
+                    <span>
+                      {uploadLogoMutation.isPending
+                        ? (i18n.language === 'es' ? 'Cargando...' : 'Uploading...')
+                        : (i18n.language === 'es' ? 'Cambiar Logo' : 'Change Logo')}
+                    </span>
+                  </Button>
+                </label>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {i18n.language === 'es' 
+                ? 'Recomendado: PNG transparente, altura mínima 100px'
+                : 'Recommended: Transparent PNG, minimum height 100px'}
+            </p>
+          </div>
+
+          <div className="border-t pt-4" />
+          
           <div>
             <label className="text-sm font-medium">
               {i18n.language === 'es' ? 'Color Primario' : 'Primary Color'}

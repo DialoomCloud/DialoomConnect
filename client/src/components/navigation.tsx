@@ -6,12 +6,14 @@ import { LanguageSelector } from "./language-selector";
 import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon, Menu, X } from "lucide-react";
 import type { User } from "@shared/schema";
 import { useState } from "react";
+import { useThemeConfig } from "@/hooks/useThemeConfig";
 
 export function Navigation() {
   const { user } = useAuth() as { user: User | undefined };
   const { t } = useTranslation();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { logoUrl } = useThemeConfig();
 
   const handleLogout = () => {
     // Clear any client-side cached data
@@ -34,7 +36,7 @@ export function Navigation() {
           <div className="flex items-center">
             <Link href={user ? "/home" : "/"} className="flex items-center">
               <img 
-                src="/uploads/images/dialoomblue.png"
+                src={logoUrl}
                 alt="Dialoom" 
                 className="h-12 w-auto object-contain"
                 style={{ maxWidth: '200px' }}

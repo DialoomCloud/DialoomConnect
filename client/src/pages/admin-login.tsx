@@ -22,7 +22,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function AdminLogin() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const { setAdminUser, checkAdminSession } = useAdminAuth();
+  const { isAuthenticated, isAdmin } = useAdminAuth();
   
   const {
     register,
@@ -41,18 +41,13 @@ export default function AdminLogin() {
       });
       
       if (response.ok) {
-        const data = await response.json();
-        setAdminUser(data.user);
-        
         toast({
           title: "Acceso exitoso",
           description: "Redirigiendo al panel de administración...",
         });
         
-        // Check session and redirect
-        await checkAdminSession();
-        
-        // Redirect to admin dashboard
+        // Since we're using Replit Auth, just redirect
+        // The auth state will be updated automatically
         setTimeout(() => {
           window.location.href = "/admin-dashboard";
         }, 1000);

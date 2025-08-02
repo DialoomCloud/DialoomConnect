@@ -1,10 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Database, UserCheck, Play, Smartphone, Share2 } from "lucide-react";
-
 import { Link } from "wouter";
+import { useThemeConfig } from "@/hooks/useThemeConfig";
 
 export default function Landing() {
+  const { logoUrl } = useThemeConfig();
+  
   const handleLogin = () => {
     window.location.href = "/api/login";
   };
@@ -51,7 +53,7 @@ export default function Landing() {
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
                 <img 
-                  src="/uploads/images/dialoomblue.png"
+                  src={logoUrl}
                   alt="Dialoom" 
                   className="h-8 w-auto object-contain"
                   style={{ maxWidth: '140px' }}

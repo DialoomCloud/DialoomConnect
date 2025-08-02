@@ -1074,6 +1074,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public - Get theme configuration (for logo and colors)
+  app.get('/api/config/theme', async (req, res) => {
+    try {
+      const configs = await storage.getAllAdminConfig();
+      const themeConfigs = configs.filter((c: any) => 
+        c.key === 'theme_colors' || c.key === 'theme_logo'
+      );
+      res.json(themeConfigs);
+    } catch (error) {
+      console.error("Error fetching theme config:", error);
+      res.status(500).json({ message: "Failed to fetch theme configuration" });
+    }
+  });
+
+  // Admin - Upload logo
+  app.post('/api/admin/upload-logo', isAdminAuthenticated, upload.single('logo'), async (req: any, res) => {
+    try {
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const adminId = req.user.claims.sub;
+      let logoPath: string;
+
+      try {
+        const uniqueFilename = `Logo/logo-${Date.now()}.${file.originalname.split('.').pop()}`;
+        const buffer = file.buffer;
+
+        // Try Object Storage first
+        try {
+          await objectStorage.uploadFile({
+            bucketName: 'replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7',
+            objectName: uniqueFilename,
+            buffer,
+            mimeType: file.mimetype,
+          });
+          logoPath = `/storage/${uniqueFilename}`;
+          console.log('Logo uploaded to Object Storage:', uniqueFilename);
+        } catch (objError) {
+          console.error('Object Storage upload failed, falling back to local:', objError);
+          
+          // Fallback to local storage
+          const localPath = path.join('uploads', uniqueFilename);
+          const fullPath = path.join(process.cwd(), localPath);
+          
+          await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
+          await fs.promises.writeFile(fullPath, buffer);
+          
+          logoPath = `/uploads/${uniqueFilename}`;
+          console.log('Logo saved locally:', fullPath);
+        }
+
+        res.json({ logoUrl: logoPath });
+      } catch (error) {
+        console.error('Error processing upload:', error);
+        res.status(500).json({ message: "Failed to upload logo" });
+      }
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      res.status(500).json({ message: "Failed to upload logo" });
+    }
+  });
+
   // Host availability routes
   app.get('/api/host/availability', isAuthenticated, async (req: any, res) => {
     try {
