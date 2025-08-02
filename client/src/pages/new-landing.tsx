@@ -9,8 +9,18 @@ import { LanguageSelector } from "@/components/language-selector";
 export default function NewLanding() {
   const { t, i18n } = useTranslation();
   
-  const handleLogin = () => {
-    window.location.href = "/api/login";
+  const handleLogin = async () => {
+    try {
+      // Clear any existing session first
+      await fetch('/api/clear-session');
+      // Small delay to ensure session is cleared
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 100);
+    } catch (error) {
+      console.log('Session clear failed, proceeding with login:', error);
+      window.location.href = "/api/login";
+    }
   };
 
   const currentLang = i18n.language || 'es';
