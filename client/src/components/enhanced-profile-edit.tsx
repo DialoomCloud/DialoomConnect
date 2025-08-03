@@ -202,9 +202,12 @@ export function EnhancedProfileEdit() {
       
       console.log('Sending AI request with:', { description, linkedinUrl, linkedinProfile });
       
-      const response = await apiRequest("POST", "/api/ai/enhance-description", { 
-        description,
-        linkedinUrl
+      const response = await apiRequest("/api/ai/enhance-description", { 
+        method: "POST",
+        body: {
+          description,
+          linkedinUrl
+        }
       });
       return response.json();
     },
@@ -215,10 +218,11 @@ export function EnhancedProfileEdit() {
         description: "La IA ha optimizado tu descripción profesional usando tu información de LinkedIn",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('AI Enhancement error:', error);
       toast({
         title: "Error",
-        description: "No se pudo mejorar la descripción. Inténtalo de nuevo.",
+        description: error.message || "No se pudo mejorar la descripción. Inténtalo de nuevo.",
         variant: "destructive",
       });
     },

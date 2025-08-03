@@ -1508,11 +1508,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI enhancement endpoint for descriptions using OpenAI
   app.post('/api/ai/enhance-description', isAuthenticated, async (req: any, res) => {
+    console.log('AI Enhancement endpoint called');
     try {
       const { description, linkedinUrl } = req.body;
       const userId = req.user.claims.sub;
       
-      console.log('AI Enhancement request:', { description: description?.length, linkedinUrl, userId });
+      console.log('AI Enhancement request received:', { 
+        descriptionLength: description?.length, 
+        linkedinUrl, 
+        userId,
+        body: req.body 
+      });
       
       if (!description?.trim()) {
         return res.status(400).json({ message: 'Descripción requerida' });
@@ -1551,6 +1557,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Responde solo con la descripción mejorada, sin explicaciones adicionales
       `;
 
+      console.log('Making OpenAI request with prompt length:', enhancementPrompt.length);
+      console.log('API Key exists:', !!process.env.OPENAI_API_KEY);
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -1570,8 +1579,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }),
       });
 
+      console.log('OpenAI response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.statusText}`);
+        const errorData = await response.json();
+        console.error('OpenAI API error details:', errorData);
+        throw new Error(`OpenAI API error: ${response.statusText} - ${JSON.stringify(errorData)}`);
       }
 
       const data = await response.json();
@@ -1581,10 +1594,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw new Error('No se pudo generar una descripción mejorada');
       }
 
+      console.log('Sending enhanced description response');
       res.json({ enhancedDescription });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error enhancing description:', error);
-      res.status(500).json({ message: 'Error al mejorar la descripción con IA' });
+      console.error('Error details:', error.message);
+      res.status(500).json({ 
+        message: error.message || 'Error al mejorar la descripción con IA',
+        error: error.toString()
+      });
     }
   });
 
