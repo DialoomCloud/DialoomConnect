@@ -33,20 +33,7 @@ export default function NewLanding() {
   const handleTestBypass = async () => {
     setIsTestLoading(true);
     try {
-      // Use fetch directly to avoid automatic redirect following
-      const response = await fetch("/api/auth/test-bypass", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        redirect: "manual" // Don't follow redirects automatically
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      const response = await apiRequest("POST", "/api/auth/test-bypass", {});
       const data = await response.json();
       
       if (data.success) {
@@ -54,9 +41,9 @@ export default function NewLanding() {
           title: "Acceso de prueba activado",
           description: `Iniciando sesión como ${data.user.name}...`,
         });
-        // Manually navigate to the callback URL
+        // Navigate directly to profile page
         setTimeout(() => {
-          window.location.href = data.redirectUrl;
+          window.location.href = "/profile";
         }, 500);
       } else {
         throw new Error(data.message || "Error al activar bypass");

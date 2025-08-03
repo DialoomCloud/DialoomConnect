@@ -332,62 +332,6 @@ export async function setupAuth(app: Express) {
         return res.status(404).json({ message: "Test user not found" });
       }
 
-      // Create a temporary token for test user
-      const testToken = Buffer.from(JSON.stringify({
-        userId: testUser.id,
-        timestamp: Date.now()
-      })).toString('base64');
-
-      console.log("Test user bypass initiated for:", testUser.email);
-      
-      // Return success with redirect URL (URL encode the token)
-      res.json({ 
-        success: true,
-        redirectUrl: `/api/auth/test-callback?token=${encodeURIComponent(testToken)}`,
-        user: {
-          id: testUser.id,
-          email: testUser.email,
-          name: `${testUser.firstName} ${testUser.lastName}`
-        }
-      });
-    } catch (error) {
-      console.error("Test bypass error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Test callback route to handle the bypass login
-  app.get("/api/auth/test-callback", async (req, res) => {
-    if (process.env.NODE_ENV !== 'development') {
-      return res.redirect('/');
-    }
-
-    try {
-      const token = req.query.token as string;
-      if (!token) {
-        console.error("Test callback: No token provided");
-        return res.redirect('/');
-      }
-
-      console.log("Test callback: Received token:", token);
-      
-      let tokenData;
-      try {
-        // Decode from base64
-        const decodedToken = Buffer.from(decodeURIComponent(token), 'base64').toString();
-        console.log("Test callback: Decoded token:", decodedToken);
-        tokenData = JSON.parse(decodedToken);
-      } catch (parseError) {
-        console.error("Test callback: Error parsing token:", parseError);
-        return res.redirect('/?error=invalid_token');
-      }
-
-      const testUser = await storage.getUser(tokenData.userId);
-      
-      if (!testUser) {
-        return res.redirect('/');
-      }
-
       // Create user object for session
       const userForSession = {
         id: testUser.id,
@@ -400,21 +344,32 @@ export async function setupAuth(app: Express) {
         }
       };
 
-      // Use req.logIn which is the proper way to establish a login session
+      // Use req.logIn to properly establish session
       req.logIn(userForSession, (err) => {
         if (err) {
           console.error("Test bypass login error:", err);
-          return res.redirect('/');
+          return res.status(500).json({ message: "Error creating session" });
         }
         
         console.log("Test user bypass successful:", testUser.email);
-        res.redirect('/profile');
+        
+        // Return JSON response indicating success
+        res.json({ 
+          success: true,
+          user: {
+            id: testUser.id,
+            email: testUser.email,
+            name: `${testUser.firstName} ${testUser.lastName}`
+          }
+        });
       });
     } catch (error) {
-      console.error("Test callback error:", error);
-      res.redirect('/');
+      console.error("Test bypass error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
+
+
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
