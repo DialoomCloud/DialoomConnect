@@ -356,56 +356,7 @@ export async function setupAuth(app: Express) {
     });
   });
 
-  // Test user bypass (only in development) - Simple endpoint without middleware
-  // We'll create a minimal endpoint that just sets a basic session marker
-  app.post("/api/auth/test-bypass", express.json(), async (req, res) => {
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(403).json({ message: "Bypass only available in development" });
-    }
 
-    try {
-      console.log("Test bypass: Starting process...");
-      
-      // Get test user from database using the test email
-      const testUser = await storage.getUserByEmail('billing@thopters.com');
-      
-      if (!testUser) {
-        console.log("Test bypass: Test user not found");
-        return res.status(404).json({ message: "Test user not found" });
-      }
-
-      console.log("Test bypass: Found test user:", testUser.email);
-
-      // Simple session approach - just mark that we're in test mode
-      if (req.session) {
-        (req.session as any).testUserId = testUser.id;
-        console.log("Test bypass: Set session testUserId:", testUser.id);
-        
-        req.session.save((err) => {
-          if (err) {
-            console.error("Test bypass: Session save error:", err);
-            return res.status(500).json({ message: "Error saving session" });
-          }
-          
-          console.log("Test bypass: Session saved successfully");
-          res.json({ 
-            success: true,
-            user: {
-              id: testUser.id,
-              email: testUser.email,
-              name: `${testUser.firstName} ${testUser.lastName}`
-            }
-          });
-        });
-      } else {
-        console.error("Test bypass: No session available");
-        return res.status(500).json({ message: "Session not available" });
-      }
-    } catch (error) {
-      console.error("Test bypass error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
 
   // Add endpoint to get current user (handles test users)
   app.get("/api/auth/user", async (req, res) => {

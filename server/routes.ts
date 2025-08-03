@@ -66,6 +66,56 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register test bypass route BEFORE any middleware to avoid conflicts
+  if (process.env.NODE_ENV === 'development') {
+    app.post("/api/auth/test-bypass", express.json(), async (req, res) => {
+      try {
+        console.log("Test bypass: Starting independent session...");
+        
+        const testUser = await storage.getUserByEmail('billing@thopters.com');
+        if (!testUser) {
+          console.error("Test bypass: Test user not found");
+          return res.status(404).json({ message: "Test user not found" });
+        }
+
+        console.log("Test bypass: Found test user:", testUser.email);
+
+        // Set session data directly without passport
+        if (req.session) {
+          (req.session as any).testUserId = testUser.id;
+          (req.session as any).isTestMode = true;
+          
+          await new Promise<void>((resolve, reject) => {
+            req.session.save((err) => {
+              if (err) {
+                console.error("Test bypass: Session save error:", err);
+                reject(err);
+              } else {
+                console.log("Test bypass: Session saved successfully");
+                resolve();
+              }
+            });
+          });
+          
+          res.json({ 
+            success: true,
+            user: {
+              id: testUser.id,
+              email: testUser.email,
+              name: `${testUser.firstName} ${testUser.lastName}`
+            }
+          });
+        } else {
+          console.error("Test bypass: No session available");
+          return res.status(500).json({ message: "Session not available" });
+        }
+      } catch (error) {
+        console.error("Test bypass error:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+  }
+
   // Auth middleware (includes session configuration)
   await setupAuth(app);
   
