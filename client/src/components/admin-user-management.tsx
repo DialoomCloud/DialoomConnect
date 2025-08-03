@@ -209,23 +209,12 @@ export function AdminUserManagement() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            setSelectedUser(user);
-                            setEditDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
                             setSelectedUserId(user.id);
                             setCompleteEditorOpen(true);
                           }}
                         >
-                          <Settings className="w-4 h-4 mr-1" />
-                          Completo
+                          <Edit className="w-4 h-4 mr-1" />
+                          Editar
                         </Button>
                         <Button
                           size="sm"
@@ -259,26 +248,7 @@ export function AdminUserManagement() {
         )}
       </CardContent>
 
-      {/* User Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Usuario</DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <UserEditForm 
-              user={selectedUser} 
-              onSave={(updates) => {
-                updateUserMutation.mutate({
-                  userId: selectedUser.id,
-                  updates
-                });
-              }}
-              isLoading={updateUserMutation.isPending}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+
 
       {/* Complete User Editor */}
       {selectedUserId && (

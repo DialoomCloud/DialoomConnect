@@ -108,6 +108,10 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   useEffect(() => {
     if (userProfile?.user) {
       const user = userProfile.user;
+      
+      // Debug categories
+      console.log('User categories:', userProfile.categories);
+      
       setFormData({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
