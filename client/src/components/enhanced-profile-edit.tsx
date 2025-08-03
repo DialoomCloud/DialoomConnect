@@ -186,9 +186,8 @@ export function EnhancedProfileEdit() {
         socialPlatforms.find(p => p.id === linkedinProfile.platformId)?.baseUrl + linkedinProfile.username : 
         '';
       
-      const response = await apiRequest("POST", "/api/ai/enhance-description", { 
-        description,
-        linkedinUrl 
+      const response = await apiRequest("POST", "/api/ai/improve-description", { 
+        description
       });
       return response.json();
     },
