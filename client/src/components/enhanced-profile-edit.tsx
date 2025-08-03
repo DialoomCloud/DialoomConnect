@@ -117,7 +117,7 @@ export function EnhancedProfileEdit() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [socialProfiles, setSocialProfiles] = useState<{platformId: number, username: string}[]>([]);
   const [newSocialProfile, setNewSocialProfile] = useState<SocialProfileData>({
-    platformId: 0,
+    platformId: 1, // Default to LinkedIn (assuming ID 1)
     username: ""
   });
 
@@ -139,6 +139,16 @@ export function EnhancedProfileEdit() {
   // Data queries
   const { data: socialPlatforms = [] } = useQuery({
     queryKey: ['/api/social-platforms'],
+    onSuccess: (platforms) => {
+      // Set default platform to LinkedIn if available and no platform is selected
+      if (platforms.length > 0 && newSocialProfile.platformId === 0) {
+        const linkedIn = platforms.find((p: SocialPlatform) => p.name === 'LinkedIn');
+        setNewSocialProfile(prev => ({ 
+          ...prev, 
+          platformId: linkedIn?.id || platforms[0].id 
+        }));
+      }
+    }
   });
 
   const { data: categories = [] } = useQuery({
@@ -578,7 +588,9 @@ export function EnhancedProfileEdit() {
                             <div key={index} className="flex items-center gap-3 p-2 border rounded-lg bg-muted/30">
                               <IconComponent className="h-4 w-4" />
                               <span className="font-medium">{platform?.name}</span>
-                              <span className="text-muted-foreground">@{profile.username}</span>
+                              <span className="text-muted-foreground">
+                                {platform?.name === 'LinkedIn' || platform?.name === 'Website' ? profile.username : `@${profile.username}`}
+                              </span>
                               <Button
                                 type="button"
                                 size="sm"
