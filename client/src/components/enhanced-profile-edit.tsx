@@ -138,17 +138,7 @@ export function EnhancedProfileEdit() {
 
   // Data queries
   const { data: socialPlatforms = [] } = useQuery({
-    queryKey: ['/api/social-platforms'],
-    onSuccess: (platforms) => {
-      // Set default platform to LinkedIn if available and no platform is selected
-      if (platforms.length > 0 && newSocialProfile.platformId === 0) {
-        const linkedIn = platforms.find((p: SocialPlatform) => p.name === 'LinkedIn');
-        setNewSocialProfile(prev => ({ 
-          ...prev, 
-          platformId: linkedIn?.id || platforms[0].id 
-        }));
-      }
-    }
+    queryKey: ['/api/social-platforms']
   });
 
   const { data: categories = [] } = useQuery({
