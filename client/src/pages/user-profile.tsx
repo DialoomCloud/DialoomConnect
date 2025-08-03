@@ -9,11 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MediaEmbed } from "@/components/media-embed";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
-import { BookingModal } from "@/components/booking-modal";
+import { BookingFlow } from "@/components/booking-flow";
 import { DateTimeSelector } from "@/components/date-time-selector";
 import { PaymentMethods } from "@/components/payment-methods";
 import { StripeConnectCheckout } from "@/components/stripe-connect-checkout";
-import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -27,7 +27,7 @@ export default function UserProfile() {
   const userId = params.id;
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
-  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showBookingFlow, setShowBookingFlow] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState<{ duration: number; price: string } | null>(null);
   const [showDateTimeSelector, setShowDateTimeSelector] = useState(false);
   const [selectedBookingDate, setSelectedBookingDate] = useState<Date | null>(null);
@@ -63,6 +63,18 @@ export default function UserProfile() {
   // Fetch service prices from public endpoint
   const { data: servicePrices } = useQuery({
     queryKey: ["/api/config/service-prices"],
+  });
+
+  // Fetch host available services
+  const { data: hostServices } = useQuery({
+    queryKey: [`/api/host/${userId}/services`],
+    enabled: !!userId,
+  });
+
+  // Fetch user social profiles
+  const { data: socialProfiles } = useQuery({
+    queryKey: [`/api/user/social-profiles/${userId}`],
+    enabled: !!userId,
   });
 
   if (userError) {
@@ -133,12 +145,68 @@ export default function UserProfile() {
 
               {/* Profile Info */}
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-2">
-                  {user.firstName} {user.lastName}
-                </h1>
-                {user.title && (
-                  <p className="text-xl text-gray-600 mb-4">{user.title}</p>
-                )}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-2">
+                      {user.firstName} {user.lastName}
+                    </h1>
+                    {user.title && (
+                      <p className="text-xl text-gray-600 mb-2">{user.title}</p>
+                    )}
+                    
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mb-4">
+                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">5.0</span>
+                      <span className="text-gray-500">(12 reseñas)</span>
+                    </div>
+                  </div>
+
+                  {/* Social Media Icons */}
+                  <div className="flex gap-3">
+                    {socialProfiles?.find((p: any) => p.platformId === 1) && (
+                      <a 
+                        href={socialProfiles.find((p: any) => p.platformId === 1)?.url || `https://instagram.com/${socialProfiles.find((p: any) => p.platformId === 1)?.username}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                      >
+                        <Instagram className="w-5 h-5 text-gray-700" />
+                      </a>
+                    )}
+                    {socialProfiles?.find((p: any) => p.platformId === 2) && (
+                      <a 
+                        href={socialProfiles.find((p: any) => p.platformId === 2)?.url || `https://linkedin.com/in/${socialProfiles.find((p: any) => p.platformId === 2)?.username}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                      >
+                        <Linkedin className="w-5 h-5 text-gray-700" />
+                      </a>
+                    )}
+                    {socialProfiles?.find((p: any) => p.platformId === 3) && (
+                      <a 
+                        href={socialProfiles.find((p: any) => p.platformId === 3)?.url || `https://twitter.com/${socialProfiles.find((p: any) => p.platformId === 3)?.username}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                      >
+                        <Twitter className="w-5 h-5 text-gray-700" />
+                      </a>
+                    )}
+                    {socialProfiles?.find((p: any) => p.platformId === 4) && (
+                      <a 
+                        href={socialProfiles.find((p: any) => p.platformId === 4)?.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                      >
+                        <Globe className="w-5 h-5 text-gray-700" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
                 {user.description && (
                   <p className="text-gray-700 mb-4">{user.description}</p>
                 )}
@@ -154,6 +222,12 @@ export default function UserProfile() {
                     <div className="flex items-center text-gray-600">
                       <MapPin className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
                       <span>{user.city}, {user.countryCode}</span>
+                    </div>
+                  )}
+                  {user.phone && (
+                    <div className="flex items-center text-gray-600">
+                      <Phone className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
+                      <span>{user.phone}</span>
                     </div>
                   )}
                 </div>
@@ -223,13 +297,7 @@ export default function UserProfile() {
                   
                   <Button 
                     className="w-full mt-4 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
-                    onClick={() => {
-                      const activePricing = pricing.find(p => p.isActive);
-                      if (activePricing) {
-                        setSelectedPricing({ duration: activePricing.duration, price: activePricing.price });
-                        setShowDateTimeSelector(true);
-                      }
-                    }}
+                    onClick={() => setShowBookingFlow(true)}
                   >
                     {t('userProfile.bookCall')}
                   </Button>
@@ -312,39 +380,24 @@ export default function UserProfile() {
         content={viewingContent}
       />
 
-      {/* Date/Time Selection Modal */}
-      {showDateTimeSelector && selectedPricing && (
-        <DateTimeSelector
-          isOpen={showDateTimeSelector}
-          onClose={() => setShowDateTimeSelector(false)}
-          availability={availability || []}
-          onConfirm={(date, time) => {
-            setSelectedBookingDate(date);
-            setSelectedBookingTime(time);
-            setShowDateTimeSelector(false);
-            setShowBookingModal(true);
-          }}
-        />
-      )}
-
-      {/* Booking Modal */}
-      {showBookingModal && selectedPricing && user && selectedBookingDate && selectedBookingTime && (
-        <BookingModal
-          isOpen={showBookingModal}
-          onClose={() => {
-            setShowBookingModal(false);
-            setSelectedBookingDate(null);
-            setSelectedBookingTime(null);
-          }}
-          host={{
-            id: user.id,
-            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Host'
-          }}
-          pricing={selectedPricing}
-          selectedDate={selectedBookingDate}
-          selectedTime={selectedBookingTime}
-        />
-      )}
+      {/* Booking Flow Modal */}
+      <BookingFlow
+        isOpen={showBookingFlow}
+        onClose={() => setShowBookingFlow(false)}
+        host={{
+          ...user,
+          pricing: pricing,
+          socialMedia: {
+            instagram: socialProfiles?.find((p: any) => p.platformId === 1)?.username,
+            linkedin: socialProfiles?.find((p: any) => p.platformId === 2)?.username,
+            twitter: socialProfiles?.find((p: any) => p.platformId === 3)?.username,
+            website: socialProfiles?.find((p: any) => p.platformId === 4)?.url
+          },
+          rating: 5.0,
+          reviewCount: 12,
+        }}
+        hostServices={hostServices || {}}
+      />
     </div>
   );
 }
