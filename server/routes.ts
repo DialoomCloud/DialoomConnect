@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     app.post("/api/auth/test-login", express.json(), async (req, res) => {
       try {
-        console.log("Test login: Starting proper auth simulation...");
+        console.log("Test login: Starting test user authentication...");
         
         const testUser = await storage.getUserByEmail('billing@thopters.com');
         if (!testUser) {
@@ -96,33 +96,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log("Test login: Found test user:", testUser.email);
 
-        // Create proper user session mimicking Replit Auth structure
-        const mockTokens = {
-          access_token: 'mock_access_token_' + Date.now(),
-          refresh_token: 'mock_refresh_token_' + Date.now(),
-          claims: () => ({
-            sub: testUser.id,
-            email: testUser.email,
-            first_name: testUser.firstName,
-            last_name: testUser.lastName,
-            profile_image_url: testUser.profileImageUrl,
-            exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
-          })
-        };
-
-        // Create user object with proper structure
-        const user = {};
-        (user as any).claims = mockTokens.claims();
-        (user as any).access_token = mockTokens.access_token;
-        (user as any).refresh_token = mockTokens.refresh_token;
-        (user as any).expires_at = (user as any).claims.exp;
-
-        // Directly set session data
-        (req.session as any).passport = { user };
-        req.session.save((err) => {
+        // Use passport's login method with the test user marker
+        req.login({ type: 'test', email: testUser.email }, (err) => {
           if (err) {
-            console.error("Test login: Session save error:", err);
-            return res.status(500).json({ message: "Failed to save session" });
+            console.error("Test login: Passport login error:", err);
+            return res.status(500).json({ message: "Login failed" });
           }
           
           console.log("Test login: Successfully logged in test user");
