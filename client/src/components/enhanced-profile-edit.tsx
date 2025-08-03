@@ -250,7 +250,10 @@ export function EnhancedProfileEdit() {
   // Profile update mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
-      const response = await apiRequest("PUT", `/api/users/${typedUser?.id}/profile`, data);
+      const response = await apiRequest(`/api/users/${typedUser?.id}/profile`, {
+        method: "PUT",
+        body: data
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -260,10 +263,11 @@ export function EnhancedProfileEdit() {
         description: "Tu información personal se ha guardado correctamente",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Profile update error:', error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el perfil",
+        description: error.message || "No se pudo actualizar el perfil",
         variant: "destructive",
       });
     },
@@ -272,8 +276,9 @@ export function EnhancedProfileEdit() {
   // Categories update mutation
   const updateCategoriesMutation = useMutation({
     mutationFn: async (categoryIds: number[]) => {
-      const response = await apiRequest("PUT", `/api/users/${typedUser?.id}/categories`, { 
-        categoryIds 
+      const response = await apiRequest(`/api/users/${typedUser?.id}/categories`, { 
+        method: "PUT",
+        body: { categoryIds }
       });
       return response.json();
     },
@@ -289,8 +294,9 @@ export function EnhancedProfileEdit() {
   // Social profiles update mutation
   const updateSocialProfilesMutation = useMutation({
     mutationFn: async (profiles: {platformId: number, username: string}[]) => {
-      const response = await apiRequest("PUT", `/api/users/${typedUser?.id}/social-profiles`, { 
-        profiles 
+      const response = await apiRequest(`/api/users/${typedUser?.id}/social-profiles`, { 
+        method: "PUT",
+        body: { profiles }
       });
       return response.json();
     },
@@ -350,20 +356,23 @@ export function EnhancedProfileEdit() {
   };
 
   const onSubmit = async (data: ProfileFormData) => {
-    // Update profile
-    await updateProfileMutation.mutateAsync(data);
-    
-    // Update categories
-    if (selectedCategories.length > 0) {
-      await updateCategoriesMutation.mutateAsync(selectedCategories);
-    }
-    
-    // Update social profiles
-    if (socialProfiles.length > 0) {
-      await updateSocialProfilesMutation.mutateAsync(socialProfiles);
-    }
-    if (socialProfiles.length > 0) {
-      await updateSocialProfilesMutation.mutateAsync(socialProfiles);
+    try {
+      console.log('Submitting profile data:', data);
+      
+      // Update profile
+      await updateProfileMutation.mutateAsync(data);
+      
+      // Update categories
+      if (selectedCategories.length > 0) {
+        await updateCategoriesMutation.mutateAsync(selectedCategories);
+      }
+      
+      // Update social profiles
+      if (socialProfiles.length > 0) {
+        await updateSocialProfilesMutation.mutateAsync(socialProfiles);
+      }
+    } catch (error) {
+      console.error('Error during form submission:', error);
     }
   };
 
