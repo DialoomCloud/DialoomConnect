@@ -29,6 +29,8 @@
   - Test bookings auto-confirm and skip payment processing
   - Added TestBookingButton component for instant test reservations
   - Test mode only active in development environment
+  - Fixed test bypass session creation by directly setting session data instead of using req.logIn
+  - Test mode pricing now properly displays "GRATIS" for all services
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Replit Auth for user authentication

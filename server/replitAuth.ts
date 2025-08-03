@@ -332,31 +332,6 @@ export async function setupAuth(app: Express) {
         return res.status(404).json({ message: "Test user not found" });
       }
 
-      // First logout any existing user
-      if (req.user) {
-        await new Promise<void>((resolve) => {
-          req.logout((err) => {
-            if (err) {
-              console.error("Error logging out existing user:", err);
-            }
-            resolve();
-          });
-        });
-      }
-
-      // Destroy existing session
-      await new Promise<void>((resolve) => {
-        req.session.destroy((err) => {
-          if (err) {
-            console.error("Error destroying existing session:", err);
-          }
-          resolve();
-        });
-      });
-
-      // Create new session
-      req.session = req.sessionStore.generate(req) as any;
-
       // Create user object for session
       const userForSession = {
         id: testUser.id,
@@ -369,14 +344,23 @@ export async function setupAuth(app: Express) {
         }
       };
 
-      // Use req.logIn to properly establish session
-      req.logIn(userForSession, (err) => {
-        if (err) {
-          console.error("Test bypass login error:", err);
-          return res.status(500).json({ message: "Error creating session" });
+      // Manually set up the session data similar to passport's serialization
+      req.session.passport = {
+        user: userForSession
+      };
+      
+      // Mark session as authenticated
+      (req as any).user = userForSession;
+      (req as any).isAuthenticated = () => true;
+      
+      console.log("Test user bypass successful:", testUser.email);
+      
+      // Save session to ensure persistence
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error("Error saving session:", saveErr);
+          return res.status(500).json({ message: "Error saving session" });
         }
-        
-        console.log("Test user bypass successful:", testUser.email);
         
         // Return JSON response indicating success
         res.json({ 
