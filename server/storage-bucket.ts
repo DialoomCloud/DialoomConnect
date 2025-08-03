@@ -36,10 +36,10 @@ export class StorageBucket {
     const filePath = path.join(publicPath, fileName);
 
     try {
-      // Process image with Sharp - resize and convert to WebP
+      // Process image with Sharp - resize and convert to WebP with higher quality
       await sharp(imageBuffer)
         .resize(400, 400, { fit: 'cover', position: 'center' })
-        .webp({ quality: 85 })
+        .webp({ quality: 92 })
         .toFile(filePath);
 
       // Return relative path for database storage
@@ -83,10 +83,10 @@ export class StorageBucket {
     const filePath = path.join(publicPath, fileName);
 
     try {
-      // Process and compress image
+      // Process and compress image with higher quality
       await sharp(imageBuffer)
         .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 80 })
+        .webp({ quality: 90 })
         .toFile(filePath);
 
       return `uploads/users/${userId}/public/${fileName}`;

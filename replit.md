@@ -16,6 +16,7 @@
 - **Host Service Configuration**: Hosts can now enable/disable additional services (screen sharing, translation, recording, transcription)
 - **Admin Controls**: Admin can control which services hosts can offer through admin configuration settings
 - **Free Consultation Update**: Changed free consultation duration from 0 to 5 minutes with admin toggle
+- **Image Optimization Update**: Increased file size limits from 3MB to 5MB and improved compression quality from 80% to 90-95% across all image processing functions (profile images, media uploads, public images)
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Replit Auth for user authentication

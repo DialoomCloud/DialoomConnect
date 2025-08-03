@@ -69,10 +69,10 @@ export class ReplitObjectStorage {
    */
   async uploadProfileImage(userId: string, fileBuffer: Buffer, originalName: string): Promise<string> {
     try {
-      // Process image with Sharp
+      // Process image with Sharp - higher quality for profile images
       const processedBuffer = await sharp(fileBuffer)
         .resize(300, 300, { fit: 'cover', position: 'center' })
-        .webp({ quality: 85 })
+        .webp({ quality: 92 })
         .toBuffer();
 
       const timestamp = Date.now();
@@ -119,10 +119,10 @@ export class ReplitObjectStorage {
       const ext = originalName.split('.').pop()?.toLowerCase();
 
       if (mediaType === 'image') {
-        // Process image
+        // Process image with higher quality
         processedBuffer = await sharp(fileBuffer)
           .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-          .webp({ quality: 80 })
+          .webp({ quality: 90 })
           .toBuffer();
         filename = `image-${timestamp}.webp`;
       } else if (mediaType === 'video') {
