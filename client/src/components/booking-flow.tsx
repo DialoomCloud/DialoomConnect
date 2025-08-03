@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -24,11 +24,13 @@ import {
   FileText,
   DollarSign
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, getDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import PaymentCheckout from "./payment-checkout";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface BookingFlowProps {
   isOpen: boolean;
@@ -57,12 +59,89 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
     transcription: false,
   });
 
-  // Sample time slots - in real app, these would come from availability API
-  const timeSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
-  ];
+  // Fetch host availability
+  const { data: availability } = useQuery({
+    queryKey: [`/api/users/${host.id}/availability`],
+    enabled: isOpen && !!host.id,
+  });
+
+  // Initialize selected services based on what host has enabled
+  useEffect(() => {
+    if (isOpen && hostServices) {
+      setSelectedServices({
+        screenSharing: hostServices.screenSharing !== undefined && hostServices.screenSharing > 0,
+        translation: false, // Not enabled for this host
+        recording: hostServices.recording !== undefined && hostServices.recording > 0,
+        transcription: false, // Not enabled for this host
+      });
+    }
+  }, [isOpen, hostServices]);
+
+  // Reset state when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep('host-intro');
+      setSelectedDate(undefined);
+      setSelectedTime(undefined);
+      setSelectedDuration(undefined);
+      setSelectedServices({
+        screenSharing: hostServices.screenSharing !== undefined && hostServices.screenSharing > 0,
+        translation: false,
+        recording: hostServices.recording !== undefined && hostServices.recording > 0,
+        transcription: false,
+      });
+    }
+  }, [isOpen, hostServices]);
+
+  // Get available time slots for selected date
+  const getTimeSlots = () => {
+    if (!selectedDate || !availability) {
+      return [];
+    }
+
+    const dayOfWeek = getDay(selectedDate);
+    const availableSlots = availability.filter((slot: any) => {
+      if (slot.dayOfWeek !== null) {
+        return slot.dayOfWeek === dayOfWeek;
+      }
+      if (slot.date) {
+        const slotDate = parseISO(slot.date);
+        return format(slotDate, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+      }
+      return false;
+    });
+
+    const timeSlots: string[] = [];
+    availableSlots.forEach((slot: any) => {
+      const [startHour, startMin] = slot.startTime.split(':').map(Number);
+      const [endHour, endMin] = slot.endTime.split(':').map(Number);
+      
+      for (let hour = startHour; hour < endHour || (hour === endHour && 0 < endMin); hour++) {
+        for (let min = (hour === startHour ? startMin : 0); min < 60 && (hour < endHour || min < endMin); min += 30) {
+          timeSlots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`);
+        }
+      }
+    });
+
+    return timeSlots;
+  };
+
+  // Check if a date has availability
+  const isDateAvailable = (date: Date) => {
+    if (!availability || availability.length === 0) return false;
+    
+    const dayOfWeek = getDay(date);
+    return availability.some((slot: any) => {
+      if (slot.dayOfWeek !== null) {
+        return slot.dayOfWeek === dayOfWeek;
+      }
+      if (slot.date) {
+        const slotDate = parseISO(slot.date);
+        return format(slotDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd');
+      }
+      return false;
+    });
+  };
 
   const handleNext = () => {
     const steps: BookingStep[] = ['host-intro', 'select-date', 'select-time', 'select-services', 'payment', 'success'];
@@ -81,18 +160,18 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
   };
 
   const calculateTotal = () => {
-    let total = selectedDuration?.price || 0;
+    let total = Number(selectedDuration?.price) || 0;
     if (selectedServices.screenSharing && hostServices.screenSharing) {
-      total += hostServices.screenSharing;
+      total += Number(hostServices.screenSharing) || 0;
     }
     if (selectedServices.translation && hostServices.translation) {
-      total += hostServices.translation;
+      total += Number(hostServices.translation) || 0;
     }
     if (selectedServices.recording && hostServices.recording) {
-      total += hostServices.recording;
+      total += Number(hostServices.recording) || 0;
     }
     if (selectedServices.transcription && hostServices.transcription) {
-      total += hostServices.transcription;
+      total += Number(hostServices.transcription) || 0;
     }
     return total;
   };
@@ -111,9 +190,9 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
       setSelectedTime(undefined);
       setSelectedDuration(undefined);
       setSelectedServices({
-        screenSharing: false,
+        screenSharing: hostServices.screenSharing !== undefined && hostServices.screenSharing > 0,
         translation: false,
-        recording: false,
+        recording: hostServices.recording !== undefined && hostServices.recording > 0,
         transcription: false,
       });
     }, 3000);
@@ -197,7 +276,7 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
             {/* Services preview */}
             <div className="grid grid-cols-2 gap-3">
               {host.pricing?.map((price: any) => (
-                <Card key={price.id} className="cursor-pointer hover:border-[hsl(188,80%,42%)] transition-colors">
+                <Card key={price.id} className="border-gray-200">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2">
                       <Video className="w-4 h-4 text-[hsl(188,80%,42%)]" />
@@ -234,7 +313,11 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 locale={es}
-                disabled={(date) => date < new Date() || date.getDay() === 0}
+                disabled={(date) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return date < today || !isDateAvailable(date);
+                }}
                 className="rounded-md border"
               />
             </div>
@@ -303,19 +386,23 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
             <div>
               <h3 className="font-semibold mb-3">Horarios disponibles</h3>
               <div className="grid grid-cols-4 gap-2">
-                {timeSlots.map((time) => (
-                  <Button
-                    key={time}
-                    variant={selectedTime === time ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedTime(time)}
-                    className={cn(
-                      selectedTime === time && "bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
-                    )}
-                  >
-                    {time}
-                  </Button>
-                ))}
+                {getTimeSlots().length === 0 ? (
+                  <p className="col-span-4 text-center text-gray-500">No hay horarios disponibles para esta fecha</p>
+                ) : (
+                  getTimeSlots().map((time) => (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedTime(time)}
+                      className={cn(
+                        selectedTime === time && "bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
+                      )}
+                    >
+                      {time}
+                    </Button>
+                  ))
+                )}
               </div>
             </div>
 
