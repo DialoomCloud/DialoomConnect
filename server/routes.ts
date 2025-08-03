@@ -72,21 +72,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     app.post("/api/auth/logout", (req, res) => {
       console.log("Logout: Starting session cleanup...");
       
-      req.logout((err) => {
+      req.session.destroy((err) => {
         if (err) {
-          console.error("Logout error:", err);
+          console.error("Session destroy error:", err);
+          return res.status(500).json({ success: false, message: "Failed to clear session" });
         }
         
-        req.session.destroy((err) => {
-          if (err) {
-            console.error("Session destroy error:", err);
-            return res.status(500).json({ success: false, message: "Failed to clear session" });
-          }
-          
-          res.clearCookie('connect.sid');
-          console.log("Logout: Session cleared successfully");
-          res.json({ success: true, message: "Session cleared" });
-        });
+        res.clearCookie('connect.sid');
+        console.log("Logout: Session cleared successfully");
+        res.json({ success: true, message: "Session cleared" });
       });
     });
 
@@ -94,68 +88,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         console.log("Test login: Starting proper auth simulation...");
         
-        // First force logout any existing session
-        req.logout((logoutErr) => {
-          if (logoutErr) {
-            console.error("Test login: Logout error:", logoutErr);
+        const testUser = await storage.getUserByEmail('billing@thopters.com');
+        if (!testUser) {
+          console.error("Test login: Test user not found");
+          return res.status(404).json({ message: "Test user not found" });
+        }
+
+        console.log("Test login: Found test user:", testUser.email);
+
+        // Create proper user session mimicking Replit Auth structure
+        const mockTokens = {
+          access_token: 'mock_access_token_' + Date.now(),
+          refresh_token: 'mock_refresh_token_' + Date.now(),
+          claims: () => ({
+            sub: testUser.id,
+            email: testUser.email,
+            first_name: testUser.firstName,
+            last_name: testUser.lastName,
+            profile_image_url: testUser.profileImageUrl,
+            exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+          })
+        };
+
+        // Create user object with proper structure
+        const user = {};
+        (user as any).claims = mockTokens.claims();
+        (user as any).access_token = mockTokens.access_token;
+        (user as any).refresh_token = mockTokens.refresh_token;
+        (user as any).expires_at = (user as any).claims.exp;
+
+        // Directly set session data
+        (req.session as any).passport = { user };
+        req.session.save((err) => {
+          if (err) {
+            console.error("Test login: Session save error:", err);
+            return res.status(500).json({ message: "Failed to save session" });
           }
           
-          req.session.destroy(async (destroyErr) => {
-            if (destroyErr) {
-              console.error("Test login: Session destroy error:", destroyErr);
-            }
-            
-            try {
-              const testUser = await storage.getUserByEmail('billing@thopters.com');
-              if (!testUser) {
-                console.error("Test login: Test user not found");
-                return res.status(404).json({ message: "Test user not found" });
-              }
-
-              console.log("Test login: Found test user:", testUser.email);
-
-              // Create proper user session mimicking Replit Auth structure
-              const mockTokens = {
-                access_token: 'mock_access_token_' + Date.now(),
-                refresh_token: 'mock_refresh_token_' + Date.now(),
-                claims: () => ({
-                  sub: testUser.id,
-                  email: testUser.email,
-                  first_name: testUser.firstName,
-                  last_name: testUser.lastName,
-                  profile_image_url: testUser.profileImageUrl,
-                  exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
-                })
-              };
-
-              // Create user object with proper structure
-              const user = {};
-              (user as any).claims = mockTokens.claims();
-              (user as any).access_token = mockTokens.access_token;
-              (user as any).refresh_token = mockTokens.refresh_token;
-              (user as any).expires_at = (user as any).claims.exp;
-
-              // Use passport's login method to establish proper session
-              req.logIn(user, (loginErr) => {
-                if (loginErr) {
-                  console.error("Test login: Login error:", loginErr);
-                  return res.status(500).json({ message: "Login failed" });
-                }
-                
-                console.log("Test login: Successfully logged in test user");
-                res.json({
-                  success: true,
-                  user: {
-                    id: testUser.id,
-                    email: testUser.email,
-                    name: `${testUser.firstName} ${testUser.lastName}`
-                  }
-                });
-              });
-              
-            } catch (error) {
-              console.error("Test login error:", error);
-              res.status(500).json({ message: "Internal server error" });
+          console.log("Test login: Successfully logged in test user");
+          res.json({
+            success: true,
+            user: {
+              id: testUser.id,
+              email: testUser.email,
+              name: `${testUser.firstName} ${testUser.lastName}`
             }
           });
         });
