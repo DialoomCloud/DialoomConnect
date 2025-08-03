@@ -186,8 +186,9 @@ export function EnhancedProfileEdit() {
         socialPlatforms.find(p => p.id === linkedinProfile.platformId)?.baseUrl + linkedinProfile.username : 
         '';
       
-      const response = await apiRequest("POST", "/api/ai/improve-description", { 
-        description
+      const response = await apiRequest("POST", "/api/ai/enhance-description", { 
+        description,
+        linkedinUrl
       });
       return response.json();
     },
@@ -292,6 +293,7 @@ export function EnhancedProfileEdit() {
       });
       return;
     }
+    
     improveDescriptionMutation.mutate(currentDescription);
   };
 
@@ -378,27 +380,33 @@ export function EnhancedProfileEdit() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleImproveDescription}
-                  disabled={improveDescriptionMutation.isPending}
-                  className="flex items-center gap-2"
-                >
-                  <Wand2 className="h-4 w-4" />
-                  {improveDescriptionMutation.isPending ? "Mejorando..." : "Mejorar Descripción"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleGetAISuggestions}
-                  disabled={getAISuggestionsMutation.isPending}
-                  className="flex items-center gap-2"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  {getAISuggestionsMutation.isPending ? "Analizando..." : "Obtener Sugerencias"}
-                </Button>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleImproveDescription}
+                    disabled={improveDescriptionMutation.isPending}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    {improveDescriptionMutation.isPending ? "Mejorando..." : "Mejorar con IA"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGetAISuggestions}
+                    disabled={getAISuggestionsMutation.isPending}
+                    className="flex items-center gap-2"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    {getAISuggestionsMutation.isPending ? "Analizando..." : "Obtener Sugerencias"}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Funciona mejor si has indicado tu perfil de LinkedIn
+                </p>
               </div>
             </CardContent>
           </Card>
