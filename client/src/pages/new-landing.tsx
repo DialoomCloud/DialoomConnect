@@ -33,34 +33,28 @@ export default function NewLanding() {
   const handleTestBypass = async () => {
     setIsTestLoading(true);
     try {
-      console.log("Test bypass: Starting request");
-      const response = await apiRequest("POST", "/api/auth/test-bypass", {});
-      
-      console.log("Test bypass: Response status:", response.status);
-      console.log("Test bypass: Response headers:", response.headers);
+      // Use fetch directly to avoid automatic redirect following
+      const response = await fetch("/api/auth/test-bypass", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        redirect: "manual" // Don't follow redirects automatically
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const text = await response.text();
-      console.log("Test bypass: Response text:", text);
-      
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        console.error("Test bypass: JSON parse error:", e);
-        throw new Error("Invalid JSON response");
-      }
+      const data = await response.json();
       
       if (data.success) {
         toast({
           title: "Acceso de prueba activado",
           description: `Iniciando sesión como ${data.user.name}...`,
         });
-        console.log("Test bypass: Redirecting to:", data.redirectUrl);
-        // Redirect to the test callback URL
+        // Manually navigate to the callback URL
         setTimeout(() => {
           window.location.href = data.redirectUrl;
         }, 500);
@@ -68,7 +62,6 @@ export default function NewLanding() {
         throw new Error(data.message || "Error al activar bypass");
       }
     } catch (error: any) {
-      console.error("Test bypass: Error occurred:", error);
       toast({
         title: "Error",
         description: error.message || "No se pudo activar el acceso de prueba",
