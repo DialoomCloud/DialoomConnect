@@ -141,9 +141,12 @@
   },
   "news": {
     "latestNews": "Latest News",
+    "allNews": "All News",
     "featured": "Featured",
     "readMore": "Read more",
-    "views": "views"
+    "views": "views",
+    "errorLoading": "Error loading news",
+    "noArticles": "No articles available"
   },
   "common": {
     "error": "Error",

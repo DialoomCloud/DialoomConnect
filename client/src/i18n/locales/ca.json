@@ -141,9 +141,12 @@
   },
   "news": {
     "latestNews": "Últimes Notícies",
+    "allNews": "Totes les Notícies",
     "featured": "Destacat",
     "readMore": "Llegir més",
-    "views": "visualitzacions"
+    "views": "visualitzacions",
+    "errorLoading": "Error carregant les notícies",
+    "noArticles": "No hi ha articles disponibles"
   },
   "common": {
     "error": "Error",
