@@ -112,8 +112,45 @@ export async function setupAuth(app: Express) {
     console.log(`Registered strategy: replitauth:${domain} with callback: ${protocol}://${domain}${port}/api/callback`);
   }
 
-  passport.serializeUser((user: Express.User, cb) => cb(null, user));
-  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
+  passport.serializeUser((user: Express.User, cb) => {
+    // For test users, store a special identifier
+    if ((user as any).id && (user as any).claims) {
+      cb(null, { type: 'test', id: (user as any).id });
+    } else {
+      cb(null, user);
+    }
+  });
+  
+  passport.deserializeUser(async (obj: any, cb) => {
+    try {
+      // Handle test user deserialization
+      if (obj && obj.type === 'test') {
+        const testUser = await storage.getUserById(obj.id);
+        if (testUser) {
+          const userForSession = {
+            id: testUser.id,
+            claims: {
+              sub: testUser.id,
+              email: testUser.email,
+              first_name: testUser.firstName,
+              last_name: testUser.lastName,
+              profile_image_url: testUser.profileImageUrl
+            },
+            expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
+            access_token: 'test-token',
+            refresh_token: 'test-refresh-token'
+          };
+          return cb(null, userForSession);
+        }
+      }
+      
+      // Handle regular OAuth users
+      cb(null, obj);
+    } catch (error) {
+      console.error("Error deserializing user:", error);
+      cb(error, null);
+    }
+  });
 
   // Add endpoint to clear session and force new account selection
   app.get("/api/clear-session", (req, res) => {
@@ -325,14 +362,19 @@ export async function setupAuth(app: Express) {
     }
 
     try {
+      console.log("Test bypass: Starting process...");
+      
       // Get test user from database using the test email
       const testUser = await storage.getUserByEmail('billing@thopters.com');
       
       if (!testUser) {
+        console.log("Test bypass: Test user not found");
         return res.status(404).json({ message: "Test user not found" });
       }
 
-      // Create user object for session
+      console.log("Test bypass: Found test user:", testUser.email);
+
+      // Create user object for session with proper OAuth-like structure
       const userForSession = {
         id: testUser.id,
         claims: {
@@ -341,26 +383,23 @@ export async function setupAuth(app: Express) {
           first_name: testUser.firstName,
           last_name: testUser.lastName,
           profile_image_url: testUser.profileImageUrl
-        }
+        },
+        // Add OAuth-like properties that the system expects
+        expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
+        access_token: 'test-token',
+        refresh_token: 'test-refresh-token'
       };
 
-      // Manually set up the session data similar to passport's serialization
-      req.session.passport = {
-        user: userForSession
-      };
-      
-      // Mark session as authenticated
-      (req as any).user = userForSession;
-      (req as any).isAuthenticated = () => true;
-      
-      console.log("Test user bypass successful:", testUser.email);
-      
-      // Save session to ensure persistence
-      req.session.save((saveErr) => {
-        if (saveErr) {
-          console.error("Error saving session:", saveErr);
-          return res.status(500).json({ message: "Error saving session" });
+      console.log("Test bypass: Logging in user with passport...");
+
+      // Use req.logIn to properly establish session with updated serialization
+      req.logIn(userForSession, (err) => {
+        if (err) {
+          console.error("Test bypass login error:", err);
+          return res.status(500).json({ message: "Error creating session" });
         }
+        
+        console.log("Test bypass: Login successful");
         
         // Return JSON response indicating success
         res.json({ 
