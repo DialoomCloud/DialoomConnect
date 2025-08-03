@@ -474,6 +474,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User-specific profile route - matches frontend calls
+  app.put('/api/users/:userId/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const requestedUserId = req.params.userId;
+      const authenticatedUserId = req.user.claims.sub;
+      
+      // Users can only update their own profile
+      if (requestedUserId !== authenticatedUserId) {
+        return res.status(403).json({ message: "No autorizado para actualizar este perfil" });
+      }
+      
+      const { skillIds, languageIds, ...profileData } = req.body;
+      
+      console.log('User profile update request:', {
+        userId: authenticatedUserId,
+        profileData,
+        skillIds,
+        languageIds,
+      });
+      
+      const validatedData = updateUserProfileSchema.parse(profileData);
+      console.log('Validated profile data:', validatedData);
+      
+      const updatedUser = await storage.updateUserProfile(authenticatedUserId, validatedData);
+      console.log('User profile updated successfully');
+
+      // Update user languages if provided
+      if (Array.isArray(languageIds)) {
+        console.log('Updating user languages:', languageIds);
+        await storage.updateUserLanguages(authenticatedUserId, languageIds);
+        console.log('User languages updated successfully');
+      }
+
+      // Update user skills if provided  
+      if (Array.isArray(skillIds)) {
+        console.log('Updating user skills:', skillIds);
+        await storage.updateUserSkills(authenticatedUserId, skillIds);
+        console.log('User skills updated successfully');
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      if (error instanceof z.ZodError) {
+        console.error("Validation errors:", error.errors);
+        return res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Update user categories
+  app.put('/api/users/:userId/categories', isAuthenticated, async (req: any, res) => {
+    try {
+      const requestedUserId = req.params.userId;
+      const authenticatedUserId = req.user.claims.sub;
+      
+      // Users can only update their own categories
+      if (requestedUserId !== authenticatedUserId) {
+        return res.status(403).json({ message: "No autorizado para actualizar estas categorías" });
+      }
+      
+      const { categoryIds } = req.body;
+      
+      if (!Array.isArray(categoryIds)) {
+        return res.status(400).json({ message: "categoryIds debe ser un array" });
+      }
+      
+      console.log('Updating user categories:', { userId: authenticatedUserId, categoryIds });
+      
+      await storage.updateUserCategories(authenticatedUserId, categoryIds);
+      
+      res.json({ message: "Categorías actualizadas exitosamente" });
+    } catch (error) {
+      console.error("Error updating user categories:", error);
+      res.status(500).json({ message: "Error al actualizar categorías" });
+    }
+  });
+
+  // Update user social profiles
+  app.put('/api/users/:userId/social-profiles', isAuthenticated, async (req: any, res) => {
+    try {
+      const requestedUserId = req.params.userId;
+      const authenticatedUserId = req.user.claims.sub;
+      
+      // Users can only update their own social profiles
+      if (requestedUserId !== authenticatedUserId) {
+        return res.status(403).json({ message: "No autorizado para actualizar estos perfiles sociales" });
+      }
+      
+      const { profiles } = req.body;
+      
+      if (!Array.isArray(profiles)) {
+        return res.status(400).json({ message: "profiles debe ser un array" });
+      }
+      
+      console.log('Updating user social profiles:', { userId: authenticatedUserId, profiles });
+      
+      await storage.updateUserSocialProfiles(authenticatedUserId, profiles);
+      
+      res.json({ message: "Perfiles sociales actualizados exitosamente" });
+    } catch (error) {
+      console.error("Error updating user social profiles:", error);
+      res.status(500).json({ message: "Error al actualizar perfiles sociales" });
+    }
+  });
+
   // Media content routes
   // Upload video file
   app.post("/api/upload/video", isAuthenticated, upload.single('video'), async (req: any, res) => {

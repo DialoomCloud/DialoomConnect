@@ -112,6 +112,9 @@ export function EnhancedProfileEdit() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Type guard for user
+  const typedUser = user as any;
+  
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<AISuggestions | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -125,14 +128,14 @@ export function EnhancedProfileEdit() {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      dateOfBirth: user?.dateOfBirth || "",
-      nationality: user?.nationality || "",
-      title: user?.title || "",
-      description: user?.description || "",
-      city: user?.city || "",
-      countryCode: user?.countryCode || "",
+      firstName: typedUser?.firstName || "",
+      lastName: typedUser?.lastName || "",
+      dateOfBirth: typedUser?.dateOfBirth || "",
+      nationality: typedUser?.nationality || "",
+      title: typedUser?.title || "",
+      description: typedUser?.description || "",
+      city: typedUser?.city || "",
+      countryCode: typedUser?.countryCode || "",
     },
   });
 
@@ -148,42 +151,49 @@ export function EnhancedProfileEdit() {
   const { data: countries = [] } = useQuery({
     queryKey: ['/api/countries'],
   });
+  
+  // Type the query data
+  const typedSocialPlatforms = socialPlatforms as any[];
+  const typedCategories = categories as any[];
+  const typedCountries = countries as any[];
+  const typedUserCategories = userCategories as any[];
+  const typedUserSocialProfiles = userSocialProfiles as any[];
 
   const { data: userCategories = [] } = useQuery({
-    queryKey: ['/api/user/categories', user?.id],
-    enabled: !!user?.id,
+    queryKey: ['/api/user/categories', typedUser?.id],
+    enabled: !!typedUser?.id,
   });
 
   const { data: userSocialProfiles = [] } = useQuery({
-    queryKey: ['/api/user/social-profiles', user?.id],
-    enabled: !!user?.id,
+    queryKey: ['/api/user/social-profiles', typedUser?.id],
+    enabled: !!typedUser?.id,
   });
 
   // Load initial data
   useEffect(() => {
-    if (userCategories.length > 0) {
-      setSelectedCategories(userCategories.map((uc: any) => uc.categoryId));
+    if (typedUserCategories.length > 0) {
+      setSelectedCategories(typedUserCategories.map((uc: any) => uc.categoryId));
     }
-  }, [userCategories]);
+  }, [typedUserCategories]);
 
   useEffect(() => {
-    if (userSocialProfiles.length > 0) {
-      setSocialProfiles(userSocialProfiles.map((usp: UserSocialProfile) => ({
+    if (typedUserSocialProfiles.length > 0) {
+      setSocialProfiles(typedUserSocialProfiles.map((usp: any) => ({
         platformId: usp.platformId,
         username: usp.username
       })));
     }
-  }, [userSocialProfiles]);
+  }, [typedUserSocialProfiles]);
 
   // AI Description improvement mutation
   const improveDescriptionMutation = useMutation({
     mutationFn: async (description: string) => {
       // Get LinkedIn URL from social profiles if available
       const linkedinProfile = socialProfiles.find(profile => 
-        socialPlatforms.find(p => p.id === profile.platformId)?.name === 'LinkedIn'
+        typedSocialPlatforms.find((p: any) => p.id === profile.platformId)?.name === 'LinkedIn'
       );
       const linkedinUrl = linkedinProfile ? 
-        socialPlatforms.find(p => p.id === linkedinProfile.platformId)?.baseUrl + linkedinProfile.username : 
+        typedSocialPlatforms.find((p: any) => p.id === linkedinProfile.platformId)?.baseUrl + linkedinProfile.username : 
         '';
       
       const response = await apiRequest("POST", "/api/ai/enhance-description", { 
@@ -230,7 +240,7 @@ export function EnhancedProfileEdit() {
   // Profile update mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
-      const response = await apiRequest("PUT", `/api/users/${user?.id}/profile`, data);
+      const response = await apiRequest("PUT", `/api/users/${typedUser?.id}/profile`, data);
       return response.json();
     },
     onSuccess: () => {
@@ -252,13 +262,13 @@ export function EnhancedProfileEdit() {
   // Categories update mutation
   const updateCategoriesMutation = useMutation({
     mutationFn: async (categoryIds: number[]) => {
-      const response = await apiRequest("PUT", `/api/users/${user?.id}/categories`, { 
+      const response = await apiRequest("PUT", `/api/users/${typedUser?.id}/categories`, { 
         categoryIds 
       });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user/categories", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/categories", typedUser?.id] });
       toast({
         title: "Categorías actualizadas",
         description: "Tus categorías profesionales se han guardado",
@@ -269,13 +279,13 @@ export function EnhancedProfileEdit() {
   // Social profiles update mutation
   const updateSocialProfilesMutation = useMutation({
     mutationFn: async (profiles: {platformId: number, username: string}[]) => {
-      const response = await apiRequest("PUT", `/api/users/${user?.id}/social-profiles`, { 
+      const response = await apiRequest("PUT", `/api/users/${typedUser?.id}/social-profiles`, { 
         profiles 
       });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user/social-profiles", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/social-profiles", typedUser?.id] });
       toast({
         title: "Redes sociales actualizadas",
         description: "Tus perfiles sociales se han guardado",
@@ -474,7 +484,7 @@ export function EnhancedProfileEdit() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {countries.map((country: any) => (
+                              {typedCountries.map((country: any) => (
                                 <SelectItem key={country.code} value={country.code}>
                                   {country.name}
                                 </SelectItem>
@@ -550,7 +560,7 @@ export function EnhancedProfileEdit() {
                           <SelectValue placeholder="Seleccionar plataforma" />
                         </SelectTrigger>
                         <SelectContent>
-                          {socialPlatforms.map((platform: SocialPlatform) => (
+                          {typedSocialPlatforms.map((platform: any) => (
                             <SelectItem key={platform.id} value={platform.id.toString()}>
                               {platform.name}
                             </SelectItem>
@@ -632,7 +642,7 @@ export function EnhancedProfileEdit() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {countries.map((country: any) => (
+                              {typedCountries.map((country: any) => (
                                 <SelectItem key={country.code} value={country.code}>
                                   {country.name}
                                 </SelectItem>
@@ -668,7 +678,7 @@ export function EnhancedProfileEdit() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {categories.map((category: Category) => (
+                {typedCategories.map((category: any) => (
                   <div
                     key={category.id}
                     className={`p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -730,7 +740,7 @@ export function EnhancedProfileEdit() {
                     <SelectValue placeholder="Seleccionar plataforma" />
                   </SelectTrigger>
                   <SelectContent>
-                    {socialPlatforms.map((platform: SocialPlatform) => (
+                    {typedSocialPlatforms.map((platform: any) => (
                       <SelectItem key={platform.id} value={platform.id.toString()}>
                         {platform.name}
                       </SelectItem>
