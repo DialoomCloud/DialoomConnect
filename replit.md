@@ -23,6 +23,7 @@
 - **AI Enhancement Button UI Update** (January 3, 2025): Removed separate "Asistente IA Loomia" block and integrated the AI enhancement functionality directly into the Professional Description section with gradient styling and LinkedIn integration explanation
 - **Authentication Fix** (January 3, 2025): Fixed localhost authentication strategy mapping for development environment (127.0.0.1 -> localhost)
 - **Profile Edit Modal Auto-Close** (January 3, 2025): Added automatic dialog closure 1 second after successful profile save to improve UX - user sees success message before modal closes
+- **AI Enhancement Tone Update** (January 3, 2025): Modified AI prompt to generate more humble and professional descriptions, avoiding superlatives and grandiose claims in favor of modest, client-focused language
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Replit Auth for user authentication

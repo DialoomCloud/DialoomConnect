@@ -1552,10 +1552,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ` : ''}
         
         Directrices:
-        - Mantén el tono profesional pero cercano
-        - Destaca logros y experiencia específica basándote en la descripción proporcionada
-        - Incluye valor único que aporta al cliente
-        - Usa verbos de acción y resultados concretos
+        - Mantén un tono HUMILDE y PROFESIONAL, evitando superlativos o afirmaciones grandilocuentes
+        - En lugar de decir "soy experto" o "soy el mejor", usa frases como "cuento con experiencia en", "me especializo en", "he trabajado en"
+        - Destaca logros y experiencia específica basándote en la descripción proporcionada, pero con modestia
+        - Enfócate en cómo puedes ayudar al cliente, no en autopromoción excesiva
+        - Incluye el valor único que aportas, pero expresado de forma sutil y profesional
+        - Usa verbos de acción y resultados concretos, pero sin exagerar
+        - Evita términos como "líder", "pionero", "excepcional", "extraordinario" a menos que estén respaldados por hechos concretos
         - Si el texto original es muy corto o genérico, expándelo con ejemplos de valor agregado típicos para su rol/industria
         - Máximo 200 palabras
         - Responde solo con la descripción mejorada, sin explicaciones adicionales
