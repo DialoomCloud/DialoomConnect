@@ -1,56 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Database, UserCheck, Play, Smartphone, Share2, TestTube } from "lucide-react";
+import { Shield, Database, UserCheck, Play, Smartphone, Share2 } from "lucide-react";
 import { Link } from "wouter";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function Landing() {
   const { logoUrl } = useThemeConfig();
-  const { toast } = useToast();
-  const [isTestLoading, setIsTestLoading] = useState(false);
-  
-  // Debug: Check if we're in development mode
-  console.log("Development mode:", import.meta.env.DEV);
-  console.log("Environment:", import.meta.env.MODE);
   
   const handleLogin = () => {
     window.location.href = "/api/login";
-  };
-
-  const handleTestBypass = async () => {
-    setIsTestLoading(true);
-    try {
-      const response = await apiRequest("/api/auth/test-login", {
-        method: "POST",
-        body: {}
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        toast({
-          title: "Inicio de sesión de prueba exitoso",
-          description: `Iniciando sesión como ${data.user.name}...`,
-        });
-        // Invalidate auth query to force refresh
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        setTimeout(() => {
-          window.location.href = "/profile";
-        }, 1000);
-      } else {
-        throw new Error(data.message || "Error al iniciar sesión de prueba");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo iniciar la sesión de prueba",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTestLoading(false);
-    }
   };
 
   const features = [
@@ -159,26 +117,7 @@ export default function Landing() {
               </Button>
             </div>
             
-            {/* Test bypass button */}
-            <div className="mt-8">
-              <Button
-                size="lg"
-                variant="ghost"
-                onClick={handleTestBypass}
-                disabled={isTestLoading}
-                className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-6 py-2 text-sm font-medium"
-              >
-                {isTestLoading ? (
-                  "Cargando..."
-                ) : (
-                  <>
-                    <TestTube className="w-4 h-4 mr-2" />
-                    Acceder como Usuario de Prueba
-                  </>
-                )}
-              </Button>
-              <p className="text-xs text-gray-500 mt-2">Solo para desarrollo: billing@thopters.com</p>
-            </div>
+
           </div>
         </div>
       </section>
