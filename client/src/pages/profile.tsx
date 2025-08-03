@@ -340,7 +340,7 @@ export default function Profile() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <EnhancedProfileEdit />
+              <EnhancedProfileEdit onClose={() => setShowProfileModal(false)} />
             </div>
           </div>
         </div>
@@ -354,13 +354,13 @@ export default function Profile() {
       <MediaEditModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        content={editingContent}
+        content={editingContent as any}
       />
       
       <MediaViewerModal
         isOpen={showViewerModal}
         onClose={() => setShowViewerModal(false)}
-        content={viewingContent}
+        content={viewingContent as any}
         onEdit={(c) => {
           setEditingContent(c);
           setShowEditModal(true);

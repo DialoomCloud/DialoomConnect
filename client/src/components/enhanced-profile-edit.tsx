@@ -107,7 +107,11 @@ const socialIcons: Record<string, any> = {
   'YouTube': Youtube,
 };
 
-export function EnhancedProfileEdit() {
+interface EnhancedProfileEditProps {
+  onClose?: () => void;
+}
+
+export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -370,6 +374,11 @@ export function EnhancedProfileEdit() {
       // Update social profiles
       if (socialProfiles.length > 0) {
         await updateSocialProfilesMutation.mutateAsync(socialProfiles);
+      }
+      
+      // Close dialog after successful save
+      if (onClose) {
+        setTimeout(() => onClose(), 1000); // Small delay to show success message
       }
     } catch (error) {
       console.error('Error during form submission:', error);
