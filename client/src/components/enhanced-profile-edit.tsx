@@ -381,48 +381,6 @@ export function EnhancedProfileEdit() {
         <TabsContent value="basic" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Asistente IA Loomia
-              </CardTitle>
-              <CardDescription>
-                Mejora tu perfil profesional con inteligencia artificial
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="default"
-                    onClick={handleImproveDescription}
-                    disabled={improveDescriptionMutation.isPending}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                  >
-                    <Wand2 className="h-4 w-4" />
-                    {improveDescriptionMutation.isPending ? "Mejorando..." : "Mejorar con IA"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGetAISuggestions}
-                    disabled={getAISuggestionsMutation.isPending}
-                    className="flex items-center gap-2"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    {getAISuggestionsMutation.isPending ? "Analizando..." : "Obtener Sugerencias"}
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
-                  Funciona mejor si has indicado tu perfil de LinkedIn
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <CardTitle>Información Personal</CardTitle>
             </CardHeader>
             <CardContent>
@@ -520,13 +478,13 @@ export function EnhancedProfileEdit() {
                           <FormLabel>Descripción Profesional</FormLabel>
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="default"
                             size="sm"
                             onClick={handleImproveDescription}
                             disabled={improveDescriptionMutation.isPending}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                           >
-                            <Sparkles className="h-4 w-4" />
+                            <Wand2 className="h-4 w-4" />
                             {improveDescriptionMutation.isPending ? "Mejorando..." : "Mejorar con IA"}
                           </Button>
                         </div>
@@ -537,7 +495,13 @@ export function EnhancedProfileEdit() {
                             placeholder="Describe tu experiencia, especialidades y cómo puedes ayudar a tus clientes..."
                           />
                         </FormControl>
-                        <FormMessage />
+                        <div className="flex items-center justify-between">
+                          <FormMessage />
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                            Funciona mejor si has indicado tu perfil de LinkedIn
+                          </p>
+                        </div>
                       </FormItem>
                     )}
                   />
