@@ -36,6 +36,7 @@ import HowItWorks from "@/pages/how-it-works";
 import TestAIFeatures from "@/pages/test-ai-features";
 import PaymentDemo from "@/pages/payment-demo";
 import PaymentSettings from "@/pages/payment-settings";
+import TestLogin from "@/pages/test-login";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 
@@ -69,6 +70,7 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/how-it-works" component={HowItWorks} />
           <Route path="/test-ai" component={TestAIFeatures} />
+          <Route path="/test-login" component={TestLogin} />
           <Route path="/payment-demo" component={PaymentDemo} />
           
           {/* Routes that require authentication */}

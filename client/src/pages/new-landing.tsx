@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Video, Clock, Star, CheckCircle, Play, Smartphone, Globe, Heart, Menu, X, TestTube } from "lucide-react";
+import { Shield, Users, Video, Clock, Star, CheckCircle, Play, Smartphone, Globe, Heart, Menu, X } from "lucide-react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/language-selector";
@@ -14,7 +14,6 @@ export default function NewLanding() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isTestLoading, setIsTestLoading] = useState(false);
   
   const handleLogin = async () => {
     try {
@@ -30,54 +29,7 @@ export default function NewLanding() {
     }
   };
 
-  const handleTestBypass = async () => {
-    setIsTestLoading(true);
-    try {
-      console.log("Test bypass: Making request...");
-      const response = await apiRequest("/api/auth/test-bypass", {
-        method: "POST",
-        body: {}
-      });
-      
-      console.log("Test bypass: Response status:", response.status);
-      console.log("Test bypass: Response headers:", response.headers);
-      
-      // Read response as text first
-      const text = await response.text();
-      console.log("Test bypass: Raw response:", text);
-      
-      // Try to parse as JSON
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        console.error("Test bypass: JSON parse error:", parseError);
-        console.error("Test bypass: Response was not JSON, got:", text.substring(0, 200));
-        throw new Error("Server response was not JSON");
-      }
-      
-      if (data.success) {
-        toast({
-          title: "Acceso de prueba activado",
-          description: `Iniciando sesión como ${data.user.name}...`,
-        });
-        // Navigate directly to profile page
-        setTimeout(() => {
-          window.location.href = "/profile";
-        }, 500);
-      } else {
-        throw new Error(data.message || "Error al activar bypass");
-      }
-    } catch (error: any) {
-      console.error("Test bypass: Final error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo activar el acceso de prueba",
-        variant: "destructive",
-      });
-      setIsTestLoading(false);
-    }
-  };
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -215,28 +167,7 @@ export default function NewLanding() {
               </Link>
             </div>
 
-            {/* Test bypass button - only in development */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-8">
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  onClick={handleTestBypass}
-                  disabled={isTestLoading}
-                  className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-6 py-2 text-sm font-medium"
-                >
-                  {isTestLoading ? (
-                    "Cargando..."
-                  ) : (
-                    <>
-                      <TestTube className="w-4 h-4 mr-2" />
-                      Acceder como Usuario de Prueba
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-gray-500 mt-2">Solo para desarrollo: billing@thopters.com</p>
-              </div>
-            )}
+
           </div>
         </div>
       </section>
