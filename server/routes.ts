@@ -1546,13 +1546,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Como experto en redacción profesional y marketing personal, mejora esta descripción profesional para que sea más atractiva, clara y persuasiva para potenciales clientes.
         
         Descripción actual: "${description}"
-        ${linkedinData ? `Información adicional de LinkedIn: ${linkedinData}` : ''}
+        ${linkedinData ? `
+        El usuario ha indicado que tiene un perfil en LinkedIn en: ${linkedinData}
+        Nota: Aunque no puedo acceder directamente al contenido del perfil de LinkedIn, debes basarte en la descripción proporcionada y mejorarla asumiendo que el profesional tiene experiencia relevante que respalda sus afirmaciones.
+        ` : ''}
         
         Directrices:
         - Mantén el tono profesional pero cercano
-        - Destaca logros y experiencia específica
+        - Destaca logros y experiencia específica basándote en la descripción proporcionada
         - Incluye valor único que aporta al cliente
         - Usa verbos de acción y resultados concretos
+        - Si el texto original es muy corto o genérico, expándelo con ejemplos de valor agregado típicos para su rol/industria
         - Máximo 200 palabras
         - Responde solo con la descripción mejorada, sin explicaciones adicionales
       `;

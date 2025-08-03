@@ -356,7 +356,10 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-}).partial();
+}).partial().extend({
+  dateOfBirth: z.string().optional().transform(val => val?.trim() === '' ? null : val),
+  nationality: z.string().optional().transform(val => val?.trim() === '' ? null : val)
+});
 
 export const insertUserLanguageSchema = createInsertSchema(userLanguages).omit({
   id: true,

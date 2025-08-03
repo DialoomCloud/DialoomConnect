@@ -56,8 +56,8 @@ import {
 const profileSchema = z.object({
   firstName: z.string().min(1, "Nombre requerido"),
   lastName: z.string().min(1, "Apellido requerido"),
-  dateOfBirth: z.string().optional(),
-  nationality: z.string().optional(),
+  dateOfBirth: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
+  nationality: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
   title: z.string().optional(),
   description: z.string().optional(),
   city: z.string().optional(),
@@ -518,7 +518,7 @@ export function EnhancedProfileEdit() {
                           <FormMessage />
                           <p className="text-sm text-muted-foreground flex items-center gap-2">
                             <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
-                            Funciona mejor si has indicado tu perfil de LinkedIn
+                            La IA mejora el texto basándose en mejores prácticas profesionales
                           </p>
                         </div>
                       </FormItem>
