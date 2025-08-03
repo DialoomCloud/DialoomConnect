@@ -9,7 +9,7 @@ import { NewsSection } from "@/components/news-section";
 import { useState } from "react";
 
 export default function NewLanding() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const handleLogin = async () => {
@@ -25,8 +25,6 @@ export default function NewLanding() {
       window.location.href = "/api/login";
     }
   };
-
-  const currentLang = i18n.language || 'es';
 
   return (
     <div className="min-h-screen bg-white">
@@ -134,13 +132,6 @@ export default function NewLanding() {
       <section className="bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <Badge 
-              variant="secondary" 
-              className="mb-4 px-4 py-2 text-sm font-medium bg-blue-100 text-blue-800 border-blue-200"
-            >
-              ✨ {currentLang === 'es' ? 'Nueva plataforma' : currentLang === 'ca' ? 'Nova plataforma' : 'New platform'}
-            </Badge>
-            
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               {t('landing.hero.title')}
             </h1>
