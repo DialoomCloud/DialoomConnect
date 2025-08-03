@@ -33,8 +33,28 @@ export default function NewLanding() {
   const handleTestBypass = async () => {
     setIsTestLoading(true);
     try {
-      const response = await apiRequest("POST", "/api/auth/test-bypass", {});
-      const data = await response.json();
+      console.log("Test bypass: Making request...");
+      const response = await apiRequest("/api/auth/test-bypass", {
+        method: "POST",
+        body: {}
+      });
+      
+      console.log("Test bypass: Response status:", response.status);
+      console.log("Test bypass: Response headers:", response.headers);
+      
+      // Read response as text first
+      const text = await response.text();
+      console.log("Test bypass: Raw response:", text);
+      
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error("Test bypass: JSON parse error:", parseError);
+        console.error("Test bypass: Response was not JSON, got:", text.substring(0, 200));
+        throw new Error("Server response was not JSON");
+      }
       
       if (data.success) {
         toast({
@@ -49,6 +69,7 @@ export default function NewLanding() {
         throw new Error(data.message || "Error al activar bypass");
       }
     } catch (error: any) {
+      console.error("Test bypass: Final error:", error);
       toast({
         title: "Error",
         description: error.message || "No se pudo activar el acceso de prueba",
