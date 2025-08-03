@@ -589,7 +589,7 @@ export function EnhancedProfileEdit() {
                               <IconComponent className="h-4 w-4" />
                               <span className="font-medium">{platform?.name}</span>
                               <span className="text-muted-foreground">
-                                {platform?.name === 'LinkedIn' || platform?.name === 'Website' ? profile.username : `@${profile.username}`}
+                                {platform?.name === 'LinkedIn' || platform?.name === 'Website' || platform?.name === 'GitHub' ? profile.username : `@${profile.username}`}
                               </span>
                               <Button
                                 type="button"
