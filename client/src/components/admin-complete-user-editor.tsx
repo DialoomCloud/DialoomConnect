@@ -23,7 +23,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, User, Settings, Briefcase, Globe, MessageSquare, CreditCard } from 'lucide-react';
+import { Loader2, User, Settings, Briefcase, Globe, MessageSquare, CreditCard, Upload, Play, Image, Youtube, Trash2 } from 'lucide-react';
+import { MediaEmbed } from '@/components/media-embed';
+import { MediaUploadModal } from '@/components/media-upload-modal';
+import { MediaEditModal } from '@/components/media-edit-modal';
+import { MediaViewerModal } from '@/components/media-viewer-modal';
 
 interface AdminCompleteUserEditorProps {
   userId: string;
@@ -35,6 +39,13 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("basic");
+  
+  // Media modal states
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewerModal, setShowViewerModal] = useState(false);
+  const [editingContent, setEditingContent] = useState<any>(null);
+  const [viewingContent, setViewingContent] = useState<any>(null);
 
   // Fetch complete user profile
   const { data: userProfile, isLoading } = useQuery<{
@@ -174,6 +185,32 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     updateUserMutation.mutate(formData);
   };
 
+  // Media deletion handler
+  const handleDeleteMedia = async (mediaId: string) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este contenido multimedia?')) {
+      return;
+    }
+
+    try {
+      await apiRequest(`/api/media/${mediaId}`, {
+        method: 'DELETE',
+      });
+      
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/complete-profile`] });
+      
+      toast({
+        title: "Media eliminada",
+        description: "El contenido multimedia ha sido eliminado correctamente",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "No se pudo eliminar el contenido multimedia",
+        variant: "destructive",
+      });
+    }
+  };
+
   const toggleSkill = (skillId: number) => {
     setFormData(prev => ({
       ...prev,
@@ -226,6 +263,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -487,14 +525,59 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
             <TabsContent value="media" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Contenido Multimedia</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Contenido Multimedia</span>
+                    <Button
+                      onClick={() => setShowUploadModal(true)}
+                      size="sm"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Agregar Media
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>La gestión de multimedia estará disponible en una próxima actualización.</p>
-                    <p className="text-sm mt-2">Por ahora, el usuario puede gestionar su multimedia desde su perfil personal.</p>
-                  </div>
+                  {userProfile?.mediaContent && userProfile.mediaContent.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {userProfile.mediaContent.map((content: any) => (
+                        <div key={content.id} className="relative group">
+                          <MediaEmbed
+                            content={content}
+                            showEdit={false}
+                            onView={(c) => {
+                              setViewingContent(c);
+                              setShowViewerModal(true);
+                            }}
+                          />
+                          <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                setEditingContent(content);
+                                setShowEditModal(true);
+                              }}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteMedia(content.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>No hay contenido multimedia</p>
+                      <p className="text-sm mt-2">Haz clic en "Agregar Media" para agregar contenido.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -586,5 +669,40 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         </form>
       </DialogContent>
     </Dialog>
+    
+    {/* Media Modals */}
+    <MediaUploadModal
+      isOpen={showUploadModal}
+      onClose={() => {
+        setShowUploadModal(false);
+        queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/complete-profile`] });
+      }}
+    />
+    
+    <MediaEditModal
+      isOpen={showEditModal}
+      onClose={() => {
+        setShowEditModal(false);
+        setEditingContent(null);
+        queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/complete-profile`] });
+      }}
+      content={editingContent}
+    />
+    
+    <MediaViewerModal
+      isOpen={showViewerModal}
+      onClose={() => {
+        setShowViewerModal(false);
+        setViewingContent(null);
+      }}
+      content={viewingContent}
+      onEdit={(c) => {
+        setEditingContent(c);
+        setShowEditModal(true);
+        setShowViewerModal(false);
+      }}
+      onDelete={handleDeleteMedia}
+    />
+    </>
   );
 }

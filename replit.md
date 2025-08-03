@@ -17,6 +17,8 @@
 - **Admin Controls**: Admin can control which services hosts can offer through admin configuration settings
 - **Free Consultation Update**: Changed free consultation duration from 0 to 5 minutes with admin toggle
 - **Image Optimization Update**: Increased file size limits from 3MB to 5MB and improved compression quality from 80% to 90-95% across all image processing functions (profile images, media uploads, public images)
+- **Social Media Management Fix**: Fixed LinkedIn and website display to not show @ symbol, set LinkedIn as default platform in social media selector
+- **Admin Multimedia Management**: Implemented full multimedia management in admin dashboard - admins can now view, edit, and delete user media content directly from the admin interface
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Replit Auth for user authentication
