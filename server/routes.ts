@@ -96,11 +96,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log("Test login: Found test user:", testUser.email);
 
-        // Use passport's login method with the test user marker
-        req.login({ type: 'test', email: testUser.email }, (err) => {
+        // Create a session directly without Passport
+        if (!req.session) {
+          req.session = {} as any;
+        }
+        
+        // Set up session data in the same format as Replit Auth
+        (req.session as any).passport = {
+          user: {
+            type: 'test',
+            email: testUser.email
+          }
+        };
+        
+        // Save the session
+        req.session.save((err) => {
           if (err) {
-            console.error("Test login: Passport login error:", err);
-            return res.status(500).json({ message: "Login failed" });
+            console.error("Test login: Session save error:", err);
+            return res.status(500).json({ message: "Failed to save session" });
           }
           
           console.log("Test login: Successfully logged in test user");
