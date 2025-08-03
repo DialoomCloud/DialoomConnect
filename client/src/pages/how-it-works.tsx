@@ -174,11 +174,10 @@ export default function HowItWorks() {
               <Link href="/hosts">
                 <Button 
                   size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-[hsl(188,100%,38%)] px-8 py-3 text-lg font-semibold"
+                  className="bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
                 >
                   <Search className="mr-2 h-5 w-5" />
-                  {t('howItWorks.cta.explore', 'Explorar Expertos')}
+                  {t('howItWorks.cta.explore', 'Explorar Hosts')}
                 </Button>
               </Link>
             </div>
