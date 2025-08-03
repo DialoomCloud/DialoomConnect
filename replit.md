@@ -24,6 +24,11 @@
 - **Authentication Fix** (January 3, 2025): Fixed localhost authentication strategy mapping for development environment (127.0.0.1 -> localhost)
 - **Profile Edit Modal Auto-Close** (January 3, 2025): Added automatic dialog closure 1 second after successful profile save to improve UX - user sees success message before modal closes
 - **AI Enhancement Tone Update** (January 3, 2025): Modified AI prompt to generate more humble and professional descriptions, avoiding superlatives and grandiose claims in favor of modest, client-focused language
+- **Test Mode Implementation** (January 3, 2025): Added comprehensive test mode for development and testing:
+  - Created test user: billing@thopters.com (password: test2)
+  - Test bookings auto-confirm and skip payment processing
+  - Added TestBookingButton component for instant test reservations
+  - Test mode only active in development environment
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Replit Auth for user authentication
@@ -39,9 +44,11 @@
 
 ## Quick Reference
 - **Admin Users**: nachosaladrigas, marcgarcia10
+- **Test User**: billing@thopters.com (password: test2) - for testing video calls
 - **Default Language**: Spanish (es)
 - **Supported Languages**: Spanish (es), English (en), Catalan (ca)
 - **Main Entry Points**: 
   - Frontend: `/client/src/App.tsx`
   - Backend: `/server/routes.ts`
   - Database Schema: `/shared/schema.ts`
+  - Test Routes: `/server/routes/testBooking.ts`

@@ -54,6 +54,9 @@ const upload = multer({
 // Helper for password hashing
 import bcrypt from "bcryptjs";
 
+// Test mode configuration
+import { testModeConfig, isTestUser, isTestBooking } from "./testMode";
+
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -1881,6 +1884,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const guestId = req.user.claims.sub;
       const { hostId, scheduledDate, startTime, duration, price, services, notes } = req.body;
 
+      // Get guest and host details for test mode checking
+      const guest = await storage.getUser(guestId);
+      const host = await storage.getUser(hostId);
+      
+      // Check if this is a test booking
+      const isTest = isTestBooking(host?.email, guest?.email);
+      
+      // For test bookings, auto-confirm and skip payment
+      const bookingStatus = isTest && testModeConfig.autoConfirmBookings ? 'confirmed' : 'pending';
+
       // Create booking
       const booking = await storage.createBooking({
         hostId,
@@ -1889,16 +1902,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startTime,
         duration,
         price,
-        status: 'pending',
+        status: bookingStatus,
         notes,
         services: services ? JSON.stringify(services) : null,
       });
 
-      // Get host and guest details
-      const host = await storage.getUser(hostId);
-      const guest = await storage.getUser(guestId);
-
-      if (host?.email && guest) {
+      // Only send emails if not in test mode or if explicitly enabled
+      if (!isTest && host?.email && guest) {
         // Send booking confirmation emails
         await emailService.sendBookingConfirmationEmail(
           host.email,
@@ -1924,6 +1934,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           services || {},
           booking.id
         );
+      }
+      
+      // Log test booking creation
+      if (isTest) {
+        console.log(`Test booking created: ${booking.id} - Guest: ${guest?.email} -> Host: ${host?.email}`);
       }
 
       res.status(201).json(booking);
@@ -2020,6 +2035,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { bookingId, amount, serviceAddons = {} } = req.body;
+      
+      // Check if this is a test booking
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: 'Reserva no encontrada' });
+      }
+      
+      const guest = await storage.getUser(booking.guestId);
+      const host = await storage.getUser(booking.hostId);
+      const isTest = isTestBooking(host?.email, guest?.email);
+      
+      // For test bookings, return a mock payment intent
+      if (isTest && testModeConfig.skipPayment) {
+        console.log(`Skipping payment for test booking: ${bookingId}`);
+        
+        // Update booking status to confirmed
+        await storage.updateBookingStatus(bookingId, 'confirmed');
+        
+        // Return mock payment response
+        return res.json({
+          clientSecret: 'test_client_secret_' + bookingId,
+          paymentIntentId: 'test_pi_' + bookingId,
+          isTest: true,
+          message: 'Pago omitido para reserva de prueba'
+        });
+      }
 
       // Calculate commission and VAT
       const calculations = await storage.calculateCommission(parseFloat(amount));
@@ -2035,14 +2076,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalAmount = parseFloat(amount) + addonTotal;
       const finalCalculations = await storage.calculateCommission(totalAmount);
 
-      // Get booking and user details
-      const booking = await storage.getBookingById(bookingId);
-      if (!booking) {
-        return res.status(404).json({ message: 'Reserva no encontrada' });
-      }
-
       const user = await storage.getUser(userId);
-      const host = await storage.getUser(booking.hostId);
       
       let stripeCustomerId = user?.stripeCustomerId;
 
@@ -3973,6 +4007,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Error al eliminar método de pago' });
     }
   });
+
+  // Register test routes
+  if (process.env.NODE_ENV === 'development') {
+    import("./routes/testBooking").then(({ registerTestRoutes }) => {
+      registerTestRoutes(app);
+      console.log("Test routes registered");
+    }).catch(err => {
+      console.error("Failed to load test routes:", err);
+    });
+  }
 
   return httpServer;
 }
