@@ -340,10 +340,10 @@ export async function setupAuth(app: Express) {
 
       console.log("Test user bypass initiated for:", testUser.email);
       
-      // Return success with redirect URL
+      // Return success with redirect URL (URL encode the token)
       res.json({ 
         success: true,
-        redirectUrl: `/api/auth/test-callback?token=${testToken}`,
+        redirectUrl: `/api/auth/test-callback?token=${encodeURIComponent(testToken)}`,
         user: {
           id: testUser.id,
           email: testUser.email,
@@ -365,10 +365,23 @@ export async function setupAuth(app: Express) {
     try {
       const token = req.query.token as string;
       if (!token) {
+        console.error("Test callback: No token provided");
         return res.redirect('/');
       }
 
-      const tokenData = JSON.parse(Buffer.from(token, 'base64').toString());
+      console.log("Test callback: Received token:", token);
+      
+      let tokenData;
+      try {
+        // Decode from base64
+        const decodedToken = Buffer.from(decodeURIComponent(token), 'base64').toString();
+        console.log("Test callback: Decoded token:", decodedToken);
+        tokenData = JSON.parse(decodedToken);
+      } catch (parseError) {
+        console.error("Test callback: Error parsing token:", parseError);
+        return res.redirect('/?error=invalid_token');
+      }
+
       const testUser = await storage.getUser(tokenData.userId);
       
       if (!testUser) {
