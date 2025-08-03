@@ -20,6 +20,8 @@
 - **Social Media @ Symbol Fix**: Completely removed automatic @ prepending logic for all social media platforms - users now see exactly what they input without any automatic modifications
 - **Profile Edit Fix**: Fixed TanStack Query compatibility issues in enhanced-profile-edit component by removing deprecated onSuccess callback
 - **Admin Multimedia Management**: Implemented full multimedia management in admin dashboard - admins can now view, edit, and delete user media content directly from the admin interface
+- **AI Enhancement Button UI Update** (January 3, 2025): Removed separate "Asistente IA Loomia" block and integrated the AI enhancement functionality directly into the Professional Description section with gradient styling and LinkedIn integration explanation
+- **Authentication Fix** (January 3, 2025): Fixed localhost authentication strategy mapping for development environment (127.0.0.1 -> localhost)
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Replit Auth for user authentication

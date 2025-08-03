@@ -189,12 +189,18 @@ export function EnhancedProfileEdit() {
   const improveDescriptionMutation = useMutation({
     mutationFn: async (description: string) => {
       // Get LinkedIn URL from social profiles if available
-      const linkedinProfile = socialProfiles.find(profile => 
-        typedSocialPlatforms.find((p: any) => p.id === profile.platformId)?.name === 'LinkedIn'
-      );
+      const linkedinProfile = socialProfiles.find(profile => {
+        const platform = typedSocialPlatforms.find((p: any) => p.id === profile.platformId);
+        return platform?.name?.toLowerCase() === 'linkedin';
+      });
+      
       const linkedinUrl = linkedinProfile ? 
-        typedSocialPlatforms.find((p: any) => p.id === linkedinProfile.platformId)?.baseUrl + linkedinProfile.username : 
+        (linkedinProfile.username.startsWith('http') ? 
+          linkedinProfile.username : 
+          `https://linkedin.com/in/${linkedinProfile.username}`) : 
         '';
+      
+      console.log('Sending AI request with:', { description, linkedinUrl, linkedinProfile });
       
       const response = await apiRequest("POST", "/api/ai/enhance-description", { 
         description,

@@ -1512,18 +1512,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { description, linkedinUrl } = req.body;
       const userId = req.user.claims.sub;
       
+      console.log('AI Enhancement request:', { description: description?.length, linkedinUrl, userId });
+      
       if (!description?.trim()) {
         return res.status(400).json({ message: 'Descripción requerida' });
       }
 
       // Get user's social profiles to extract LinkedIn data if available
       const userSocialProfiles = await storage.getUserSocialProfiles(userId);
+      console.log('User social profiles:', userSocialProfiles);
+      
       let linkedinData = '';
       
-      if (linkedinUrl || userSocialProfiles.some(profile => profile.platformId === 1)) { // Assuming LinkedIn is platform ID 1
-        // For now, we'll use the LinkedIn URL to enhance the context
-        linkedinData = linkedinUrl || userSocialProfiles.find(profile => profile.platformId === 1)?.url || '';
+      if (linkedinUrl) {
+        linkedinData = linkedinUrl;
+      } else {
+        // Find LinkedIn profile from user's social profiles
+        const linkedinProfile = userSocialProfiles.find(profile => profile.platformId === 1); // LinkedIn platform ID
+        if (linkedinProfile) {
+          linkedinData = `https://linkedin.com/in/${linkedinProfile.username}`;
+        }
       }
+      
+      console.log('Using LinkedIn data:', linkedinData);
 
       const enhancementPrompt = `
         Como experto en redacción profesional y marketing personal, mejora esta descripción profesional para que sea más atractiva, clara y persuasiva para potenciales clientes.

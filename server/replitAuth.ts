@@ -147,8 +147,10 @@ export async function setupAuth(app: Express) {
     console.log(`Login attempt for hostname: ${hostname}`);
     console.log(`Available strategies: ${Object.keys((passport as any)._strategies || {})}`);
     
-    const strategyName = `replitauth:${hostname}`;
-    console.log(`Using strategy: ${strategyName}`);
+    // Map 127.0.0.1 to localhost for local development
+    const mappedHostname = hostname === '127.0.0.1' ? 'localhost' : hostname;
+    const strategyName = `replitauth:${mappedHostname}`;
+    console.log(`Using strategy: ${strategyName} (mapped from ${hostname})`);
     
     // Check if strategy exists
     if (!(passport as any)._strategies[strategyName]) {
