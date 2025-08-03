@@ -83,6 +83,9 @@ export const users = pgTable("users", {
   city: varchar("city"),
   postalCode: varchar("postal_code"),
   countryCode: varchar("country_code").references(() => countries.code),
+  // Personal information
+  dateOfBirth: date("date_of_birth"),
+  nationality: varchar("nationality", { length: 2 }).references(() => countries.code),
   title: varchar("title"),
   description: text("description"),
   // Language preferences

@@ -56,6 +56,8 @@ import {
 const profileSchema = z.object({
   firstName: z.string().min(1, "Nombre requerido"),
   lastName: z.string().min(1, "Apellido requerido"),
+  dateOfBirth: z.string().optional(),
+  nationality: z.string().optional(),
   title: z.string().optional(),
   description: z.string().optional(),
   city: z.string().optional(),
@@ -125,6 +127,8 @@ export function EnhancedProfileEdit() {
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
+      dateOfBirth: user?.dateOfBirth || "",
+      nationality: user?.nationality || "",
       title: user?.title || "",
       description: user?.description || "",
       city: user?.city || "",
@@ -430,6 +434,46 @@ export function EnhancedProfileEdit() {
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="dateOfBirth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fecha de Nacimiento</FormLabel>
+                          <FormControl>
+                            <Input {...field} type="date" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="nationality"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nacionalidad</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona tu nacionalidad" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {countries.map((country: any) => (
+                                <SelectItem key={country.code} value={country.code}>
+                                  {country.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
