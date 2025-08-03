@@ -4,6 +4,7 @@ import { Strategy, type VerifyFunction } from "openid-client/passport";
 import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
+import express from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
@@ -125,7 +126,7 @@ export async function setupAuth(app: Express) {
     try {
       // Handle test user deserialization
       if (obj && obj.type === 'test') {
-        const testUser = await storage.getUserById(obj.id);
+        const testUser = await storage.getUserByEmail('billing@thopters.com');
         if (testUser) {
           const userForSession = {
             id: testUser.id,
@@ -342,8 +343,8 @@ export async function setupAuth(app: Express) {
         // Use endSessionUrl if available, otherwise redirect to home
         let logoutUrl = redirectUri;
         try {
-          if (config.endSessionEndpoint) {
-            logoutUrl = `${config.endSessionEndpoint}?client_id=${process.env.REPL_ID}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&state=force_logout_${Date.now()}`;
+          if ((config as any).endSessionEndpoint) {
+            logoutUrl = `${(config as any).endSessionEndpoint}?client_id=${process.env.REPL_ID}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&state=force_logout_${Date.now()}`;
           }
         } catch (error) {
           console.log('Could not build end session URL, using simple redirect');
@@ -355,8 +356,9 @@ export async function setupAuth(app: Express) {
     });
   });
 
-  // Test user bypass (only in development)
-  app.post("/api/auth/test-bypass", async (req, res) => {
+  // Test user bypass (only in development) - Simple endpoint without middleware
+  // We'll create a minimal endpoint that just sets a basic session marker
+  app.post("/api/auth/test-bypass", express.json(), async (req, res) => {
     if (process.env.NODE_ENV !== 'development') {
       return res.status(403).json({ message: "Bypass only available in development" });
     }
@@ -374,45 +376,71 @@ export async function setupAuth(app: Express) {
 
       console.log("Test bypass: Found test user:", testUser.email);
 
-      // Create user object for session with proper OAuth-like structure
-      const userForSession = {
-        id: testUser.id,
-        claims: {
-          sub: testUser.id,
-          email: testUser.email,
-          first_name: testUser.firstName,
-          last_name: testUser.lastName,
-          profile_image_url: testUser.profileImageUrl
-        },
-        // Add OAuth-like properties that the system expects
-        expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
-        access_token: 'test-token',
-        refresh_token: 'test-refresh-token'
-      };
-
-      console.log("Test bypass: Logging in user with passport...");
-
-      // Use req.logIn to properly establish session with updated serialization
-      req.logIn(userForSession, (err) => {
-        if (err) {
-          console.error("Test bypass login error:", err);
-          return res.status(500).json({ message: "Error creating session" });
-        }
+      // Simple session approach - just mark that we're in test mode
+      if (req.session) {
+        (req.session as any).testUserId = testUser.id;
+        console.log("Test bypass: Set session testUserId:", testUser.id);
         
-        console.log("Test bypass: Login successful");
-        
-        // Return JSON response indicating success
-        res.json({ 
-          success: true,
-          user: {
-            id: testUser.id,
-            email: testUser.email,
-            name: `${testUser.firstName} ${testUser.lastName}`
+        req.session.save((err) => {
+          if (err) {
+            console.error("Test bypass: Session save error:", err);
+            return res.status(500).json({ message: "Error saving session" });
           }
+          
+          console.log("Test bypass: Session saved successfully");
+          res.json({ 
+            success: true,
+            user: {
+              id: testUser.id,
+              email: testUser.email,
+              name: `${testUser.firstName} ${testUser.lastName}`
+            }
+          });
         });
-      });
+      } else {
+        console.error("Test bypass: No session available");
+        return res.status(500).json({ message: "Session not available" });
+      }
     } catch (error) {
       console.error("Test bypass error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Add endpoint to get current user (handles test users)
+  app.get("/api/auth/user", async (req, res) => {
+    try {
+      // Check for test user session first
+      if (process.env.NODE_ENV === 'development' && req.session && (req.session as any).testUserId) {
+        const testUser = await storage.getUserByEmail('billing@thopters.com');
+        if (testUser && testUser.id === (req.session as any).testUserId) {
+          return res.json({
+            id: testUser.id,
+            email: testUser.email,
+            firstName: testUser.firstName,
+            lastName: testUser.lastName,
+            profileImageUrl: testUser.profileImageUrl,
+            isTestUser: true
+          });
+        }
+      }
+
+      // Handle regular authenticated users
+      if (req.isAuthenticated() && req.user) {
+        const user = req.user as any;
+        return res.json({
+          id: user.claims?.sub || user.id,
+          email: user.claims?.email,
+          firstName: user.claims?.first_name,
+          lastName: user.claims?.last_name,
+          profileImageUrl: user.claims?.profile_image_url,
+          isTestUser: false
+        });
+      }
+
+      res.status(401).json({ message: "Unauthorized" });
+    } catch (error) {
+      console.error("Error getting user:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -420,10 +448,51 @@ export async function setupAuth(app: Express) {
 
 }
 
+// Custom middleware to handle test user authentication
+const handleTestUserAuth: RequestHandler = async (req, res, next) => {
+  // Check if we have a test user session
+  if (process.env.NODE_ENV === 'development' && req.session && (req.session as any).testUserId) {
+    try {
+      const testUser = await storage.getUserByEmail('billing@thopters.com');
+      if (testUser && testUser.id === (req.session as any).testUserId) {
+        // Create a mock user object for the test user
+        const mockUser = {
+          id: testUser.id,
+          claims: {
+            sub: testUser.id,
+            email: testUser.email,
+            first_name: testUser.firstName,
+            last_name: testUser.lastName,
+            profile_image_url: testUser.profileImageUrl
+          },
+          expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
+          access_token: 'test-token',
+          refresh_token: 'test-refresh-token'
+        };
+        
+        // Set user on request
+        (req as any).user = mockUser;
+        (req as any).isAuthenticated = () => true;
+        
+        return next();
+      }
+    } catch (error) {
+      console.error("Error handling test user auth:", error);
+    }
+  }
+  
+  next();
+};
+
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // First check for test user
+  await new Promise<void>((resolve) => {
+    handleTestUserAuth(req, res, () => resolve());
+  });
+
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated() || !user?.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -433,7 +502,11 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   }
 
   const refreshToken = user.refresh_token;
-  if (!refreshToken) {
+  if (!refreshToken || refreshToken === 'test-refresh-token') {
+    // For test users, don't try to refresh
+    if (refreshToken === 'test-refresh-token') {
+      return next();
+    }
     res.status(401).json({ message: "Unauthorized" });
     return;
   }

@@ -1,0 +1,36 @@
+NewsSection: Fetching articles...
+20:21:19:476 Agora-SDK [DEBUG]: setAppType: 1001
+20:21:19:516 Agora-SDK [DEBUG]: browser ua:  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+20:21:19:516 Agora-SDK [INFO]: browser info:  
+Object {name: "Chrome", version: "138", os: "Mac OS", osVersion: "10.15.7", browserVersion: "138.0.0.0", …}
+20:21:19:516 Agora-SDK [INFO]: browser compatibility:  
+Object {getDisplayMedia: true, getStreamFromExtension: true, supportUnifiedPlan: true, supportMinBitrate: true, supportSetRtpSenderParameters: true, …}
+20:21:19:520 Agora-SDK [DEBUG]: browser ua:  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+20:21:19:520 Agora-SDK [INFO]: browser info:  
+Object {name: "Chrome", version: "138", os: "Mac OS", osVersion: "10.15.7", browserVersion: "138.0.0.0", …}
+20:21:19:520 Agora-SDK [INFO]: browser compatibility:  
+Object {getDisplayMedia: true, getStreamFromExtension: true, supportUnifiedPlan: true, supportMinBitrate: true, supportSetRtpSenderParameters: true, …}
+NewsSection: Component is rendering...
+NewsSection: Response status: 200
+NewsSection: Fetched articles: 
+(3) [{…}, {…}, {…}]
+NewsSection: Component is rendering...
+NewsSection: Current state 
+Object {isLoading: false, error: undefined, articlesLength: 3, articles: Array(3)}
+Test bypass: Making request...
+NewsSection: Component is rendering...
+NewsSection: Current state 
+Object {isLoading: false, error: undefined, articlesLength: 3, articles: Array(3)}
+Test bypass: Final error: 
+Error {}
+
+at t.value (https://4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da-00-3d6qcy7h9ixdr.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da-00-3d6qcy7h9ixdr.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da-00-3d6qcy7h9ixdr.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://4d62c3b5-ca08-47ab-ac9f-30bd82f7f4da-00-3d6qcy7h9ixdr.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+NewsSection: Component is rendering...
+NewsSection: Current state 
+Object {isLoading: false, error: undefined, articlesLength: 3, articles: Array(3)}
+NewsSection: Component is rendering...
+NewsSection: Current state 
+Object {isLoading: false, error: undefined, articlesLength: 3, articles: Array(3)}
