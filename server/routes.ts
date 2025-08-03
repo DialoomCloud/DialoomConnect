@@ -824,6 +824,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user categories
+  app.get('/api/user/categories/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const requestedUserId = req.params.userId;
+      const authenticatedUserId = req.user.claims.sub;
+      
+      // Users can only view their own categories
+      if (requestedUserId !== authenticatedUserId) {
+        return res.status(403).json({ message: "No autorizado para ver estas categorías" });
+      }
+      
+      const userCategories = await storage.getUserCategories(authenticatedUserId);
+      res.json(userCategories);
+    } catch (error) {
+      console.error("Error fetching user categories:", error);
+      res.status(500).json({ message: "Error al obtener categorías del usuario" });
+    }
+  });
+
+  // Get user social profiles
+  app.get('/api/user/social-profiles/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const requestedUserId = req.params.userId;
+      const authenticatedUserId = req.user.claims.sub;
+      
+      // Users can only view their own social profiles
+      if (requestedUserId !== authenticatedUserId) {
+        return res.status(403).json({ message: "No autorizado para ver estos perfiles sociales" });
+      }
+      
+      const userSocialProfiles = await storage.getUserSocialProfiles(authenticatedUserId);
+      res.json(userSocialProfiles);
+    } catch (error) {
+      console.error("Error fetching user social profiles:", error);
+      res.status(500).json({ message: "Error al obtener perfiles sociales del usuario" });
+    }
+  });
+
   // Loomia AI Chat - Asistente IA unificado de Dialoom
   app.post('/api/loomia/chat', async (req: any, res) => {
     try {

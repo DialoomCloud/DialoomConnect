@@ -151,13 +151,6 @@ export function EnhancedProfileEdit() {
   const { data: countries = [] } = useQuery({
     queryKey: ['/api/countries'],
   });
-  
-  // Type the query data
-  const typedSocialPlatforms = socialPlatforms as any[];
-  const typedCategories = categories as any[];
-  const typedCountries = countries as any[];
-  const typedUserCategories = userCategories as any[];
-  const typedUserSocialProfiles = userSocialProfiles as any[];
 
   const { data: userCategories = [] } = useQuery({
     queryKey: ['/api/user/categories', typedUser?.id],
@@ -168,6 +161,13 @@ export function EnhancedProfileEdit() {
     queryKey: ['/api/user/social-profiles', typedUser?.id],
     enabled: !!typedUser?.id,
   });
+  
+  // Type the query data
+  const typedSocialPlatforms = socialPlatforms as any[];
+  const typedCategories = categories as any[];
+  const typedCountries = countries as any[];
+  const typedUserCategories = userCategories as any[];
+  const typedUserSocialProfiles = userSocialProfiles as any[];
 
   // Load initial data
   useEffect(() => {
