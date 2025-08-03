@@ -399,48 +399,9 @@ export async function setupAuth(app: Express) {
 
 }
 
-// Custom middleware to handle test user authentication
-const handleTestUserAuth: RequestHandler = async (req, res, next) => {
-  // Check if we have a test user session
-  if (process.env.NODE_ENV === 'development' && req.session && (req.session as any).testUserId) {
-    try {
-      const testUser = await storage.getUserByEmail('billing@thopters.com');
-      if (testUser && testUser.id === (req.session as any).testUserId) {
-        // Create a mock user object for the test user
-        const mockUser = {
-          id: testUser.id,
-          claims: {
-            sub: testUser.id,
-            email: testUser.email,
-            first_name: testUser.firstName,
-            last_name: testUser.lastName,
-            profile_image_url: testUser.profileImageUrl
-          },
-          expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
-          access_token: 'test-token',
-          refresh_token: 'test-refresh-token'
-        };
-        
-        // Set user on request
-        (req as any).user = mockUser;
-        (req as any).isAuthenticated = () => true;
-        
-        return next();
-      }
-    } catch (error) {
-      console.error("Error handling test user auth:", error);
-    }
-  }
-  
-  next();
-};
+
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // First check for test user
-  await new Promise<void>((resolve) => {
-    handleTestUserAuth(req, res, () => resolve());
-  });
-
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user?.expires_at) {
@@ -453,13 +414,16 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   }
 
   const refreshToken = user.refresh_token;
-  if (!refreshToken || refreshToken === 'test-refresh-token') {
-    // For test users, don't try to refresh
-    if (refreshToken === 'test-refresh-token') {
-      return next();
-    }
+  if (!refreshToken) {
     res.status(401).json({ message: "Unauthorized" });
     return;
+  }
+
+  // Handle mock refresh tokens (for test users)
+  if (refreshToken.startsWith('mock_refresh_token_')) {
+    // For test users, just extend the expiration
+    user.expires_at = Math.floor(Date.now() / 1000) + (24 * 60 * 60);
+    return next();
   }
 
   try {

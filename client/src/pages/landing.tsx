@@ -23,12 +23,15 @@ export default function Landing() {
   const handleTestBypass = async () => {
     setIsTestLoading(true);
     try {
-      const response = await apiRequest("POST", "/api/auth/test-bypass", {});
+      const response = await apiRequest("/api/auth/test-login", {
+        method: "POST",
+        body: {}
+      });
       const data = await response.json();
       
       if (data.success) {
         toast({
-          title: "Acceso de prueba activado",
+          title: "Inicio de sesión de prueba exitoso",
           description: `Iniciando sesión como ${data.user.name}...`,
         });
         // Invalidate auth query to force refresh
@@ -37,12 +40,12 @@ export default function Landing() {
           window.location.href = "/profile";
         }, 1000);
       } else {
-        throw new Error(data.message || "Error al activar bypass");
+        throw new Error(data.message || "Error al iniciar sesión de prueba");
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "No se pudo activar el acceso de prueba",
+        description: error.message || "No se pudo iniciar la sesión de prueba",
         variant: "destructive",
       });
     } finally {

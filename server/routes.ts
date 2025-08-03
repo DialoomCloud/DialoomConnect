@@ -66,38 +66,50 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register test bypass route BEFORE any middleware to avoid conflicts
+  // Register test login route that simulates proper Replit Auth flow
   if (process.env.NODE_ENV === 'development') {
-    app.post("/api/auth/test-bypass", express.json(), async (req, res) => {
+    app.post("/api/auth/test-login", express.json(), async (req, res) => {
       try {
-        console.log("Test bypass: Starting independent session...");
+        console.log("Test login: Starting proper auth simulation...");
         
         const testUser = await storage.getUserByEmail('billing@thopters.com');
         if (!testUser) {
-          console.error("Test bypass: Test user not found");
+          console.error("Test login: Test user not found");
           return res.status(404).json({ message: "Test user not found" });
         }
 
-        console.log("Test bypass: Found test user:", testUser.email);
+        console.log("Test login: Found test user:", testUser.email);
 
-        // Set session data directly without passport
-        if (req.session) {
-          (req.session as any).testUserId = testUser.id;
-          (req.session as any).isTestMode = true;
+        // Create proper user session mimicking Replit Auth structure
+        const mockTokens = {
+          access_token: 'mock_access_token_' + Date.now(),
+          refresh_token: 'mock_refresh_token_' + Date.now(),
+          claims: () => ({
+            sub: testUser.id,
+            email: testUser.email,
+            first_name: testUser.firstName,
+            last_name: testUser.lastName,
+            profile_image_url: testUser.profileImageUrl,
+            exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+          })
+        };
+
+        // Create user object with proper structure
+        const user = {};
+        (user as any).claims = mockTokens.claims();
+        (user as any).access_token = mockTokens.access_token;
+        (user as any).refresh_token = mockTokens.refresh_token;
+        (user as any).expires_at = (user as any).claims.exp;
+
+        // Use passport's login method to establish proper session
+        req.logIn(user, (err) => {
+          if (err) {
+            console.error("Test login: Login error:", err);
+            return res.status(500).json({ message: "Login failed" });
+          }
           
-          await new Promise<void>((resolve, reject) => {
-            req.session.save((err) => {
-              if (err) {
-                console.error("Test bypass: Session save error:", err);
-                reject(err);
-              } else {
-                console.log("Test bypass: Session saved successfully");
-                resolve();
-              }
-            });
-          });
-          
-          res.json({ 
+          console.log("Test login: Successfully logged in test user");
+          res.json({
             success: true,
             user: {
               id: testUser.id,
@@ -105,12 +117,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: `${testUser.firstName} ${testUser.lastName}`
             }
           });
-        } else {
-          console.error("Test bypass: No session available");
-          return res.status(500).json({ message: "Session not available" });
-        }
+        });
+
       } catch (error) {
-        console.error("Test bypass error:", error);
+        console.error("Test login error:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     });
