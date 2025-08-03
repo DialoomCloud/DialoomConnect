@@ -763,8 +763,12 @@ export default function Dashboard() {
                 <Button variant="outline">
                   Descargar Factura
                 </Button>
-                <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]">
-                  Configurar Pagos
+                <Button 
+                  className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
+                  onClick={() => window.location.href = '/payment-settings'}
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Métodos de Pago
                 </Button>
               </div>
             </div>

@@ -123,6 +123,7 @@ export interface IStorage {
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
   updateUserStripeConnect(userId: string, accountId: string, onboardingCompleted: boolean): Promise<User>;
+  updateUserStripeCustomerId(userId: string, customerId: string): Promise<User>;
   
   // Admin and verification operations
   getPendingVerificationUsers(): Promise<User[]>;
@@ -459,6 +460,18 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         stripeAccountId: accountId,
         stripeOnboardingCompleted: onboardingCompleted,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updated;
+  }
+
+  async updateUserStripeCustomerId(userId: string, customerId: string): Promise<User> {
+    const [updated] = await db
+      .update(users)
+      .set({ 
+        stripeCustomerId: customerId,
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId))

@@ -99,6 +99,7 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeAccountId: varchar("stripe_account_id"), // For Stripe Connect (hosts)
   stripeOnboardingCompleted: boolean("stripe_onboarding_completed").default(false),
+  stripeDefaultPaymentMethodId: varchar("stripe_default_payment_method_id"), // Default payment method for customer
   // User verification and GDPR compliance
   isVerified: boolean("is_verified").default(false),
   isActive: boolean("is_active").default(true),

@@ -3513,5 +3513,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ PAYMENT METHODS ROUTES ============
+  
+  // Get user's payment methods
+  app.get('/api/payment-methods', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.stripeCustomerId) {
+        return res.json([]);
+      }
+
+      // Get payment methods from Stripe
+      const paymentMethods = await stripe.paymentMethods.list({
+        customer: user.stripeCustomerId,
+        type: 'card',
+      });
+
+      const formattedMethods = paymentMethods.data.map(pm => ({
+        id: pm.id,
+        type: 'card',
+        last4: pm.card?.last4 || '',
+        brand: pm.card?.brand || '',
+        expiryMonth: pm.card?.exp_month || 0,
+        expiryYear: pm.card?.exp_year || 0,
+        isDefault: pm.id === user.stripeDefaultPaymentMethodId
+      }));
+
+      res.json(formattedMethods);
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      res.status(500).json({ message: 'Error al obtener métodos de pago' });
+    }
+  });
+
+  // Add new payment method
+  app.post('/api/payment-methods', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { cardNumber, expiryMonth, expiryYear, cvc, holderName } = req.body;
+      
+      let user = await storage.getUser(userId);
+      
+      // Create Stripe customer if not exists
+      if (!user?.stripeCustomerId) {
+        const customer = await stripe.customers.create({
+          email: user?.email,
+          name: `${user?.firstName} ${user?.lastName}`.trim() || holderName,
+        });
+        
+        await storage.updateUserStripeCustomerId(userId, customer.id);
+        user = await storage.getUser(userId);
+      }
+
+      // Create payment method in Stripe
+      const paymentMethod = await stripe.paymentMethods.create({
+        type: 'card',
+        card: {
+          number: cardNumber.replace(/\s/g, ''),
+          exp_month: parseInt(expiryMonth),
+          exp_year: parseInt(`20${expiryYear}`),
+          cvc: cvc,
+        },
+        billing_details: {
+          name: holderName,
+        },
+      });
+
+      // Attach to customer
+      await stripe.paymentMethods.attach(paymentMethod.id, {
+        customer: user!.stripeCustomerId!,
+      });
+
+      // Set as default if it's the first payment method
+      const existingMethods = await stripe.paymentMethods.list({
+        customer: user!.stripeCustomerId!,
+        type: 'card',
+      });
+
+      if (existingMethods.data.length === 1) {
+        await stripe.customers.update(user!.stripeCustomerId!, {
+          invoice_settings: {
+            default_payment_method: paymentMethod.id,
+          },
+        });
+      }
+
+      res.json({
+        id: paymentMethod.id,
+        type: 'card',
+        last4: paymentMethod.card?.last4 || '',
+        brand: paymentMethod.card?.brand || '',
+        expiryMonth: paymentMethod.card?.exp_month || 0,
+        expiryYear: paymentMethod.card?.exp_year || 0,
+        isDefault: existingMethods.data.length === 1
+      });
+    } catch (error) {
+      console.error('Error adding payment method:', error);
+      if (error instanceof Stripe.errors.StripeCardError) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: 'Error al agregar método de pago' });
+      }
+    }
+  });
+
+  // Remove payment method
+  app.delete('/api/payment-methods/:paymentMethodId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { paymentMethodId } = req.params;
+      
+      await stripe.paymentMethods.detach(paymentMethodId);
+      
+      res.json({ message: 'Método de pago eliminado exitosamente' });
+    } catch (error) {
+      console.error('Error removing payment method:', error);
+      res.status(500).json({ message: 'Error al eliminar método de pago' });
+    }
+  });
+
   return httpServer;
 }
