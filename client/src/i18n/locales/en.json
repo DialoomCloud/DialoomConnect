@@ -6,8 +6,9 @@
     "logout": "Log Out",
     "login": "Login",
     "availability": "Availability",
-    "howItWorks": "How it works",
-    "news": "News"
+    "howItWorks": "How It Works",
+    "news": "News",
+    "getStarted": "Get Started"
   },
   "home": {
     "title": "Your Personal Dashboard",

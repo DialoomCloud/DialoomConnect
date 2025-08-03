@@ -6,8 +6,9 @@
     "logout": "Cerrar Sesión",
     "login": "Iniciar Sesión",
     "availability": "Disponibilidad",
-    "howItWorks": "Cómo funciona",
-    "news": "Noticias"
+    "howItWorks": "Cómo Funciona",
+    "news": "Noticias",
+    "getStarted": "Comenzar Ahora"
   },
   "home": {
     "title": "Tu Dashboard Personal",

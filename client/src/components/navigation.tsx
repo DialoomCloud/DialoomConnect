@@ -140,7 +140,7 @@ export function Navigation() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
-            <LanguageSelector />
+            {user && <LanguageSelector />}
             <Button
               variant="ghost"
               size="sm"
@@ -160,68 +160,110 @@ export function Navigation() {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-[hsl(220,13%,90%)] absolute left-0 right-0 top-16 shadow-lg z-40">
             <div className="px-4 py-4 space-y-2">
-              <Link href={user ? "/home" : "/"} onClick={closeMobileMenu}>
-                <Button
-                  variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
-                  size="sm"
-                  className={`w-full justify-start ${isActive("/") || isActive("/home") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                >
-                  <Home className="w-4 h-4 mr-2" />
-                  {t('navigation.home')}
-                </Button>
-              </Link>
+              {!user ? (
+                // Menu for non-authenticated users: Hosts, Cómo Funciona, Comenzar Ahora, Idioma
+                <>
+                  <Link href="/hosts" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/hosts") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/hosts") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      {t('hosts.title')}
+                    </Button>
+                  </Link>
 
-              <Link href="/hosts" onClick={closeMobileMenu}>
-                <Button
-                  variant={isActive("/hosts") ? "default" : "ghost"}
-                  size="sm"
-                  className={`w-full justify-start ${isActive("/hosts") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  {t('hosts.title')}
-                </Button>
-              </Link>
+                  <Link href="/news" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/news") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/news") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Newspaper className="w-4 h-4 mr-2" />
+                      {t('navigation.howItWorks', 'Cómo Funciona')}
+                    </Button>
+                  </Link>
 
-              <Link href="/news" onClick={closeMobileMenu}>
-                <Button
-                  variant={isActive("/news") ? "default" : "ghost"}
-                  size="sm"
-                  className={`w-full justify-start ${isActive("/news") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                >
-                  <Newspaper className="w-4 h-4 mr-2" />
-                  {t('navigation.news', 'Noticias')}
-                </Button>
-              </Link>
-              
-              {user && (
-                <Link href="/profile" onClick={closeMobileMenu}>
                   <Button
-                    variant={isActive("/profile") ? "default" : "ghost"}
+                    variant="default"
                     size="sm"
-                    className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    onClick={() => {
+                      window.location.href = "/api/login";
+                      closeMobileMenu();
+                    }}
+                    className="w-full justify-start bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
                   >
-                    <UserIcon className="w-4 h-4 mr-2" />
-                    {t('navigation.profile')}
+                    {t('navigation.getStarted', 'Comenzar Ahora')}
                   </Button>
-                </Link>
-              )}
-              
-              {user && (user.isAdmin || user.role === 'admin') && (
-                <Link href="/admin-dashboard" onClick={closeMobileMenu}>
-                  <Button
-                    variant={isActive("/admin-dashboard") ? "default" : "ghost"}
-                    size="sm"
-                    className={`w-full justify-start ${isActive("/admin-dashboard") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    {t('navigation.admin')}
-                  </Button>
-                </Link>
-              )}
 
-              <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
-                {user ? (
-                  <>
+                  <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
+                    <div className="px-3 py-2">
+                      <LanguageSelector />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // Menu for authenticated users
+                <>
+                  <Link href="/home" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/home") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/home") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Home className="w-4 h-4 mr-2" />
+                      {t('navigation.home')}
+                    </Button>
+                  </Link>
+
+                  <Link href="/hosts" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/hosts") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/hosts") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      {t('hosts.title')}
+                    </Button>
+                  </Link>
+
+                  <Link href="/news" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/news") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/news") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Newspaper className="w-4 h-4 mr-2" />
+                      {t('navigation.news', 'Noticias')}
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/profile" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/profile") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <UserIcon className="w-4 h-4 mr-2" />
+                      {t('navigation.profile')}
+                    </Button>
+                  </Link>
+                  
+                  {(user.isAdmin || user.role === 'admin') && (
+                    <Link href="/admin-dashboard" onClick={closeMobileMenu}>
+                      <Button
+                        variant={isActive("/admin-dashboard") ? "default" : "ghost"}
+                        size="sm"
+                        className={`w-full justify-start ${isActive("/admin-dashboard") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        {t('navigation.admin')}
+                      </Button>
+                    </Link>
+                  )}
+
+                  <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
                     <div className="text-sm text-gray-600 mb-3 px-3">
                       {user.firstName || user.email}
                     </div>
@@ -234,18 +276,9 @@ export function Navigation() {
                       <LogOut className="w-4 h-4 mr-2" />
                       {t('navigation.logout')}
                     </Button>
-                  </>
-                ) : (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => window.location.href = "/api/login"}
-                    className="w-full justify-start bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
-                  >
-                    {t('navigation.login')}
-                  </Button>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
