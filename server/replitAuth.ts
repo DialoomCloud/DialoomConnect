@@ -325,15 +325,59 @@ export async function setupAuth(app: Express) {
     }
 
     try {
-      // Get test user from database
-      const testUser = await storage.getUserByEmail('billing@thopters.com');
+      // Get test user from database using the known test user ID
+      const testUser = await storage.getUser('ecf2a0a4-6b7c-4317-a309-259e164a134d');
       
       if (!testUser) {
         return res.status(404).json({ message: "Test user not found" });
       }
 
-      // Create session for test user
-      req.login({
+      // Create a temporary token for test user
+      const testToken = Buffer.from(JSON.stringify({
+        userId: testUser.id,
+        timestamp: Date.now()
+      })).toString('base64');
+
+      console.log("Test user bypass initiated for:", testUser.email);
+      
+      // Return success with redirect URL
+      res.json({ 
+        success: true,
+        redirectUrl: `/api/auth/test-callback?token=${testToken}`,
+        user: {
+          id: testUser.id,
+          email: testUser.email,
+          name: `${testUser.firstName} ${testUser.lastName}`
+        }
+      });
+    } catch (error) {
+      console.error("Test bypass error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Test callback route to handle the bypass login
+  app.get("/api/auth/test-callback", async (req, res) => {
+    if (process.env.NODE_ENV !== 'development') {
+      return res.redirect('/');
+    }
+
+    try {
+      const token = req.query.token as string;
+      if (!token) {
+        return res.redirect('/');
+      }
+
+      const tokenData = JSON.parse(Buffer.from(token, 'base64').toString());
+      const testUser = await storage.getUser(tokenData.userId);
+      
+      if (!testUser) {
+        return res.redirect('/');
+      }
+
+      // Create user object for session
+      const userForSession = {
+        id: testUser.id,
         claims: {
           sub: testUser.id,
           email: testUser.email,
@@ -341,25 +385,21 @@ export async function setupAuth(app: Express) {
           last_name: testUser.lastName,
           profile_image_url: testUser.profileImageUrl
         }
-      }, (err) => {
+      };
+
+      // Use req.logIn which is the proper way to establish a login session
+      req.logIn(userForSession, (err) => {
         if (err) {
           console.error("Test bypass login error:", err);
-          return res.status(500).json({ message: "Error creating test session" });
+          return res.redirect('/');
         }
         
         console.log("Test user bypass successful:", testUser.email);
-        res.json({ 
-          success: true, 
-          user: {
-            id: testUser.id,
-            email: testUser.email,
-            name: `${testUser.firstName} ${testUser.lastName}`
-          }
-        });
+        res.redirect('/profile');
       });
     } catch (error) {
-      console.error("Test bypass error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("Test callback error:", error);
+      res.redirect('/');
     }
   });
 }

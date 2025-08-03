@@ -41,9 +41,10 @@ export default function NewLanding() {
           title: "Acceso de prueba activado",
           description: `Iniciando sesión como ${data.user.name}...`,
         });
+        // Redirect to the test callback URL
         setTimeout(() => {
-          window.location.href = "/profile";
-        }, 1000);
+          window.location.href = data.redirectUrl;
+        }, 500);
       } else {
         throw new Error(data.message || "Error al activar bypass");
       }
@@ -53,7 +54,6 @@ export default function NewLanding() {
         description: error.message || "No se pudo activar el acceso de prueba",
         variant: "destructive",
       });
-    } finally {
       setIsTestLoading(false);
     }
   };
