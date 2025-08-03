@@ -589,8 +589,7 @@ export function EnhancedProfileEdit() {
                               <IconComponent className="h-4 w-4" />
                               <span className="font-medium">{platform?.name}</span>
                               <span className="text-muted-foreground">
-                                {/* LinkedIn (2), Website (4), GitHub (5) don't use @ symbol */}
-                                {[2, 4, 5].includes(profile.platformId) ? profile.username : `@${profile.username}`}
+                                {profile.username}
                               </span>
                               <Button
                                 type="button"
