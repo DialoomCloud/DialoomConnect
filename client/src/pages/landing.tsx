@@ -23,7 +23,7 @@ export default function Landing() {
   const handleTestBypass = async () => {
     setIsTestLoading(true);
     try {
-      const response = await apiRequest("POST", "/api/auth/test-bypass");
+      const response = await apiRequest("POST", "/api/auth/test-bypass", {});
       const data = await response.json();
       
       if (data.success) {
