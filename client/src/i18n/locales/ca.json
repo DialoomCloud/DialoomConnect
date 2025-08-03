@@ -119,6 +119,26 @@
     "priceRange": "Rang de preus",
     "clearFilters": "Netejar filtres"
   },
+  "categories": {
+    "Education & Tutoring": "Educació i Tutoria",
+    "Technology & Development": "Tecnologia i Desenvolupament",
+    "Business & Entrepreneurship": "Negocis i Emprenedoria",
+    "Marketing & Social Media": "Màrqueting i Xarxes Socials",
+    "Health & Wellness": "Salut i Benestar",
+    "Arts & Creativity": "Art i Creativitat",
+    "Languages & Translation": "Idiomes i Traducció",
+    "Travel & Hospitality": "Viatges i Hospitalitat",
+    "Legal & Compliance": "Legal i Compliment",
+    "Finance & Investing": "Finances i Inversió",
+    "Engineering & STEM": "Enginyeria i STEM",
+    "Home & DIY": "Llar i Bricolatge",
+    "Cooking & Gastronomy": "Cuina i Gastronomia",
+    "Entertainment & Media": "Entreteniment i Mitjans",
+    "Sports & Performance": "Esports i Rendiment",
+    "Personal Care & Beauty": "Cura Personal i Bellesa",
+    "Pets & Animals": "Mascotes i Animals",
+    "Sustainability & Impact": "Sostenibilitat i Impacte"
+  },
   "news": {
     "latestNews": "Últimes Notícies",
     "featured": "Destacat",

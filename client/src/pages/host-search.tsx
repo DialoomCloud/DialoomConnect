@@ -11,7 +11,7 @@ import { Navigation } from "@/components/navigation";
 import { Search, User, Mail, MapPin, CheckCircle, Eye, Sparkles, Brain, Filter, X } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import type { User as UserType, Category, Skill, Language } from "@shared/schema";
+import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
 
 type SearchResult = UserType & { relevance?: number };
 
@@ -45,18 +45,23 @@ export default function HostSearch() {
     queryKey: ["/api/languages"],
   });
 
+  const { data: countries = [] } = useQuery<Country[]>({
+    queryKey: ["/api/countries"],
+  });
+
   // AI Search mutation
   const aiSearchMutation = useMutation({
     mutationFn: async (query: string) => {
-      return await apiRequest("/api/hosts/search", {
+      const response = await fetch("/api/hosts/search", {
         method: "POST",
         body: JSON.stringify({ query }),
         headers: {
           'Content-Type': 'application/json',
         },
       });
+      return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setAiResults(data.results || []);
       setIsAISearch(true);
     },
@@ -225,7 +230,7 @@ export default function HostSearch() {
                         <SelectItem value="all">{t('hosts.allCategories')}</SelectItem>
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
+                            {t(`categories.${category.name}`, category.name)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -382,16 +387,10 @@ export default function HostSearch() {
                   </div>
 
                   <div className="space-y-2 mb-4">
-                    {host.email && (
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <Mail className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
-                        <span className="truncate">{host.email}</span>
-                      </div>
-                    )}
-                    {host.city && (
+                    {host.countryCode && (
                       <div className="flex items-center text-gray-600 text-sm">
                         <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
-                        <span>{host.city}</span>
+                        <span>{countries.find((c: Country) => c.code === host.countryCode)?.name || host.countryCode}</span>
                       </div>
                     )}
                   </div>

@@ -119,6 +119,26 @@
     "priceRange": "Price range",
     "clearFilters": "Clear filters"
   },
+  "categories": {
+    "Education & Tutoring": "Education & Tutoring",
+    "Technology & Development": "Technology & Development",
+    "Business & Entrepreneurship": "Business & Entrepreneurship",
+    "Marketing & Social Media": "Marketing & Social Media",
+    "Health & Wellness": "Health & Wellness",
+    "Arts & Creativity": "Arts & Creativity",
+    "Languages & Translation": "Languages & Translation",
+    "Travel & Hospitality": "Travel & Hospitality",
+    "Legal & Compliance": "Legal & Compliance",
+    "Finance & Investing": "Finance & Investing",
+    "Engineering & STEM": "Engineering & STEM",
+    "Home & DIY": "Home & DIY",
+    "Cooking & Gastronomy": "Cooking & Gastronomy",
+    "Entertainment & Media": "Entertainment & Media",
+    "Sports & Performance": "Sports & Performance",
+    "Personal Care & Beauty": "Personal Care & Beauty",
+    "Pets & Animals": "Pets & Animals",
+    "Sustainability & Impact": "Sustainability & Impact"
+  },
   "news": {
     "latestNews": "Latest News",
     "featured": "Featured",
