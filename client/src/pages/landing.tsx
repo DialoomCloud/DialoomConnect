@@ -12,6 +12,10 @@ export default function Landing() {
   const { toast } = useToast();
   const [isTestLoading, setIsTestLoading] = useState(false);
   
+  // Debug: Check if we're in development mode
+  console.log("Development mode:", import.meta.env.DEV);
+  console.log("Environment:", import.meta.env.MODE);
+  
   const handleLogin = () => {
     window.location.href = "/api/login";
   };
@@ -150,28 +154,26 @@ export default function Landing() {
               </Button>
             </div>
             
-            {/* Test bypass button - only in development */}
-            {import.meta.env.DEV && (
-              <div className="mt-8">
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  onClick={handleTestBypass}
-                  disabled={isTestLoading}
-                  className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-6 py-2 text-sm font-medium"
-                >
-                  {isTestLoading ? (
-                    "Cargando..."
-                  ) : (
-                    <>
-                      <TestTube className="w-4 h-4 mr-2" />
-                      Acceder como Usuario de Prueba
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-gray-500 mt-2">Solo para desarrollo: billing@thopters.com</p>
-              </div>
-            )}
+            {/* Test bypass button */}
+            <div className="mt-8">
+              <Button
+                size="lg"
+                variant="ghost"
+                onClick={handleTestBypass}
+                disabled={isTestLoading}
+                className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-6 py-2 text-sm font-medium"
+              >
+                {isTestLoading ? (
+                  "Cargando..."
+                ) : (
+                  <>
+                    <TestTube className="w-4 h-4 mr-2" />
+                    Acceder como Usuario de Prueba
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-gray-500 mt-2">Solo para desarrollo: billing@thopters.com</p>
+            </div>
           </div>
         </div>
       </section>
