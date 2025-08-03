@@ -12,7 +12,7 @@ import { SortableMediaGrid } from "@/components/sortable-media-grid";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { MediaUploadModal } from "@/components/media-upload-modal";
-import { NewsSection } from "@/components/news-section";
+
 
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
@@ -92,10 +92,6 @@ export default function Home() {
         <Navigation />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* News Section - visible to all */}
-          {console.log("Home: About to render NewsSection")}
-          <NewsSection />
-          
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('home.title')}</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -160,10 +156,7 @@ export default function Home() {
     <div className="min-h-screen bg-[hsl(220,9%,98%)]">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* News Section */}
-        <NewsSection />
-        
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">        
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('home.title')}</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
