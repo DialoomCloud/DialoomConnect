@@ -1,14 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Video, Clock, Star, CheckCircle, Play, Smartphone, Globe, Heart } from "lucide-react";
+import { Shield, Users, Video, Clock, Star, CheckCircle, Play, Smartphone, Globe, Heart, Menu, X } from "lucide-react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/language-selector";
 import { NewsSection } from "@/components/news-section";
+import { useState } from "react";
 
 export default function NewLanding() {
   const { t, i18n } = useTranslation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const handleLogin = async () => {
     try {
@@ -60,10 +62,72 @@ export default function NewLanding() {
               >
                 <span className="whitespace-nowrap">{t('landing.hero.cta')}</span>
               </Button>
-              <LanguageSelector />
+              <div className="hidden sm:block">
+                <LanguageSelector />
+              </div>
+              
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="sm:hidden p-2"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </Button>
             </div>
           </div>
         </div>
+        
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="sm:hidden bg-white border-t border-gray-200 absolute left-0 right-0 top-16 shadow-lg z-40">
+            <div className="px-4 py-4 space-y-2">
+              <Link href="/hosts" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-gray-600 hover:text-primary"
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  {t('hosts.title')}
+                </Button>
+              </Link>
+              
+              <Link href="/how-it-works" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-gray-600 hover:text-primary"
+                >
+                  {t('navigation.howItWorks', 'Cómo funciona')}
+                </Button>
+              </Link>
+              
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  handleLogin();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full justify-start bg-primary hover:bg-primary/90 text-white"
+              >
+                {t('navigation.getStarted', 'Comenzar Ahora')}
+              </Button>
+              
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="px-3 py-2">
+                  <LanguageSelector />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
