@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,11 +36,22 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
   });
   const [showPayment, setShowPayment] = useState(false);
 
+  // Get available services for this host
+  const { data: hostServices = {}, isLoading: servicesLoading } = useQuery<{
+    screenSharing?: number;
+    translation?: number;
+    recording?: number;
+    transcription?: number;
+  }>({
+    queryKey: [`/api/host/${host.id}/services`],
+    enabled: isOpen,
+  });
+
   const servicePrices = {
-    screenSharing: 10.00,
-    translation: 25.00,
-    recording: 10.00,
-    transcription: 5.00,
+    screenSharing: hostServices.screenSharing || 0,
+    translation: hostServices.translation || 0,
+    recording: hostServices.recording || 0,
+    transcription: hostServices.transcription || 0,
   };
 
   const calculateTotal = () => {
@@ -124,72 +136,94 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
             </CardContent>
           </Card>
 
-          {/* Service options */}
-          <div className="space-y-3">
-            <h3 className="font-medium">Servicios Adicionales</h3>
-            
+          {/* Service options - Only show if services are available */}
+          {!servicesLoading && Object.keys(hostServices).length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="booking-screen-sharing"
-                    checked={selectedServices.screenSharing}
-                    onCheckedChange={() => handleServiceToggle('screenSharing')}
-                  />
-                  <Label htmlFor="booking-screen-sharing" className="flex items-center gap-2 cursor-pointer">
-                    <Monitor className="w-4 h-4 text-gray-600" />
-                    <span>Compartir Pantalla</span>
-                  </Label>
-                </div>
-                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.screenSharing}</span>
-              </div>
+              <h3 className="font-medium">Servicios Adicionales</h3>
+              
+              <div className="space-y-3">
+                {hostServices.screenSharing !== undefined && (
+                  <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="booking-screen-sharing"
+                        checked={selectedServices.screenSharing}
+                        onCheckedChange={() => handleServiceToggle('screenSharing')}
+                      />
+                      <div className="flex flex-col">
+                        <Label htmlFor="booking-screen-sharing" className="flex items-center gap-2 cursor-pointer">
+                          <Monitor className="w-4 h-4 text-gray-600" />
+                          <span>Compartir Pantalla</span>
+                        </Label>
+                        <span className="text-sm text-gray-500 ml-6">Permite compartir tu pantalla durante la llamada</span>
+                      </div>
+                    </div>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.screenSharing.toFixed(2)}</span>
+                  </div>
+                )}
 
-              <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="booking-translation"
-                    checked={selectedServices.translation}
-                    onCheckedChange={() => handleServiceToggle('translation')}
-                  />
-                  <Label htmlFor="booking-translation" className="flex items-center gap-2 cursor-pointer">
-                    <Languages className="w-4 h-4 text-gray-600" />
-                    <span>Traducción Simultánea</span>
-                  </Label>
-                </div>
-                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.translation}</span>
-              </div>
+                {hostServices.translation !== undefined && (
+                  <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="booking-translation"
+                        checked={selectedServices.translation}
+                        onCheckedChange={() => handleServiceToggle('translation')}
+                      />
+                      <div className="flex flex-col">
+                        <Label htmlFor="booking-translation" className="flex items-center gap-2 cursor-pointer">
+                          <Languages className="w-4 h-4 text-gray-600" />
+                          <span>Traducción Simultánea</span>
+                        </Label>
+                        <span className="text-sm text-gray-500 ml-6">Ofrece traducción en tiempo real durante la sesión</span>
+                      </div>
+                    </div>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.translation.toFixed(2)}</span>
+                  </div>
+                )}
 
-              <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="booking-recording"
-                    checked={selectedServices.recording}
-                    onCheckedChange={() => handleServiceToggle('recording')}
-                  />
-                  <Label htmlFor="booking-recording" className="flex items-center gap-2 cursor-pointer">
-                    <Video className="w-4 h-4 text-gray-600" />
-                    <span>Grabación de Sesión</span>
-                  </Label>
-                </div>
-                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.recording}</span>
-              </div>
+                {hostServices.recording !== undefined && (
+                  <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="booking-recording"
+                        checked={selectedServices.recording}
+                        onCheckedChange={() => handleServiceToggle('recording')}
+                      />
+                      <div className="flex flex-col">
+                        <Label htmlFor="booking-recording" className="flex items-center gap-2 cursor-pointer">
+                          <Video className="w-4 h-4 text-gray-600" />
+                          <span>Grabación de Sesión</span>
+                        </Label>
+                        <span className="text-sm text-gray-500 ml-6">Permite grabar la videollamada para referencia futura</span>
+                      </div>
+                    </div>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.recording.toFixed(2)}</span>
+                  </div>
+                )}
 
-              <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="booking-transcription"
-                    checked={selectedServices.transcription}
-                    onCheckedChange={() => handleServiceToggle('transcription')}
-                  />
-                  <Label htmlFor="booking-transcription" className="flex items-center gap-2 cursor-pointer">
-                    <FileText className="w-4 h-4 text-gray-600" />
-                    <span>Transcripción Automática</span>
-                  </Label>
-                </div>
-                <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.transcription}</span>
+                {hostServices.transcription !== undefined && (
+                  <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">  
+                      <Checkbox
+                        id="booking-transcription"
+                        checked={selectedServices.transcription}
+                        onCheckedChange={() => handleServiceToggle('transcription')}
+                      />
+                      <div className="flex flex-col">
+                        <Label htmlFor="booking-transcription" className="flex items-center gap-2 cursor-pointer">
+                          <FileText className="w-4 h-4 text-gray-600" />
+                          <span>Transcripción Automática</span>
+                        </Label>
+                        <span className="text-sm text-gray-500 ml-6">Genera una transcripción escrita de la conversación</span>
+                      </div>
+                    </div>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.transcription.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Total */}
           <div className="pt-4 border-t">

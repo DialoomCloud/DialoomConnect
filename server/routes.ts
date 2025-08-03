@@ -1596,6 +1596,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get host services and pricing for booking
+  app.get("/api/host/:hostId/services", async (req, res) => {
+    try {
+      const { hostId } = req.params;
+      
+      // Get host pricing configurations
+      const pricingConfigs = await storage.getHostPricing(hostId);
+      
+      // Get global service pricing
+      const servicePricing = await storage.getServicePricing();
+      
+      // Filter services based on host configuration
+      const availableServices: any = {};
+      
+      // Check if any pricing config has these services enabled
+      const hasScreenSharing = pricingConfigs.some(config => config.includesScreenSharing);
+      const hasTranslation = pricingConfigs.some(config => config.includesTranslation);
+      const hasRecording = pricingConfigs.some(config => config.includesRecording);
+      const hasTranscription = pricingConfigs.some(config => config.includesTranscription);
+      
+      if (hasScreenSharing) {
+        availableServices.screenSharing = servicePricing.screenSharing;
+      }
+      if (hasTranslation) {
+        availableServices.translation = servicePricing.translation;
+      }
+      if (hasRecording) {
+        availableServices.recording = servicePricing.recording;
+      }
+      if (hasTranscription) {
+        availableServices.transcription = servicePricing.transcription;
+      }
+      
+      res.json(availableServices);
+    } catch (error) {
+      console.error("Error fetching host services:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
   app.post('/api/host/pricing', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
