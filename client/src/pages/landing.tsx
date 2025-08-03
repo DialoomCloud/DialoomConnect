@@ -1,14 +1,47 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Database, UserCheck, Play, Smartphone, Share2 } from "lucide-react";
+import { Shield, Database, UserCheck, Play, Smartphone, Share2, TestTube } from "lucide-react";
 import { Link } from "wouter";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Landing() {
   const { logoUrl } = useThemeConfig();
+  const { toast } = useToast();
+  const [isTestLoading, setIsTestLoading] = useState(false);
   
   const handleLogin = () => {
     window.location.href = "/api/login";
+  };
+
+  const handleTestBypass = async () => {
+    setIsTestLoading(true);
+    try {
+      const response = await apiRequest("POST", "/api/auth/test-bypass");
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Acceso de prueba activado",
+          description: `Iniciando sesión como ${data.user.name}...`,
+        });
+        setTimeout(() => {
+          window.location.href = "/profile";
+        }, 1000);
+      } else {
+        throw new Error(data.message || "Error al activar bypass");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo activar el acceso de prueba",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTestLoading(false);
+    }
   };
 
   const features = [
@@ -116,6 +149,29 @@ export default function Landing() {
                 Ver Demo
               </Button>
             </div>
+            
+            {/* Test bypass button - only in development */}
+            {import.meta.env.DEV && (
+              <div className="mt-8">
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  onClick={handleTestBypass}
+                  disabled={isTestLoading}
+                  className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-6 py-2 text-sm font-medium"
+                >
+                  {isTestLoading ? (
+                    "Cargando..."
+                  ) : (
+                    <>
+                      <TestTube className="w-4 h-4 mr-2" />
+                      Acceder como Usuario de Prueba
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-gray-500 mt-2">Solo para desarrollo: billing@thopters.com</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

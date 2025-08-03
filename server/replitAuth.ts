@@ -317,6 +317,51 @@ export async function setupAuth(app: Express) {
       });
     });
   });
+
+  // Test user bypass (only in development)
+  app.post("/api/auth/test-bypass", async (req, res) => {
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(403).json({ message: "Bypass only available in development" });
+    }
+
+    try {
+      // Get test user from database
+      const testUser = await storage.getUserByEmail('billing@thopters.com');
+      
+      if (!testUser) {
+        return res.status(404).json({ message: "Test user not found" });
+      }
+
+      // Create session for test user
+      req.login({
+        claims: {
+          sub: testUser.id,
+          email: testUser.email,
+          first_name: testUser.firstName,
+          last_name: testUser.lastName,
+          profile_image_url: testUser.profileImageUrl
+        }
+      }, (err) => {
+        if (err) {
+          console.error("Test bypass login error:", err);
+          return res.status(500).json({ message: "Error creating test session" });
+        }
+        
+        console.log("Test user bypass successful:", testUser.email);
+        res.json({ 
+          success: true, 
+          user: {
+            id: testUser.id,
+            email: testUser.email,
+            name: `${testUser.firstName} ${testUser.lastName}`
+          }
+        });
+      });
+    } catch (error) {
+      console.error("Test bypass error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
