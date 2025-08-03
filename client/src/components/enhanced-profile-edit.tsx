@@ -174,20 +174,31 @@ export function EnhancedProfileEdit() {
   // AI Description improvement mutation
   const improveDescriptionMutation = useMutation({
     mutationFn: async (description: string) => {
-      const response = await apiRequest("POST", "/api/ai/improve-description", { description });
+      // Get LinkedIn URL from social profiles if available
+      const linkedinProfile = socialProfiles.find(profile => 
+        socialPlatforms.find(p => p.id === profile.platformId)?.name === 'LinkedIn'
+      );
+      const linkedinUrl = linkedinProfile ? 
+        socialPlatforms.find(p => p.id === linkedinProfile.platformId)?.baseUrl + linkedinProfile.username : 
+        '';
+      
+      const response = await apiRequest("POST", "/api/ai/enhance-description", { 
+        description,
+        linkedinUrl 
+      });
       return response.json();
     },
     onSuccess: (data) => {
-      form.setValue("description", data.improvedDescription);
+      form.setValue("description", data.enhancedDescription);
       toast({
-        title: "Descripción mejorada",
-        description: "Loomia ha mejorado tu descripción profesional",
+        title: "¡Descripción mejorada!",
+        description: "La IA ha optimizado tu descripción profesional usando tu información de LinkedIn",
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "No se pudo mejorar la descripción",
+        description: "No se pudo mejorar la descripción. Inténtalo de nuevo.",
         variant: "destructive",
       });
     },
@@ -323,6 +334,9 @@ export function EnhancedProfileEdit() {
     }
     
     // Update social profiles
+    if (socialProfiles.length > 0) {
+      await updateSocialProfilesMutation.mutateAsync(socialProfiles);
+    }
     if (socialProfiles.length > 0) {
       await updateSocialProfilesMutation.mutateAsync(socialProfiles);
     }
@@ -466,6 +480,77 @@ export function EnhancedProfileEdit() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Social Media Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base font-medium">Redes Sociales</Label>
+                      <span className="text-sm text-muted-foreground">Ayuda a la IA con tu información profesional</span>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Select 
+                        value={newSocialProfile.platformId.toString()} 
+                        onValueChange={(value) => 
+                          setNewSocialProfile(prev => ({ ...prev, platformId: parseInt(value) }))
+                        }
+                      >
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="Seleccionar plataforma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {socialPlatforms.map((platform: SocialPlatform) => (
+                            <SelectItem key={platform.id} value={platform.id.toString()}>
+                              {platform.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder="Usuario/Handle"
+                        value={newSocialProfile.username}
+                        onChange={(e) => 
+                          setNewSocialProfile(prev => ({ ...prev, username: e.target.value }))
+                        }
+                        className="flex-1"
+                      />
+                      <Button 
+                        type="button"
+                        onClick={handleAddSocialProfile}
+                        disabled={!newSocialProfile.platformId || !newSocialProfile.username.trim()}
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {socialProfiles.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Perfiles añadidos:</Label>
+                        {socialProfiles.map((profile, index) => {
+                          const platform = socialPlatforms.find((p: SocialPlatform) => p.id === profile.platformId);
+                          const IconComponent = socialIcons[platform?.name] || ExternalLink;
+                          
+                          return (
+                            <div key={index} className="flex items-center gap-3 p-2 border rounded-lg bg-muted/30">
+                              <IconComponent className="h-4 w-4" />
+                              <span className="font-medium">{platform?.name}</span>
+                              <span className="text-muted-foreground">@{profile.username}</span>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleRemoveSocialProfile(index)}
+                                className="ml-auto"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField

@@ -1361,6 +1361,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI enhancement endpoint for descriptions using OpenAI
+  app.post('/api/ai/enhance-description', isAuthenticated, async (req: any, res) => {
+    try {
+      const { description, linkedinUrl } = req.body;
+      const userId = req.user.claims.sub;
+      
+      if (!description?.trim()) {
+        return res.status(400).json({ message: 'Descripción requerida' });
+      }
+
+      // Get user's social profiles to extract LinkedIn data if available
+      const userSocialProfiles = await storage.getUserSocialProfiles(userId);
+      let linkedinData = '';
+      
+      if (linkedinUrl || userSocialProfiles.some(profile => profile.platformId === 1)) { // Assuming LinkedIn is platform ID 1
+        // For now, we'll use the LinkedIn URL to enhance the context
+        linkedinData = linkedinUrl || userSocialProfiles.find(profile => profile.platformId === 1)?.url || '';
+      }
+
+      const enhancementPrompt = `
+        Como experto en redacción profesional y marketing personal, mejora esta descripción profesional para que sea más atractiva, clara y persuasiva para potenciales clientes.
+        
+        Descripción actual: "${description}"
+        ${linkedinData ? `Información adicional de LinkedIn: ${linkedinData}` : ''}
+        
+        Directrices:
+        - Mantén el tono profesional pero cercano
+        - Destaca logros y experiencia específica
+        - Incluye valor único que aporta al cliente
+        - Usa verbos de acción y resultados concretos
+        - Máximo 200 palabras
+        - Responde solo con la descripción mejorada, sin explicaciones adicionales
+      `;
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          messages: [
+            {
+              role: 'user',
+              content: enhancementPrompt
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const enhancedDescription = data.choices[0]?.message?.content?.trim();
+
+      if (!enhancedDescription) {
+        throw new Error('No se pudo generar una descripción mejorada');
+      }
+
+      res.json({ enhancedDescription });
+    } catch (error) {
+      console.error('Error enhancing description:', error);
+      res.status(500).json({ message: 'Error al mejorar la descripción con IA' });
+    }
+  });
+
+  // Social platforms endpoints
+  app.get('/api/social-platforms', async (req, res) => {
+    try {
+      const platforms = await storage.getSocialPlatforms();
+      res.json(platforms);
+    } catch (error) {
+      console.error("Error fetching social platforms:", error);
+      res.status(500).json({ message: "Failed to fetch social platforms" });
+    }
+  });
+
+  app.get('/api/user/social-profiles/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const requesterId = req.user.claims.sub;
+      
+      // Only allow users to see their own social profiles or admins to see any
+      const requester = await storage.getUser(requesterId);
+      if (userId !== requesterId && !requester?.isAdmin) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const profiles = await storage.getUserSocialProfiles(userId);
+      res.json(profiles);
+    } catch (error) {
+      console.error("Error fetching user social profiles:", error);
+      res.status(500).json({ message: "Failed to fetch social profiles" });
+    }
+  });
+
+  app.put('/api/users/:userId/social-profiles', isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const requesterId = req.user.claims.sub;
+      const { profiles } = req.body;
+      
+      // Only allow users to update their own social profiles
+      if (userId !== requesterId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      await storage.updateUserSocialProfiles(userId, profiles);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user social profiles:", error);
+      res.status(500).json({ message: "Failed to update social profiles" });
+    }
+  });
+
   // Stripe Connect routes for hosts
   app.post('/api/stripe/connect/create-account', isAuthenticated, async (req: any, res) => {
     try {
