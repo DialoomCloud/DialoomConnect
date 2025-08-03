@@ -5,7 +5,7 @@ import { Link } from "wouter";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function Landing() {
   const { logoUrl } = useThemeConfig();
@@ -31,6 +31,8 @@ export default function Landing() {
           title: "Acceso de prueba activado",
           description: `Iniciando sesión como ${data.user.name}...`,
         });
+        // Invalidate auth query to force refresh
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         setTimeout(() => {
           window.location.href = "/profile";
         }, 1000);

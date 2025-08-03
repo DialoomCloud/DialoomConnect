@@ -9,9 +9,9 @@ async function createTestUser() {
     // Hash the password
     const passwordHash = await bcrypt.hash("test2", 10);
     
-    // Create the test user
+    // Create the test user with consistent ID
     const [newUser] = await db.insert(users).values({
-      id: crypto.randomUUID(),
+      id: "ecf2a0a4-6b7c-4317-a309-259e164a134d", // Use consistent test user ID
       email: "billing@thopters.com",
       firstName: "test1",
       lastName: "dialoom",

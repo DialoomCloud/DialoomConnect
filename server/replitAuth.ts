@@ -325,12 +325,37 @@ export async function setupAuth(app: Express) {
     }
 
     try {
-      // Get test user from database using the known test user ID
-      const testUser = await storage.getUser('ecf2a0a4-6b7c-4317-a309-259e164a134d');
+      // Get test user from database using the test email
+      const testUser = await storage.getUserByEmail('billing@thopters.com');
       
       if (!testUser) {
         return res.status(404).json({ message: "Test user not found" });
       }
+
+      // First logout any existing user
+      if (req.user) {
+        await new Promise<void>((resolve) => {
+          req.logout((err) => {
+            if (err) {
+              console.error("Error logging out existing user:", err);
+            }
+            resolve();
+          });
+        });
+      }
+
+      // Destroy existing session
+      await new Promise<void>((resolve) => {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error("Error destroying existing session:", err);
+          }
+          resolve();
+        });
+      });
+
+      // Create new session
+      req.session = req.sessionStore.generate(req) as any;
 
       // Create user object for session
       const userForSession = {
