@@ -1,10 +1,8 @@
-import { Switch, Route, useLocation } from "wouter";
-import { useEffect } from "react";
+import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAuth } from "@/hooks/useAuth";
 import { LoomiaChat } from "@/components/loomia-chat";
 
 import { Footer } from "@/components/footer";
@@ -40,24 +38,12 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1">
         <Switch>
           {/* Public routes available to everyone */}
-          <Route path="/">
-            {isAuthenticated && !isLoading ? (
-              <Route component={() => {
-                const [, setLocation] = useLocation();
-                useEffect(() => setLocation("/home"), [setLocation]);
-                return null;
-              }} />
-            ) : (
-              <Landing />
-            )}
-          </Route>
+          <Route path="/" component={Landing} />
           <Route path="/hosts" component={HostSearch} />
           <Route path="/user/:id" component={UserProfile} />
           <Route path="/admin-login" component={AdminLogin} />

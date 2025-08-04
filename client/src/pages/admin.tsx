@@ -18,7 +18,7 @@ export default function AdminPage() {
   const [, setLocation] = useLocation();
 
   if (!user?.isAdmin) {
-    setLocation("/home");
+    setLocation("/");
     return null;
   }
 
