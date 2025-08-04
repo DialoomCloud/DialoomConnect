@@ -18,6 +18,7 @@ import UserProfile from "@/pages/user-profile";
 import AdminPanel from "@/pages/admin-panel";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminLogin from "@/pages/admin-login";
+import LoginPage from "@/pages/login";
 import PrivacyPolicy from "@/pages/legal/privacy-policy";
 import TermsOfService from "@/pages/legal/terms-of-service";
 import CookiePolicy from "@/pages/legal/cookie-policy";
@@ -46,6 +47,7 @@ function Router() {
           <Route path="/" component={Landing} />
           <Route path="/hosts" component={HostSearch} />
           <Route path="/user/:id" component={UserProfile} />
+          <Route path="/login" component={LoginPage} />
           <Route path="/admin-login" component={AdminLogin} />
           <Route path="/admin-dashboard" component={AdminDashboard} />
           <Route path="/news" component={NewsPage} />

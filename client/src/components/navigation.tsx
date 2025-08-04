@@ -7,21 +7,40 @@ import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon
 import type { User } from "@shared/schema";
 import { useState } from "react";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
+import { signOut } from "@/lib/supabase";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export function Navigation() {
   const { user } = useAuth() as { user: User | undefined };
   const { t } = useTranslation();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { logoUrl } = useThemeConfig();
+  const { toast } = useToast();
 
-  const handleLogout = () => {
-    // Clear any client-side cached data
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Force a complete page reload to logout
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      
+      // Clear all query cache
+      queryClient.clear();
+      
+      // Show success message
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión correctamente",
+      });
+      
+      // Navigate to home page
+      navigate("/");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al cerrar sesión",
+        variant: "destructive",
+      });
+    }
   };
 
   const isActive = (path: string) => location === path;
@@ -124,14 +143,15 @@ export function Navigation() {
                 </Button>
               </>
             ) : (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => window.location.href = "/api/login"}
-                className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
-              >
-                {t('navigation.login')}
-              </Button>
+              <Link href="/login">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
+                >
+                  {t('navigation.login')}
+                </Button>
+              </Link>
             )}
             <div className="ml-2">
               <LanguageSelector />
@@ -185,17 +205,15 @@ export function Navigation() {
                     </Button>
                   </Link>
 
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => {
-                      window.location.href = "/api/login";
-                      closeMobileMenu();
-                    }}
-                    className="w-full justify-start bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
-                  >
-                    {t('navigation.getStarted', 'Comenzar Ahora')}
-                  </Button>
+                  <Link href="/login" onClick={closeMobileMenu}>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="w-full justify-start bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
+                    >
+                      {t('navigation.getStarted', 'Comenzar Ahora')}
+                    </Button>
+                  </Link>
 
                   <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
                     <div className="px-3 py-2">

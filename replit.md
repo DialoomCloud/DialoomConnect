@@ -9,6 +9,14 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Major Authentication Migration** (January 3, 2025): Migrated from Replit Auth to Supabase Authentication
+  - Created new authentication infrastructure: `server/supabaseAuth.ts`, `client/src/lib/supabase.ts`
+  - Updated authentication hooks: `client/src/hooks/useAuth.ts` now uses Supabase with proper session management
+  - Created new login page: `client/src/pages/login.tsx` with sign in/sign up functionality
+  - Updated navigation component to use Supabase signOut method
+  - Updated queryClient to include Supabase JWT tokens in API requests
+  - Removed old Replit Auth dependency: deleted `server/replitAuth.ts`
+  - All authentication now flows through Supabase while maintaining existing user data structure
 - **Documentation Update**: Created comprehensive README.md with extensive project documentation
 - **Translation Implementation**: Updated dashboard.tsx to use proper i18n keys instead of hardcoded Spanish text
 - **Live Session System**: Complete video call flow with pre-call lobby and post-session ratings
@@ -26,7 +34,7 @@
 - **AI Enhancement Tone Update** (January 3, 2025): Modified AI prompt to generate more humble and professional descriptions, avoiding superlatives and grandiose claims in favor of modest, client-focused language
 
 ## Critical Architecture Notes
-- **Authentication**: Always use Replit Auth for user authentication
+- **Authentication**: Always use Supabase Auth for user authentication
 - **File Storage**: Use ObjectStorageService for all file operations
 - **Database**: Never manually write SQL migrations - use `npm run db:push`
 - **Translations**: All UI text must use i18n keys from translation files

@@ -13,7 +13,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       // Redirect to login page for unauthenticated users
-      window.location.href = "/api/login";
+      navigate("/login");
     }
   }, [isAuthenticated, isLoading, navigate]);
 

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { isAuthenticated, isAdminAuthenticated, setupAuthRoutes } from "./supabaseAuth";
 import multer from "multer";
 import sharp from "sharp";
 import path from "path";
@@ -63,66 +63,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware (includes session configuration)
-  await setupAuth(app);
-  
-  // Admin authentication middleware - using Replit Auth
-  const ADMIN_USERNAMES = ['marcgarcia10', 'nachosaladrigas'];
-  
-  // Admin check session endpoint - simplified for Replit Auth
-  app.get('/api/admin/check-session', isAuthenticated, (req: any, res) => {
-    const user = req.user;
-    const userEmail = user?.claims?.email;
-    const emailPrefix = userEmail?.split('@')[0] || '';
-    const isAdmin = user && ADMIN_USERNAMES.includes(emailPrefix);
-    
-    console.log("Admin session check:", {
-      email: userEmail,
-      prefix: emailPrefix,
-      isAdmin: isAdmin
-    });
-    
-    if (isAdmin) {
-      res.json({ 
-        success: true,
-        user: {
-          id: user.claims.sub,
-          email: user.claims.email,
-          firstName: user.claims.first_name,
-          isAdmin: true
-        }
-      });
-    } else {
-      res.status(401).json({ message: "No autorizado" });
-    }
-  });
-  
-  const isAdminAuthenticated: RequestHandler = async (req: any, res, next) => {
-    // First check if user is authenticated using the proper Replit Auth middleware
-    return isAuthenticated(req, res, () => {
-      const user = req.user;
-      const userEmail = user?.claims?.email;
-      const emailPrefix = userEmail?.split('@')[0] || '';
-      
-      console.log("Admin auth check:", {
-        email: userEmail,
-        prefix: emailPrefix,
-        adminUsernames: ADMIN_USERNAMES,
-        isAdmin: ADMIN_USERNAMES.includes(emailPrefix)
-      });
-      
-      const isAdmin = user && ADMIN_USERNAMES.includes(emailPrefix);
-      
-      if (!isAdmin) {
-        console.log("Admin auth failed: Not in admin list");
-        return res.status(401).json({ message: "Unauthorized - Admin access required" });
-      }
-
-      console.log("Admin auth success");
-      req.adminUser = user;
-      next();
-    });
-  };
+  // Setup Supabase auth routes
+  setupAuthRoutes(app);
 
 
   
