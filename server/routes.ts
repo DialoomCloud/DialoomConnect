@@ -283,6 +283,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUserWithPrivateInfo(userId, userId);
+      
+      // Log user data to debug admin status
+      console.log("User data being sent:", {
+        id: user?.id,
+        email: user?.email,
+        isAdmin: user?.isAdmin,
+        role: user?.role
+      });
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
