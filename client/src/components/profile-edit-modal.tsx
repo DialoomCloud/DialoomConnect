@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { supabase } from "@/lib/supabase";
 import { Camera, User as UserIcon, Upload } from "lucide-react";
 import type { User, Country, Language, Skill, Category } from "@shared/schema";
 
@@ -88,10 +89,14 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('image', file);
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {};
       const response = await fetch('/api/upload/profile-image', {
         method: 'POST',
+        headers,
         body: formData,
-        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error(`${response.status}: ${await response.text()}`);
