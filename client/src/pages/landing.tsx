@@ -116,8 +116,6 @@ export default function Landing() {
                 Ver Demo
               </Button>
             </div>
-            
-
           </div>
         </div>
       </section>

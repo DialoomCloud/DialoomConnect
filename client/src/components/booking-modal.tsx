@@ -9,7 +9,6 @@ import { Monitor, Languages, Video, FileText, Calendar, Clock, DollarSign } from
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/components/auth-provider";
 import PaymentCheckout from "./payment-checkout";
 
 interface BookingModalProps {
@@ -29,7 +28,6 @@ interface BookingModalProps {
 
 export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, selectedTime }: BookingModalProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [selectedServices, setSelectedServices] = useState({
     screenSharing: false,
     translation: false,
@@ -37,9 +35,6 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
     transcription: false,
   });
   const [showPayment, setShowPayment] = useState(false);
-  
-  // Check if current user is a test user
-  const isTestUser = user?.email === 'billing@thopters.com';
 
   // Get available services for this host
   const { data: hostServices = {}, isLoading: servicesLoading } = useQuery<{
@@ -60,9 +55,6 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
   };
 
   const calculateTotal = () => {
-    // Test users get free bookings
-    if (isTestUser) return 0;
-    
     let total = parseFloat(pricing.price);
     if (selectedServices.screenSharing) total += servicePrices.screenSharing;
     if (selectedServices.translation) total += servicePrices.translation;
@@ -138,9 +130,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                 </div>
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-gray-600" />
-                  <span className="font-medium">
-                    {isTestUser ? 'Modo de Prueba - GRATIS' : `Precio base: €${pricing.price}`}
-                  </span>
+                  <span className="font-medium">Precio base: €{pricing.price}</span>
                 </div>
               </div>
             </CardContent>
@@ -168,9 +158,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                         <span className="text-sm text-gray-500 ml-6">Permite compartir tu pantalla durante la llamada</span>
                       </div>
                     </div>
-                    <span className="font-medium text-[hsl(188,80%,42%)]">
-                      {isTestUser ? 'GRATIS' : `+€${servicePrices.screenSharing.toFixed(2)}`}
-                    </span>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.screenSharing.toFixed(2)}</span>
                   </div>
                 )}
 
@@ -190,9 +178,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                         <span className="text-sm text-gray-500 ml-6">Ofrece traducción en tiempo real durante la sesión</span>
                       </div>
                     </div>
-                    <span className="font-medium text-[hsl(188,80%,42%)]">
-                      {isTestUser ? 'GRATIS' : `+€${servicePrices.translation.toFixed(2)}`}
-                    </span>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.translation.toFixed(2)}</span>
                   </div>
                 )}
 
@@ -212,9 +198,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                         <span className="text-sm text-gray-500 ml-6">Permite grabar la videollamada para referencia futura</span>
                       </div>
                     </div>
-                    <span className="font-medium text-[hsl(188,80%,42%)]">
-                      {isTestUser ? 'GRATIS' : `+€${servicePrices.recording.toFixed(2)}`}
-                    </span>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.recording.toFixed(2)}</span>
                   </div>
                 )}
 
@@ -234,9 +218,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
                         <span className="text-sm text-gray-500 ml-6">Genera una transcripción escrita de la conversación</span>
                       </div>
                     </div>
-                    <span className="font-medium text-[hsl(188,80%,42%)]">
-                      {isTestUser ? 'GRATIS' : `+€${servicePrices.transcription.toFixed(2)}`}
-                    </span>
+                    <span className="font-medium text-[hsl(188,80%,42%)]">+€{servicePrices.transcription.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -247,9 +229,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
           <div className="pt-4 border-t">
             <div className="flex justify-between items-center">
               <span className="text-lg font-medium">Total:</span>
-              <span className="text-2xl font-bold text-[hsl(188,80%,42%)]">
-                {isTestUser ? 'GRATIS (Modo de Prueba)' : `€${calculateTotal().toFixed(2)}`}
-              </span>
+              <span className="text-2xl font-bold text-[hsl(188,80%,42%)]">€{calculateTotal().toFixed(2)}</span>
             </div>
           </div>
 
@@ -262,7 +242,7 @@ export function BookingModal({ isOpen, onClose, host, pricing, selectedDate, sel
               onClick={handleProceedToPayment}
               className="flex-1 bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
             >
-              {isTestUser ? 'Iniciar Prueba' : 'Proceder al Pago'}
+              Proceder al Pago
             </Button>
           </div>
         </div>

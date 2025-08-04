@@ -13,7 +13,6 @@ import { BookingFlow } from "@/components/booking-flow";
 import { DateTimeSelector } from "@/components/date-time-selector";
 import { PaymentMethods } from "@/components/payment-methods";
 import { StripeConnectCheckout } from "@/components/stripe-connect-checkout";
-import { TestBookingButton } from "@/components/TestBookingButton";
 import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { useState } from "react";
@@ -302,23 +301,6 @@ export default function UserProfile() {
                   >
                     {t('userProfile.bookCall')}
                   </Button>
-                  
-                  {/* Test booking button - only show in development */}
-                  {import.meta.env.DEV && user && (
-                    <TestBookingButton 
-                      hostId={user.id}
-                      hostName={`${user.firstName} ${user.lastName}`}
-                      onBookingCreated={(bookingId) => {
-                        toast({
-                          title: "Reserva de prueba creada",
-                          description: "Redirigiendo a la videollamada...",
-                        });
-                        setTimeout(() => {
-                          window.location.href = `/call/${bookingId}`;
-                        }, 2000);
-                      }}
-                    />
-                  )}
                 </CardContent>
               </Card>
             )}

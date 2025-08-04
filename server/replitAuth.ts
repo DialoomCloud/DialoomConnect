@@ -4,7 +4,6 @@ import { Strategy, type VerifyFunction } from "openid-client/passport";
 import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
-import express from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
@@ -113,45 +112,8 @@ export async function setupAuth(app: Express) {
     console.log(`Registered strategy: replitauth:${domain} with callback: ${protocol}://${domain}${port}/api/callback`);
   }
 
-  passport.serializeUser((user: Express.User, cb) => {
-    // For test users, store a special identifier
-    if ((user as any).id && (user as any).claims) {
-      cb(null, { type: 'test', id: (user as any).id });
-    } else {
-      cb(null, user);
-    }
-  });
-  
-  passport.deserializeUser(async (obj: any, cb) => {
-    try {
-      // Handle test user deserialization
-      if (obj && obj.type === 'test') {
-        const testUser = await storage.getUserByEmail('billing@thopters.com');
-        if (testUser) {
-          const userForSession = {
-            id: testUser.id,
-            claims: {
-              sub: testUser.id,
-              email: testUser.email,
-              first_name: testUser.firstName,
-              last_name: testUser.lastName,
-              profile_image_url: testUser.profileImageUrl
-            },
-            expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
-            access_token: 'test-token',
-            refresh_token: 'test-refresh-token'
-          };
-          return cb(null, userForSession);
-        }
-      }
-      
-      // Handle regular OAuth users
-      cb(null, obj);
-    } catch (error) {
-      console.error("Error deserializing user:", error);
-      cb(error, null);
-    }
-  });
+  passport.serializeUser((user: Express.User, cb) => cb(null, user));
+  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   // Add endpoint to clear session and force new account selection
   app.get("/api/clear-session", (req, res) => {
@@ -343,8 +305,8 @@ export async function setupAuth(app: Express) {
         // Use endSessionUrl if available, otherwise redirect to home
         let logoutUrl = redirectUri;
         try {
-          if ((config as any).endSessionEndpoint) {
-            logoutUrl = `${(config as any).endSessionEndpoint}?client_id=${process.env.REPL_ID}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&state=force_logout_${Date.now()}`;
+          if (config.endSessionEndpoint) {
+            logoutUrl = `${config.endSessionEndpoint}?client_id=${process.env.REPL_ID}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&state=force_logout_${Date.now()}`;
           }
         } catch (error) {
           console.log('Could not build end session URL, using simple redirect');
@@ -355,56 +317,12 @@ export async function setupAuth(app: Express) {
       });
     });
   });
-
-
-
-  // Add endpoint to get current user (handles test users)
-  app.get("/api/auth/user", async (req, res) => {
-    try {
-      // Check for test user session first
-      if (process.env.NODE_ENV === 'development' && req.session && (req.session as any).testUserId) {
-        const testUser = await storage.getUserByEmail('billing@thopters.com');
-        if (testUser && testUser.id === (req.session as any).testUserId) {
-          return res.json({
-            id: testUser.id,
-            email: testUser.email,
-            firstName: testUser.firstName,
-            lastName: testUser.lastName,
-            profileImageUrl: testUser.profileImageUrl,
-            isTestUser: true
-          });
-        }
-      }
-
-      // Handle regular authenticated users
-      if (req.isAuthenticated() && req.user) {
-        const user = req.user as any;
-        return res.json({
-          id: user.claims?.sub || user.id,
-          email: user.claims?.email,
-          firstName: user.claims?.first_name,
-          lastName: user.claims?.last_name,
-          profileImageUrl: user.claims?.profile_image_url,
-          isTestUser: false
-        });
-      }
-
-      res.status(401).json({ message: "Unauthorized" });
-    } catch (error) {
-      console.error("Error getting user:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-
 }
-
-
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user?.expires_at) {
+  if (!req.isAuthenticated() || !user.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -417,13 +335,6 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   if (!refreshToken) {
     res.status(401).json({ message: "Unauthorized" });
     return;
-  }
-
-  // Handle mock refresh tokens (for test users)
-  if (refreshToken.startsWith('mock_refresh_token_')) {
-    // For test users, just extend the expiration
-    user.expires_at = Math.floor(Date.now() / 1000) + (24 * 60 * 60);
-    return next();
   }
 
   try {

@@ -36,7 +36,6 @@ import HowItWorks from "@/pages/how-it-works";
 import TestAIFeatures from "@/pages/test-ai-features";
 import PaymentDemo from "@/pages/payment-demo";
 import PaymentSettings from "@/pages/payment-settings";
-
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 

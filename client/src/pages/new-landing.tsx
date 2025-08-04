@@ -7,12 +7,9 @@ import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/language-selector";
 import { NewsSection } from "@/components/news-section";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 
 export default function NewLanding() {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const handleLogin = async () => {
@@ -28,8 +25,6 @@ export default function NewLanding() {
       window.location.href = "/api/login";
     }
   };
-
-
 
   return (
     <div className="min-h-screen bg-white">
@@ -166,8 +161,6 @@ export default function NewLanding() {
                 </Button>
               </Link>
             </div>
-
-
           </div>
         </div>
       </section>
