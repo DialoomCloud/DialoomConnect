@@ -128,15 +128,18 @@ export function setupAuthRoutes(app: Express) {
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const user = req.user;
-      const dbUser = await storage.getUser(user.id);
+      // Use the database ID, not the Supabase ID
+      const dbUser = await storage.getUser(req.userId || user.dbId);
       
       res.json({
-        id: user.id,
+        id: dbUser?.id || user.id,  // Return the database ID
         email: user.email,
         firstName: dbUser?.firstName || '',
         lastName: dbUser?.lastName || '',
         profileImageUrl: dbUser?.profileImageUrl || '',
-        isAdmin: isAdmin(req)
+        isAdmin: isAdmin(req),
+        isHost: dbUser?.isHost || false,
+        role: dbUser?.role || 'guest'
       });
     } catch (error) {
       console.error("Error fetching user:", error);
