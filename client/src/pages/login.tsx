@@ -9,8 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { FcGoogle } from 'react-icons/fc';
-import { FaApple } from 'react-icons/fa';
-import { SiMicrosoft } from 'react-icons/si';
+import { FaApple, FaMicrosoft } from 'react-icons/fa';
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
@@ -173,7 +172,7 @@ export default function LoginPage() {
               onClick={() => handleOAuthSignIn('azure')}
               disabled={isLoading}
             >
-              <SiMicrosoft className="mr-2 h-5 w-5" />
+              <FaMicrosoft className="mr-2 h-5 w-5" />
               Continuar con Microsoft
             </Button>
           </div>
