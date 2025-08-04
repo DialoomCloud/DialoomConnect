@@ -766,7 +766,11 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       <div key={index} className="flex items-center gap-3 p-2 border rounded">
                         <IconComponent className="h-4 w-4" />
                         <span className="font-medium">{platform?.name}</span>
-                        <span className="text-muted-foreground">@{profile.username}</span>
+                        <span className="text-muted-foreground">
+                          {profile.username.startsWith("http")
+                            ? profile.username
+                            : `@${profile.username}`}
+                        </span>
                         <Button
                           size="sm"
                           variant="ghost"
