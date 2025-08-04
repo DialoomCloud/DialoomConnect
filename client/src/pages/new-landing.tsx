@@ -18,11 +18,11 @@ export default function NewLanding() {
       await fetch('/api/clear-session');
       // Small delay to ensure session is cleared
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 100);
     } catch (error) {
       console.log('Session clear failed, proceeding with login:', error);
-      window.location.href = "/api/login";
+      window.location.href = "/login";
     }
   };
 

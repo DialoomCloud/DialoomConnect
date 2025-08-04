@@ -8,7 +8,7 @@ export default function Landing() {
   const { logoUrl } = useThemeConfig();
   
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/login";
   };
 
   const features = [

@@ -10,7 +10,7 @@ export default function Experts() {
   const { t, i18n } = useTranslation();
   
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/login";
   };
 
   const currentLang = i18n.language || 'es';

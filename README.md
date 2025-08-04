@@ -349,7 +349,7 @@ Add new languages by creating translation files in `/client/src/i18n/locales/`
 
 ### Authentication Endpoints
 - `GET /api/auth/user` - Get current user
-- `GET /api/login` - Initiate login flow
+- `GET /login` - Login page (Supabase Auth)
 - `GET /api/logout` - Logout user
 
 ### User Management

@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { FcGoogle } from 'react-icons/fc';
+import { FaApple } from 'react-icons/fa';
+import { SiMicrosoft } from 'react-icons/si';
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
@@ -109,6 +112,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleOAuthSignIn = async (provider: 'google' | 'apple' | 'azure') => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
       <Card className="w-full max-w-md">
@@ -124,6 +144,48 @@ export default function LoginPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
+          <div className="space-y-2 mb-6">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center justify-center"
+              onClick={() => handleOAuthSignIn('google')}
+              disabled={isLoading}
+            >
+              <FcGoogle className="mr-2 h-5 w-5" />
+              Continuar con Google
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center justify-center"
+              onClick={() => handleOAuthSignIn('apple')}
+              disabled={isLoading}
+            >
+              <FaApple className="mr-2 h-5 w-5" />
+              Continuar con Apple
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center justify-center"
+              onClick={() => handleOAuthSignIn('azure')}
+              disabled={isLoading}
+            >
+              <SiMicrosoft className="mr-2 h-5 w-5" />
+              Continuar con Microsoft
+            </Button>
+          </div>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">o</span>
+            </div>
+          </div>
 
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
