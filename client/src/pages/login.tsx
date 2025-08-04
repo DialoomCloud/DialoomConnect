@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { FcGoogle } from 'react-icons/fc';
-import { FaApple, FaMicrosoft } from 'react-icons/fa';
-import { SiMicrosoft } from 'react-icons/si';
+import { FaLinkedin } from 'react-icons/fa';
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
@@ -27,6 +26,39 @@ export default function LoginPage() {
   const [signUpPassword, setSignUpPassword] = useState('');
   const [signUpFirstName, setSignUpFirstName] = useState('');
   const [signUpLastName, setSignUpLastName] = useState('');
+
+  // Check for OAuth callback on component mount
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      try {
+        // Check if we have a session after OAuth redirect
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('OAuth error:', error);
+          setError('Error al iniciar sesión con OAuth');
+          return;
+        }
+        
+        if (session) {
+          // Session exists, OAuth was successful
+          toast({
+            title: "¡Bienvenido!",
+            description: "Has iniciado sesión correctamente",
+          });
+          
+          // Wait a moment for the auth state to propagate
+          setTimeout(() => {
+            navigate('/home');
+          }, 100);
+        }
+      } catch (err) {
+        console.error('OAuth callback error:', err);
+      }
+    };
+
+    handleOAuthCallback();
+  }, [navigate, toast]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +126,7 @@ export default function LoginPage() {
       });
 
       // Switch to sign in tab
-      const signInTab = document.querySelector('[data-state="inactive"][value="signin"]');
+      const signInTab = document.querySelector('[data-state="inactive"][value="signin"]') as HTMLElement;
       if (signInTab) signInTab.click();
 
       // Pre-fill sign in email
@@ -112,20 +144,20 @@ export default function LoginPage() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'apple' | 'azure') => {
+  const handleOAuthSignIn = async (provider: 'google' | 'linkedin_oidc') => {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          // After OAuth login, return to the authenticated home page
-          redirectTo: `${window.location.origin}/home`,
+          // After OAuth login, Supabase will redirect back to the login page
+          // The useEffect will handle the session and redirect to /home
+          redirectTo: `${window.location.origin}/login`,
         },
       });
       if (error) throw error;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -161,21 +193,11 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               className="w-full flex items-center justify-center"
-              onClick={() => handleOAuthSignIn('apple')}
+              onClick={() => handleOAuthSignIn('linkedin_oidc')}
               disabled={isLoading}
             >
-              <FaApple className="mr-2 h-5 w-5" />
-              Continuar con Apple
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full flex items-center justify-center"
-              onClick={() => handleOAuthSignIn('azure')}
-              disabled={isLoading}
-            >
-              <FaMicrosoft className="mr-2 h-5 w-5" />
-              Continuar con Microsoft
+              <FaLinkedin className="mr-2 h-5 w-5 text-[#0077B5]" />
+              Continuar con LinkedIn
             </Button>
           </div>
 
