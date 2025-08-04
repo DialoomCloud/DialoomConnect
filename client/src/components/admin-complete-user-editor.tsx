@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -64,8 +64,12 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
       return response.json();
     },
     enabled: open && !!userId,
-    onSuccess: (data) => {
-      const user = data.user || {};
+  });
+
+  // Effect to update form data when user profile data is loaded
+  useEffect(() => {
+    if (userProfile) {
+      const user = userProfile.user || {};
       setFormData({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
@@ -85,17 +89,17 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         isVerified: user.isVerified || false,
         primaryLanguageId: user.primaryLanguageId,
         categoryId: user.categoryId,
-        skillIds: data.skills?.map((s: any) => s.skillId) || [],
-        languageIds: data.languages?.map((l: any) => l.languageId) || [],
-        categoryIds: data.categories?.map((c: any) => c.categoryId) || [],
+        skillIds: userProfile.skills?.map((s: any) => s.skillId) || [],
+        languageIds: userProfile.languages?.map((l: any) => l.languageId) || [],
+        categoryIds: userProfile.categories?.map((c: any) => c.categoryId) || [],
         socialProfiles:
-          data.socialProfiles?.map((sp: any) => ({
+          userProfile.socialProfiles?.map((sp: any) => ({
             platformId: sp.platformId,
             username: sp.username,
           })) || [],
       });
-    },
-  });
+    }
+  }, [userProfile]);
 
   // Fetch reference data
   const { data: allSkills = [] } = useQuery<any[]>({
