@@ -1583,15 +1583,31 @@ export class DatabaseStorage implements IStorage {
 
   // User profile operations (for admin complete editing)
   async updateUserProfile(userId: string, profileData: any): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({ 
-        ...profileData,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, userId))
-      .returning();
-    return user;
+    console.log(`[updateUserProfile] Updating user ${userId} with data:`, profileData);
+    
+    try {
+      const [user] = await db
+        .update(users)
+        .set({ 
+          ...profileData,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId))
+        .returning();
+        
+      console.log(`[updateUserProfile] Successfully updated user ${userId}, result:`, {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        title: user.title,
+        description: user.description
+      });
+      
+      return user;
+    } catch (error) {
+      console.error(`[updateUserProfile] Error updating user ${userId}:`, error);
+      throw error;
+    }
   }
 
   async updateUserSkills(userId: string, skillIds: number[]): Promise<void> {
