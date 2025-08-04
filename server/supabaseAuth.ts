@@ -38,14 +38,19 @@ export const isAuthenticated: RequestHandler = async (req: any, res: Response, n
     // Upsert user data to ensure it's in our database
     const [firstName, ...lastNameParts] = (user.user_metadata?.full_name || '').split(' ');
     const lastName = lastNameParts.join(' ');
-    
-    await storage.upsertUser({
-      id: user.id,
-      email: user.email!,
-      firstName: firstName || user.user_metadata?.firstName || '',
-      lastName: lastName || user.user_metadata?.lastName || '',
-      profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || '',
-    });
+
+    try {
+      await storage.upsertUser({
+        id: user.id,
+        email: user.email!,
+        firstName: firstName || user.user_metadata?.firstName || '',
+        lastName: lastName || user.user_metadata?.lastName || '',
+        profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || '',
+      });
+    } catch (err) {
+      console.error("Failed to update user:", err);
+      return res.status(500).json({ message: "Failed to update user information" });
+    }
 
     // Attach user to request
     req.user = user;
