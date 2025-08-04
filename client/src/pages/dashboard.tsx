@@ -376,7 +376,7 @@ export default function Dashboard() {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">{t('dashboard.accessRestricted')}</h2>
           <p className="text-gray-600 mb-6">{t('dashboard.mustLogin')}</p>
-          <Button onClick={() => window.location.href = '/api/login'}>
+          <Button onClick={() => window.location.href = '/login'}>
             {t('auth.login')}
           </Button>
         </div>

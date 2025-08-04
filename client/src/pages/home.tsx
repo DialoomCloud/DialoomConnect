@@ -67,7 +67,7 @@ export default function Home() {
       variant: "destructive",
     });
     setTimeout(() => {
-      window.location.href = "/api/login";
+      window.location.href = "/login";
     }, 500);
   }
 
@@ -109,8 +109,8 @@ export default function Home() {
                 {t('home.joinDescription', 'Conecta con expertos o comparte tu conocimiento a través de videollamadas profesionales')}
               </p>
               <div className="space-x-4">
-                <Button 
-                  onClick={() => window.location.href = "/api/login"}
+                <Button
+                  onClick={() => window.location.href = "/login"}
                   className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] px-8 py-3"
                 >
                   {t('nav.login', 'Iniciar Sesión')}

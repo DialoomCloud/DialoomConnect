@@ -165,7 +165,7 @@ export default function HowItWorks() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg"
-                onClick={() => window.location.href = "/api/login"}
+                onClick={() => window.location.href = "/login"}
                 className="bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
               >
                 <CheckCircle className="mr-2 h-5 w-5" />

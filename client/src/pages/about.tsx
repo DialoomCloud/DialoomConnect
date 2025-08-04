@@ -9,7 +9,7 @@ export default function About() {
   const { t, i18n } = useTranslation();
   
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/login";
   };
 
   const currentLang = i18n.language || 'es';
