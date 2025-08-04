@@ -49,7 +49,8 @@ import {
   Facebook,
   Github,
   Youtube,
-  ExternalLink
+  ExternalLink,
+  Camera
 } from "lucide-react";
 
 // Schema for form validation
@@ -61,7 +62,7 @@ const profileSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   city: z.string().optional(),
-  countryCode: z.string().optional(),
+  countryCode: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
 });
 
 const socialProfileSchema = z.object({
@@ -127,6 +128,8 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     platformId: 1, // Default to LinkedIn (assuming ID 1)
     username: ""
   });
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
 
   // Form setup
   const form = useForm<ProfileFormData>({
@@ -244,11 +247,43 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     },
     onError: (error) => {
       toast({
-        title: "Error", 
+        title: "Error",
         description: "No se pudieron generar sugerencias",
         variant: "destructive",
       });
     },
+  });
+
+  const updateProfileImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/upload/profile-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${await response.text()}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Imagen actualizada",
+        description: "Tu imagen de perfil ha sido actualizada exitosamente.",
+      });
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la imagen de perfil. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
   });
 
   // Profile update mutation
@@ -359,6 +394,38 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     setSocialProfiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Por favor selecciona un archivo de imagen válido.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "La imagen debe ser menor a 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setProfileImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setProfileImagePreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageSubmit = () => {
+    if (profileImageFile) {
+      updateProfileImageMutation.mutate(profileImageFile);
+    }
+  };
+
   const onSubmit = async (data: ProfileFormData) => {
     try {
       console.log('Submitting profile data:', data);
@@ -414,6 +481,32 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="text-center">
+                    <div className="relative inline-block">
+                      <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)] mx-auto">
+                        {profileImagePreview ? (
+                          <img src={profileImagePreview} alt="Preview" className="w-full h-full rounded-full object-cover" />
+                        ) : typedUser?.profileImageUrl ? (
+                          <img src={typedUser.profileImageUrl.startsWith('http') ? typedUser.profileImageUrl : `/storage/${typedUser.profileImageUrl}`} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                          <User className="w-12 h-12 text-gray-400" />
+                        )}
+                      </div>
+                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="profile-image-input" />
+                      <label htmlFor="profile-image-input" className="absolute -bottom-2 -right-2 bg-[hsl(188,100%,38%)] text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-[hsl(188,100%,32%)] transition-colors cursor-pointer">
+                        <Camera className="w-4 h-4" />
+                      </label>
+                    </div>
+                    {profileImageFile ? (
+                      <div className="mt-3">
+                        <Button type="button" onClick={handleImageSubmit} disabled={updateProfileImageMutation.isPending} className="bg-[hsl(242,54%,64%)] hover:bg-[hsl(242,54%,54%)] text-white text-sm">
+                          {updateProfileImageMutation.isPending ? "Subiendo..." : "Subir Nueva Imagen"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-600 mt-2">Haz clic en la cámara para cambiar tu foto</p>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}

@@ -164,6 +164,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/auth/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const { role } = req.body;
+      if (!['guest', 'host', 'admin'].includes(role)) {
+        return res.status(400).json({ message: 'Rol no válido' });
+      }
+      const user = await storage.getUser(userId);
+      if (role === 'admin' && !user?.isAdmin) {
+        return res.status(403).json({ message: 'No autorizado' });
+      }
+      if (role === 'host' && !user?.isHost) {
+        return res.status(403).json({ message: 'No autorizado' });
+      }
+      const updated = await storage.updateUserRole(userId, role);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      res.status(500).json({ message: 'Failed to update role' });
+    }
+  });
+
   // Public route to get all hosts
   app.get('/api/hosts', async (req, res) => {
     try {

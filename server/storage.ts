@@ -111,19 +111,20 @@ export interface IStorage {
   // Additional user operations
   getAllUsers(): Promise<User[]>;
   getAllUsersForAdmin(): Promise<User[]>;
-  updateUserStatus(userId: string, updates: { 
-    firstName?: string, 
-    lastName?: string, 
-    email?: string, 
-    username?: string, 
-    role?: string, 
-    isHost?: boolean, 
-    isAdmin?: boolean, 
-    isActive?: boolean, 
-    isVerified?: boolean 
+  updateUserStatus(userId: string, updates: {
+    firstName?: string,
+    lastName?: string,
+    email?: string,
+    username?: string,
+    role?: string,
+    isHost?: boolean,
+    isAdmin?: boolean,
+    isActive?: boolean,
+    isVerified?: boolean
   }): Promise<void>;
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
+  updateUserRole(userId: string, role: string): Promise<User>;
   updateUserStripeConnect(userId: string, accountId: string, onboardingCompleted: boolean): Promise<User>;
   updateUserStripeCustomerId(userId: string, customerId: string): Promise<User>;
   
@@ -331,10 +332,19 @@ export class DatabaseStorage implements IStorage {
   async updateProfileImage(userId: string, imageUrl: string): Promise<User> {
     const [user] = await db
       .update(users)
-      .set({ 
+      .set({
         profileImageUrl: imageUrl,
         updatedAt: new Date(),
       })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserRole(userId: string, role: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
     return user;

@@ -11,6 +11,8 @@ interface AuthUser {
   lastName?: string;
   profileImageUrl?: string;
   isAdmin?: boolean;
+  isHost?: boolean;
+  role?: string;
 }
 
 export function useAuth() {

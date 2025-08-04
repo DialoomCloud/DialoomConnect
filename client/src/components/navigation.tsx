@@ -8,8 +8,10 @@ import type { User } from "@shared/schema";
 import { useState } from "react";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
 import { signOut } from "@/lib/supabase";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function Navigation() {
   const { user } = useAuth() as { user: User | undefined };
@@ -18,6 +20,23 @@ export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { logoUrl } = useThemeConfig();
   const { toast } = useToast();
+
+  const switchRoleMutation = useMutation({
+    mutationFn: async (role: string) => {
+      const res = await apiRequest('/api/auth/role', { method: 'PUT', body: { role } });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo cambiar el rol',
+        variant: 'destructive'
+      });
+    }
+  });
 
   const handleLogout = async () => {
     try {
@@ -46,6 +65,11 @@ export function Navigation() {
   const isActive = (path: string) => location === path;
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  const roleOptions = [] as { value: string; label: string }[];
+  if (user?.isHost) roleOptions.push({ value: 'host', label: 'Host' });
+  if (user?.isAdmin) roleOptions.push({ value: 'admin', label: 'Admin' });
+  if (roleOptions.length === 0) roleOptions.push({ value: 'guest', label: 'Guest' });
 
   return (
     <nav className="bg-white shadow-sm border-b border-[hsl(220,13%,90%)] sticky top-0 z-50 animate-fade-in-up">
@@ -129,9 +153,21 @@ export function Navigation() {
           <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
-                <span className="text-sm text-gray-600 animate-float">
-                  {user.firstName || user.email}
-                </span>
+                <Select
+                  value={user.role || (user.isHost ? 'host' : user.isAdmin ? 'admin' : 'guest')}
+                  onValueChange={(value) => switchRoleMutation.mutate(value)}
+                >
+                  <SelectTrigger className="w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roleOptions.map((r) => (
+                      <SelectItem key={r.value} value={r.value}>
+                        {r.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -282,8 +318,22 @@ export function Navigation() {
                   )}
 
                   <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
-                    <div className="text-sm text-gray-600 mb-3 px-3">
-                      {user.firstName || user.email}
+                    <div className="mb-3 px-3">
+                      <Select
+                        value={user.role || (user.isHost ? 'host' : user.isAdmin ? 'admin' : 'guest')}
+                        onValueChange={(value) => switchRoleMutation.mutate(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roleOptions.map((r) => (
+                            <SelectItem key={r.value} value={r.value}>
+                              {r.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button
                       variant="ghost"
