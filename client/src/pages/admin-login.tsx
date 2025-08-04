@@ -129,7 +129,7 @@ export default function AdminLogin() {
               </Button>
 
               <div className="text-center mt-4">
-                <Link href="/home" className="text-sm text-gray-600 hover:text-gray-900">
+                <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
                   Volver al inicio
                 </Link>
               </div>

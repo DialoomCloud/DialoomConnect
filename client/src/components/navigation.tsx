@@ -34,10 +34,10 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href={user ? "/home" : "/"} className="flex items-center">
-              <img 
+            <Link href="/" className="flex items-center">
+              <img
                 src={logoUrl}
-                alt="Dialoom" 
+                alt="Dialoom"
                 className="h-12 w-auto object-contain"
                 style={{ maxWidth: '200px' }}
               />
@@ -46,7 +46,7 @@ export function Navigation() {
             
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
-            <Link href={user ? "/home" : "/"}>
+            <Link href="/">
               <Button
                 variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
                 size="sm"
@@ -56,7 +56,7 @@ export function Navigation() {
                 {t('navigation.home')}
               </Button>
             </Link>
-
+          
             <Link href="/hosts">
               <Button
                 variant={isActive("/hosts") ? "default" : "ghost"}
@@ -206,11 +206,11 @@ export function Navigation() {
               ) : (
                 // Menu for authenticated users
                 <>
-                  <Link href="/home" onClick={closeMobileMenu}>
+                  <Link href="/" onClick={closeMobileMenu}>
                     <Button
-                      variant={isActive("/home") ? "default" : "ghost"}
+                      variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
                       size="sm"
-                      className={`w-full justify-start ${isActive("/home") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                      className={`w-full justify-start ${(isActive("/") || isActive("/home")) ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Home className="w-4 h-4 mr-2" />
                       {t('navigation.home')}
