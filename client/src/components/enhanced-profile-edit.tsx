@@ -464,20 +464,29 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
+      console.log('Submitting form data:', data);
+      console.log('Selected languages:', selectedLanguages);
+      
       // Update profile
+      console.log('Updating profile with data:', { ...data, languageIds: selectedLanguages });
       await updateProfileMutation.mutateAsync({
         ...data,
         languageIds: selectedLanguages,
       });
+      console.log('Profile update completed successfully');
       
       // Update categories
       if (selectedCategories.length > 0) {
+        console.log('Updating categories:', selectedCategories);
         await updateCategoriesMutation.mutateAsync(selectedCategories);
+        console.log('Categories update completed successfully');
       }
       
       // Update social profiles
       if (socialProfiles.length > 0) {
+        console.log('Updating social profiles:', socialProfiles);
         await updateSocialProfilesMutation.mutateAsync(socialProfiles);
+        console.log('Social profiles update completed successfully');
       }
       
       // Close dialog after successful save
@@ -486,6 +495,14 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       }
     } catch (error) {
       console.error('Error during form submission:', error);
+      // Show error details
+      if (error instanceof Error) {
+        toast({
+          title: "Error al guardar",
+          description: error.message || "Ocurrió un error al guardar los cambios",
+          variant: "destructive",
+        });
+      }
     }
   };
 
