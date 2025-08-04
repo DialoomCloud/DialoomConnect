@@ -10,7 +10,7 @@ import { promises as fs } from "fs";
 import { insertMediaContentSchema, updateUserProfileSchema } from "@shared/schema";
 import { z } from "zod";
 import { storageBucket } from "./storage-bucket";
-import { replitStorage } from "./object-storage";
+import { replitStorage, ReplitObjectStorage } from "./object-storage";
 import Stripe from "stripe";
 import { generateAgoraToken } from "./agora-token";
 import { emailService } from "./email-service";

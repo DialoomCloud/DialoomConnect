@@ -370,5 +370,6 @@ export class ReplitObjectStorage {
   }
 }
 
-// Export singleton instance
+// Export both class and singleton instance
+export { ReplitObjectStorage };
 export const replitStorage = new ReplitObjectStorage();
