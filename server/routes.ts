@@ -2384,34 +2384,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { targetUserId } = req.params;
       const { skillIds, languageIds, categoryIds, socialProfiles, ...profileData } = req.body;
       
+      console.log('Admin update request for user:', targetUserId);
+      console.log('Received data:', {
+        profileData,
+        skillIds,
+        languageIds,
+        categoryIds,
+        socialProfiles
+      });
+      
       // Update basic profile data
       if (Object.keys(profileData).length > 0) {
-        await storage.updateUserProfile(targetUserId, profileData);
+        console.log('Updating basic profile data:', profileData);
+        const updatedUser = await storage.updateUserProfile(targetUserId, profileData);
+        console.log('Profile updated successfully:', updatedUser.id);
       }
       
       // Update skills if provided
       if (Array.isArray(skillIds)) {
+        console.log('Updating skills:', skillIds);
         await storage.updateUserSkills(targetUserId, skillIds);
+        console.log('Skills updated successfully');
       }
       
       // Update languages if provided
       if (Array.isArray(languageIds)) {
+        console.log('Updating languages:', languageIds);
         await storage.updateUserLanguages(targetUserId, languageIds);
+        console.log('Languages updated successfully');
       }
       
       // Update categories if provided
       if (Array.isArray(categoryIds)) {
+        console.log('Updating categories:', categoryIds);
         await storage.updateUserCategories(targetUserId, categoryIds);
+        console.log('Categories updated successfully');
       }
       
       // Update social profiles if provided
       if (Array.isArray(socialProfiles)) {
+        console.log('Updating social profiles:', socialProfiles);
         await storage.updateUserSocialProfiles(targetUserId, socialProfiles);
+        console.log('Social profiles updated successfully');
       }
       
+      console.log('All admin updates completed successfully for user:', targetUserId);
       res.json({ success: true });
     } catch (error) {
-      console.error('Error updating user profile:', error);
+      console.error('Error updating user profile via admin:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Datos de perfil inválidos", errors: error.errors });
       }
