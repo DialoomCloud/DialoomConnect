@@ -166,14 +166,22 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
       });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-      queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/complete-profile`] });
+    onSuccess: async () => {
+      // Invalidate queries first and wait for them to complete
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/complete-profile`] })
+      ]);
+      
       toast({
         title: "Perfil actualizado",
         description: "Todos los cambios se han guardado correctamente",
       });
-      onOpenChange(false);
+      
+      // Add a small delay before closing to ensure all operations complete
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 1000);
     },
     onError: (error: any) => {
       toast({
