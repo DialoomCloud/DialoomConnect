@@ -1,7 +1,7 @@
 import { Client } from '@replit/object-storage';
 import sharp from 'sharp';
 
-export class ReplitObjectStorage {
+class ReplitObjectStorage {
   public _client: Client;
 
   constructor() {

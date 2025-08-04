@@ -627,7 +627,7 @@ export const newsArticles = pgTable("news_articles", {
   tags: text("tags").array(), // Array of tag strings
   metaTitle: varchar("meta_title", { length: 255 }), // SEO
   metaDescription: text("meta_description"), // SEO
-  parentArticleId: varchar("parent_article_id").references(() => newsArticles.id), // Reference to original article for translations
+  parentArticleId: varchar("parent_article_id"), // Reference to original article for translations
   language: varchar("language", { length: 10 }), // Language code for translated articles (e.g., 'es', 'en', 'ca')
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

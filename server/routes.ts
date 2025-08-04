@@ -23,8 +23,11 @@ import {
   createUserMessageSchema,
   createNewsArticleSchema,
   updateNewsArticleSchema,
-  hostVerificationDocuments 
+  hostVerificationDocuments,
+  users
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -1308,12 +1311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Try Object Storage first
         try {
-          await objectStorage.uploadFile({
-            bucketName: 'replit-objstore-46fcbff3-adc5-49f0-bb85-39ea50a708d7',
-            objectName: uniqueFilename,
-            buffer,
-            mimeType: file.mimetype,
-          });
+          await replitStorage.uploadPublicFile(uniqueFilename, buffer);
           logoPath = `/storage/${uniqueFilename}`;
           console.log('Logo uploaded to Object Storage:', uniqueFilename);
         } catch (objError) {
@@ -1323,8 +1321,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const localPath = path.join('uploads', uniqueFilename);
           const fullPath = path.join(process.cwd(), localPath);
           
-          await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
-          await fs.promises.writeFile(fullPath, buffer);
+          await fs.mkdir(path.dirname(fullPath), { recursive: true });
+          await fs.writeFile(fullPath, buffer);
           
           logoPath = `/uploads/${uniqueFilename}`;
           console.log('Logo saved locally:', fullPath);
@@ -1842,29 +1840,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (host?.email && guest) {
         // Send booking confirmation emails
-        await emailService.sendBookingConfirmationEmail(
+        await emailService.sendBookingReceivedEmail(
           host.email,
           host.firstName || 'Host',
           guest.firstName || 'Usuario',
           guest.email || '',
           scheduledDate,
           startTime,
-          duration,
           parseFloat(price),
-          services || {},
-          booking.id
+          booking.hostId
         );
 
-        await emailService.sendBookingNotificationEmail(
+        await emailService.sendBookingCreatedEmail(
           guest.email || '',
-          guest.firstName || 'Usuario',
+          guest.firstName || 'Usuario',  
           host.firstName || 'Host',
           scheduledDate,
           startTime,
-          duration,
-          parseFloat(price),
-          services || {},
-          booking.id
+          undefined,
+          booking.guestId
         );
       }
 
@@ -1901,28 +1895,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (host?.email && guest?.email) {
         const cancelledBy = booking.hostId === userId ? 'host' : 'guest';
         
-        // Send cancellation notification to both parties
-        await emailService.sendBookingCancellationEmail(
-          host.email,
-          host.firstName || 'Host',
-          guest.firstName || 'Usuario',
-          booking.scheduledDate,
-          booking.startTime,
-          booking.duration,
-          cancelledBy,
-          bookingId
-        );
+        // Send cancellation notification to both parties using generic sendEmail method
+        await emailService.sendEmail({
+          recipientEmail: host.email,
+          templateType: 'booking_cancelled',
+          userId: booking.hostId,
+          variables: {
+            recipient_name: host.firstName || 'Host',
+            other_party_name: guest.firstName || 'Usuario',
+            booking_date: booking.scheduledDate,
+            booking_time: booking.startTime,
+            cancelled_by: cancelledBy,
+            booking_id: bookingId
+          }
+        });
         
-        await emailService.sendBookingCancellationEmail(
-          guest.email,
-          guest.firstName || 'Usuario',
-          host.firstName || 'Host',
-          booking.scheduledDate,
-          booking.startTime,
-          booking.duration,
-          cancelledBy,
-          bookingId
-        );
+        await emailService.sendEmail({
+          recipientEmail: guest.email,
+          templateType: 'booking_cancelled',
+          userId: booking.guestId,
+          variables: {
+            recipient_name: guest.firstName || 'Usuario',
+            other_party_name: host.firstName || 'Host',
+            booking_date: booking.scheduledDate,
+            booking_time: booking.startTime,
+            cancelled_by: cancelledBy,
+            booking_id: bookingId
+          }
+        });
       }
       
       res.json({ message: 'Reserva cancelada exitosamente' });
@@ -2094,29 +2094,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               if (host?.email && guest?.email) {
                 // Send payment confirmation to guest
-                await emailService.sendPaymentConfirmationEmail(
-                  guest.email,
-                  guest.firstName || 'Usuario',
-                  host.firstName || 'Host',
-                  booking.scheduledDate,
-                  booking.startTime,
-                  booking.duration,
-                  parseFloat(payment.amount),
-                  booking.id,
-                  invoiceNumber
-                );
+                await emailService.sendEmail({
+                  recipientEmail: guest.email,
+                  templateType: 'payment_confirmation',
+                  userId: booking.guestId,
+                  variables: {
+                    user_name: guest.firstName || 'Usuario',
+                    host_name: host.firstName || 'Host',
+                    booking_date: booking.scheduledDate,
+                    booking_time: booking.startTime,
+                    amount: parseFloat(payment.amount),
+                    booking_id: booking.id,
+                    invoice_number: invoiceNumber
+                  }
+                });
 
                 // Send booking confirmed notification to host
-                await emailService.sendBookingConfirmedEmail(
-                  host.email,
-                  host.firstName || 'Host',
-                  guest.firstName || 'Usuario',
-                  booking.scheduledDate,
-                  booking.startTime,
-                  booking.duration,
-                  parseFloat(payment.amount),
-                  booking.id
-                );
+                await emailService.sendEmail({
+                  recipientEmail: host.email,
+                  templateType: 'booking_confirmed',
+                  userId: booking.hostId,
+                  variables: {
+                    host_name: host.firstName || 'Host',
+                    client_name: guest.firstName || 'Usuario',
+                    booking_date: booking.scheduledDate,
+                    booking_time: booking.startTime,
+                    amount: parseFloat(payment.amount),
+                    booking_id: booking.id
+                  }
+                });
               }
             }
           }
@@ -2490,17 +2496,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId;
       
       // Get user's current privacy preferences
-      const user = await db.select({
-        marketingEmails: users.marketingEmails,
-        profileVisibility: users.profileVisibility,
-        dataProcessingConsent: users.dataProcessingConsent
-      }).from(users).where(eq(users.id, userId));
+      const user = await storage.getUser(userId);
       
-      if (user.length === 0) {
+      if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
       
-      res.json(user[0]);
+      res.json({
+        marketingEmails: user.marketingEmails,
+        profileVisibility: user.profileVisibility,
+        dataProcessingConsent: user.dataProcessingConsent
+      });
     } catch (error) {
       console.error('Error fetching privacy preferences:', error);
       res.status(500).json({ error: 'Failed to fetch privacy preferences' });
@@ -2513,14 +2519,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId;
       const { marketingEmails, profileVisibility, dataProcessingConsent } = req.body;
       
-      await db.update(users)
-        .set({
-          marketingEmails: marketingEmails,
-          profileVisibility: profileVisibility,
-          dataProcessingConsent: dataProcessingConsent,
-          updatedAt: new Date()
-        })
-        .where(eq(users.id, userId));
+      await storage.updateUserProfile(userId, {
+        marketingEmails: marketingEmails,
+        profileVisibility: profileVisibility,
+        dataProcessingConsent: dataProcessingConsent
+      });
       
       res.json({ success: true, message: 'Privacy preferences updated' });
     } catch (error) {
@@ -2547,7 +2550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedAt: new Date()
       };
       
-      await db.insert(userMessages).values(messageData);
+      await storage.createUserMessage(messageData);
       
       res.json({ 
         success: true, 

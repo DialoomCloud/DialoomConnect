@@ -65,7 +65,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, asc, sql, gte, lte, or } from "drizzle-orm";
-import { ReplitObjectStorage } from "./object-storage";
+import { replitStorage } from "./object-storage";
 
 // Interface for storage operations
 export interface IStorage {
