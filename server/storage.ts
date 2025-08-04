@@ -63,7 +63,7 @@ import {
   type InsertUserSocialProfile,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, asc, sql, gte, lte } from "drizzle-orm";
+import { eq, desc, and, asc, sql, gte, lte, or } from "drizzle-orm";
 import { ReplitObjectStorage } from "./object-storage";
 
 // Interface for storage operations
@@ -72,6 +72,7 @@ export interface IStorage {
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, profile: UpdateUserProfile): Promise<User>;
   deleteUser(id: string): Promise<boolean>;
@@ -395,6 +396,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
   async getAllUsersForAdmin(): Promise<User[]> {
     const allUsers = await db.select().from(users);
     // Return all user data for admin
@@ -428,39 +434,62 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    // First try to find an existing user by email
-    const [existingUser] = await db
+    // First check if user exists by email
+    const [existingUserByEmail] = await db
       .select()
       .from(users)
       .where(eq(users.email, userData.email))
       .limit(1);
 
-    if (existingUser && existingUser.id !== userData.id) {
-      // Update the existing record to use the new id and metadata
+    if (existingUserByEmail) {
+      // User exists, update their information
       const [updated] = await db
         .update(users)
         .set({
-          ...userData,
+          firstName: userData.firstName || existingUserByEmail.firstName,
+          lastName: userData.lastName || existingUserByEmail.lastName,
+          profileImageUrl: userData.profileImageUrl || existingUserByEmail.profileImageUrl,
           updatedAt: new Date(),
+          // Note: we keep the existing user's ID and don't change it
         })
-        .where(eq(users.id, existingUser.id))
+        .where(eq(users.id, existingUserByEmail.id))
         .returning();
       return updated;
     }
 
-    // If no user was found by email, perform the usual upsert by id
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
+    // Check if user exists by ID (shouldn't happen with email check above, but just in case)
+    const [existingUserById] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userData.id))
+      .limit(1);
+
+    if (existingUserById) {
+      // Update existing user
+      const [updated] = await db
+        .update(users)
+        .set({
+          firstName: userData.firstName || existingUserById.firstName,
+          lastName: userData.lastName || existingUserById.lastName,
+          profileImageUrl: userData.profileImageUrl || existingUserById.profileImageUrl,
+          email: userData.email,
           updatedAt: new Date(),
-        },
+        })
+        .where(eq(users.id, existingUserById.id))
+        .returning();
+      return updated;
+    }
+
+    // No existing user found, create new one
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        ...userData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
       .returning();
-    return user;
+    return newUser;
   }
 
   async updateUserProfile(id: string, profile: UpdateUserProfile): Promise<User> {

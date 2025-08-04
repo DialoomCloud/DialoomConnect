@@ -9,7 +9,7 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
-- **Major Authentication Migration** (January 3, 2025): Migrated from Replit Auth to Supabase Authentication
+- **Major Authentication Migration** (January 3-4, 2025): Migrated from Replit Auth to Supabase Authentication
   - Created new authentication infrastructure: `server/supabaseAuth.ts`, `client/src/lib/supabase.ts`
   - Updated authentication hooks: `client/src/hooks/useAuth.ts` now uses Supabase with proper session management
   - Created new login page: `client/src/pages/login.tsx` with sign in/sign up functionality
@@ -17,6 +17,10 @@
   - Updated queryClient to include Supabase JWT tokens in API requests
   - Removed old Replit Auth dependency: deleted `server/replitAuth.ts`
   - All authentication now flows through Supabase while maintaining existing user data structure
+  - **Google OAuth Fix** (January 4, 2025): Fixed authentication issue where existing users couldn't log in with Google OAuth
+    - Modified `upsertUser` to properly handle existing users by email lookup
+    - Updated authentication middleware to support migration from old user IDs to Supabase IDs
+    - Added `getUserByEmail` method to storage layer for proper user lookup during OAuth flow
 - **Documentation Update**: Created comprehensive README.md with extensive project documentation
 - **Translation Implementation**: Updated dashboard.tsx to use proper i18n keys instead of hardcoded Spanish text
 - **Live Session System**: Complete video call flow with pre-call lobby and post-session ratings

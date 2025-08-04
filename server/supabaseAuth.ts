@@ -35,26 +35,50 @@ export const isAuthenticated: RequestHandler = async (req: any, res: Response, n
       return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    // Upsert user data to ensure it's in our database
+    // Get user data from our database, handling migration from old IDs
     const [firstName, ...lastNameParts] = (user.user_metadata?.full_name || '').split(' ');
     const lastName = lastNameParts.join(' ');
 
+    let dbUser;
     try {
-      await storage.upsertUser({
-        id: user.id,
-        email: user.email!,
-        firstName: firstName || user.user_metadata?.firstName || '',
-        lastName: lastName || user.user_metadata?.lastName || '',
-        profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || '',
-      });
+      // First try to get user by Supabase ID
+      dbUser = await storage.getUser(user.id);
+      
+      if (!dbUser && user.email) {
+        // If not found by ID, try to find by email (migration case)
+        dbUser = await storage.getUserByEmail(user.email);
+        
+        if (dbUser) {
+          // User exists with old ID, use their existing ID
+          console.log(`Migration: User ${user.email} found with existing ID ${dbUser.id}, Supabase ID ${user.id}`);
+        }
+      }
+      
+      if (!dbUser) {
+        // Create new user if not found
+        dbUser = await storage.upsertUser({
+          id: user.id,
+          email: user.email!,
+          firstName: firstName || user.user_metadata?.firstName || '',
+          lastName: lastName || user.user_metadata?.lastName || '',
+          profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || '',
+        });
+      } else {
+        // Update existing user's information (but keep their ID)
+        await storage.updateUserProfile(dbUser.id, {
+          firstName: firstName || user.user_metadata?.firstName || dbUser.firstName || '',
+          lastName: lastName || user.user_metadata?.lastName || dbUser.lastName || '',
+          profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || dbUser.profileImageUrl || '',
+        });
+      }
     } catch (err) {
-      console.error("Failed to update user:", err);
-      return res.status(500).json({ message: "Failed to update user information" });
+      console.error("Failed to handle user:", err);
+      return res.status(500).json({ message: "Failed to handle user information" });
     }
 
-    // Attach user to request
-    req.user = user;
-    req.userId = user.id;
+    // Attach user to request with the database user ID (not Supabase ID)
+    req.user = { ...user, dbId: dbUser.id };
+    req.userId = dbUser.id;
     
     next();
   } catch (error) {

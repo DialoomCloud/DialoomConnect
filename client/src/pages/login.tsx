@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { FcGoogle } from 'react-icons/fc';
 import { FaApple, FaMicrosoft } from 'react-icons/fa';
+import { SiMicrosoft } from 'react-icons/si';
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
