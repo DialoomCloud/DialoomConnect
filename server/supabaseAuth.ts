@@ -167,6 +167,22 @@ export function setupAuthRoutes(app: Express) {
         return res.status(400).json({ message: error.message });
       }
 
+      // Create user in our database as well
+      try {
+        await storage.upsertUser({
+          id: data.user.id,
+          email: data.user.email!,
+          firstName: firstName || '',
+          lastName: lastName || '',
+          profileImageUrl: '',
+          provider: 'email',
+          providerUserId: data.user.id,
+        });
+      } catch (dbError) {
+        console.error("Failed to create user in database:", dbError);
+        // Continue anyway, user will be created on first authentication
+      }
+
       res.json({ success: true, user: data.user });
     } catch (error) {
       console.error("Signup error:", error);

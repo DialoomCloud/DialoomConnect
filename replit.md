@@ -42,6 +42,10 @@
 - **Authentication Fix** (January 3, 2025): Fixed localhost authentication strategy mapping for development environment (127.0.0.1 -> localhost)
 - **Profile Edit Modal Auto-Close** (January 3, 2025): Added automatic dialog closure 1 second after successful profile save to improve UX - user sees success message before modal closes
 - **AI Enhancement Tone Update** (January 3, 2025): Modified AI prompt to generate more humble and professional descriptions, avoiding superlatives and grandiose claims in favor of modest, client-focused language
+- **User Sync Fix Between Supabase and NEON** (January 4, 2025): Fixed critical issue where users created in Supabase weren't being created in NEON database
+  - Updated signup endpoint to create users in NEON immediately after Supabase creation
+  - OAuth users (Google, LinkedIn) are now properly created in NEON during first authentication
+  - Ensured all authentication flows maintain proper user data synchronization between Supabase and NEON
 
 ## Critical Architecture Notes
 - **Authentication**: Always use Supabase Auth for user authentication
