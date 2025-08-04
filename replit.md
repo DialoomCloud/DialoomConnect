@@ -21,6 +21,12 @@
     - Modified `upsertUser` to properly handle existing users by email lookup
     - Updated authentication middleware to support migration from old user IDs to Supabase IDs
     - Added `getUserByEmail` method to storage layer for proper user lookup during OAuth flow
+  - **OAuth Account Linking** (January 4, 2025): Implemented comprehensive OAuth account linking to prevent duplicate users
+    - Created `userAuthProviders` table to track multiple OAuth providers per user
+    - Updated `upsertUser` to automatically link new OAuth providers to existing accounts with same email
+    - Added storage methods: `linkAuthProvider`, `unlinkAuthProvider`, `getUserAuthProviders`, `getUserByProviderInfo`, `updateAuthProviderLastUsed`
+    - Users can now sign in with Google and LinkedIn (same email) and have both providers linked to single account
+    - Migration script successfully merged existing duplicate accounts
 - **Documentation Update**: Created comprehensive README.md with extensive project documentation
 - **Translation Implementation**: Updated dashboard.tsx to use proper i18n keys instead of hardcoded Spanish text
 - **Live Session System**: Complete video call flow with pre-call lobby and post-session ratings

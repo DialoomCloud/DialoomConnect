@@ -56,19 +56,28 @@ export const isAuthenticated: RequestHandler = async (req: any, res: Response, n
       
       if (!dbUser) {
         // Create new user if not found
+        const provider = user.app_metadata?.provider || 'email';
         dbUser = await storage.upsertUser({
           id: user.id,
           email: user.email!,
           firstName: firstName || user.user_metadata?.firstName || '',
           lastName: lastName || user.user_metadata?.lastName || '',
           profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || '',
+          provider: provider,
+          providerUserId: user.id,
         });
       } else {
         // Update existing user's information (but keep their ID)
-        await storage.updateUserProfile(dbUser.id, {
+        // Also link OAuth provider if not already linked
+        const provider = user.app_metadata?.provider || 'email';
+        await storage.upsertUser({
+          id: dbUser.id,
+          email: user.email!,
           firstName: firstName || user.user_metadata?.firstName || dbUser.firstName || '',
           lastName: lastName || user.user_metadata?.lastName || dbUser.lastName || '',
           profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || dbUser.profileImageUrl || '',
+          provider: provider,
+          providerUserId: user.id,
         });
       }
     } catch (err) {

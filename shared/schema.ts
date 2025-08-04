@@ -69,6 +69,9 @@ export const categories = pgTable("categories", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// OAuth provider enum
+export const oauthProviderEnum = pgEnum('oauth_provider', ['google', 'linkedin_oidc', 'apple', 'email']);
+
 // User storage table.
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
@@ -121,6 +124,17 @@ export const users = pgTable("users", {
   hostRejectionReason: text("host_rejection_reason"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User OAuth providers table - tracks which OAuth providers are linked to each user
+export const userAuthProviders = pgTable("user_auth_providers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  provider: oauthProviderEnum("provider").notNull(),
+  providerUserId: varchar("provider_user_id").notNull(), // The user ID from the OAuth provider
+  email: varchar("email").notNull(),
+  linkedAt: timestamp("linked_at").defaultNow(),
+  lastUsedAt: timestamp("last_used_at").defaultNow(),
 });
 
 // User secondary languages junction table

@@ -1,5 +1,6 @@
 import {
   users,
+  userAuthProviders,
   mediaContent,
   countries,
   languages,
@@ -133,6 +134,12 @@ export interface IStorage {
   // GDPR compliance operations
   exportUserData(userId: string): Promise<any>;
   requestDataDeletion(userId: string, deletionDate: Date): Promise<void>;
+  
+  // OAuth provider operations
+  getUserAuthProviders(userId: string): Promise<any[]>;
+  linkAuthProvider(userId: string, provider: string, providerUserId: string, email: string): Promise<any>;
+  unlinkAuthProvider(userId: string, provider: string): Promise<boolean>;
+  getUserByProviderInfo(provider: string, providerUserId: string): Promise<User | undefined>;
   
   // Host availability operations
   getHostAvailability(userId: string): Promise<HostAvailability[]>;
@@ -433,7 +440,7 @@ export class DatabaseStorage implements IStorage {
     await db.update(users).set(updateData).where(eq(users.id, userId));
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async upsertUser(userData: UpsertUser & { provider?: string; providerUserId?: string }): Promise<User> {
     // First check if user exists by email
     const [existingUserByEmail] = await db
       .select()
@@ -442,7 +449,33 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
 
     if (existingUserByEmail) {
-      // User exists, update their information
+      // User with same email exists
+      if (userData.provider && userData.providerUserId) {
+        // Check if this OAuth provider is already linked
+        const [existingProvider] = await db
+          .select()
+          .from(userAuthProviders)
+          .where(and(
+            eq(userAuthProviders.userId, existingUserByEmail.id),
+            eq(userAuthProviders.provider, userData.provider as any)
+          ))
+          .limit(1);
+
+        if (!existingProvider) {
+          // Link new OAuth provider to existing user
+          await this.linkAuthProvider(
+            existingUserByEmail.id,
+            userData.provider,
+            userData.providerUserId,
+            userData.email
+          );
+        } else {
+          // Update last used time for existing provider
+          await this.updateAuthProviderLastUsed(existingUserByEmail.id, userData.provider);
+        }
+      }
+
+      // Update user information with any new data
       const [updated] = await db
         .update(users)
         .set({
@@ -450,7 +483,6 @@ export class DatabaseStorage implements IStorage {
           lastName: userData.lastName || existingUserByEmail.lastName,
           profileImageUrl: userData.profileImageUrl || existingUserByEmail.profileImageUrl,
           updatedAt: new Date(),
-          // Note: we keep the existing user's ID and don't change it
         })
         .where(eq(users.id, existingUserByEmail.id))
         .returning();
@@ -484,11 +516,26 @@ export class DatabaseStorage implements IStorage {
     const [newUser] = await db
       .insert(users)
       .values({
-        ...userData,
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profileImageUrl: userData.profileImageUrl,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
       .returning();
+
+    // If OAuth provider info is provided, link it to the new user
+    if (userData.provider && userData.providerUserId) {
+      await this.linkAuthProvider(
+        newUser.id,
+        userData.provider,
+        userData.providerUserId,
+        userData.email
+      );
+    }
+
     return newUser;
   }
 
@@ -1732,6 +1779,54 @@ export class DatabaseStorage implements IStorage {
     }).returning();
     
     return newUser;
+  }
+
+  // OAuth provider operations
+  async getUserAuthProviders(userId: string): Promise<any[]> {
+    return await db.select().from(userAuthProviders).where(eq(userAuthProviders.userId, userId));
+  }
+
+  async linkAuthProvider(userId: string, provider: string, providerUserId: string, email: string): Promise<any> {
+    const [newProvider] = await db.insert(userAuthProviders).values({
+      userId,
+      provider: provider as any,
+      providerUserId,
+      email,
+      linkedAt: new Date(),
+      lastUsedAt: new Date()
+    }).returning();
+    return newProvider;
+  }
+
+  async unlinkAuthProvider(userId: string, provider: string): Promise<boolean> {
+    const result = await db.delete(userAuthProviders)
+      .where(and(
+        eq(userAuthProviders.userId, userId),
+        eq(userAuthProviders.provider, provider as any)
+      ));
+    return (result?.rowCount || 0) > 0;
+  }
+
+  async getUserByProviderInfo(provider: string, providerUserId: string): Promise<User | undefined> {
+    const [authProvider] = await db.select()
+      .from(userAuthProviders)
+      .where(and(
+        eq(userAuthProviders.provider, provider as any),
+        eq(userAuthProviders.providerUserId, providerUserId)
+      ));
+    
+    if (!authProvider) return undefined;
+    
+    return await this.getUser(authProvider.userId);
+  }
+
+  async updateAuthProviderLastUsed(userId: string, provider: string): Promise<void> {
+    await db.update(userAuthProviders)
+      .set({ lastUsedAt: new Date() })
+      .where(and(
+        eq(userAuthProviders.userId, userId),
+        eq(userAuthProviders.provider, provider as any)
+      ));
   }
 
 }
