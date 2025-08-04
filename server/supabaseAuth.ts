@@ -118,6 +118,14 @@ export const isAdminAuthenticated: RequestHandler = async (req: any, res: Respon
     if (!isAdmin(req)) {
       return res.status(401).json({ message: "Unauthorized - Admin access required" });
     }
+    
+    // Set adminUser for compatibility with existing admin routes
+    req.adminUser = {
+      claims: {
+        sub: req.userId  // Use the database user ID
+      }
+    };
+    
     next();
   });
 };
