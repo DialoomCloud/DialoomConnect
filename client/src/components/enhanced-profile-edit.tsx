@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -52,6 +53,7 @@ import {
   ExternalLink,
   Camera
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 // Schema for form validation
 const profileSchema = z.object({
@@ -61,8 +63,11 @@ const profileSchema = z.object({
   nationality: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
   title: z.string().optional(),
   description: z.string().optional(),
+  address: z.string().optional(),
   city: z.string().optional(),
+  postalCode: z.string().optional(),
   countryCode: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
+  primaryLanguageId: z.number().optional(),
 });
 
 const socialProfileSchema = z.object({
@@ -123,6 +128,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<AISuggestions | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
   const [socialProfiles, setSocialProfiles] = useState<{platformId: number, username: string}[]>([]);
   const [newSocialProfile, setNewSocialProfile] = useState<SocialProfileData>({
     platformId: 1, // Default to LinkedIn (assuming ID 1)
@@ -141,8 +147,11 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       nationality: typedUser?.nationality || "",
       title: typedUser?.title || "",
       description: typedUser?.description || "",
+      address: typedUser?.address || "",
       city: typedUser?.city || "",
+      postalCode: typedUser?.postalCode || "",
       countryCode: typedUser?.countryCode || "",
+      primaryLanguageId: typedUser?.primaryLanguageId || undefined,
     },
   });
 
@@ -159,6 +168,15 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     queryKey: ['/api/countries'],
   });
 
+  const { data: languages = [] } = useQuery({
+    queryKey: ['/api/languages'],
+  });
+
+  const { data: userLanguages = [] } = useQuery({
+    queryKey: ['/api/user/languages', typedUser?.id],
+    enabled: !!typedUser?.id,
+  });
+
   const { data: userCategories = [] } = useQuery({
     queryKey: ['/api/user/categories', typedUser?.id],
     enabled: !!typedUser?.id,
@@ -173,8 +191,10 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const typedSocialPlatforms = socialPlatforms as any[];
   const typedCategories = categories as any[];
   const typedCountries = countries as any[];
+  const typedLanguages = languages as any[];
   const typedUserCategories = userCategories as any[];
   const typedUserSocialProfiles = userSocialProfiles as any[];
+  const typedUserLanguages = userLanguages as any[];
 
   // Load initial data
   useEffect(() => {
@@ -191,6 +211,12 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       })));
     }
   }, [typedUserSocialProfiles]);
+
+  useEffect(() => {
+    if (typedUserLanguages.length > 0) {
+      setSelectedLanguages(typedUserLanguages.map((ul: any) => ul.languageId));
+    }
+  }, [typedUserLanguages]);
 
   // AI Description improvement mutation
   const improveDescriptionMutation = useMutation({
@@ -247,10 +273,12 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('image', file);
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {};
       const response = await fetch('/api/upload/profile-image', {
         method: 'POST',
+        headers,
         body: formData,
-        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error(`${response.status}: ${await response.text()}`);
@@ -277,7 +305,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   // Profile update mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: ProfileFormData) => {
+    mutationFn: async (data: any) => {
       const response = await apiRequest(`/api/users/${typedUser?.id}/profile`, {
         method: "PUT",
         body: data
@@ -376,10 +404,18 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   };
 
   const handleCategoryToggle = (categoryId: number) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId) 
+    setSelectedCategories(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
+    );
+  };
+
+  const handleLanguageToggle = (languageId: number) => {
+    setSelectedLanguages(prev =>
+      prev.includes(languageId)
+        ? prev.filter(id => id !== languageId)
+        : [...prev, languageId]
     );
   };
 
@@ -429,7 +465,10 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const onSubmit = async (data: ProfileFormData) => {
     try {
       // Update profile
-      await updateProfileMutation.mutateAsync(data);
+      await updateProfileMutation.mutateAsync({
+        ...data,
+        languageIds: selectedLanguages,
+      });
       
       // Update categories
       if (selectedCategories.length > 0) {
@@ -625,78 +664,19 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                     )}
                   />
 
-                  {/* Social Media Section */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-medium">Redes Sociales</Label>
-                      <span className="text-sm text-muted-foreground">Ayuda a la IA con tu información profesional</span>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Select 
-                        value={newSocialProfile.platformId.toString()} 
-                        onValueChange={(value) => 
-                          setNewSocialProfile(prev => ({ ...prev, platformId: parseInt(value) }))
-                        }
-                      >
-                        <SelectTrigger className="w-48">
-                          <SelectValue placeholder="Seleccionar plataforma" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {typedSocialPlatforms.map((platform: any) => (
-                            <SelectItem key={platform.id} value={platform.id.toString()}>
-                              {platform.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        placeholder="Usuario/Handle"
-                        value={newSocialProfile.username}
-                        onChange={(e) => 
-                          setNewSocialProfile(prev => ({ ...prev, username: e.target.value }))
-                        }
-                        className="flex-1"
-                      />
-                      <Button 
-                        type="button"
-                        onClick={handleAddSocialProfile}
-                        disabled={!newSocialProfile.platformId || !newSocialProfile.username.trim()}
-                        size="sm"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {socialProfiles.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>Perfiles añadidos:</Label>
-                        {socialProfiles.map((profile, index) => {
-                          const platform = socialPlatforms.find((p: SocialPlatform) => p.id === profile.platformId);
-                          const IconComponent = socialIcons[platform?.name] || ExternalLink;
-                          
-                          return (
-                            <div key={index} className="flex items-center gap-3 p-2 border rounded-lg bg-muted/30">
-                              <IconComponent className="h-4 w-4" />
-                              <span className="font-medium">{platform?.name}</span>
-                              <span className="text-muted-foreground">
-                                {profile.username}
-                              </span>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleRemoveSocialProfile(index)}
-                                className="ml-auto"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          );
-                        })}
-                      </div>
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Dirección</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </div>
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
@@ -712,6 +692,22 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="postalCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Código Postal</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="countryCode"
@@ -736,6 +732,46 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="primaryLanguageId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Idioma Principal</FormLabel>
+                          <Select onValueChange={(val) => field.onChange(parseInt(val))} defaultValue={field.value ? field.value.toString() : undefined}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un idioma" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {typedLanguages.map((lang: any) => (
+                                <SelectItem key={lang.id} value={lang.id.toString()}>
+                                  {lang.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Idiomas Hablados</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto mt-2">
+                      {typedLanguages.map((language: any) => (
+                        <div key={language.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`lang-${language.id}`}
+                            checked={selectedLanguages.includes(language.id)}
+                            onCheckedChange={() => handleLanguageToggle(language.id)}
+                          />
+                          <Label htmlFor={`lang-${language.id}`}>{language.name}</Label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <Button 
