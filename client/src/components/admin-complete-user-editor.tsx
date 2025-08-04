@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -57,7 +57,44 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     socialProfiles: any[];
   }>({
     queryKey: [`/api/admin/users/${userId}/complete-profile`],
+    queryFn: async () => {
+      const response = await apiRequest(
+        `/api/admin/users/${userId}/complete-profile`
+      );
+      return response.json();
+    },
     enabled: open && !!userId,
+    onSuccess: (data) => {
+      const user = data.user || {};
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        username: user.username || '',
+        title: user.title || '',
+        description: user.description || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        postalCode: user.postalCode || '',
+        countryCode: user.countryCode || '',
+        role: user.role || 'guest',
+        isHost: user.isHost || false,
+        isAdmin: user.isAdmin || false,
+        isActive: user.isActive !== false,
+        isVerified: user.isVerified || false,
+        primaryLanguageId: user.primaryLanguageId,
+        categoryId: user.categoryId,
+        skillIds: data.skills?.map((s: any) => s.skillId) || [],
+        languageIds: data.languages?.map((l: any) => l.languageId) || [],
+        categoryIds: data.categories?.map((c: any) => c.categoryId) || [],
+        socialProfiles:
+          data.socialProfiles?.map((sp: any) => ({
+            platformId: sp.platformId,
+            username: sp.username,
+          })) || [],
+      });
+    },
   });
 
   // Fetch reference data
@@ -115,43 +152,6 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     socialProfiles: [] as { platformId: number; username: string }[],
   });
 
-  // Initialize form data when user profile is loaded
-  useEffect(() => {
-    if (userProfile?.user) {
-      const user = userProfile.user;
-      
-      // Debug categories
-      console.log('User categories:', userProfile.categories);
-      
-      setFormData({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        email: user.email || '',
-        username: user.username || '',
-        title: user.title || '',
-        description: user.description || '',
-        phone: user.phone || '',
-        address: user.address || '',
-        city: user.city || '',
-        postalCode: user.postalCode || '',
-        countryCode: user.countryCode || '',
-        role: user.role || 'guest',
-        isHost: user.isHost || false,
-        isAdmin: user.isAdmin || false,
-        isActive: user.isActive !== false,
-        isVerified: user.isVerified || false,
-        primaryLanguageId: user.primaryLanguageId,
-        categoryId: user.categoryId,
-        skillIds: userProfile.skills?.map((s: any) => s.skillId) || [],
-        languageIds: userProfile.languages?.map((l: any) => l.languageId) || [],
-        categoryIds: userProfile.categories?.map((c: any) => c.categoryId) || [],
-        socialProfiles: userProfile.socialProfiles?.map((sp: any) => ({
-          platformId: sp.platformId,
-          username: sp.username
-        })) || [],
-      });
-    }
-  }, [userProfile]);
 
   // Update mutation
   const updateUserMutation = useMutation({
