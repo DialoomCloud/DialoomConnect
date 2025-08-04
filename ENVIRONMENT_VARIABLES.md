@@ -21,6 +21,8 @@ SESSION_SECRET=[Configurado - String aleatorio seguro]
 STRIPE_SECRET_KEY=[Configurado - Clave secreta de Stripe]
 VITE_STRIPE_PUBLIC_KEY=[Configurado - Clave pública de Stripe]
 OPENAI_API_KEY=[Configurado - API Key de OpenAI]
+VITE_SUPABASE_URL=[Configurado - URL de Supabase]
+VITE_SUPABASE_ANON_KEY=[Configurado - Clave anónima de Supabase]
 ```
 
 ## 🔴 Secrets Pendientes de Configurar
