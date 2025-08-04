@@ -70,12 +70,20 @@ export const isAuthenticated: RequestHandler = async (req: any, res: Response, n
         // Update existing user's information (but keep their ID)
         // Also link OAuth provider if not already linked
         const provider = user.app_metadata?.provider || 'email';
+        
+        // Only update with new values if they are not empty
+        const newFirstName = firstName && firstName.trim() ? firstName : 
+                           (user.user_metadata?.firstName && user.user_metadata.firstName.trim() ? user.user_metadata.firstName : null);
+        const newLastName = lastName && lastName.trim() ? lastName : 
+                          (user.user_metadata?.lastName && user.user_metadata.lastName.trim() ? user.user_metadata.lastName : null);
+        const newProfileImage = user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || null;
+        
         await storage.upsertUser({
           id: dbUser.id,
           email: user.email!,
-          firstName: firstName || user.user_metadata?.firstName || dbUser.firstName || '',
-          lastName: lastName || user.user_metadata?.lastName || dbUser.lastName || '',
-          profileImageUrl: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || dbUser.profileImageUrl || '',
+          firstName: newFirstName || dbUser.firstName || '',
+          lastName: newLastName || dbUser.lastName || '',
+          profileImageUrl: newProfileImage || dbUser.profileImageUrl || '',
           provider: provider,
           providerUserId: user.id,
         });

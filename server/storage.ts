@@ -475,15 +475,23 @@ export class DatabaseStorage implements IStorage {
         }
       }
 
-      // Update user information with any new data
+      // Update user information only if new data is not empty
+      const updateData: any = { updatedAt: new Date() };
+      
+      // Only update fields if they have non-empty values
+      if (userData.firstName && userData.firstName.trim()) {
+        updateData.firstName = userData.firstName;
+      }
+      if (userData.lastName && userData.lastName.trim()) {
+        updateData.lastName = userData.lastName;
+      }
+      if (userData.profileImageUrl && userData.profileImageUrl.trim()) {
+        updateData.profileImageUrl = userData.profileImageUrl;
+      }
+      
       const [updated] = await db
         .update(users)
-        .set({
-          firstName: userData.firstName || existingUserByEmail.firstName,
-          lastName: userData.lastName || existingUserByEmail.lastName,
-          profileImageUrl: userData.profileImageUrl || existingUserByEmail.profileImageUrl,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(users.id, existingUserByEmail.id))
         .returning();
       return updated;
