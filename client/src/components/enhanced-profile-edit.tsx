@@ -194,22 +194,8 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   // AI Description improvement mutation
   const improveDescriptionMutation = useMutation({
-    mutationFn: async (description: string) => {
-      // Get LinkedIn URL from social profiles if available
-      const linkedinProfile = socialProfiles.find(profile => {
-        const platform = typedSocialPlatforms.find((p: any) => p.id === profile.platformId);
-        return platform?.name?.toLowerCase() === 'linkedin';
-      });
-      
-      const linkedinUrl = linkedinProfile ? 
-        (linkedinProfile.username.startsWith('http') ? 
-          linkedinProfile.username : 
-          `https://linkedin.com/in/${linkedinProfile.username}`) : 
-        '';
-      
-      console.log('Sending AI request with:', { description, linkedinUrl, linkedinProfile });
-      
-      const response = await apiRequest("/api/ai/enhance-description", { 
+    mutationFn: async ({ description, linkedinUrl }: { description: string; linkedinUrl?: string }) => {
+      const response = await apiRequest("/api/ai/enhance-description", {
         method: "POST",
         body: {
           description,
@@ -238,9 +224,12 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   // AI Suggestions mutation
   const getAISuggestionsMutation = useMutation({
     mutationFn: async (description: string) => {
-      const response = await apiRequest("POST", "/api/ai/suggestions", { description });
-      return response.json();
-    },
+    const response = await apiRequest("/api/ai/suggestions", {
+      method: "POST",
+      body: { description }
+    });
+    return response.json();
+  },
     onSuccess: (data) => {
       setAISuggestions(data);
       setIsAIDialogOpen(true);
@@ -358,8 +347,19 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       });
       return;
     }
-    
-    improveDescriptionMutation.mutate(currentDescription);
+
+    const linkedinProfile = socialProfiles.find(profile => {
+      const platform = typedSocialPlatforms.find((p: any) => p.id === profile.platformId);
+      return platform?.name?.toLowerCase() === 'linkedin';
+    });
+
+    const linkedinUrl = linkedinProfile ?
+      (linkedinProfile.username.startsWith('http') ?
+        linkedinProfile.username :
+        `https://linkedin.com/in/${linkedinProfile.username}`) :
+      undefined;
+
+    improveDescriptionMutation.mutate({ description: currentDescription, linkedinUrl });
   };
 
   const handleGetAISuggestions = () => {
@@ -386,7 +386,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const handleAddSocialProfile = () => {
     if (newSocialProfile.platformId && newSocialProfile.username.trim()) {
       setSocialProfiles(prev => [...prev, newSocialProfile]);
-      setNewSocialProfile({ platformId: 0, username: "" });
+      setNewSocialProfile({ platformId: 1, username: "" });
     }
   };
 
@@ -428,8 +428,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      console.log('Submitting profile data:', data);
-      
       // Update profile
       await updateProfileMutation.mutateAsync(data);
       
