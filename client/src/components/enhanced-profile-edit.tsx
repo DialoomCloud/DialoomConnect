@@ -6,6 +6,7 @@ import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,19 +39,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  User, 
-  Wand2, 
-  Sparkles, 
-  Plus, 
-  Trash2, 
-  Instagram, 
-  Linkedin, 
-  Twitter, 
+import {
+  User,
+  Wand2,
+  Sparkles,
+  Plus,
+  Trash2,
+  Instagram,
+  Linkedin,
+  Twitter,
   Facebook,
   Github,
   Youtube,
-  ExternalLink
+  ExternalLink,
+  Camera
 } from "lucide-react";
 
 // Schema for form validation
@@ -128,6 +130,8 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
   const [socialProfiles, setSocialProfiles] = useState<{platformId: number, username: string}[]>([]);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [newSocialProfile, setNewSocialProfile] = useState<SocialProfileData>({
     platformId: 1, // Default to LinkedIn (assuming ID 1)
     username: ""
@@ -276,11 +280,50 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     },
   });
 
+  // Profile image update mutation
+  const updateProfileImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      const response = await fetch('/api/upload/profile-image', {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${await response.text()}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Imagen actualizada",
+        description: "Tu imagen de perfil ha sido actualizada exitosamente.",
+      });
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
+    },
+    onError: (error: any) => {
+      console.error('Profile image update error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar la imagen de perfil",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Profile update mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData & { languageIds: number[] }) => {
       const { languageIds, ...profileData } = data;
-      const response = await apiRequest(`/api/users/${typedUser?.id}/profile`, {
+      const response = await apiRequest(`/api/profile`, {
         method: "PUT",
         body: { ...profileData, languageIds }
       });
@@ -367,11 +410,19 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   };
 
   const handleCategoryToggle = (categoryId: number) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId) 
+    setSelectedCategories(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     );
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileImageFile(file);
+      setProfileImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const handleAddSocialProfile = () => {
@@ -388,7 +439,12 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const onSubmit = async (data: ProfileFormData) => {
     try {
       console.log('Submitting profile data:', data);
-      
+
+      // Update profile image if a new one was selected
+      if (profileImageFile) {
+        await updateProfileImageMutation.mutateAsync(profileImageFile);
+      }
+
       // Update profile
       await updateProfileMutation.mutateAsync({ ...data, languageIds: selectedLanguages });
       
@@ -440,15 +496,25 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  {typedUser?.profileImageUrl && (
-                    <div className="flex justify-center mb-4">
+                  <div className="flex flex-col items-center mb-4">
+                    {profileImagePreview ? (
+                      <img
+                        src={profileImagePreview}
+                        alt="Previsualización de perfil"
+                        className="w-24 h-24 rounded-full object-cover"
+                      />
+                    ) : typedUser?.profileImageUrl ? (
                       <img
                         src={typedUser.profileImageUrl.startsWith('http') ? typedUser.profileImageUrl : `/storage/${typedUser.profileImageUrl}`}
                         alt="Foto de perfil"
                         className="w-24 h-24 rounded-full object-cover"
                       />
-                    </div>
-                  )}
+                    ) : null}
+                    <Input id="profile-image-input" type="file" accept="image/*" className="hidden" onChange={handleProfileImageChange} />
+                    <Label htmlFor="profile-image-input" className="mt-2 cursor-pointer flex items-center gap-2 text-primary">
+                      <Camera className="h-4 w-4" /> Cambiar foto
+                    </Label>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
