@@ -1,12 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Database, UserCheck, Play, Smartphone, Share2 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function Landing() {
   const { logoUrl } = useThemeConfig();
+  const { isAuthenticated, isLoading } = useAuth();
+  const [, navigate] = useLocation();
   
+  // Redirect authenticated users to home
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
   const handleLogin = () => {
     window.location.href = "/login";
   };
