@@ -55,8 +55,8 @@ export default function LoginPage() {
         description: "Has iniciado sesión correctamente",
       });
 
-      // Redirect to home
-      navigate('/');
+      // Redirect to home to ensure auth state is loaded
+      navigate('/home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
@@ -117,7 +117,8 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin,
+          // After OAuth login, return to the authenticated home page
+          redirectTo: `${window.location.origin}/home`,
         },
       });
       if (error) throw error;
