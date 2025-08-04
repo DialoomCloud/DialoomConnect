@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -60,8 +61,11 @@ const profileSchema = z.object({
   nationality: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
   title: z.string().optional(),
   description: z.string().optional(),
+  address: z.string().optional(),
   city: z.string().optional(),
+  postalCode: z.string().optional(),
   countryCode: z.string().optional(),
+  primaryLanguageId: z.coerce.number().optional(),
 });
 
 const socialProfileSchema = z.object({
@@ -122,6 +126,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<AISuggestions | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
   const [socialProfiles, setSocialProfiles] = useState<{platformId: number, username: string}[]>([]);
   const [newSocialProfile, setNewSocialProfile] = useState<SocialProfileData>({
     platformId: 1, // Default to LinkedIn (assuming ID 1)
@@ -138,8 +143,11 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       nationality: typedUser?.nationality || "",
       title: typedUser?.title || "",
       description: typedUser?.description || "",
+      address: typedUser?.address || "",
       city: typedUser?.city || "",
+      postalCode: typedUser?.postalCode || "",
       countryCode: typedUser?.countryCode || "",
+      primaryLanguageId: typedUser?.primaryLanguageId || undefined,
     },
   });
 
@@ -156,6 +164,10 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     queryKey: ['/api/countries'],
   });
 
+  const { data: languages = [] } = useQuery({
+    queryKey: ['/api/languages'],
+  });
+
   const { data: userCategories = [] } = useQuery({
     queryKey: ['/api/user/categories', typedUser?.id],
     enabled: !!typedUser?.id,
@@ -165,13 +177,20 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     queryKey: ['/api/user/social-profiles', typedUser?.id],
     enabled: !!typedUser?.id,
   });
-  
+
+  const { data: userLanguages = [] } = useQuery({
+    queryKey: ['/api/user/languages', typedUser?.id],
+    enabled: !!typedUser?.id,
+  });
+
   // Type the query data
   const typedSocialPlatforms = socialPlatforms as any[];
   const typedCategories = categories as any[];
   const typedCountries = countries as any[];
+  const typedLanguages = languages as any[];
   const typedUserCategories = userCategories as any[];
   const typedUserSocialProfiles = userSocialProfiles as any[];
+  const typedUserLanguages = userLanguages as any[];
 
   // Load initial data
   useEffect(() => {
@@ -179,6 +198,12 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       setSelectedCategories(typedUserCategories.map((uc: any) => uc.categoryId));
     }
   }, [typedUserCategories]);
+
+  useEffect(() => {
+    if (typedUserLanguages.length > 0) {
+      setSelectedLanguages(typedUserLanguages.map((ul: any) => ul.languageId));
+    }
+  }, [typedUserLanguages]);
 
   useEffect(() => {
     if (typedUserSocialProfiles.length > 0) {
@@ -253,10 +278,11 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   // Profile update mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: ProfileFormData) => {
+    mutationFn: async (data: ProfileFormData & { languageIds: number[] }) => {
+      const { languageIds, ...profileData } = data;
       const response = await apiRequest(`/api/users/${typedUser?.id}/profile`, {
         method: "PUT",
-        body: data
+        body: { ...profileData, languageIds }
       });
       return response.json();
     },
@@ -364,7 +390,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       console.log('Submitting profile data:', data);
       
       // Update profile
-      await updateProfileMutation.mutateAsync(data);
+      await updateProfileMutation.mutateAsync({ ...data, languageIds: selectedLanguages });
       
       // Update categories
       if (selectedCategories.length > 0) {
@@ -414,6 +440,15 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  {typedUser?.profileImageUrl && (
+                    <div className="flex justify-center mb-4">
+                      <img
+                        src={typedUser.profileImageUrl.startsWith('http') ? typedUser.profileImageUrl : `/storage/${typedUser.profileImageUrl}`}
+                        alt="Foto de perfil"
+                        className="w-24 h-24 rounded-full object-cover"
+                      />
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -481,6 +516,121 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         </FormItem>
                       )}
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Calle</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ciudad</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="postalCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Código Postal</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="countryCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>País de Residencia</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona tu país" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {typedCountries.map((country: any) => (
+                                <SelectItem key={country.code} value={country.code}>
+                                  {country.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="primaryLanguageId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Idioma Principal</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value ? field.value.toString() : undefined}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona tu idioma principal" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {typedLanguages.map((language: any) => (
+                              <SelectItem key={language.id} value={language.id.toString()}>
+                                {language.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="space-y-2">
+                    <Label className="text-base font-medium">Idiomas Hablados</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                      {typedLanguages.map((language: any) => (
+                        <div key={language.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`lang-${language.id}`}
+                            checked={selectedLanguages.includes(language.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedLanguages(prev => [...prev, language.id]);
+                              } else {
+                                setSelectedLanguages(prev => prev.filter(id => id !== language.id));
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`lang-${language.id}`} className="text-sm">
+                            {language.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <FormField
@@ -607,48 +757,8 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ciudad</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="countryCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>País</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona un país" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {typedCountries.map((country: any) => (
-                                <SelectItem key={country.code} value={country.code}>
-                                  {country.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={updateProfileMutation.isPending}
                     className="w-full"
                   >
