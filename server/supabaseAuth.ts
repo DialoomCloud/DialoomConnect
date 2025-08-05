@@ -135,16 +135,33 @@ export function setupAuthRoutes(app: Express) {
       // Use the database ID, not the Supabase ID
       const dbUser = await storage.getUser(req.userId || user.dbId);
       
-      res.json({
-        id: dbUser?.id || user.id,  // Return the database ID
-        email: user.email,
-        firstName: dbUser?.firstName || '',
-        lastName: dbUser?.lastName || '',
-        profileImageUrl: dbUser?.profileImageUrl || '',
-        isAdmin: isAdmin(req),
-        isHost: dbUser?.isHost || false,
-        role: dbUser?.role || 'guest'
-      });
+      if (dbUser) {
+        // Return complete user profile from database
+        console.log('🔍 [AUTH USER] Returning complete user profile:', {
+          id: dbUser.id,
+          address: dbUser.address,
+          phone: dbUser.phone,
+          city: dbUser.city,
+          title: dbUser.title,
+          description: dbUser.description
+        });
+        res.json({
+          ...dbUser,  // Return ALL database fields
+          isAdmin: isAdmin(req)
+        });
+      } else {
+        // Fallback to limited Supabase data if no database record
+        res.json({
+          id: user.id,
+          email: user.email,
+          firstName: '',
+          lastName: '',
+          profileImageUrl: '',
+          isAdmin: isAdmin(req),
+          isHost: false,
+          role: 'guest'
+        });
+      }
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user data" });

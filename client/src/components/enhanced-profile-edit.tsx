@@ -160,7 +160,16 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   // Sync form with current user data whenever user changes
   useEffect(() => {
     if (typedUser) {
-      console.log('Syncing form with user data:', typedUser);
+      console.log('🔄 [PROFILE SYNC] Syncing form with user data:', {
+        address: typedUser.address,
+        phone: typedUser.phone,
+        city: typedUser.city,
+        postalCode: typedUser.postalCode,
+        title: typedUser.title,
+        description: typedUser.description,
+        nationality: typedUser.nationality,
+        dateOfBirth: typedUser.dateOfBirth
+      });
       form.reset({
         firstName: typedUser.firstName || "",
         lastName: typedUser.lastName || "",
