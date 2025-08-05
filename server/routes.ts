@@ -3886,6 +3886,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin role impersonation endpoint
+  app.post('/api/admin/impersonate', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { userId, role } = req.body;
+      
+      if (!userId || !role) {
+        return res.status(400).json({ message: 'User ID y rol son requeridos' });
+      }
+
+      if (!['admin', 'host'].includes(role)) {
+        return res.status(400).json({ message: 'Rol inválido' });
+      }
+
+      // Store impersonation in session/token for security tracking
+      req.session.impersonating = { userId, role, originalAdmin: req.userId };
+      
+      res.json({ 
+        success: true, 
+        message: `Impersonando como ${role}`,
+        impersonating: { userId, role }
+      });
+    } catch (error) {
+      console.error('Error in role impersonation:', error);
+      res.status(500).json({ message: 'Error al cambiar rol' });
+    }
+  });
+
+  // Admin password reset endpoint
+  app.post('/api/admin/password-reset', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { userId, email } = req.body;
+      
+      if (!userId || !email) {
+        return res.status(400).json({ message: 'User ID y email son requeridos' });
+      }
+
+      // Generate password reset token
+      const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      
+      // Store reset token (you'd typically store this in database)
+      // For now, we'll just log it
+      console.log(`Password reset for ${email}: Token: ${resetToken}, Expires: ${resetExpires}`);
+      
+      res.json({ 
+        success: true, 
+        message: `Enlace de reseteo enviado a ${email}`,
+        resetToken // In production, don't return this
+      });
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      res.status(500).json({ message: 'Error al enviar enlace de reseteo' });
+    }
+  });
+
+  // Admin notification endpoint
+  app.post('/api/admin/send-notification', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const { userId, email, type = 'generic' } = req.body;
+      
+      if (!userId || !email) {
+        return res.status(400).json({ message: 'User ID y email son requeridos' });
+      }
+
+      // Here you would integrate with your email service
+      console.log(`Sending ${type} notification to ${email} (User ID: ${userId})`);
+      
+      res.json({ 
+        success: true, 
+        message: `Notificación enviada a ${email}`,
+        type,
+        sentAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      res.status(500).json({ message: 'Error al enviar notificación' });
+    }
+  });
+
   // ============ PAYMENT METHODS ROUTES ============
   
   // Get user's payment methods

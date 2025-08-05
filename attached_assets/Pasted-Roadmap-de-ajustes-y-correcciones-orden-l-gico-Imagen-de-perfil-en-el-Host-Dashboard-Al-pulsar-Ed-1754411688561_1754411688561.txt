@@ -1,0 +1,74 @@
+Roadmap de ajustes y correcciones (orden lógico)
+Imagen de perfil en el Host Dashboard
+
+Al pulsar Editar dentro de la ficha de un usuario (p.ej. Marc García) debe mostrarse inmediatamente su foto de perfil con opción de reemplazarla, igual que ya ocurre en su Profile Dashboard.
+
+Sincronizar datos básicos del perfil
+
+Idiomas que habla (lista),
+
+Idioma principal,
+
+Descripción (bio),
+deben leerse y guardarse contra los mismos campos que ya usa el Profile Dashboard. Ahora se muestran vacíos/desvinculados.
+
+Roles y suplantación (“Tomar rol”)
+3.1 Añadir una columna Tomar rol en la tabla de usuarios (Host Dashboard).
+3.2 Convertir los chips “admin” y “host” de cada fila en enlaces:
+
+Clic en admin ⇒ entras como administrador con la identidad de ese usuario.
+
+Clic en host ⇒ entras como host con la identidad de ese usuario.
+3.3 Al activarse la suplantación, mostrar arriba (junto al selector “admin/host”) un link «Volver a mi usuario (Nacho)» para regresar a la sesión original.
+
+Columna «Verificado» interactiva
+
+El texto “verificado” debe ser clicable y permitir cambiar entre Verificado/Inactivo sin el botón externo “Verificar/Desverificar”.
+
+Eliminar rol “guest”
+
+Mantener solo: registered, host (experto) y admin.
+
+“guest” = visitante no autenticado ⇒ no debe aparecer en la base de datos ni en los selects.
+
+Acciones rápidas por usuario
+
+Añadir botones para:
+
+Resetear contraseña (genera link y lo envía).
+
+Enviar notificación (mail genérico o recordatorio de visita).
+
+Accesibles desde la lista de usuarios (misma fila o menú contextual).
+
+Subida de multimedia
+
+Ya funciona correctamente; mantener comportamiento.
+
+Errores en plantillas de email
+
+Al guardar/preview: SpecTechToken: Doctype IsNotValidJson.
+
+Posible causa: conflicto de nombres de campos (p. ej. country, countryCode) entre el ORM (Drizzle) y los tipos TypeScript heredados del auth de Replit.
+
+Revisar mapeo de columnas, normalizar naming y validar que el JSON generado por la plantilla sea válido antes de enviarlo.
+
+Endpoint “Guardar cambios”
+
+Falla por la misma inconsistencia de tipos/columnas que provoca el error de plantillas.
+
+Alinear modelo TS ↔️ esquema SQL ↔️ ORM.
+
+Tests de regresión
+
+Añadir pruebas para:
+
+Carga/edición de foto de perfil en ambos dashboards.
+
+Sincronización de idiomas/descr.
+
+Cambios de estado verificado/inactivo.
+
+Suplantación de rol y retorno al usuario original.
+
+Creación/envío de mails usando plantillas corregidas.

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -23,7 +23,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, User, Settings, Briefcase, Globe, MessageSquare, CreditCard, Upload, Play, Image, Youtube, Trash2 } from 'lucide-react';
+import { Loader2, User, Settings, Briefcase, Globe, MessageSquare, CreditCard, Upload, Play, Image, Youtube, Trash2, Camera, UserCircle } from 'lucide-react';
 import { MediaEmbed } from '@/components/media-embed';
 import { MediaUploadModal } from '@/components/media-upload-modal';
 import { MediaEditModal } from '@/components/media-edit-modal';
@@ -46,6 +46,11 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [editingContent, setEditingContent] = useState<any>(null);
   const [viewingContent, setViewingContent] = useState<any>(null);
+  
+  // Profile image upload state
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch complete user profile
   const { data: userProfile, isLoading } = useQuery<{
@@ -82,7 +87,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         city: user.city || '',
         postalCode: user.postalCode || '',
         countryCode: user.countryCode || '',
-        role: user.role || 'guest',
+        role: user.role || 'registered',
         isHost: user.isHost || false,
         isAdmin: user.isAdmin || false,
         isActive: user.isActive !== false,
@@ -98,6 +103,13 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
             username: sp.username,
           })) || [],
       });
+      
+      // Set profile image preview if user has one
+      if (user.profileImageUrl) {
+        setProfileImagePreview(user.profileImageUrl.startsWith('/storage/') 
+          ? user.profileImageUrl 
+          : `/storage/${user.profileImageUrl}`);
+      }
     }
   }, [userProfile]);
 
@@ -141,7 +153,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     city: '',
     postalCode: '',
     countryCode: '',
-    role: 'guest',
+    role: 'registered',
     isHost: false,
     isAdmin: false,
     isActive: true,
@@ -192,9 +204,57 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateUserMutation.mutate(formData);
+    
+    let updatedFormData = { ...formData };
+    
+    // Handle profile image upload if a new file was selected
+    if (profileImageFile) {
+      try {
+        const imageFormData = new FormData();
+        imageFormData.append('image', profileImageFile);
+        
+        const uploadResponse = await apiRequest(`/api/users/${userId}/profile-image`, {
+          method: 'POST',
+          body: imageFormData,
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        // Note: profileImageUrl is handled separately by the backend
+        
+        toast({
+          title: "Imagen de perfil actualizada",
+          description: "La imagen se ha subido correctamente",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error al subir imagen",
+          description: error?.message || "No se pudo subir la imagen de perfil",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    updateUserMutation.mutate(updatedFormData);
+  };
+
+  // Profile image handlers
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleProfileImageClick = () => {
+    fileInputRef.current?.click();
   };
 
   // Media deletion handler
@@ -317,6 +377,41 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                   <CardTitle>Información Personal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Profile Image Section */}
+                  <div className="flex flex-col items-center gap-4 p-4 border rounded-lg bg-gray-50">
+                    <div className="relative">
+                      {profileImagePreview ? (
+                        <img
+                          src={profileImagePreview}
+                          alt="Imagen de perfil"
+                          className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
+                          <UserCircle className="w-12 h-12 text-gray-400" />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleProfileImageClick}
+                        className="absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                      >
+                        <Camera className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-700">Imagen de Perfil</p>
+                      <p className="text-xs text-gray-500">Haz clic en el icono de cámara para cambiar</p>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfileImageChange}
+                      className="hidden"
+                    />
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="firstName">Nombre</Label>
@@ -611,7 +706,6 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="guest">Guest</SelectItem>
                         <SelectItem value="registered">Registrado</SelectItem>
                         <SelectItem value="host">Host</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>

@@ -69,7 +69,7 @@ export function Navigation() {
   const roleOptions = [] as { value: string; label: string }[];
   if (user?.isHost) roleOptions.push({ value: 'host', label: 'Host' });
   if (user?.isAdmin) roleOptions.push({ value: 'admin', label: 'Admin' });
-  if (roleOptions.length === 0) roleOptions.push({ value: 'guest', label: 'Guest' });
+  if (roleOptions.length === 0) roleOptions.push({ value: 'registered', label: 'Usuario' });
 
   return (
     <nav className="bg-white shadow-sm border-b border-[hsl(220,13%,90%)] sticky top-0 z-50 animate-fade-in-up">

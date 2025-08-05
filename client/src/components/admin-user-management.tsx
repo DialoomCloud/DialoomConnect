@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserCheck, UserX, Shield, Users, User as UserIcon, Edit, Settings } from "lucide-react";
+import { Search, Shield, Users, User as UserIcon, Edit } from "lucide-react";
 import type { User } from "@shared/schema";
 import { AdminCompleteUserEditor } from "./admin-complete-user-editor";
 
@@ -63,30 +63,171 @@ export function AdminUserManagement() {
   const getRoleBadges = (user: User) => {
     const badges = [];
     
-    // Multiple role support
+    // Multiple role support - make badges clickable for role switching
     if (user.isAdmin || user.role === 'admin') {
-      badges.push(<Badge key="admin" variant="destructive" className="mr-1">Admin</Badge>);
+      badges.push(
+        <Badge 
+          key="admin" 
+          variant="destructive" 
+          className="mr-1 cursor-pointer hover:bg-red-700 transition-colors" 
+          onClick={() => handleRoleSwitch(user.id, 'admin')}
+          title="Clic para tomar rol de admin"
+        >
+          Admin
+        </Badge>
+      );
     }
     if (user.role === 'host' || user.isHost) {
-      badges.push(<Badge key="host" variant="default" className="mr-1">Host</Badge>);
+      badges.push(
+        <Badge 
+          key="host" 
+          variant="default" 
+          className="mr-1 cursor-pointer hover:bg-blue-700 transition-colors" 
+          onClick={() => handleRoleSwitch(user.id, 'host')}
+          title="Clic para tomar rol de host"
+        >
+          Host
+        </Badge>
+      );
     }
     if (user.role === 'registered' || (!user.role && user.email)) {
       badges.push(<Badge key="registered" variant="outline" className="mr-1">Registrado</Badge>);
     }
-    if (!badges.length || user.role === 'guest') {
-      badges.push(<Badge key="guest" variant="secondary" className="mr-1">Guest</Badge>);
-    }
+    
+    // Remove guest role completely as per roadmap
     
     return <div className="flex flex-wrap">{badges}</div>;
   };
 
   const getStatusBadge = (user: User) => {
     if (!user.isActive) {
-      return <Badge variant="outline" className="text-red-600">Inactivo</Badge>;
+      return (
+        <Badge 
+          variant="outline" 
+          className="text-red-600 cursor-pointer hover:bg-red-50 transition-colors" 
+          onClick={() => handleVerificationToggle(user.id, true)}
+          title="Clic para activar usuario"
+        >
+          Inactivo
+        </Badge>
+      );
     } else if (user.isVerified) {
-      return <Badge variant="outline" className="text-green-600">Verificado</Badge>;
+      return (
+        <Badge 
+          variant="outline" 
+          className="text-green-600 cursor-pointer hover:bg-green-50 transition-colors" 
+          onClick={() => handleVerificationToggle(user.id, false)}
+          title="Clic para desverificar usuario"
+        >
+          Verificado
+        </Badge>
+      );
     } else {
-      return <Badge variant="outline">No verificado</Badge>;
+      return (
+        <Badge 
+          variant="outline" 
+          className="cursor-pointer hover:bg-gray-50 transition-colors" 
+          onClick={() => handleVerificationToggle(user.id, true)}
+          title="Clic para verificar usuario"
+        >
+          No verificado
+        </Badge>
+      );
+    }
+  };
+
+  // Role switching functionality
+  const handleRoleSwitch = async (userId: string, role: 'admin' | 'host') => {
+    if (confirm(`¿Quieres tomar el rol de ${role} del usuario seleccionado?`)) {
+      try {
+        await apiRequest(`/api/admin/impersonate`, {
+          method: 'POST',
+          body: { userId, role }
+        });
+        
+        toast({
+          title: "Rol cambiado",
+          description: `Ahora estás actuando como ${role}`,
+        });
+        
+        // Reload page to apply role changes
+        window.location.reload();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error?.message || "No se pudo cambiar el rol",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  // Verification toggle functionality
+  const handleVerificationToggle = async (userId: string, verified: boolean) => {
+    try {
+      await apiRequest(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        body: { isVerified: verified, isActive: verified }
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      
+      toast({
+        title: verified ? "Usuario verificado" : "Usuario desverificado",
+        description: "El estado se ha actualizado correctamente",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "No se pudo actualizar el estado",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Password reset functionality
+  const handlePasswordReset = async (userId: string, email: string) => {
+    if (confirm(`¿Enviar enlace de reseteo de contraseña a ${email}?`)) {
+      try {
+        await apiRequest(`/api/admin/password-reset`, {
+          method: 'POST',
+          body: { userId, email }
+        });
+        
+        toast({
+          title: "Enlace enviado",
+          description: `Se ha enviado el enlace de reseteo a ${email}`,
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error?.message || "No se pudo enviar el enlace",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  // Send notification functionality
+  const handleSendNotification = async (userId: string, email: string) => {
+    if (confirm(`¿Enviar notificación a ${email}?`)) {
+      try {
+        await apiRequest(`/api/admin/send-notification`, {
+          method: 'POST',
+          body: { userId, email, type: 'generic' }
+        });
+        
+        toast({
+          title: "Notificación enviada",
+          description: `Se ha enviado la notificación a ${email}`,
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error?.message || "No se pudo enviar la notificación",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -124,6 +265,7 @@ export function AdminUserManagement() {
                   <TableHead>Comisión</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Activo</TableHead>
+                  <TableHead>Tomar Rol</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -204,6 +346,33 @@ export function AdminUserManagement() {
                       />
                     </TableCell>
                     <TableCell>
+                      <div className="flex gap-1">
+                        {(user.isAdmin || user.role === 'admin') && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleRoleSwitch(user.id, 'admin')}
+                            title="Tomar rol de admin"
+                          >
+                            <Shield className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {(user.isHost || user.role === 'host') && (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleRoleSwitch(user.id, 'host')}
+                            title="Tomar rol de host"
+                          >
+                            <UserIcon className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {!user.isAdmin && !user.isHost && user.role !== 'admin' && user.role !== 'host' && (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -218,25 +387,19 @@ export function AdminUserManagement() {
                         </Button>
                         <Button
                           size="sm"
-                          variant={user.isVerified ? "outline" : "default"}
-                          onClick={() => {
-                            updateUserMutation.mutate({
-                              userId: user.id,
-                              updates: { isVerified: !user.isVerified }
-                            });
-                          }}
+                          variant="outline"
+                          onClick={() => handlePasswordReset(user.id, user.email || '')}
+                          title="Resetear contraseña"
                         >
-                          {user.isVerified ? (
-                            <>
-                              <UserX className="w-4 h-4 mr-1" />
-                              Desverificar
-                            </>
-                          ) : (
-                            <>
-                              <UserCheck className="w-4 h-4 mr-1" />
-                              Verificar
-                            </>
-                          )}
+                          🔑
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleSendNotification(user.id, user.email || '')}
+                          title="Enviar notificación"
+                        >
+                          📧
                         </Button>
                       </div>
                     </TableCell>
