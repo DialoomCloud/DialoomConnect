@@ -423,25 +423,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Validated profile data:', validatedData);
       
       const updatedUser = await storage.updateUserProfile(userId, validatedData);
-      console.log('User profile updated successfully');
+      console.log('[updateProfile] Successfully updated user', userId, 'result:', updatedUser);
 
-      // Sync basic profile fields with Supabase auth metadata
-      const supabaseUserId = req.user?.id;
-      if (supabaseUserId) {
-        const metadata: any = {};
-        if (validatedData.firstName !== undefined) metadata.firstName = validatedData.firstName;
-        if (validatedData.lastName !== undefined) metadata.lastName = validatedData.lastName;
-
-        if (Object.keys(metadata).length > 0) {
-          metadata.full_name = `${metadata.firstName ?? updatedUser.firstName ?? ''} ${metadata.lastName ?? updatedUser.lastName ?? ''}`.trim();
-          const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
-            user_metadata: metadata,
-          });
-          if (metaError) {
-            console.error('Error syncing Supabase user metadata:', metaError);
-          }
-        }
-      }
+      // DISABLED: Do not sync with Supabase metadata to prevent conflicts
+      // Supabase should only be used for authentication, not as source of profile data
+      console.log('[INFO] Skipping Supabase metadata sync to preserve database as single source of truth');
 
       // Update user languages if provided
       if (Array.isArray(languageIds)) {
@@ -492,25 +478,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Validated profile data:', validatedData);
       
       const updatedUser = await storage.updateUserProfile(authenticatedUserId, validatedData);
-      console.log('User profile updated successfully');
+      console.log('[updateUserProfile] Successfully updated user', authenticatedUserId, 'result:', updatedUser);
 
-      // Sync basic profile fields with Supabase auth metadata
-      const supabaseUserId = req.user?.id;
-      if (supabaseUserId) {
-        const metadata: any = {};
-        if (validatedData.firstName !== undefined) metadata.firstName = validatedData.firstName;
-        if (validatedData.lastName !== undefined) metadata.lastName = validatedData.lastName;
-
-        if (Object.keys(metadata).length > 0) {
-          metadata.full_name = `${metadata.firstName ?? updatedUser.firstName ?? ''} ${metadata.lastName ?? updatedUser.lastName ?? ''}`.trim();
-          const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
-            user_metadata: metadata,
-          });
-          if (metaError) {
-            console.error('Error syncing Supabase user metadata:', metaError);
-          }
-        }
-      }
+      // DISABLED: Do not sync with Supabase metadata to prevent conflicts
+      // Supabase should only be used for authentication, not as source of profile data
+      console.log('[INFO] Skipping Supabase metadata sync to preserve database as single source of truth');
 
       // Update user languages if provided
       if (Array.isArray(languageIds)) {
