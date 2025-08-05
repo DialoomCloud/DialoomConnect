@@ -371,15 +371,17 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   createdAt: true,
   updatedAt: true,
 }).partial().extend({
-  dateOfBirth: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
-  nationality: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
-  countryCode: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
-  title: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
-  description: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
-  address: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
-  city: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
-  postalCode: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  // Añade .nullable() a todos los campos opcionales que pueden venir vacíos
+  dateOfBirth: z.string().nullable().optional(),
+  nationality: z.string().nullable().optional(),
+  countryCode: z.string().nullable().optional(),
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
   primaryLanguageId: z.number().nullable().optional(),
+  phone: z.string().nullable().optional(),
 });
 
 export const insertUserLanguageSchema = createInsertSchema(userLanguages).omit({
