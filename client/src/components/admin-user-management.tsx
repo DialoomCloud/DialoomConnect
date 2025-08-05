@@ -140,18 +140,31 @@ export function AdminUserManagement() {
   const handleRoleSwitch = async (userId: string, role: 'admin' | 'host') => {
     if (confirm(`¿Quieres tomar el rol de ${role} del usuario seleccionado?`)) {
       try {
-        await apiRequest(`/api/admin/impersonate`, {
+        const response = await apiRequest(`/api/admin/impersonate`, {
           method: 'POST',
-          body: { userId, role }
+          body: { userId }
         });
+        
+        const data = await response.json();
         
         toast({
-          title: "Rol cambiado",
-          description: `Ahora estás actuando como ${role}`,
+          title: "Preparado para impersonar",
+          description: data.message,
         });
         
-        // Reload page to apply role changes
-        window.location.reload();
+        // Store impersonation data in localStorage for client-side handling
+        localStorage.setItem('impersonation', JSON.stringify({
+          active: true,
+          user: data.impersonatedUser,
+          originalAdminId: data.originalAdminId
+        }));
+        
+        // Redirect to the appropriate dashboard
+        if (data.impersonatedUser.isHost) {
+          window.location.href = '/dashboard';
+        } else {
+          window.location.href = '/';
+        }
       } catch (error: any) {
         toast({
           title: "Error",

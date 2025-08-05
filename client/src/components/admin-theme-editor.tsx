@@ -7,6 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Palette, RotateCcw, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface ThemeColor {
   key: string;
@@ -44,18 +46,30 @@ export function AdminThemeEditor() {
   const [colors, setColors] = useState<ThemeColor[]>(DEFAULT_THEME_COLORS);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Load current theme colors from CSS variables on component mount
+  // Load saved theme configuration from backend
+  const { data: adminConfig } = useQuery<Array<{ key: string; value: any; description?: string }>>({
+    queryKey: ['/api/admin/config'],
+  });
+
+  // Load saved theme colors when config is fetched
   useEffect(() => {
-    const root = document.documentElement;
-    const computedStyle = getComputedStyle(root);
-    
-    const updatedColors = colors.map(color => ({
-      ...color,
-      value: computedStyle.getPropertyValue(`--${color.key}`).trim() || color.value
-    }));
-    
-    setColors(updatedColors);
-  }, []);
+    if (adminConfig) {
+      const themeConfig = adminConfig.find((config: any) => config.key === 'theme_colors');
+      if (themeConfig?.value) {
+        // Update colors from saved configuration
+        const updatedColors = colors.map(color => ({
+          ...color,
+          value: themeConfig.value[color.key] || color.value
+        }));
+        setColors(updatedColors);
+        
+        // Apply saved colors to CSS
+        updatedColors.forEach(color => {
+          applyColorToCSS(color.key, color.value);
+        });
+      }
+    }
+  }, [adminConfig]);
 
   const handleColorChange = (key: string, value: string) => {
     setColors(prev => prev.map(color => 
@@ -92,8 +106,27 @@ export function AdminThemeEditor() {
 
   const saveTheme = async () => {
     try {
-      // Here you would typically save to a backend/database
-      // For now, we'll just apply the colors and show success
+      // Convert colors to object format for storage
+      const themeColorsObject = colors.reduce((acc, color) => ({
+        ...acc,
+        [color.key]: color.value
+      }), {});
+
+      // Save to backend
+      const response = await apiRequest('/api/admin/config', {
+        method: 'POST',
+        body: {
+          key: 'theme_colors',
+          value: themeColorsObject,
+          description: 'Colores del tema de la aplicación'
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save theme');
+      }
+      
+      // Apply colors to CSS
       applyAllColors();
       
       // Store in localStorage as fallback
@@ -105,6 +138,7 @@ export function AdminThemeEditor() {
         description: "Los cambios de color se han aplicado correctamente",
       });
     } catch (error) {
+      console.error('Error saving theme:', error);
       toast({
         title: "Error",
         description: "No se pudo guardar el tema",

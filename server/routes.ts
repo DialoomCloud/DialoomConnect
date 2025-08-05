@@ -69,7 +69,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Supabase auth routes
   setupAuthRoutes(app);
 
-
+  // Global error handler to ensure JSON responses for multer and other errors
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof multer.MulterError) {
+      // Handle multer-specific errors
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'Archivo demasiado grande. Límite de 50MB.' });
+      }
+      return res.status(400).json({ message: `Error de carga: ${err.message}` });
+    } else if (err) {
+      // Handle other errors (including multer fileFilter errors)
+      console.error('Upload error:', err);
+      return res.status(400).json({ 
+        message: err.message || 'Error al procesar la solicitud',
+        error: process.env.NODE_ENV === 'development' ? err.toString() : undefined
+      });
+    }
+    next();
+  });
   
   // Serve uploaded files with GDPR compliance
   app.use('/uploads', (req, res, next) => {
@@ -3948,27 +3965,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin role impersonation endpoint
   app.post('/api/admin/impersonate', isAdminAuthenticated, async (req: any, res) => {
     try {
-      const { userId, role } = req.body;
+      const { userId } = req.body;
       
-      if (!userId || !role) {
-        return res.status(400).json({ message: 'User ID y rol son requeridos' });
+      if (!userId) {
+        return res.status(400).json({ message: 'User ID es requerido' });
       }
 
-      if (!['admin', 'host'].includes(role)) {
-        return res.status(400).json({ message: 'Rol inválido' });
+      // Get the user to impersonate
+      const targetUser = await storage.getUser(userId);
+      
+      if (!targetUser) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
       }
 
-      // Store impersonation in session/token for security tracking
-      req.session.impersonating = { userId, role, originalAdmin: req.userId };
-      
+      // Instead of using sessions, return the user data so the client can handle the impersonation
+      // The client should store this information and use it for subsequent requests
       res.json({ 
         success: true, 
-        message: `Impersonando como ${role}`,
-        impersonating: { userId, role }
+        message: `Preparado para impersonar a ${targetUser.firstName} ${targetUser.lastName}`,
+        impersonatedUser: {
+          id: targetUser.id,
+          email: targetUser.email,
+          firstName: targetUser.firstName,
+          lastName: targetUser.lastName,
+          isHost: targetUser.isHost,
+          isAdmin: targetUser.isAdmin,
+          role: targetUser.isHost ? 'host' : targetUser.isAdmin ? 'admin' : 'user'
+        },
+        originalAdminId: req.userId
       });
     } catch (error) {
       console.error('Error in role impersonation:', error);
-      res.status(500).json({ message: 'Error al cambiar rol' });
+      res.status(500).json({ message: 'Error al preparar impersonación' });
     }
   });
 

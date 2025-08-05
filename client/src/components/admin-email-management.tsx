@@ -93,7 +93,7 @@ export function AdminEmailManagement() {
   });
 
   // Fetch all users for test email selector (will filter hosts on client side)
-  const { data: allUsers = [] } = useQuery({
+  const { data: allUsers = [] } = useQuery<any[]>({
     queryKey: ['/api/admin/users'],
   });
 
@@ -768,11 +768,17 @@ export function AdminEmailManagement() {
                       <SelectValue placeholder="Seleccionar host..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {hosts.map((host: any) => (
-                        <SelectItem key={host.id} value={host.id}>
-                          {host.firstName} {host.lastName} ({host.email})
-                        </SelectItem>
-                      ))}
+                      {hosts.length > 0 ? (
+                        hosts.map((host: any) => (
+                          <SelectItem key={host.id} value={host.id}>
+                            {host.firstName} {host.lastName} ({host.email})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="px-2 py-1 text-sm text-muted-foreground">
+                          No hay hosts disponibles. Los usuarios deben tener el flag "isHost" activado.
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                   <Button 

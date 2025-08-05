@@ -9,6 +9,23 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Admin Panel Bug Fixes** (January 8, 2025): Fixed multiple critical issues in admin panel functionality
+  - **Theme Editor Enhancement**: Extended theme editor to support text colors, state colors, and background colors
+    - Added comprehensive color configuration for primary/secondary text, muted text, error/warning/success states
+    - Implemented background color support for light/dark themes
+    - Fixed theme saving to use apiRequest instead of raw fetch
+  - **Role Impersonation Fix**: Fixed Error 500 when admins impersonate other users
+    - Removed session dependency that was causing authentication conflicts
+    - Implemented proper JWT-based authentication response for role switching
+    - Impersonation now correctly returns JWT token without modifying server sessions
+  - **JSON/Doctype Error Fix**: Fixed HTML error pages being returned instead of JSON for upload endpoints
+    - Added comprehensive multer error handling middleware to all upload routes
+    - All upload errors now properly return JSON responses with error codes
+    - Prevents confusing Doctype errors in admin UI
+  - **Hosts Dropdown Fix**: Fixed empty hosts dropdown in email test functionality
+    - Added helpful message when no hosts are available
+    - Users must have "isHost" flag activated to appear in dropdown
+    - Improved user experience with clear guidance
 - **Admin Role Assignment Fix** (January 8, 2025): Fixed error 500 when admins try to assign admin roles to users
   - Root cause: updateUserProfile() function was missing role-related fields (isAdmin, isHost, role, isActive, isVerified)
   - Extended updateUserProfile() to handle all admin/role fields in storage layer
