@@ -539,11 +539,19 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       const updatePromises = [] as Promise<unknown>[];
 
       // Update profile with selected languages
-      console.log('Updating profile with cleaned data:', { ...cleanedData, languageIds: selectedLanguages });
-      updatePromises.push(updateProfileMutation.mutateAsync({
-        ...cleanedData,
-        languageIds: selectedLanguages,
-      }));
+      const profileDataToSend = { ...cleanedData, languageIds: selectedLanguages };
+      console.log('🚀 [PROFILE SAVE] Sending profile data to server:', {
+        address: profileDataToSend.address,
+        phone: profileDataToSend.phone,
+        city: profileDataToSend.city,
+        postalCode: profileDataToSend.postalCode,
+        title: profileDataToSend.title,
+        description: profileDataToSend.description,
+        nationality: profileDataToSend.nationality,
+        dateOfBirth: profileDataToSend.dateOfBirth,
+        allData: profileDataToSend
+      });
+      updatePromises.push(updateProfileMutation.mutateAsync(profileDataToSend));
 
       // Update categories
       if (selectedCategories.length > 0) {

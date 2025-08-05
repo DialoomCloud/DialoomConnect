@@ -467,15 +467,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { skillIds, languageIds, ...profileData } = req.body;
       
-      console.log('User profile update request:', {
+      console.log('🔍 [SERVER] User profile update request:', {
         userId: authenticatedUserId,
-        profileData,
+        address: profileData.address,
+        phone: profileData.phone,
+        city: profileData.city,
+        postalCode: profileData.postalCode,
+        title: profileData.title,
+        description: profileData.description,
+        nationality: profileData.nationality,
+        dateOfBirth: profileData.dateOfBirth,
+        fullProfileData: profileData,
         skillIds,
         languageIds,
       });
       
       const validatedData = updateUserProfileSchema.parse(profileData);
-      console.log('Validated profile data:', validatedData);
+      console.log('✅ [SERVER] Validated profile data:', {
+        address: validatedData.address,
+        phone: validatedData.phone,
+        city: validatedData.city,
+        postalCode: validatedData.postalCode,
+        title: validatedData.title,
+        description: validatedData.description,
+        nationality: validatedData.nationality,
+        dateOfBirth: validatedData.dateOfBirth,
+        fullValidatedData: validatedData
+      });
       
       const updatedUser = await storage.updateUserProfile(authenticatedUserId, validatedData);
       console.log('[updateUserProfile] Successfully updated user', authenticatedUserId, 'result:', updatedUser);
