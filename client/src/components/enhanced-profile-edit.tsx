@@ -138,24 +138,45 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
 
-  // Form setup
+  // Form setup with dynamic values that sync with user data
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: typedUser?.firstName || "",
-      lastName: typedUser?.lastName || "",
-      dateOfBirth: typedUser?.dateOfBirth || "",
-      nationality: typedUser?.nationality || "",
-      title: typedUser?.title || "",
-      description: typedUser?.description || "",
-      address: typedUser?.address || "",
-      city: typedUser?.city || "",
-      postalCode: typedUser?.postalCode || "",
-      countryCode: typedUser?.countryCode || "",
-      primaryLanguageId: typedUser?.primaryLanguageId || undefined,
-      phone: typedUser?.phone || "",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      nationality: "",
+      title: "",
+      description: "",
+      address: "",
+      city: "",
+      postalCode: "",
+      countryCode: "",
+      primaryLanguageId: undefined,
+      phone: "",
     },
   });
+
+  // Sync form with current user data whenever user changes
+  useEffect(() => {
+    if (typedUser) {
+      console.log('Syncing form with user data:', typedUser);
+      form.reset({
+        firstName: typedUser.firstName || "",
+        lastName: typedUser.lastName || "",
+        dateOfBirth: typedUser.dateOfBirth || "",
+        nationality: typedUser.nationality || "",
+        title: typedUser.title || "",
+        description: typedUser.description || "",
+        address: typedUser.address || "",
+        city: typedUser.city || "",
+        postalCode: typedUser.postalCode || "",
+        countryCode: typedUser.countryCode || "",
+        primaryLanguageId: typedUser.primaryLanguageId || undefined,
+        phone: typedUser.phone || "",
+      });
+    }
+  }, [typedUser, form]);
 
   // Data queries
   const { data: socialPlatforms = [] } = useQuery({
