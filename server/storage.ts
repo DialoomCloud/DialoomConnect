@@ -524,6 +524,16 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     console.log('[updateUserProfile] Successfully updated user', id, ', result:', user);
+    
+    // Also fetch the complete user to verify what was actually saved
+    const [completeUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+    
+    console.log('[updateUserProfile] Complete user from select:', completeUser);
+    
     return user;
   }
 
