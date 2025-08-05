@@ -72,6 +72,7 @@ export interface IStorage {
   // User operations
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   getUser(id: string): Promise<User | undefined>;
+  getUserById(id: string): Promise<User | undefined>; // Alias for getUser
   getUserComplete(id: string): Promise<User | undefined>; // Get complete user profile without censoring
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -446,6 +447,10 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserById(id: string): Promise<User | undefined> {
+    return this.getUser(id);
+  }
+
   async getAllUsersForAdmin(): Promise<User[]> {
     const allUsers = await db.select().from(users);
     // Return all user data for admin
@@ -649,8 +654,7 @@ export class DatabaseStorage implements IStorage {
     // If deletion was successful and content has a URL (local file), delete from object storage
     if ((result?.rowCount || 0) > 0 && content[0].url && content[0].type !== 'youtube') {
       try {
-        const { objectStorage } = await import('./object-storage');
-        await objectStorage.deleteObject(content[0].url);
+        await replitStorage.deleteObject(content[0].url);
         console.log(`Deleted file from object storage: ${content[0].url}`);
       } catch (error) {
         console.error(`Failed to delete file from object storage: ${content[0].url}`, error);
@@ -1001,10 +1005,7 @@ export class DatabaseStorage implements IStorage {
 
   async getHostPayments(hostId: string): Promise<StripePayment[]> {
     return await db
-      .select({
-        ...stripePayments,
-        booking: bookings,
-      })
+      .select()
       .from(stripePayments)
       .leftJoin(bookings, eq(stripePayments.bookingId, bookings.id))
       .where(eq(bookings.hostId, hostId))
@@ -1013,10 +1014,7 @@ export class DatabaseStorage implements IStorage {
 
   async getGuestPayments(guestId: string): Promise<StripePayment[]> {
     return await db
-      .select({
-        ...stripePayments,
-        booking: bookings,
-      })
+      .select()
       .from(stripePayments)
       .leftJoin(bookings, eq(stripePayments.bookingId, bookings.id))
       .where(eq(bookings.guestId, guestId))
@@ -1178,7 +1176,7 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(and(
         eq(users.isActive, true),
-        eq(users.createdAt >= startOfMonth, true)
+        gte(users.createdAt, startOfMonth)
       ));
     return result.length;
   }
@@ -1200,7 +1198,7 @@ export class DatabaseStorage implements IStorage {
       .from(bookings)
       .where(and(
         eq(bookings.status, 'completed'),
-        eq(bookings.date >= today.toISOString(), true)
+        gte(bookings.scheduledDate, today.toISOString().split('T')[0])
       ));
     return result.length;
   }
@@ -1215,10 +1213,10 @@ export class DatabaseStorage implements IStorage {
       .from(stripePayments)
       .where(and(
         eq(stripePayments.status, 'succeeded'),
-        eq(stripePayments.createdAt >= startOfMonth, true)
+        gte(stripePayments.createdAt, startOfMonth)
       ));
     
-    return payments.reduce((sum, payment) => sum + payment.amount, 0) / 100; // Convert cents to euros
+    return payments.reduce((sum, payment) => sum + parseFloat(payment.amount.toString()), 0) / 100; // Convert cents to euros
   }
 
   async getRevenueGrowth(): Promise<number> {

@@ -215,8 +215,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         firstName: host.firstName,
         lastName: host.lastName,
         title: host.title,
-        bio: host.bio,
-        professionalCategory: host.professionalCategory,
+        bio: host.description || '',
+        professionalCategory: '',
         skills: [], // Will be populated from user skills relation
         languages: [], // Will be populated from user languages relation
         email: host.email
@@ -226,10 +226,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const profile of hostProfiles) {
         try {
           const skills = await storage.getUserSkills(profile.id);
-          profile.skills = skills.map(s => s.name);
+          profile.skills = skills.map(s => ({ id: s.id, name: '' }));
           
           const languages = await storage.getUserLanguages(profile.id);
-          profile.languages = languages.map(l => l.name);
+          profile.languages = languages.map(l => ({ id: l.id, name: '' }));
         } catch (error) {
           console.error(`Error fetching additional data for host ${profile.id}:`, error);
         }

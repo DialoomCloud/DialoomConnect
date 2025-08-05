@@ -360,6 +360,19 @@ export type SocialPlatform = typeof socialPlatforms.$inferSelect;
 export type UserSocialProfile = typeof userSocialProfiles.$inferSelect;
 export type InsertUserSocialProfile = typeof userSocialProfiles.$inferInsert;
 
+// HostProfile type for API responses
+export interface HostProfile {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  bio?: string;
+  professionalCategory?: string;
+  skills: Array<{ id: string; name: string }>;
+  languages: Array<{ id: string; name: string }>;
+  email?: string;
+}
+
 export const insertMediaContentSchema = createInsertSchema(mediaContent).omit({
   id: true,
   createdAt: true,
