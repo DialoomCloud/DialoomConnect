@@ -9,6 +9,7 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **OAuth Login Redirection Fix** (January 8, 2025): Fixed OAuth login (Google, LinkedIn) to properly redirect users to dashboard instead of home page
 - **Complete Profile Save Fix** (January 8, 2025): Fixed multiple issues preventing profile data from saving correctly
   - Issue 1: Profile edits were reverting to original values after logout/login
     - Root cause: During authentication, Supabase user metadata was overwriting database values

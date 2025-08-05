@@ -49,7 +49,7 @@ export default function LoginPage() {
           
           // Wait a moment for the auth state to propagate
           setTimeout(() => {
-            navigate('/home');
+            navigate('/dashboard');
           }, 100);
         }
       } catch (err) {
@@ -88,8 +88,8 @@ export default function LoginPage() {
         description: "Has iniciado sesión correctamente",
       });
 
-      // Redirect to home to ensure auth state is loaded
-      navigate('/home');
+      // Redirect to dashboard to ensure auth state is loaded
+      navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
