@@ -636,13 +636,18 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Nacionalidad</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
+                            value={field.value || "none"}
+                            defaultValue={field.value || "none"}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecciona tu nacionalidad" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="none">Sin especificar</SelectItem>
                               {typedCountries.map((country: any) => (
                                 <SelectItem key={country.code} value={country.code}>
                                   {country.name}
@@ -758,9 +763,9 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormItem>
                           <FormLabel>País</FormLabel>
                           <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value || ""}
-                            defaultValue={field.value || ""}
+                            onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
+                            value={field.value || "none"}
+                            defaultValue={field.value || "none"}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -768,7 +773,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">Sin especificar</SelectItem>
+                              <SelectItem value="none">Sin especificar</SelectItem>
                               {typedCountries.map((country: any) => (
                                 <SelectItem key={country.code} value={country.code}>
                                   {country.name}
