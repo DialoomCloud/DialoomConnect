@@ -335,10 +335,22 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       return response.json();
     },
     onSuccess: (updatedUser) => {
-      // Update the cache directly with the fresh data from server instead of just invalidating
+      // Update the cache directly with the fresh data from server
       queryClient.setQueryData(["/api/auth/user"], updatedUser);
-      // Also invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // CRITICAL: Update form values immediately with the fresh data
+      Object.keys(updatedUser).forEach(key => {
+        if (form.setValue && updatedUser[key] !== undefined) {
+          // Convert null to empty string for form display
+          const value = updatedUser[key] === null ? "" : updatedUser[key];
+          try {
+            form.setValue(key as any, value);
+          } catch (e) {
+            // Ignore fields that don't exist in form
+          }
+        }
+      });
+      
       // Don't show toast here, we'll show a combined one at the end
     },
     onError: (error: any) => {
