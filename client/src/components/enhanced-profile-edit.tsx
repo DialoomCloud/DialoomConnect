@@ -314,10 +314,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: "Perfil actualizado",
-        description: "Tu información personal se ha guardado correctamente",
-      });
+      // Don't show toast here, we'll show a combined one at the end
     },
     onError: (error: any) => {
       console.error('Profile update error:', error);
@@ -340,10 +337,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/categories", typedUser?.id] });
-      toast({
-        title: "Categorías actualizadas",
-        description: "Tus categorías profesionales se han guardado",
-      });
+      // Don't show toast here, we'll show a combined one at the end
     },
   });
 
@@ -358,10 +352,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/social-profiles", typedUser?.id] });
-      toast({
-        title: "Redes sociales actualizadas",
-        description: "Tus perfiles sociales se han guardado",
-      });
+      // Don't show toast here, we'll show a combined one at the end
     },
   });
 
@@ -488,6 +479,12 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         await updateSocialProfilesMutation.mutateAsync(socialProfiles);
         console.log('Social profiles update completed successfully');
       }
+      
+      // Show single success message after all updates
+      toast({
+        title: "✓ Perfil actualizado exitosamente",
+        description: "Todos tus cambios se han guardado correctamente",
+      });
       
       // Close dialog after successful save
       if (onClose) {
