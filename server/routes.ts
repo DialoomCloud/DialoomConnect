@@ -406,6 +406,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin profile image upload route (for admins uploading images for other users)
+  app.post('/api/admin/upload/profile-image', isAdminAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se proporcionó ninguna imagen" });
+      }
+
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ message: "ID de usuario requerido" });
+      }
+
+      const storagePath = await replitStorage.uploadProfileImage(
+        userId,
+        req.file.buffer,
+        req.file.originalname
+      );
+      
+      // Update user profile with new image path
+      const updatedUser = await storage.updateProfileImage(userId, storagePath);
+
+      // Get user's Supabase ID for metadata sync
+      const userRecord = await storage.getUserById(userId);
+      if (userRecord?.supabaseId) {
+        const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(userRecord.supabaseId, {
+          user_metadata: { avatar_url: storagePath, profileImageUrl: storagePath },
+        });
+        if (metaError) {
+          console.error('Error syncing Supabase profile image:', metaError);
+        }
+      }
+
+      res.json({
+        message: "Imagen de perfil actualizada exitosamente",
+        user: updatedUser,
+        storagePath: storagePath
+      });
+    } catch (error) {
+      console.error("Error uploading profile image (Admin):", error);
+      res.status(500).json({ message: "Error al subir la imagen de perfil" });
+    }
+  });
+
   // Profile routes
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
@@ -2738,11 +2781,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/email-templates', isAdminAuthenticated, async (req: any, res) => {
     try {
+      // Ensure we always return JSON, never HTML
+      res.setHeader('Content-Type', 'application/json');
+      
       const validatedData = createEmailTemplateSchema.parse(req.body);
       const template = await storage.createEmailTemplate(validatedData);
       res.status(201).json(template);
     } catch (error) {
       console.error("Error creating email template:", error);
+      res.setHeader('Content-Type', 'application/json');
+      
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid template data", errors: error.errors });
       }
@@ -2753,11 +2801,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/email-templates/:id', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
+      
+      // Ensure we always return JSON, never HTML
+      res.setHeader('Content-Type', 'application/json');
+      
       const validatedData = updateEmailTemplateSchema.parse(req.body);
       const template = await storage.updateEmailTemplate(id, validatedData);
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
       res.json(template);
     } catch (error) {
       console.error("Error updating email template:", error);
+      res.setHeader('Content-Type', 'application/json');
+      
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid template data", errors: error.errors });
       }

@@ -214,8 +214,9 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
       try {
         const imageFormData = new FormData();
         imageFormData.append('image', profileImageFile);
+        imageFormData.append('userId', userId);
         
-        const uploadResponse = await apiRequest(`/api/users/${userId}/profile-image`, {
+        const uploadResponse = await apiRequest('/api/admin/upload/profile-image', {
           method: 'POST',
           body: imageFormData,
         });

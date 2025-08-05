@@ -95,10 +95,6 @@ export function AdminEmailManagement() {
   // Fetch all users for test email selector (will filter hosts on client side)
   const { data: allUsers = [] } = useQuery({
     queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/admin/users');
-      return response.json();
-    },
   });
 
   // Filter hosts from all users
@@ -107,7 +103,10 @@ export function AdminEmailManagement() {
   // Create template mutation
   const createTemplateMutation = useMutation({
     mutationFn: async (template: any) => {
-      const response = await apiRequest('POST', '/api/admin/email-templates', template);
+      const response = await apiRequest('/api/admin/email-templates', {
+        method: 'POST',
+        body: template
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -131,7 +130,10 @@ export function AdminEmailManagement() {
   // Update template mutation
   const updateTemplateMutation = useMutation({
     mutationFn: async ({ id, ...template }: any) => {
-      const response = await apiRequest('PUT', `/api/admin/email-templates/${id}`, template);
+      const response = await apiRequest(`/api/admin/email-templates/${id}`, {
+        method: 'PUT',
+        body: template
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -154,7 +156,9 @@ export function AdminEmailManagement() {
   // Delete template mutation
   const deleteTemplateMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('DELETE', `/api/admin/email-templates/${id}`);
+      const response = await apiRequest(`/api/admin/email-templates/${id}`, {
+        method: 'DELETE'
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -176,7 +180,9 @@ export function AdminEmailManagement() {
   // Initialize templates mutation
   const initializeTemplatesMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/admin/initialize-email-templates');
+      const response = await apiRequest('/api/admin/initialize-email-templates', {
+        method: 'POST'
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -198,9 +204,12 @@ export function AdminEmailManagement() {
   // Send test email mutation
   const sendTestEmailMutation = useMutation({
     mutationFn: async ({ templateId, recipientId }: { templateId: string; recipientId: string }) => {
-      const response = await apiRequest('POST', '/api/admin/send-test-email', {
-        templateId,
-        recipientId,
+      const response = await apiRequest('/api/admin/send-test-email', {
+        method: 'POST',
+        body: {
+          templateId,
+          recipientId,
+        }
       });
       return response.json();
     },

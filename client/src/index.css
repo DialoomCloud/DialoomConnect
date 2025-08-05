@@ -20,8 +20,14 @@
   --secondary-foreground: 194 100% 15%; /* Dark teal on secondary */
   --accent: 194 50% 85%; /* Light accent teal #B8DCE1 */
   --accent-foreground: 194 100% 15%; /* Dark teal on accent */
-  --destructive: 0 84% 60%; /* Red for errors */
+  --destructive: 0 84% 60%; /* Red for errors/trash */
   --destructive-foreground: 0 0% 100%; /* White on destructive */
+  --success: 158 64% 52%; /* Green for success/published */
+  --success-foreground: 0 0% 100%; /* White on success */
+  --warning: 43 96% 56%; /* Yellow for warnings */
+  --warning-foreground: 0 0% 0%; /* Black on warning */
+  --info: 210 100% 65%; /* Blue for information */
+  --info-foreground: 0 0% 100%; /* White on info */
   --ring: 194 100% 28%; /* Primary teal focus ring */
   --radius: 0.75rem; /* Rounded corners */
   --success: 158 64% 52%; /* Green for success */
@@ -46,11 +52,15 @@
   --secondary-foreground: 194 15% 95%; /* Light teal on secondary */
   --accent: 194 40% 20%; /* Dark accent teal #334D54 */
   --accent-foreground: 194 15% 95%; /* Light teal on accent */
-  --destructive: 0 75% 55%; /* Softer red for dark mode */
+  --destructive: 0 75% 55%; /* Softer red for dark mode/trash */
   --destructive-foreground: 194 15% 95%; /* Light text on destructive */
-  --ring: 194 100% 40%; /* Bright teal focus rings */
-  --success: 158 64% 52%; /* Green for success */
+  --success: 158 64% 52%; /* Green for success/published */
+  --success-foreground: 194 100% 4%; /* Dark text on success */
   --warning: 43 96% 56%; /* Yellow for warnings */
+  --warning-foreground: 194 100% 4%; /* Dark text on warning */
+  --info: 210 100% 65%; /* Blue for information */
+  --info-foreground: 194 100% 4%; /* Dark text on info */
+  --ring: 194 100% 40%; /* Bright teal focus rings */
 }
 
 @layer base {

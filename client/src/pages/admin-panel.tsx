@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge as BadgeComponent } from "@/components/ui/badge";
 import { AdminCompleteUserEditor } from "@/components/admin-complete-user-editor";
 import { AdminObjectStorageBrowser } from "@/components/admin-object-storage-browser";
+import { AdminThemeEditor } from "@/components/admin-theme-editor";
 import { Switch } from "@/components/ui/switch";
 
 interface AdminConfig {
@@ -228,7 +229,9 @@ export default function AdminPanel() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest('DELETE', `/api/admin/users/${userId}`);
+      return apiRequest(`/api/admin/users/${userId}`, {
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
@@ -251,7 +254,10 @@ export default function AdminPanel() {
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: typeof newUserData) => {
-      return apiRequest('POST', '/api/admin/users', userData);
+      return apiRequest('/api/admin/users', {
+        method: 'POST',
+        body: userData
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
@@ -280,7 +286,10 @@ export default function AdminPanel() {
 
   const updateConfigMutation = useMutation({
     mutationFn: async ({ key, value, description }: { key: string; value: string; description: string }) => {
-      return apiRequest('PUT', `/api/admin/config/${key}`, { value, description });
+      return apiRequest(`/api/admin/config/${key}`, {
+        method: 'PUT',
+        body: { value, description }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/config'] });
@@ -300,7 +309,8 @@ export default function AdminPanel() {
   });
 
   const getConfigValue = (key: string): string => {
-    const config = adminConfig?.find((c: AdminConfig) => c.key === key);
+    if (!adminConfig || !Array.isArray(adminConfig)) return '';
+    const config = adminConfig.find((c: AdminConfig) => c.key === key);
     return config?.value || configKeys.find(k => k.key === key)?.defaultValue || '';
   };
 
@@ -790,6 +800,11 @@ export default function AdminPanel() {
             <AdminObjectStorageBrowser />
           </CardContent>
         </Card>
+
+        <Separator />
+
+        {/* Theme Editor */}
+        <AdminThemeEditor />
       </div>
 
       {/* Review Dialog */}
@@ -897,13 +912,19 @@ export default function AdminPanel() {
 
                 try {
                   if (approvalStatus === 'approved') {
-                    await apiRequest('POST', '/api/admin/host-verifications/approve', {
-                      userId: selectedVerification.userId
+                    await apiRequest('/api/admin/host-verifications/approve', {
+                      method: 'POST',
+                      body: {
+                        userId: selectedVerification.userId
+                      }
                     });
                   } else {
-                    await apiRequest('POST', '/api/admin/host-verifications/reject', {
-                      userId: selectedVerification.userId,
-                      reason: rejectionReason
+                    await apiRequest('/api/admin/host-verifications/reject', {
+                      method: 'POST',
+                      body: {
+                        userId: selectedVerification.userId,
+                        reason: rejectionReason
+                      }
                     });
                   }
 
