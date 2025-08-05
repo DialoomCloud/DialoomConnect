@@ -259,7 +259,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         city: typedUser.city || "",
         postalCode: typedUser.postalCode || "",
         countryCode: typedUser.countryCode || "",
-        primaryLanguageId: typedUser.primaryLanguageId || undefined,
+        primaryLanguageId: typedUser.primaryLanguageId || null,
         phone: typedUser.phone || "",
       });
     }
@@ -540,6 +540,9 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         if (value === '' || value === null || value === undefined) {
           // Send null for empty values so backend can handle them properly
           acc[key] = null;
+        } else if (key === 'primaryLanguageId' && typeof value === 'string') {
+          // Convert string to number for primaryLanguageId
+          acc[key] = value ? parseInt(value, 10) : null;
         } else {
           acc[key] = value;
         }
@@ -699,7 +702,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormItem>
                           <FormLabel>Fecha de Nacimiento</FormLabel>
                           <FormControl>
-                            <Input {...field} type="date" />
+                            <Input {...field} value={field.value || ""} type="date" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -712,9 +715,8 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormItem>
                           <FormLabel>Nacionalidad</FormLabel>
                           <Select 
-                            onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
+                            onValueChange={(value) => field.onChange(value === "none" ? null : value)} 
                             value={field.value || "none"}
-                            defaultValue={field.value || "none"}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -743,7 +745,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       <FormItem>
                         <FormLabel>Título Profesional</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Ej: Consultor de Marketing Digital" />
+                          <Input {...field} value={field.value || ""} placeholder="Ej: Consultor de Marketing Digital" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -772,6 +774,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormControl>
                           <Textarea 
                             {...field} 
+                            value={field.value || ""}
                             rows={5}
                             placeholder="Describe tu experiencia, especialidades y cómo puedes ayudar a tus clientes..."
                           />
@@ -794,7 +797,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       <FormItem>
                         <FormLabel>Dirección</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -808,7 +811,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       <FormItem>
                         <FormLabel>Teléfono</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="+34 612 345 678" />
+                          <Input {...field} value={field.value || ""} placeholder="+34 612 345 678" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -823,7 +826,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormItem>
                           <FormLabel>Ciudad</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -836,7 +839,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormItem>
                           <FormLabel>Código Postal</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -852,9 +855,8 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormItem>
                           <FormLabel>País</FormLabel>
                           <Select 
-                            onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
+                            onValueChange={(value) => field.onChange(value === "none" ? null : value)} 
                             value={field.value || "none"}
-                            defaultValue={field.value || "none"}
                           >
                             <FormControl>
                               <SelectTrigger>
