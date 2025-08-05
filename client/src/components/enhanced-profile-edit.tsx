@@ -55,18 +55,18 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-// Schema for form validation
+// Schema for form validation - matching backend transformations
 const profileSchema = z.object({
   firstName: z.string().min(1, "Nombre requerido"),
   lastName: z.string().min(1, "Apellido requerido"),
-  dateOfBirth: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
-  nationality: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
+  dateOfBirth: z.string().optional().transform(val => val?.trim() === '' ? null : val),
+  nationality: z.string().optional().transform(val => val?.trim() === '' ? null : val),
   title: z.string().optional(),
   description: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   postalCode: z.string().optional(),
-  countryCode: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
+  countryCode: z.string().optional().transform(val => val?.trim() === '' ? null : val),
   primaryLanguageId: z.number().optional(),
 });
 
@@ -202,6 +202,25 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       setSelectedCategories(typedUserCategories.map((uc: any) => uc.categoryId));
     }
   }, [typedUserCategories]);
+  
+  // Update form values when user data changes
+  useEffect(() => {
+    if (typedUser) {
+      form.reset({
+        firstName: typedUser.firstName || "",
+        lastName: typedUser.lastName || "",
+        dateOfBirth: typedUser.dateOfBirth || "",
+        nationality: typedUser.nationality || "",
+        title: typedUser.title || "",
+        description: typedUser.description || "",
+        address: typedUser.address || "",
+        city: typedUser.city || "",
+        postalCode: typedUser.postalCode || "",
+        countryCode: typedUser.countryCode || "",
+        primaryLanguageId: typedUser.primaryLanguageId || undefined,
+      });
+    }
+  }, [typedUser, form]);
 
   useEffect(() => {
     if (typedUserSocialProfiles.length > 0) {
