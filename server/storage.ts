@@ -533,15 +533,15 @@ export class DatabaseStorage implements IStorage {
     if (profile.firstName !== undefined) updateData.firstName = profile.firstName;
     if (profile.lastName !== undefined) updateData.lastName = profile.lastName;
     if (profile.dateOfBirth !== undefined) updateData.dateOfBirth = profile.dateOfBirth;
-    if (profile.nationality !== undefined) updateData.nationality = profile.nationality;
-    if (profile.countryCode !== undefined) updateData.countryCode = profile.countryCode;
-    if (profile.title !== undefined) updateData.title = profile.title;
-    if (profile.description !== undefined) updateData.description = profile.description;
-    if (profile.address !== undefined) updateData.address = profile.address;
-    if (profile.city !== undefined) updateData.city = profile.city;
-    if (profile.postalCode !== undefined) updateData.postalCode = profile.postalCode;
+    if (profile.nationality !== undefined) updateData.nationality = profile.nationality === '' ? null : profile.nationality;
+    if (profile.countryCode !== undefined) updateData.countryCode = profile.countryCode === '' ? null : profile.countryCode;
+    if (profile.title !== undefined) updateData.title = profile.title === '' ? null : profile.title;
+    if (profile.description !== undefined) updateData.description = profile.description === '' ? null : profile.description;
+    if (profile.address !== undefined) updateData.address = profile.address === '' ? null : profile.address;
+    if (profile.city !== undefined) updateData.city = profile.city === '' ? null : profile.city;
+    if (profile.postalCode !== undefined) updateData.postalCode = profile.postalCode === '' ? null : profile.postalCode;
     if (profile.primaryLanguageId !== undefined) updateData.primaryLanguageId = profile.primaryLanguageId;
-    if (profile.phone !== undefined) updateData.phone = profile.phone;
+    if (profile.phone !== undefined) updateData.phone = profile.phone === '' ? null : profile.phone;
     
     // Admin/Role fields for admin panel updates
     if (profile.isAdmin !== undefined) updateData.isAdmin = profile.isAdmin;
@@ -649,7 +649,7 @@ export class DatabaseStorage implements IStorage {
     // If deletion was successful and content has a URL (local file), delete from object storage
     if ((result?.rowCount || 0) > 0 && content[0].url && content[0].type !== 'youtube') {
       try {
-        const objectStorage = new ReplitObjectStorage();
+        const { objectStorage } = await import('./object-storage');
         await objectStorage.deleteObject(content[0].url);
         console.log(`Deleted file from object storage: ${content[0].url}`);
       } catch (error) {
@@ -1583,37 +1583,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // User profile operations (for admin complete editing)
-
-
-  async updateUserSkills(userId: string, skillIds: number[]): Promise<void> {
-    // Delete existing skills
-    await db.delete(userSkills).where(eq(userSkills.userId, userId));
-    
-    // Insert new skills
-    if (skillIds.length > 0) {
-      await db.insert(userSkills).values(
-        skillIds.map(skillId => ({
-          userId,
-          skillId
-        }))
-      );
-    }
-  }
-
-  async updateUserLanguages(userId: string, languageIds: number[]): Promise<void> {
-    // Delete existing languages
-    await db.delete(userLanguages).where(eq(userLanguages.userId, userId));
-    
-    // Insert new languages
-    if (languageIds.length > 0) {
-      await db.insert(userLanguages).values(
-        languageIds.map(languageId => ({
-          userId,
-          languageId
-        }))
-      );
-    }
-  }
+  // Note: The main updateUserLanguages and updateUserSkills functions are above with full logging
 
   // Host verification document operations
   async getHostVerificationDocuments(userId: string): Promise<any[]> {
