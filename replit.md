@@ -9,6 +9,12 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Profile Save Fix** (January 8, 2025): Fixed critical profile update failure caused by primaryLanguageId validation error
+  - Issue: Profile updates were failing with Zod validation error "Expected number, received string" for primaryLanguageId
+  - Root cause: Frontend was sending empty string instead of null for empty primaryLanguageId field
+  - Fixed data cleaning logic to properly handle primaryLanguageId as null when empty
+  - Updated Select component to parse string values to integers or null correctly
+  - Now all profile fields save properly including name, date of birth, nationality, address, and languages
 - **Major Authentication Migration** (January 3-4, 2025): Migrated from Replit Auth to Supabase Authentication
   - Created new authentication infrastructure: `server/supabaseAuth.ts`, `client/src/lib/supabase.ts`
   - Updated authentication hooks: `client/src/hooks/useAuth.ts` now uses Supabase with proper session management

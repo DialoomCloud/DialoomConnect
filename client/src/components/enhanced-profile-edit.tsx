@@ -477,10 +477,18 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       console.log('Submitting form data:', data);
       console.log('Selected languages:', selectedLanguages);
       
-      // Clean data - convert null/undefined to empty strings
+      // Clean data - convert null/undefined to empty strings (except for number fields)
       const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
         if (value === null || value === undefined) {
-          acc[key] = '';
+          // primaryLanguageId should be null, not empty string
+          if (key === 'primaryLanguageId') {
+            acc[key] = null;
+          } else {
+            acc[key] = '';
+          }
+        } else if (key === 'primaryLanguageId' && value === '') {
+          // Convert empty string to null for primaryLanguageId
+          acc[key] = null;
         } else {
           acc[key] = value;
         }
@@ -794,7 +802,11 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Idioma Principal</FormLabel>
-                          <Select onValueChange={(val) => field.onChange(parseInt(val))} defaultValue={field.value ? field.value.toString() : undefined}>
+                          <Select 
+                            onValueChange={(val) => field.onChange(val ? parseInt(val) : null)} 
+                            value={field.value ? field.value.toString() : undefined}
+                            defaultValue={field.value ? field.value.toString() : undefined}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecciona un idioma" />
