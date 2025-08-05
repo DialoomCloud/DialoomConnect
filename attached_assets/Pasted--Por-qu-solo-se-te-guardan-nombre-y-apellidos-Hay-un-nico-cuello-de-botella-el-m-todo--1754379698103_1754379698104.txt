@@ -1,0 +1,181 @@
+### Por qué *solo* se te guardan nombre y apellidos
+
+Hay un único cuello de botella: **el método `updateUserProfile` del backend nunca llega a incluir los demás campos en la sentencia SQL**.
+En los logs ves esto:
+
+```ts
+[updateUserProfile] Successfully updated user 36733853, result: {
+  id: '36733853',
+  firstName: 'Ignacio',
+  lastName: 'SM',
+  title: '',
+  description: ''
+}
+```
+
+El objeto que devuelve la función es exactamente lo que **sí** actualiza en la base de datos; el resto de propiedades (`dateOfBirth`, `nationality`, `countryCode`, etc.) se pierden **antes** de llegar a Drizzle/Neon.
+
+---
+
+## 1. Localiza el “filtro” que descarta campos
+
+En `server/storage.ts` (o el archivo equivalente donde tengas la capa de acceso a datos) encontrarás algo parecido a:
+
+```ts
+async updateUserProfile(userId: string, data: UpdateUserProfileInput) {
+  const { firstName, lastName, title, description } = data;   // ← ⚠ pick
+  return db.update(users)
+           .set({ firstName, lastName, title, description })
+           .where(eq(users.id, userId))
+           .returning();
+}
+```
+
+O, si usas Drizzle’s `createInsertSchema`, verás un:
+
+```ts
+const cleanData = updateUserProfileSchema.parse(data);
+const { firstName, lastName, title, description } = cleanData; // ← ⚠
+```
+
+Ese *des-estructurado* o ese `.pick()` es lo que impide que el resto de campos lleguen al `UPDATE`.
+
+> **Solución mínima**
+> Añade los campos que te faltan (y que realmente existen en la tabla) al `set()`:
+>
+> ```ts
+> .set({
+>   firstName,
+>   lastName,
+>   title,
+>   description,
+>   dateOfBirth: cleanData.dateOfBirth,
+>   nationality: cleanData.nationality,
+>   countryCode: cleanData.countryCode,
+>   address: cleanData.address,
+>   city: cleanData.city,
+>   postalCode: cleanData.postalCode,
+> })
+> ```
+
+---
+
+## 2. Alinea nombres *camelCase* ⇄ *snake\_case*
+
+En Neon la columna suele llamarse `date_of_birth`, pero tú llegas con `dateOfBirth`.
+Tienes dos caminos:
+
+1. **Mapeo en la capa de datos**
+   Convierte las claves antes de llamar a Drizzle:
+
+   ```ts
+   const toSnake = (s: string) =>
+     s.replace(/[A-Z]/g, (m) => '_' + m.toLowerCase());
+
+   const dbPayload = Object.fromEntries(
+     Object.entries(cleanData).map(([k, v]) => [toSnake(k), v])
+   );
+   ```
+
+2. **Alias en Drizzle**
+   Define el modelo Drizzle con alias:
+
+   ```ts
+   export const users = pgTable('users', {
+     id: text('id').primaryKey(),
+     firstName: text('first_name'),
+     lastName: text('last_name'),
+     dateOfBirth: date('date_of_birth'),
+     // …
+   });
+   ```
+
+Hazlo **una sola vez** y te quitarás futuros dolores de cabeza.
+
+---
+
+## 3. Permite `null` en el *schema* de validación
+
+Tu frontend ya manda `null` cuando el usuario deja un campo vacío.
+En el backend, añade `.nullable()` (o `.or(z.literal(''))` si prefieres cadena vacía) en **los mismos** campos que en el frontend:
+
+```ts
+export const updateUserProfileSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  dateOfBirth: z.string().nullable().optional(),
+  nationality: z.string().nullable().optional(),
+  countryCode: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+});
+```
+
+De esta forma no verás más `invalid_type – expected string, received null`.
+
+---
+
+## 4. Convertir la operación en “todo-o-nada” (UX)
+
+En tu `enhanced-profile-edit.tsx` ejecuta las tres mutaciones en paralelo y muestra **un solo toast**:
+
+```ts
+await Promise.all([
+  updateProfileMutation.mutateAsync({ ...data, languageIds }),
+  updateCategoriesMutation.mutateAsync(selectedCategories),
+  updateSocialProfilesMutation.mutateAsync(socialProfiles),
+]);
+
+toast.success('✓ Perfil actualizado correctamente');
+```
+
+Si cualquiera falla, el `catch` mostrará **un único** mensaje de error coherente.
+
+---
+
+## 5.  Asegura que *upsertUser* no sobre-escriba
+
+Cuando el usuario vuelve a iniciar sesión, `upsertUser` no debe machacar los campos que ya estén en Neon. Cambia la lógica a:
+
+```ts
+if (exists) {
+  return exists;          // ❌ no hagas UPDATE aquí
+} else {
+  // primer login → INSERT
+}
+```
+
+Así, Supabase solo registra la sesión; tu perfil queda intacto.
+
+---
+
+## 6. Lista de comprobación rápida
+
+| Paso                                                         | ¿Hecho? |
+| ------------------------------------------------------------ | ------- |
+| `updateUserProfile` incluye **todos** los campos en `.set()` | ☐       |
+| Alias camelCase ⇄ snake\_case configurados                   | ☐       |
+| Zod schemas llevan `.nullable()`                             | ☐       |
+| `Promise.all` + toast único en frontend                      | ☐       |
+| `upsertUser` deja de hacer UPDATE a usuarios existentes      | ☐       |
+
+---
+
+### Próximos pasos
+
+1. Ajusta el backend como en los puntos 1–3.
+2. Reinicia tu servidor y repite la prueba de editar **fecha de nacimiento** y **país**.
+3. Verifica en Neon con
+
+   ```sql
+   SELECT first_name, last_name, date_of_birth, nationality, country_code
+   FROM users
+   WHERE id = '<tu-uid>';
+   ```
+
+   Deberías ver los nuevos valores.
+
+Con estos cambios el flujo queda sólido: Supabase **solo** autentica; Neon guarda absolutamente todo el perfil; y el usuario recibe una confirmación clara y única.

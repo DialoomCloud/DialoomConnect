@@ -495,24 +495,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(id: string, profile: UpdateUserProfile): Promise<User> {
+    console.log('[updateUserProfile] Updating user', id, 'with data:', profile);
+    
     const updateData: any = {
-      ...profile,
       updatedAt: new Date(),
     };
 
-    // Remove fields that are managed via separate relations
-    if (updateData.languageIds) {
-      delete updateData.languageIds;
-    }
-    if (updateData.skillIds) {
-      delete updateData.skillIds;
-    }
+    // Map all the fields explicitly to ensure they reach the database
+    if (profile.firstName !== undefined) updateData.firstName = profile.firstName;
+    if (profile.lastName !== undefined) updateData.lastName = profile.lastName;
+    if (profile.dateOfBirth !== undefined) updateData.dateOfBirth = profile.dateOfBirth;
+    if (profile.nationality !== undefined) updateData.nationality = profile.nationality;
+    if (profile.countryCode !== undefined) updateData.countryCode = profile.countryCode;
+    if (profile.title !== undefined) updateData.title = profile.title;
+    if (profile.description !== undefined) updateData.description = profile.description;
+    if (profile.address !== undefined) updateData.address = profile.address;
+    if (profile.city !== undefined) updateData.city = profile.city;
+    if (profile.postalCode !== undefined) updateData.postalCode = profile.postalCode;
+    if (profile.primaryLanguageId !== undefined) updateData.primaryLanguageId = profile.primaryLanguageId;
+    if (profile.phone !== undefined) updateData.phone = profile.phone;
+
+    console.log('[updateUserProfile] Final update data:', updateData);
 
     const [user] = await db
       .update(users)
       .set(updateData)
       .where(eq(users.id, id))
       .returning();
+    
+    console.log('[updateUserProfile] Successfully updated user', id, ', result:', user);
     return user;
   }
 

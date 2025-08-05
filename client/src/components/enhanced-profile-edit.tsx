@@ -59,15 +59,16 @@ import { supabase } from "@/lib/supabase";
 const profileSchema = z.object({
   firstName: z.string().min(1, "Nombre requerido"),
   lastName: z.string().min(1, "Apellido requerido"),
-  dateOfBirth: z.string().optional(),
-  nationality: z.string().optional(),
-  title: z.string().optional(),
-  description: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  postalCode: z.string().optional(),
-  countryCode: z.string().optional(),
-  primaryLanguageId: z.number().optional(),
+  dateOfBirth: z.string().nullable().optional(),
+  nationality: z.string().nullable().optional(),
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  countryCode: z.string().nullable().optional(),
+  primaryLanguageId: z.number().nullable().optional(),
+  phone: z.string().nullable().optional(),
 });
 
 const socialProfileSchema = z.object({
@@ -152,6 +153,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       postalCode: typedUser?.postalCode || "",
       countryCode: typedUser?.countryCode || "",
       primaryLanguageId: typedUser?.primaryLanguageId || undefined,
+      phone: typedUser?.phone || "",
     },
   });
 
@@ -218,6 +220,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         postalCode: typedUser.postalCode || "",
         countryCode: typedUser.countryCode || "",
         primaryLanguageId: typedUser.primaryLanguageId || undefined,
+        phone: typedUser.phone || "",
       });
     }
   }, [typedUser, form]);
@@ -724,6 +727,20 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         <FormLabel>Dirección</FormLabel>
                         <FormControl>
                           <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teléfono</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="+34 612 345 678" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
