@@ -518,10 +518,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       // Wait for all updates to complete
       await Promise.all(updatePromises);
       console.log('All profile updates completed successfully');
-      
-      // Wait for cache to be refreshed with new data
-      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
-      console.log('User cache refreshed with updated data');
 
       // Show single success message after all updates
       toast({

@@ -24,7 +24,12 @@
   - Issue 4: Drizzle .returning() bug with PostgreSQL was only returning partial field updates
     - Replaced .returning() with separate SELECT after UPDATE to get complete user data
     - This ensures all profile fields are properly returned after updates
-  - Now ALL profile fields save correctly and persist across login sessions
+  - Issue 5: UI cache desynchronization causing saved data to disappear from form fields
+    - Root cause: Duplicate updateUserProfile methods - one buggy with .returning(), one correct with SELECT
+    - Removed duplicate method that was overriding the correct implementation
+    - Fixed TanStack Query cache management to use setQueryData instead of conflicting refetchQueries
+    - Removed automatic modal closure to allow users to verify data persistence
+  - Now ALL profile fields save correctly and persist in UI across all interactions
 - **Profile Save Fix** (January 8, 2025): Fixed critical profile update failure caused by primaryLanguageId validation error
   - Issue: Profile updates were failing with Zod validation error "Expected number, received string" for primaryLanguageId
   - Root cause: Frontend was sending empty string instead of null for empty primaryLanguageId field
