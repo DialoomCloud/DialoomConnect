@@ -55,18 +55,18 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-// Schema for form validation - matching backend transformations
+// Schema for form validation
 const profileSchema = z.object({
   firstName: z.string().min(1, "Nombre requerido"),
   lastName: z.string().min(1, "Apellido requerido"),
-  dateOfBirth: z.string().optional().transform(val => val?.trim() === '' ? null : val),
-  nationality: z.string().optional().transform(val => val?.trim() === '' ? null : val),
+  dateOfBirth: z.string().optional(),
+  nationality: z.string().optional(),
   title: z.string().optional(),
   description: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   postalCode: z.string().optional(),
-  countryCode: z.string().optional().transform(val => val?.trim() === '' ? null : val),
+  countryCode: z.string().optional(),
   primaryLanguageId: z.number().optional(),
 });
 
@@ -477,10 +477,20 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       console.log('Submitting form data:', data);
       console.log('Selected languages:', selectedLanguages);
       
+      // Clean data - convert null/undefined to empty strings
+      const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
+        if (value === null || value === undefined) {
+          acc[key] = '';
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as any);
+      
       // Update profile
-      console.log('Updating profile with data:', { ...data, languageIds: selectedLanguages });
+      console.log('Updating profile with cleaned data:', { ...cleanedData, languageIds: selectedLanguages });
       await updateProfileMutation.mutateAsync({
-        ...data,
+        ...cleanedData,
         languageIds: selectedLanguages,
       });
       console.log('Profile update completed successfully');
@@ -747,13 +757,18 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>País</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value || ""}
+                            defaultValue={field.value || ""}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecciona un país" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="">Sin especificar</SelectItem>
                               {typedCountries.map((country: any) => (
                                 <SelectItem key={country.code} value={country.code}>
                                   {country.name}
