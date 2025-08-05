@@ -1,0 +1,138 @@
+Claro, he analizado en profundidad todo el contexto que has proporcionado: el problema persistente con el guardado de perfiles, tu hipótesis sobre la sincronización entre Supabase y Neon, y los detallados logs de las actuaciones del agente de Replit y de la consola de tu navegador.
+
+Has hecho un excelente trabajo de diagnóstico y tu intuición es en gran parte correcta. El problema es una combinación de dos factores clave que la solución final propuesta por el agente de Replit intentó corregir, pero que es crucial aplicar correctamente.
+
+A continuación, te presento un análisis detallado del porqué sigue fallando y la solución definitiva que integra y refina los hallazgos del agente.
+
+Análisis Definitivo del Problema
+
+Existen dos problemas distintos que ocurren en momentos diferentes:
+
+El Fallo al Guardar (Error Inmediato): Cuando haces clic en "Guardar" en el perfil, algunos campos (como fecha de nacimiento, país, etc.) no se guardan. Esto se debe a un error de validación en el backend.
+
+Evidencia Clave: El log del agente de Replit es inequívoco: {"code":"invalid_type","expected":"string","received":"null","path":["countryCode"],"message":"Expected string, received null"}.
+
+Causa Raíz: Tu frontend, al dejar un campo opcional vacío (como el país), lo envía al backend como null. Sin embargo, tu esquema de validación Zod en shared/schema.ts no estaba preparado para aceptar null para estos campos, solo string o undefined. Aunque el agente intentó varios arreglos, la solución más robusta y correcta es hacer que el backend sea flexible y acepte null.
+
+La Reversión de Datos (Error Post-Login): Después de iniciar sesión, los datos del perfil que sí se habían guardado (como el nombre y apellido) se revierten a los valores originales que tenía el usuario al registrarse a través de Supabase.
+
+Evidencia Clave: Tu propia hipótesis y la investigación del agente sobre la función upsertUser.
+
+Causa Raíz: La lógica de upsertUser en server/storage.ts estaba diseñada para que, cada vez que un usuario iniciara sesión, se tomaran los datos de Supabase (que son mínimos: nombre, email, foto) y se sobrescribieran en tu base de datos de Neon, borrando así cualquier cambio detallado que hubieras guardado previamente.
+
+La solución que te proporcionó el agente en el fichero Pasted-La-Soluci-n-Definitiva...txt es, de hecho, la correcta y aborda ambos problemas. Es muy probable que el fallo persistente se deba a que uno de los dos pasos no se aplicó completamente o hay un pequeño detalle restante.
+
+La Solución Definitiva (Confirmada y Refinada)
+
+Vamos a aplicar la solución del agente de forma estructurada, ya que su lógica es la correcta para resolver este problema de raíz. El principio clave es: Supabase es solo el portero que verifica quién eres. Tu base de datos Neon es la única fuente de verdad para los datos del perfil.
+
+Paso 1: Evitar que Supabase Sobrescriba tus Datos (Corregir la Reversión de Datos)
+
+Modificaremos la función upsertUser para que sea "inteligente". Si el usuario ya existe en tu base de datos de Neon, no tocará sus datos de perfil durante el inicio de sesión.
+
+Abre el archivo: server/storage.ts
+
+Busca la función: async upsertUser(...)
+
+Reemplázala COMPLETAMENTE con esta versión:
+
+Generated typescript
+// en server/storage.ts
+
+async upsertUser(userData: UpsertUser & { provider?: string; providerUserId?: string }): Promise<User> {
+  // 1. Busca si ya existe un usuario con ese email en tu base de datos Neon
+  const [existingUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, userData.email))
+    .limit(1);
+
+  if (existingUser) {
+    // 2. SI EXISTE: No actualices su perfil. Simplemente devuelve el usuario que ya tienes.
+    console.log(`Usuario existente ${userData.email} encontrado. Omitiendo actualización de perfil desde Supabase.`);
+    
+    // Asegúrate de que el proveedor de OAuth esté vinculado si es necesario
+    if (userData.provider && userData.providerUserId) {
+      await this.linkAuthProvider(existingUser.id, userData.provider, userData.providerUserId, userData.email);
+    }
+    
+    return existingUser;
+  } else {
+    // 3. SI NO EXISTE: Créalo por primera vez con los datos de Supabase.
+    console.log(`Creando nuevo usuario para ${userData.email} con datos de Supabase.`);
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profileImageUrl: userData.profileImageUrl,
+        // Asegúrate de que los campos obligatorios tengan valores por defecto
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    // Vincula el proveedor de OAuth al nuevo usuario
+    if (userData.provider && userData.providerUserId) {
+      await this.linkAuthProvider(newUser.id, userData.provider, userData.providerUserId, userData.email);
+    }
+    
+    return newUser;
+  }
+}
+
+Paso 2: Arreglar el Guardado de Campos Opcionales (Corregir el Fallo al Guardar)
+
+Haremos que el esquema de validación del backend sea más flexible para aceptar campos vacíos (null), que es lo que causa el error 400.
+
+Abre el archivo: shared/schema.ts
+
+Busca la definición: updateUserProfileSchema
+
+Reemplázala COMPLETAMENTE con esta versión que acepta null en los campos opcionales:
+
+Generated typescript
+// en shared/schema.ts
+
+export const updateUserProfileSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial().extend({
+  // Añade .nullable() a todos los campos opcionales que pueden venir vacíos
+  dateOfBirth: z.string().nullable().optional(),
+  nationality: z.string().nullable().optional(),
+  countryCode: z.string().nullable().optional(),
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  primaryLanguageId: z.number().nullable().optional(),
+  phone: z.string().nullable().optional(),
+});
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+TypeScript
+IGNORE_WHEN_COPYING_END
+Resumen Final y Qué Hacer Ahora
+
+Quédate con Supabase: El problema no es la herramienta, sino la "fontanería" de la integración, que ahora estamos corrigiendo. Es el enfoque correcto para una autenticación robusta.
+
+Aplica los dos cambios de código que te he proporcionado. Son las dos mitades de la solución completa.
+
+Reinicia la aplicación para que los cambios en el backend surtan efecto.
+
+Una vez aplicados estos dos cambios, el sistema funcionará como esperas:
+
+Podrás editar TODOS los campos de tu perfil (nombre, foto, fecha de nacimiento, país, dirección, etc.) y hacer clic en "Guardar".
+
+La operación de guardado tendrá éxito porque el backend ahora aceptará los campos vacíos como null.
+
+Podrás cerrar sesión y volver a entrar, y verás que TODOS tus cambios persisten, porque la nueva lógica de upsertUser ya no los sobrescribirá con los datos básicos de Supabase.
+
+El análisis del agente de Replit fue correcto al final, pero es posible que la implementación o la explicación no fueran del todo claras. Siguiendo estos dos pasos, el problema quedará resuelto de forma definitiva.
