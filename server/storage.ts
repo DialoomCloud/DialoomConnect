@@ -72,6 +72,7 @@ export interface IStorage {
   // User operations
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   getUser(id: string): Promise<User | undefined>;
+  getUserComplete(id: string): Promise<User | undefined>; // Get complete user profile without censoring
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
@@ -305,6 +306,30 @@ export class DatabaseStorage implements IStorage {
         passwordHash: null,
       };
     }
+    return user;
+  }
+
+  // Get complete user profile (for own profile access)
+  async getUserComplete(id: string): Promise<User | undefined> {
+    console.log('🔍 [STORAGE] Getting complete user profile for:', id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    if (user) {
+      console.log('✅ [STORAGE] Found complete user profile:', {
+        id: user.id,
+        address: user.address,
+        phone: user.phone,
+        city: user.city,
+        postalCode: user.postalCode,
+        title: user.title,
+        description: user.description
+      });
+      // Return complete profile without censoring personal information  
+      return {
+        ...user,
+        passwordHash: null, // Only hide password hash for security
+      };
+    }
+    console.log('❌ [STORAGE] User not found:', id);
     return user;
   }
 

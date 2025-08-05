@@ -132,8 +132,9 @@ export function setupAuthRoutes(app: Express) {
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const user = req.user;
-      // Use the database ID, not the Supabase ID
-      const dbUser = await storage.getUser(req.userId || user.dbId);
+      // Use the database ID, not the Supabase ID  
+      // Use getUserComplete to get full profile for own user access
+      const dbUser = await storage.getUserComplete(req.userId || user.dbId);
       
       if (dbUser) {
         // Return complete user profile from database
