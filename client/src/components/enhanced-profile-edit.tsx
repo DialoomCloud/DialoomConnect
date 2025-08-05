@@ -334,7 +334,10 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
+      // Update the cache directly with the fresh data from server instead of just invalidating
+      queryClient.setQueryData(["/api/auth/user"], updatedUser);
+      // Also invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       // Don't show toast here, we'll show a combined one at the end
     },
@@ -515,6 +518,10 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       // Wait for all updates to complete
       await Promise.all(updatePromises);
       console.log('All profile updates completed successfully');
+      
+      // Wait for cache to be refreshed with new data
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
+      console.log('User cache refreshed with updated data');
 
       // Show single success message after all updates
       toast({
@@ -522,7 +529,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         description: "Todos tus cambios se han guardado correctamente",
       });
 
-      // Close dialog after successful save
+      // Close dialog after successful save and cache refresh
       if (onClose) {
         setTimeout(() => onClose(), 1000); // Small delay to show success message
       }
