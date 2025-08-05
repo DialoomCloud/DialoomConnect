@@ -9,6 +9,11 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Admin Role Assignment Fix** (January 8, 2025): Fixed error 500 when admins try to assign admin roles to users
+  - Root cause: updateUserProfile() function was missing role-related fields (isAdmin, isHost, role, isActive, isVerified)
+  - Extended updateUserProfile() to handle all admin/role fields in storage layer
+  - Updated updateUserProfileSchema to validate role assignment fields
+  - Admins can now successfully assign/modify user roles through admin panel
 - **OAuth Login Redirection Fix** (January 8, 2025): Fixed OAuth login (Google, LinkedIn) to properly redirect users to dashboard instead of home page
 - **Complete Profile Save Fix** (January 8, 2025): Fixed multiple issues preventing profile data from saving correctly
   - Issue 1: Profile edits were reverting to original values after logout/login

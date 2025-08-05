@@ -542,6 +542,13 @@ export class DatabaseStorage implements IStorage {
     if (profile.postalCode !== undefined) updateData.postalCode = profile.postalCode;
     if (profile.primaryLanguageId !== undefined) updateData.primaryLanguageId = profile.primaryLanguageId;
     if (profile.phone !== undefined) updateData.phone = profile.phone;
+    
+    // Admin/Role fields for admin panel updates
+    if (profile.isAdmin !== undefined) updateData.isAdmin = profile.isAdmin;
+    if (profile.isHost !== undefined) updateData.isHost = profile.isHost;
+    if (profile.role !== undefined) updateData.role = profile.role;
+    if (profile.isActive !== undefined) updateData.isActive = profile.isActive;
+    if (profile.isVerified !== undefined) updateData.isVerified = profile.isVerified;
 
     console.log('[updateUserProfile] Final update data:', updateData);
 

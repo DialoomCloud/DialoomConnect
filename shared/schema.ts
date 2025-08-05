@@ -382,6 +382,12 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   postalCode: z.string().nullable().optional(),
   primaryLanguageId: z.number().nullable().optional(),
   phone: z.string().nullable().optional(),
+  // Admin/Role fields for admin panel updates
+  isAdmin: z.boolean().optional(),
+  isHost: z.boolean().optional(),
+  role: z.string().optional(),
+  isActive: z.boolean().optional(),
+  isVerified: z.boolean().optional(),
 });
 
 export const insertUserLanguageSchema = createInsertSchema(userLanguages).omit({
