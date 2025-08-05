@@ -67,23 +67,19 @@ export const isAuthenticated: RequestHandler = async (req: any, res: Response, n
           providerUserId: user.id,
         });
       } else {
-        // Update existing user's information (but keep their ID)
-        // Also link OAuth provider if not already linked
+        // For existing users, only link OAuth provider if needed
+        // DO NOT update firstName/lastName from Supabase to preserve user's profile edits
         const provider = user.app_metadata?.provider || 'email';
         
-        // Only update with new values if they are not empty
-        const newFirstName = firstName && firstName.trim() ? firstName : 
-                           (user.user_metadata?.firstName && user.user_metadata.firstName.trim() ? user.user_metadata.firstName : null);
-        const newLastName = lastName && lastName.trim() ? lastName : 
-                          (user.user_metadata?.lastName && user.user_metadata.lastName.trim() ? user.user_metadata.lastName : null);
+        // Only update profile image if user doesn't have one
         const newProfileImage = user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || null;
         
         await storage.upsertUser({
           id: dbUser.id,
           email: user.email!,
-          firstName: newFirstName || dbUser.firstName || '',
-          lastName: newLastName || dbUser.lastName || '',
-          profileImageUrl: newProfileImage || dbUser.profileImageUrl || '',
+          firstName: dbUser.firstName || '',  // Keep existing firstName
+          lastName: dbUser.lastName || '',    // Keep existing lastName
+          profileImageUrl: dbUser.profileImageUrl || newProfileImage || '',  // Only update if empty
           provider: provider,
           providerUserId: user.id,
         });

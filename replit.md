@@ -9,6 +9,11 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Profile Data Persistence Fix** (January 8, 2025): Fixed issue where profile changes were being overwritten on login
+  - Issue: User profile edits (name, lastname) were reverting to original values after logout/login
+  - Root cause: During authentication, Supabase user metadata was overwriting database values
+  - Fixed upsertUser logic to preserve existing user data instead of updating from Supabase metadata
+  - Now profile changes persist correctly across login sessions
 - **Profile Save Fix** (January 8, 2025): Fixed critical profile update failure caused by primaryLanguageId validation error
   - Issue: Profile updates were failing with Zod validation error "Expected number, received string" for primaryLanguageId
   - Root cause: Frontend was sending empty string instead of null for empty primaryLanguageId field
