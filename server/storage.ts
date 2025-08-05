@@ -517,22 +517,20 @@ export class DatabaseStorage implements IStorage {
 
     console.log('[updateUserProfile] Final update data:', updateData);
 
-    const [user] = await db
+    // Execute the update
+    await db
       .update(users)
       .set(updateData)
-      .where(eq(users.id, id))
-      .returning();
+      .where(eq(users.id, id));
     
-    console.log('[updateUserProfile] Successfully updated user', id, ', result:', user);
-    
-    // Also fetch the complete user to verify what was actually saved
-    const [completeUser] = await db
+    // Fetch the complete updated user (Drizzle .returning() has issues with PostgreSQL)
+    const [user] = await db
       .select()
       .from(users)
       .where(eq(users.id, id))
       .limit(1);
     
-    console.log('[updateUserProfile] Complete user from select:', completeUser);
+    console.log('[updateUserProfile] Successfully updated user', id, ', complete result:', user);
     
     return user;
   }

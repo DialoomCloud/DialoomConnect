@@ -21,6 +21,9 @@
   - Issue 3: Profile updates were syncing back to Supabase causing data conflicts
     - Removed all Supabase user metadata updates from profile routes
     - Database is now the single source of truth for all profile data
+  - Issue 4: Drizzle .returning() bug with PostgreSQL was only returning partial field updates
+    - Replaced .returning() with separate SELECT after UPDATE to get complete user data
+    - This ensures all profile fields are properly returned after updates
   - Now ALL profile fields save correctly and persist across login sessions
 - **Profile Save Fix** (January 8, 2025): Fixed critical profile update failure caused by primaryLanguageId validation error
   - Issue: Profile updates were failing with Zod validation error "Expected number, received string" for primaryLanguageId
