@@ -528,11 +528,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         title: "✓ Perfil actualizado exitosamente",
         description: "Todos tus cambios se han guardado correctamente",
       });
-
-      // Close dialog after successful save and cache refresh
-      if (onClose) {
-        setTimeout(() => onClose(), 1000); // Small delay to show success message
-      }
     } catch (error) {
       console.error('Error during form submission:', error);
       // Show error details
