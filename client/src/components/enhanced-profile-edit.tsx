@@ -487,34 +487,37 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         return acc;
       }, {} as any);
       
-      // Update profile
+      const updatePromises = [] as Promise<unknown>[];
+
+      // Update profile with selected languages
       console.log('Updating profile with cleaned data:', { ...cleanedData, languageIds: selectedLanguages });
-      await updateProfileMutation.mutateAsync({
+      updatePromises.push(updateProfileMutation.mutateAsync({
         ...cleanedData,
         languageIds: selectedLanguages,
-      });
-      console.log('Profile update completed successfully');
-      
+      }));
+
       // Update categories
       if (selectedCategories.length > 0) {
         console.log('Updating categories:', selectedCategories);
-        await updateCategoriesMutation.mutateAsync(selectedCategories);
-        console.log('Categories update completed successfully');
+        updatePromises.push(updateCategoriesMutation.mutateAsync(selectedCategories));
       }
-      
+
       // Update social profiles
       if (socialProfiles.length > 0) {
         console.log('Updating social profiles:', socialProfiles);
-        await updateSocialProfilesMutation.mutateAsync(socialProfiles);
-        console.log('Social profiles update completed successfully');
+        updatePromises.push(updateSocialProfilesMutation.mutateAsync(socialProfiles));
       }
-      
+
+      // Wait for all updates to complete
+      await Promise.all(updatePromises);
+      console.log('All profile updates completed successfully');
+
       // Show single success message after all updates
       toast({
         title: "✓ Perfil actualizado exitosamente",
         description: "Todos tus cambios se han guardado correctamente",
       });
-      
+
       // Close dialog after successful save
       if (onClose) {
         setTimeout(() => onClose(), 1000); // Small delay to show success message
