@@ -168,7 +168,17 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         title: typedUser.title,
         description: typedUser.description,
         nationality: typedUser.nationality,
+        countryCode: typedUser.countryCode,
+        primaryLanguageId: typedUser.primaryLanguageId,
         dateOfBirth: typedUser.dateOfBirth
+      });
+      console.log('🔍 [SYNC PROBLEMATIC] User data for problematic fields:', {
+        'nationality': typedUser.nationality,
+        'countryCode': typedUser.countryCode,
+        'primaryLanguageId': typedUser.primaryLanguageId,
+        'nationality type': typeof typedUser.nationality,
+        'countryCode type': typeof typedUser.countryCode,
+        'primaryLanguageId type': typeof typedUser.primaryLanguageId
       });
       form.reset({
         firstName: typedUser.firstName || "",
@@ -548,8 +558,18 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         title: profileDataToSend.title,
         description: profileDataToSend.description,
         nationality: profileDataToSend.nationality,
+        countryCode: profileDataToSend.countryCode,
+        primaryLanguageId: profileDataToSend.primaryLanguageId,
         dateOfBirth: profileDataToSend.dateOfBirth,
         allData: profileDataToSend
+      });
+      console.log('🔍 [PROBLEMATIC FIELDS] Specific check:', {
+        'nationality value': profileDataToSend.nationality,
+        'nationality type': typeof profileDataToSend.nationality,
+        'countryCode value': profileDataToSend.countryCode,
+        'countryCode type': typeof profileDataToSend.countryCode,
+        'primaryLanguageId value': profileDataToSend.primaryLanguageId,
+        'primaryLanguageId type': typeof profileDataToSend.primaryLanguageId
       });
       updatePromises.push(updateProfileMutation.mutateAsync(profileDataToSend));
 

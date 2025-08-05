@@ -321,7 +321,10 @@ export class DatabaseStorage implements IStorage {
         city: user.city,
         postalCode: user.postalCode,
         title: user.title,
-        description: user.description
+        description: user.description,
+        nationality: user.nationality,
+        countryCode: user.countryCode,
+        primaryLanguageId: user.primaryLanguageId
       });
       // Return complete profile without censoring personal information  
       return {

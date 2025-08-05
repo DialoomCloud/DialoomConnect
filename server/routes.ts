@@ -491,8 +491,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: validatedData.title,
         description: validatedData.description,
         nationality: validatedData.nationality,
+        countryCode: validatedData.countryCode,
+        primaryLanguageId: validatedData.primaryLanguageId,
         dateOfBirth: validatedData.dateOfBirth,
         fullValidatedData: validatedData
+      });
+      console.log('🔍 [PROBLEMATIC FIELDS SERVER] Specific check:', {
+        'nationality value': validatedData.nationality,
+        'nationality type': typeof validatedData.nationality,
+        'countryCode value': validatedData.countryCode,
+        'countryCode type': typeof validatedData.countryCode,
+        'primaryLanguageId value': validatedData.primaryLanguageId,
+        'primaryLanguageId type': typeof validatedData.primaryLanguageId
       });
       
       const updatedUser = await storage.updateUserProfile(authenticatedUserId, validatedData);
