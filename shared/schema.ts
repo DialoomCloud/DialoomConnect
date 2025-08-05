@@ -376,6 +376,7 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   countryCode: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
   title: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
   description: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  phone: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
   address: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
   city: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
   postalCode: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
