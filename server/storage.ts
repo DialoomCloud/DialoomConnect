@@ -451,84 +451,47 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser & { provider?: string; providerUserId?: string }): Promise<User> {
-    // First check if user exists by email
-    const [existingUserByEmail] = await db
+    // 1. Busca si ya existe un usuario con ese email en tu base de datos Neon
+    const [existingUser] = await db
       .select()
       .from(users)
       .where(eq(users.email, userData.email))
       .limit(1);
 
-    if (existingUserByEmail) {
-      // User with same email exists - DO NOT UPDATE PROFILE DATA
+    if (existingUser) {
+      // 2. SI EXISTE: No actualices su perfil. Simplemente devuelve el usuario que ya tienes.
       console.log(`Usuario existente ${userData.email} encontrado. Omitiendo actualización de perfil desde Supabase.`);
       
+      // Asegúrate de que el proveedor de OAuth esté vinculado si es necesario
       if (userData.provider && userData.providerUserId) {
-        // Check if this OAuth provider is already linked
-        const [existingProvider] = await db
-          .select()
-          .from(userAuthProviders)
-          .where(and(
-            eq(userAuthProviders.userId, existingUserByEmail.id),
-            eq(userAuthProviders.provider, userData.provider as any)
-          ))
-          .limit(1);
-
-        if (!existingProvider) {
-          // Link new OAuth provider to existing user
-          await this.linkAuthProvider(
-            existingUserByEmail.id,
-            userData.provider,
-            userData.providerUserId,
-            userData.email
-          );
-        } else {
-          // Update last used time for existing provider
-          await this.updateAuthProviderLastUsed(existingUserByEmail.id, userData.provider);
-        }
+        await this.linkAuthProvider(existingUser.id, userData.provider, userData.providerUserId, userData.email);
       }
+      
+      return existingUser;
+    } else {
+      // 3. SI NO EXISTE: Créalo por primera vez con los datos de Supabase.
+      console.log(`Creando nuevo usuario para ${userData.email} con datos de Supabase.`);
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          id: userData.id,
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profileImageUrl: userData.profileImageUrl,
+          // Asegúrate de que los campos obligatorios tengan valores por defecto
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
 
-      // Return existing user WITHOUT updating any profile data
-      return existingUserByEmail;
+      // Vincula el proveedor de OAuth al nuevo usuario
+      if (userData.provider && userData.providerUserId) {
+        await this.linkAuthProvider(newUser.id, userData.provider, userData.providerUserId, userData.email);
+      }
+      
+      return newUser;
     }
-
-    // Check if user exists by ID (shouldn't happen with email check above, but just in case)
-    const [existingUserById] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userData.id))
-      .limit(1);
-
-    if (existingUserById) {
-      // Return existing user WITHOUT updating profile data
-      console.log(`Usuario existente ${existingUserById.email} encontrado por ID. Omitiendo actualización de perfil.`);
-      return existingUserById;
-    }
-
-    // No existing user found, create new one
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        id: userData.id,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        profileImageUrl: userData.profileImageUrl,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning();
-
-    // If OAuth provider info is provided, link it to the new user
-    if (userData.provider && userData.providerUserId) {
-      await this.linkAuthProvider(
-        newUser.id,
-        userData.provider,
-        userData.providerUserId,
-        userData.email
-      );
-    }
-
-    return newUser;
   }
 
   async updateUserProfile(id: string, profile: UpdateUserProfile): Promise<User> {

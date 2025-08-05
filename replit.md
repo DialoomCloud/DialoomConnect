@@ -13,10 +13,14 @@
   - Issue 1: Profile edits were reverting to original values after logout/login
     - Root cause: During authentication, Supabase user metadata was overwriting database values
     - Fixed upsertUser logic to preserve existing user data instead of updating from Supabase metadata
+    - Completely disabled Supabase metadata synchronization to prevent conflicts
   - Issue 2: Many fields (dateOfBirth, nationality, address, etc.) were not saving due to validation errors
     - Root cause: Backend schema didn't accept null values for optional fields
     - Extended updateUserProfileSchema to properly handle null values for all optional fields
     - Simplified frontend data cleaning to convert empty strings to null
+  - Issue 3: Profile updates were syncing back to Supabase causing data conflicts
+    - Removed all Supabase user metadata updates from profile routes
+    - Database is now the single source of truth for all profile data
   - Now ALL profile fields save correctly and persist across login sessions
 - **Profile Save Fix** (January 8, 2025): Fixed critical profile update failure caused by primaryLanguageId validation error
   - Issue: Profile updates were failing with Zod validation error "Expected number, received string" for primaryLanguageId
