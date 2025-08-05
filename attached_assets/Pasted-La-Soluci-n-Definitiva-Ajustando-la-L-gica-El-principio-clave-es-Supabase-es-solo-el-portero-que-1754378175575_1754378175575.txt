@@ -1,0 +1,90 @@
+La Solución Definitiva (Ajustando la Lógica)
+El principio clave es: Supabase es solo el portero que verifica quién eres. Tu base de datos Neon es la única fuente de verdad para los datos del perfil.
+Vamos a ajustar la lógica de upsertUser en server/storage.ts para que respete este principio.
+Paso 1: Modificar storage.upsertUser para que NO sobrescriba datos
+Abre el archivo: server/storage.ts
+Busca la función: async upsertUser(...)
+Reemplázala con esta versión inteligente:
+Generated typescript
+// en server/storage.ts
+
+  async upsertUser(userData: UpsertUser & { provider?: string; providerUserId?: string }): Promise<User> {
+    // 1. Busca si ya existe un usuario con ese email en tu base de datos Neon
+    const [existingUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, userData.email))
+      .limit(1);
+
+    if (existingUser) {
+      // 2. SI EXISTE: No actualices su perfil. Simplemente devuelve el usuario que ya tienes.
+      console.log(`Usuario existente ${userData.email} encontrado. Omitiendo actualización de perfil desde Supabase.`);
+      
+      // Asegúrate de que el proveedor de OAuth esté vinculado si es necesario
+      if (userData.provider && userData.providerUserId) {
+        await this.linkAuthProvider(existingUser.id, userData.provider, userData.providerUserId, userData.email);
+      }
+      
+      return existingUser;
+    } else {
+      // 3. SI NO EXISTE: Créalo por primera vez con los datos de Supabase.
+      console.log(`Creando nuevo usuario para ${userData.email} con datos de Supabase.`);
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          id: userData.id,
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profileImageUrl: userData.profileImageUrl,
+          // Asegúrate de que los campos obligatorios tengan valores por defecto
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      // Vincula el proveedor de OAuth al nuevo usuario
+      if (userData.provider && userData.providerUserId) {
+        await this.linkAuthProvider(newUser.id, userData.provider, userData.providerUserId, userData.email);
+      }
+      
+      return newUser;
+    }
+  }
+Use code with caution.
+TypeScript
+Paso 2: Asegurar que el guardado del perfil funciona
+El segundo problema es que el resto de los campos no se guardan. Esto se debe a un error de validación que el agente de Replit detectó: countryCode se envía como null y el backend no lo espera. La solución es hacer que el backend sea más flexible.
+Abre el archivo: shared/schema.ts
+Busca la definición: updateUserProfileSchema
+Asegúrate de que los campos opcionales acepten null:
+Generated typescript
+// en shared/schema.ts
+
+export const updateUserProfileSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial().extend({
+  // Añade .nullable() a todos los campos opcionales que pueden venir vacíos
+  dateOfBirth: z.string().nullable().optional(),
+  nationality: z.string().nullable().optional(),
+  countryCode: z.string().nullable().optional(),
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  primaryLanguageId: z.number().nullable().optional(),
+  phone: z.string().nullable().optional(),
+});
+Use code with caution.
+TypeScript
+Resumen Final y Recomendación
+Quédate con Supabase. El problema no es la herramienta, sino la "fontanería" de la integración, que es un paso normal y necesario.
+La reversión de datos se soluciona haciendo que tu función upsertUser sea más inteligente y no sobrescriba los perfiles existentes durante el login.
+El fallo al guardar otros campos se soluciona haciendo que tu esquema de validación en el backend (updateUserProfileSchema) sea más flexible y acepte null para los campos que no son obligatorios.
+Aplica estos dos cambios. Reinicia la aplicación. Ahora deberías poder:
+Editar todos los campos de tu perfil y la imagen.
+Hacer clic en "Guardar" y ver que los cambios se aplican.
+Cerrar sesión y volver a entrar, y ver que TODOS tus cambios persisten, porque la lógica de upsertUser ya no los sobrescribirá.

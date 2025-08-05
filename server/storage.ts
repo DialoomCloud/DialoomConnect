@@ -459,7 +459,9 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
 
     if (existingUserByEmail) {
-      // User with same email exists
+      // User with same email exists - DO NOT UPDATE PROFILE DATA
+      console.log(`Usuario existente ${userData.email} encontrado. Omitiendo actualización de perfil desde Supabase.`);
+      
       if (userData.provider && userData.providerUserId) {
         // Check if this OAuth provider is already linked
         const [existingProvider] = await db
@@ -485,26 +487,8 @@ export class DatabaseStorage implements IStorage {
         }
       }
 
-      // Update user information only if new data is not empty
-      const updateData: any = { updatedAt: new Date() };
-      
-      // Only update fields if they have non-empty values
-      if (userData.firstName && userData.firstName.trim()) {
-        updateData.firstName = userData.firstName;
-      }
-      if (userData.lastName && userData.lastName.trim()) {
-        updateData.lastName = userData.lastName;
-      }
-      if (userData.profileImageUrl && userData.profileImageUrl.trim()) {
-        updateData.profileImageUrl = userData.profileImageUrl;
-      }
-      
-      const [updated] = await db
-        .update(users)
-        .set(updateData)
-        .where(eq(users.id, existingUserByEmail.id))
-        .returning();
-      return updated;
+      // Return existing user WITHOUT updating any profile data
+      return existingUserByEmail;
     }
 
     // Check if user exists by ID (shouldn't happen with email check above, but just in case)
@@ -515,19 +499,9 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
 
     if (existingUserById) {
-      // Update existing user
-      const [updated] = await db
-        .update(users)
-        .set({
-          firstName: userData.firstName || existingUserById.firstName,
-          lastName: userData.lastName || existingUserById.lastName,
-          profileImageUrl: userData.profileImageUrl || existingUserById.profileImageUrl,
-          email: userData.email,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, existingUserById.id))
-        .returning();
-      return updated;
+      // Return existing user WITHOUT updating profile data
+      console.log(`Usuario existente ${existingUserById.email} encontrado por ID. Omitiendo actualización de perfil.`);
+      return existingUserById;
     }
 
     // No existing user found, create new one
