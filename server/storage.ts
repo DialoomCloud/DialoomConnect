@@ -558,12 +558,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(id: string, profile: UpdateUserProfile): Promise<User> {
+    const updateData: any = {
+      ...profile,
+      updatedAt: new Date(),
+    };
+
+    // Remove fields that are managed via separate relations
+    if (updateData.languageIds) {
+      delete updateData.languageIds;
+    }
+    if (updateData.skillIds) {
+      delete updateData.skillIds;
+    }
+
     const [user] = await db
       .update(users)
-      .set({
-        ...profile,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(users.id, id))
       .returning();
     return user;
