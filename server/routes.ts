@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { isAuthenticated, isAdminAuthenticated, setupAuthRoutes } from "./supabaseAuth";
+import { isAuthenticated, isAdminAuthenticated, setupAuthRoutes, supabaseAdmin } from "./supabaseAuth";
 import multer from "multer";
 import sharp from "sharp";
 import path from "path";
@@ -385,8 +385,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update user profile with new image path
       const updatedUser = await storage.updateProfileImage(userId, storagePath);
-      
-      res.json({ 
+
+      // Sync profile image with Supabase auth metadata
+      const supabaseUserId = req.user?.id;
+      if (supabaseUserId) {
+        const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
+          user_metadata: { avatar_url: storagePath, profileImageUrl: storagePath },
+        });
+        if (metaError) {
+          console.error('Error syncing Supabase profile image:', metaError);
+        }
+      }
+
+      res.json({
         message: "Imagen de perfil actualizada exitosamente",
         user: updatedUser,
         storagePath: storagePath
@@ -415,6 +426,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updatedUser = await storage.updateUserProfile(userId, validatedData);
       console.log('User profile updated successfully');
+
+      // Sync basic profile fields with Supabase auth metadata
+      const supabaseUserId = req.user?.id;
+      if (supabaseUserId) {
+        const metadata: any = {};
+        if (validatedData.firstName !== undefined) metadata.firstName = validatedData.firstName;
+        if (validatedData.lastName !== undefined) metadata.lastName = validatedData.lastName;
+
+        if (Object.keys(metadata).length > 0) {
+          metadata.full_name = `${metadata.firstName ?? updatedUser.firstName ?? ''} ${metadata.lastName ?? updatedUser.lastName ?? ''}`.trim();
+          const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
+            user_metadata: metadata,
+          });
+          if (metaError) {
+            console.error('Error syncing Supabase user metadata:', metaError);
+          }
+        }
+      }
 
       // Update user languages if provided
       if (Array.isArray(languageIds)) {
@@ -466,6 +495,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updatedUser = await storage.updateUserProfile(authenticatedUserId, validatedData);
       console.log('User profile updated successfully');
+
+      // Sync basic profile fields with Supabase auth metadata
+      const supabaseUserId = req.user?.id;
+      if (supabaseUserId) {
+        const metadata: any = {};
+        if (validatedData.firstName !== undefined) metadata.firstName = validatedData.firstName;
+        if (validatedData.lastName !== undefined) metadata.lastName = validatedData.lastName;
+
+        if (Object.keys(metadata).length > 0) {
+          metadata.full_name = `${metadata.firstName ?? updatedUser.firstName ?? ''} ${metadata.lastName ?? updatedUser.lastName ?? ''}`.trim();
+          const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, {
+            user_metadata: metadata,
+          });
+          if (metaError) {
+            console.error('Error syncing Supabase user metadata:', metaError);
+          }
+        }
+      }
 
       // Update user languages if provided
       if (Array.isArray(languageIds)) {
