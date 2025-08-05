@@ -375,11 +375,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = req.userId;
       
-      // Initialize and upload to Replit Object Storage
-      await replitStorage.initializeBucket();
       const storagePath = await replitStorage.uploadProfileImage(
-        userId, 
-        req.file.buffer, 
+        userId,
+        req.file.buffer,
         req.file.originalname
       );
       
