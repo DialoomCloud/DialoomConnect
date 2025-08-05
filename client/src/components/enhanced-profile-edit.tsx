@@ -477,17 +477,10 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       console.log('Submitting form data:', data);
       console.log('Selected languages:', selectedLanguages);
       
-      // Clean data - convert null/undefined to empty strings (except for number fields)
+      // Clean data - convert empty strings to null for proper backend handling
       const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
-        if (value === null || value === undefined) {
-          // primaryLanguageId should be null, not empty string
-          if (key === 'primaryLanguageId') {
-            acc[key] = null;
-          } else {
-            acc[key] = '';
-          }
-        } else if (key === 'primaryLanguageId' && value === '') {
-          // Convert empty string to null for primaryLanguageId
+        if (value === '' || value === null || value === undefined) {
+          // Send null for empty values so backend can handle them properly
           acc[key] = null;
         } else {
           acc[key] = value;

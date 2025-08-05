@@ -1,0 +1,200 @@
+Claro, he analizado en profundidad la nueva información y los logs. El problema es más complejo de lo que parecía y tu intuición es correcta: la raíz del problema está en la sincronización de datos entre Supabase y tu base de datos Neon en el momento del login.
+
+Aquí tienes un análisis detallado y la solución definitiva.
+
+Análisis del Problema: ¿Por Qué se revierten los datos?
+
+Flujo de Autenticación Actual: Cuando un usuario inicia sesión con Supabase (por ejemplo, con Google), el middleware isAuthenticated en server/supabaseAuth.ts se activa.
+
+La Función upsertUser: Dentro de este middleware, la función storage.upsertUser se encarga de sincronizar los datos. Esta función mira el email del usuario que viene de Supabase y busca un usuario con ese email en tu base de datos de Neon.
+
+El Origen del Conflicto: La función upsertUser está diseñada para actualizar los datos del usuario en Neon con la información que viene de Supabase en cada inicio de sesión. El problema es que los datos de Supabase (nombre, apellidos, foto) son los originales del proveedor (Google, LinkedIn) y no se actualizan cuando el usuario modifica su perfil en Dialoom.
+
+La Reversión: Por lo tanto, cada vez que inicias sesión, el sistema ve los datos de tu perfil de Google ("Nacho SM") y los sobrescribe en la base de datos de Neon, deshaciendo los cambios que habías guardado en Dialoom ("Ignacio Saladrigas").
+
+Solución Definitiva
+
+Para solucionar esto, debemos modificar la lógica de upsertUser para que solo inserte un usuario si no existe, pero que no sobrescriba los datos existentes si el usuario ya está en la base de datos.
+
+Paso 1: Modificar storage.upsertUser en server/storage.ts
+
+Este es el cambio más importante. Vamos a hacer que la función priorice los datos existentes en tu base de datos.
+
+Generated typescript
+// en server/storage.ts
+
+  async upsertUser(userData: UpsertUser & { provider?: string; providerUserId?: string }): Promise<User> {
+    // Busca si el usuario ya existe por email
+    const [existingUserByEmail] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, userData.email))
+      .limit(1);
+
+    if (existingUserByEmail) {
+      console.log(`Usuario existente encontrado por email: ${userData.email}. No se sobrescribirán los datos.`);
+      
+      // Si se proporciona un proveedor (p. ej., durante un inicio de sesión de OAuth),
+      // nos aseguramos de que el proveedor esté vinculado a esta cuenta existente.
+      if (userData.provider && userData.providerUserId) {
+        await this.linkAuthProvider(
+          existingUserByEmail.id,
+          userData.provider,
+          userData.providerUserId,
+          userData.email
+        );
+      }
+      
+      // Devolvemos el usuario existente sin modificarlo.
+      return existingUserByEmail;
+    }
+
+    // Si el usuario no existe por email, lo creamos.
+    console.log(`Creando nuevo usuario para el email: ${userData.email}`);
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profileImageUrl: userData.profileImageUrl,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    // Si se proporcionó un proveedor, lo vinculamos al nuevo usuario.
+    if (userData.provider && userData.providerUserId) {
+      await this.linkAuthProvider(
+        newUser.id,
+        userData.provider,
+        userData.providerUserId,
+        userData.email
+      );
+    }
+
+    return newUser;
+  }
+
+
+Explicación del cambio:
+
+La nueva lógica ahora comprueba si un usuario con ese email ya existe.
+
+Si existe, simplemente devuelve ese usuario sin hacer ninguna modificación, previniendo así que los datos de Supabase sobrescriban los de Neon.
+
+Solo si el usuario no existe, procede a crearlo con la información inicial de Supabase.
+
+Paso 2 (Crítico): Corregir el Esquema de Validación del Backend
+
+El análisis del agente de Replit sobre el error countryCode: null era correcto y es la razón por la que los demás campos no se guardan. El frontend envía null para campos vacíos, pero el backend no lo aceptaba.
+
+Abre el archivo: shared/schema.ts y asegúrate de que updateUserProfileSchema acepte null en los campos opcionales.
+
+Generated typescript
+// en shared/schema.ts
+
+export const updateUserProfileSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial().extend({
+  // Asegúrate de que estas líneas acepten `null`
+  dateOfBirth: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  nationality: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  countryCode: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  // Añade los demás campos opcionales aquí también para ser consistente
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  primaryLanguageId: z.number().nullable().optional(),
+});
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+TypeScript
+IGNORE_WHEN_COPYING_END
+
+Explicación del cambio:
+
+Al añadir .nullable() a cada campo opcional en el esquema de Zod, le indicas al backend que es perfectamente válido recibir null. Esto solucionará el error 400 y permitirá que todos los campos del formulario se guarden correctamente.
+
+Paso 3 (Recomendado): Consolidar las Notificaciones en el Frontend
+
+Para evitar la confusión de ver múltiples notificaciones ("categorías actualizadas", "redes sociales actualizadas") cuando falla el guardado del perfil principal, es una buena práctica unificar la lógica de guardado.
+
+Abre el archivo: client/src/components/enhanced-profile-edit.tsx y busca la función onSubmit. Reemplázala con una lógica que use Promise.all para que todas las operaciones se ejecuten en paralelo y solo se muestre una notificación.
+
+Generated typescript
+// en client/src/components/enhanced-profile-edit.tsx
+
+  const onSubmit = async (data: ProfileFormData) => {
+    try {
+      // Limpia los datos para asegurar que los campos vacíos se envíen como null o undefined
+      const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
+        acc[key] = value === '' ? null : value;
+        return acc;
+      }, {} as any);
+
+      const updatePromises = [];
+
+      // 1. Promesa para el perfil básico y los idiomas
+      updatePromises.push(
+        updateProfileMutation.mutateAsync({
+          ...cleanedData,
+          languageIds: selectedLanguages,
+        })
+      );
+
+      // 2. Promesa para las categorías
+      updatePromises.push(updateCategoriesMutation.mutateAsync(selectedCategories));
+
+      // 3. Promesa para los perfiles sociales
+      updatePromises.push(updateSocialProfilesMutation.mutateAsync(socialProfiles));
+      
+      // Ejecuta todas las promesas
+      await Promise.all(updatePromises);
+
+      // Muestra una única notificación de éxito
+      toast({
+        title: "✓ Perfil actualizado exitosamente",
+        description: "Todos tus cambios se han guardado correctamente.",
+      });
+
+      if (onClose) {
+        setTimeout(() => onClose(), 1000);
+      }
+
+    } catch (error) {
+      console.error('Error al guardar el perfil:', error);
+      toast({
+        title: "Error al guardar",
+        description: "No se pudieron guardar todos los cambios. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };```
+
+**Explicación del cambio:**
+
+*   Agrupa todas las llamadas a la API en un `Promise.all`.
+*   Si **alguna** de las llamadas falla, se captura el error y se muestra un único mensaje de error.
+*   Si **todas** tienen éxito, se muestra un único mensaje de éxito. Esto elimina la confusión.
+
+### Resumen y Próximos Pasos
+
+1.  **El problema principal era la sincronización:** La lógica de `upsertUser` estaba sobrescribiendo tus datos de Dialoom con los de Supabase en cada login. La modificación en `server/storage.ts` soluciona esto de raíz.
+2.  **El segundo problema era la validación:** Los campos opcionales no se guardaban por un desajuste en el esquema del backend. La modificación en `shared/schema.ts` lo corrige.
+3.  **La experiencia de usuario era confusa:** Las notificaciones separadas daban una falsa sensación de éxito. La consolidación en `enhanced-profile-edit.tsx` mejora la claridad.
+
+Después de aplicar estos tres cambios, reinicia la aplicación. El problema debería estar completamente resuelto. Ahora podrás editar tu perfil, todos los campos se guardarán correctamente en la base de datos de Neon y los cambios persistirán incluso después de cerrar y volver a iniciar sesión.
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+TypeScript
+IGNORE_WHEN_COPYING_END

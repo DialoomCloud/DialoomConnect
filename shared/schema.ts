@@ -374,6 +374,12 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   dateOfBirth: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
   nationality: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
   countryCode: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  title: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  description: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  address: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  city: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  postalCode: z.string().nullable().optional().transform(val => val?.trim() === '' ? null : val),
+  primaryLanguageId: z.number().nullable().optional(),
 });
 
 export const insertUserLanguageSchema = createInsertSchema(userLanguages).omit({
