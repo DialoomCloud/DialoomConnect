@@ -3,6 +3,10 @@
 ## Overview
 Dialoom is a platform designed to connect users through video calls. It focuses on providing a seamless and professional experience for booking and conducting online sessions. Key capabilities include host search and filtering, live video sessions, and host service configuration. The project aims to provide a robust, user-friendly, and scalable solution for online interactions, targeting both individuals seeking consultations and professionals offering their services.
 
+## Recent Changes (January 2025)
+- **Favicon Implementation**: Added Dialoom mobile logo as favicon in multiple formats (ico, 16x16, 32x32, apple-touch-icon) for cross-platform compatibility
+- **Profile Edit Bug Fix**: Resolved blank page issue when editing profiles by adding proper error handling, user validation, and diagnostic logging in EnhancedProfileEdit component
+
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)
 - **Code Style**: TypeScript with proper interfaces, functional components with hooks
