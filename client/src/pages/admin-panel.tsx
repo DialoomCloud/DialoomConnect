@@ -176,40 +176,17 @@ export default function AdminPanel() {
     isHost: false
   });
 
-  // Check if user is admin
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (!authUser?.isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-96">
-          <CardHeader>
-            <CardTitle className="text-center text-red-600">Acceso Denegado</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-muted-foreground">
-              No tienes permisos para acceder al panel de administración.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+  // All hooks must be called before any conditional returns
   const { data: adminConfig, isLoading } = useQuery({
     queryKey: ['/api/admin/config'],
     retry: false,
+    enabled: !!authUser?.isAdmin, // Only fetch if user is admin
   });
 
   const { data: pendingVerifications = [], isLoading: verificationsLoading } = useQuery<HostVerificationRequest[]>({
     queryKey: ['/api/admin/host-verifications/pending'],
     retry: false,
+    enabled: !!authUser?.isAdmin, // Only fetch if user is admin
     select: (data: any[]) => {
       return data.map(user => ({
         id: user.id,
@@ -225,6 +202,7 @@ export default function AdminPanel() {
   const { data: allUsers = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
     retry: false,
+    enabled: !!authUser?.isAdmin, // Only fetch if user is admin
   });
 
   const deleteUserMutation = useMutation({
@@ -307,6 +285,32 @@ export default function AdminPanel() {
       });
     },
   });
+
+  // Check if user is admin - AFTER all hooks
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!authUser?.isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-96">
+          <CardHeader>
+            <CardTitle className="text-center text-red-600">Acceso Denegado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-muted-foreground">
+              No tienes permisos para acceder al panel de administración.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const getConfigValue = (key: string): string => {
     if (!adminConfig || !Array.isArray(adminConfig)) return '';
