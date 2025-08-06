@@ -130,8 +130,21 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   
+  // Debug logging
+  console.log('[EnhancedProfileEdit] Component mounted, user:', user);
+  
   // Type guard for user
   const typedUser = user as any;
+  
+  // Early return if no user
+  if (!user) {
+    console.log('[EnhancedProfileEdit] No user found');
+    return (
+      <div className="p-4 text-center">
+        <p>Cargando datos del usuario...</p>
+      </div>
+    );
+  }
   
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<AISuggestions | null>(null);
@@ -208,20 +221,20 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     }
   }, [typedUser?.id]); // Only depend on user ID to avoid infinite loops
 
-  // Data queries
-  const { data: socialPlatforms = [] } = useQuery({
+  // Data queries with error handling
+  const { data: socialPlatforms = [], error: socialPlatformsError } = useQuery({
     queryKey: ['/api/social-platforms']
   });
 
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [], error: categoriesError } = useQuery({
     queryKey: ['/api/categories'],
   });
 
-  const { data: countries = [] } = useQuery({
+  const { data: countries = [], error: countriesError } = useQuery({
     queryKey: ['/api/countries'],
   });
 
-  const { data: languages = [] } = useQuery({
+  const { data: languages = [], error: languagesError } = useQuery({
     queryKey: ['/api/languages'],
   });
 
@@ -608,9 +621,17 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   if (!user) return null;
 
-  return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3 mb-6">
+  // Debug logging for rendering
+  console.log('[EnhancedProfileEdit] About to render component');
+  console.log('[EnhancedProfileEdit] Form state:', form.formState);
+  console.log('[EnhancedProfileEdit] Selected categories:', selectedCategories);
+  console.log('[EnhancedProfileEdit] Social profiles:', socialProfiles);
+  
+  // Wrap in try-catch for error handling
+  try {
+    return (
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="flex items-center gap-3 mb-6">
         <User className="h-8 w-8 text-primary" />
         <div>
           <h1 className="text-3xl font-bold">Perfil Profesional</h1>
@@ -1189,4 +1210,13 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       </Dialog>
     </div>
   );
+  } catch (error) {
+    console.error('[EnhancedProfileEdit] Render error:', error);
+    return (
+      <div className="p-4 text-center">
+        <p className="text-red-500">Error al cargar el editor de perfil</p>
+        <p className="text-sm text-gray-600 mt-2">Por favor, recarga la página</p>
+      </div>
+    );
+  }
 }

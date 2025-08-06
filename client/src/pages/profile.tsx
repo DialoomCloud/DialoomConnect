@@ -340,7 +340,8 @@ export default function Profile() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <EnhancedProfileEdit onClose={() => setShowProfileModal(false)} />
+              {user && <EnhancedProfileEdit onClose={() => setShowProfileModal(false)} />}
+              {!user && <div>Cargando datos del usuario...</div>}
             </div>
           </div>
         </div>
