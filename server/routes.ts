@@ -4062,13 +4062,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate password reset token
       const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-      
+
       // Store reset token (you'd typically store this in database)
       // For now, we'll just log it
       console.log(`Password reset for ${email}: Token: ${resetToken}, Expires: ${resetExpires}`);
-      
-      res.json({ 
-        success: true, 
+
+      // Build reset link and send email
+      const resetLink = `${process.env.APP_URL || 'https://dialoom.cloud'}/reset-password?token=${resetToken}`;
+      await emailService.sendPasswordResetEmail(email, resetLink, userId);
+
+      res.json({
+        success: true,
         message: `Enlace de reseteo enviado a ${email}`,
         resetToken // In production, don't return this
       });
