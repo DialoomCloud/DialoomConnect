@@ -135,20 +135,23 @@ export default function HostSearch() {
       if (!textMatch) return false;
     }
 
-    // Category filter
-    if (selectedCategory && selectedCategory !== "all" && host.categoryId !== parseInt(selectedCategory)) {
-      return false;
+    // Categories filter (multi-select)
+    if (selectedCategories.length > 0 && host.categoryId) {
+      if (!selectedCategories.includes(host.categoryId.toString())) {
+        return false;
+      }
     }
 
-    // Skills filter
+    // Skills filter (multi-select)
     if (selectedSkills.length > 0) {
-      // This would need to be adjusted based on how user skills are stored
-      // For now, we'll skip this filter or implement it based on the actual data structure
+      // TODO: Implement when user-skills relationship is properly set up
+      // For now, we skip this filter since the relationship isn't established yet
     }
 
-    // Languages filter  
+    // Languages filter (multi-select)
     if (selectedLanguages.length > 0) {
-      // Similar to skills, this would need to be adjusted based on actual data structure
+      // TODO: Implement when user-languages relationship is properly set up
+      // For now, we skip this filter since the relationship isn't established yet
     }
 
     // Price range filter - placeholder until we have actual pricing data
