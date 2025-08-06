@@ -1,6 +1,7 @@
-# Dialoom - Development Notes
+# Dialoom - Compressed Development Notes
 
-> 📚 **Full documentation has been moved to [README.md](./README.md)**
+## Overview
+Dialoom is a platform designed to connect users through video calls. It focuses on providing a seamless and professional experience for booking and conducting online sessions. Key capabilities include host search and filtering, live video sessions, and host service configuration. The project aims to provide a robust, user-friendly, and scalable solution for online interactions, targeting both individuals seeking consultations and professionals offering their services.
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)
@@ -8,154 +9,34 @@
 - **UI Approach**: Mobile-first, accessible design using shadcn/ui patterns
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
-## Recent Changes (January 2025)
-- **Responsive Logo System COMPLETE** (August 6, 2025): Successfully implemented JavaScript-based responsive logo switching across all pages
-  - Fixed critical logo path inconsistencies in navigation.tsx, about.tsx, and new-landing.tsx  
-  - Replaced CSS-based responsive design with JavaScript useEffect for real-time screen size detection
-  - Mobile viewport (< 768px): Shows compact Play Store logo (ic_app_logo-playstore.png)
-  - Desktop viewport (≥ 768px): Shows full Dialoom blue logo (dialoomblue.png)
-  - Added smooth transitions and proper file fallbacks in /uploads/Media/ directory
-- **Logo Loading Issue RESOLVED** (August 6, 2025): Fixed critical navigation logo display failure 
-  - Diagnosed issue: Object storage permissions failing, causing all logo requests to fail
-  - Solution: Copied logo files to uploads/Media/ directory with correct file permissions (755)
-  - Desktop logo: /storage/Media/dialoomblue.png (17566 bytes)
-  - Mobile logo: /storage/Media/ic_app_logo-playstore.png (52108 bytes)
-  - Server now serves logos from local filesystem fallback successfully
-  - Both logos now display correctly in navigation header
-- **Mobile Logo Fix** (January 8, 2025): Fixed mobile responsive logo display in navigation header
-  - Moved logo file from project root to /uploads/Media/ directory for proper public access
-  - Updated navigation component to use correct storage path: /storage/Media/ic_app_logo_foreground.webp
-  - Mobile devices now correctly display compact "d" symbol logo instead of full Dialoom text
-  - Fixed path resolution issue that was causing 404 errors on mobile viewport
-- **Social Media Icons Fix** (January 8, 2025): Fixed social media icons not displaying on public host profiles
-  - Removed backend authorization restriction that only allowed profile owners to see social icons
-  - Social media profiles are now publicly accessible on host profile pages
-  - Icons display below session/satisfaction stats as intended with proper new-tab linking
-- **Multi-Select Filter UI Enhancement** (January 8, 2025): Redesigned filter interface from always-visible lists to clean dropdown popovers
-  - Implemented minimalist dropdown design for Categories, Skills, Languages, and Purpose filters
-  - Smart display text: shows "Seleccionar..." when empty, item name when one selected, count when multiple
-  - Added contextual help tooltips with Spanish explanations and HelpCircle icons
-  - Improved space efficiency and visual cleanliness of the search interface
-- **Host Card Enhancement** (January 8, 2025): Enhanced host search cards to display categories and video call topics
-  - Added Purpose/Categories display as blue badges in host cards
-  - Added Video Call Topics display as green badges (shows first 3 with overflow indicator)
-  - Redesigned grid controls with minimalist design using grid icon with +/- buttons
-  - Optimized 4-column layout for better full-width utilization
-  - Updated backend filtering to properly handle purpose arrays for multi-select functionality
-- **Purpose Filter Implementation** (January 8, 2025): Added new "Purpose" filter for host search functionality
-  - Created exploreFilterStore with Zustand for centralized filter state management
-  - Implemented PriceRangeSlider with react-range for dual-thumb price range selection
-  - Added Purpose filter with checkboxes for ['Meet & Greet', 'Professionals', 'Discover'] categories
-  - Updated database schema to include purpose column in users table
-  - Modified API endpoints to accept and filter by purpose parameters
-  - All filters now sync with backend and persist in global state
-- **Admin Panel Bug Fixes** (January 8, 2025): Fixed multiple critical issues in admin panel functionality
-  - **Theme Editor Enhancement**: Extended theme editor to support text colors, state colors, and background colors
-    - Added comprehensive color configuration for primary/secondary text, muted text, error/warning/success states
-    - Implemented background color support for light/dark themes
-    - Fixed theme saving to use apiRequest instead of raw fetch
-  - **Role Impersonation Fix**: Fixed Error 500 when admins impersonate other users
-    - Removed session dependency that was causing authentication conflicts
-    - Implemented proper JWT-based authentication response for role switching
-    - Impersonation now correctly returns JWT token without modifying server sessions
-  - **JSON/Doctype Error Fix**: Fixed HTML error pages being returned instead of JSON for upload endpoints
-    - Added comprehensive multer error handling middleware to all upload routes
-    - All upload errors now properly return JSON responses with error codes
-    - Prevents confusing Doctype errors in admin UI
-  - **Hosts Dropdown Fix**: Fixed empty hosts dropdown in email test functionality
-    - Added helpful message when no hosts are available
-    - Users must have "isHost" flag activated to appear in dropdown
-    - Improved user experience with clear guidance
-- **Admin Role Assignment Fix** (January 8, 2025): Fixed error 500 when admins try to assign admin roles to users
-  - Root cause: updateUserProfile() function was missing role-related fields (isAdmin, isHost, role, isActive, isVerified)
-  - Extended updateUserProfile() to handle all admin/role fields in storage layer
-  - Updated updateUserProfileSchema to validate role assignment fields
-  - Admins can now successfully assign/modify user roles through admin panel
-- **OAuth Login Redirection Fix** (January 8, 2025): Fixed OAuth login (Google, LinkedIn) to properly redirect users to dashboard instead of home page
-- **Complete Profile Save Fix** (January 8, 2025): Fixed multiple issues preventing profile data from saving correctly
-  - Issue 1: Profile edits were reverting to original values after logout/login
-    - Root cause: During authentication, Supabase user metadata was overwriting database values
-    - Fixed upsertUser logic to preserve existing user data instead of updating from Supabase metadata
-    - Completely disabled Supabase metadata synchronization to prevent conflicts
-  - Issue 2: Many fields (dateOfBirth, nationality, address, etc.) were not saving due to validation errors
-    - Root cause: Backend schema didn't accept null values for optional fields
-    - Extended updateUserProfileSchema to properly handle null values for all optional fields
-    - Simplified frontend data cleaning to convert empty strings to null
-  - Issue 3: Profile updates were syncing back to Supabase causing data conflicts
-    - Removed all Supabase user metadata updates from profile routes
-    - Database is now the single source of truth for all profile data
-  - Issue 4: Drizzle .returning() bug with PostgreSQL was only returning partial field updates
-    - Replaced .returning() with separate SELECT after UPDATE to get complete user data
-    - This ensures all profile fields are properly returned after updates
-  - Issue 5: UI cache desynchronization causing saved data to disappear from form fields
-    - Root cause: Duplicate updateUserProfile methods - one buggy with .returning(), one correct with SELECT
-    - Removed duplicate method that was overriding the correct implementation
-    - Fixed TanStack Query cache management to use setQueryData instead of conflicting refetchQueries
-    - Removed automatic modal closure to allow users to verify data persistence
-    - Added form synchronization with useEffect to update form values when user data changes
-    - Implemented direct form value updates after successful save operations
-  - **COMPLETELY RESOLVED**: ALL profile fields now save correctly and persist across all UI interactions, modal closures, and browser sessions
-- **Profile Save Fix** (January 8, 2025): Fixed critical profile update failure caused by primaryLanguageId validation error
-  - Issue: Profile updates were failing with Zod validation error "Expected number, received string" for primaryLanguageId
-  - Root cause: Frontend was sending empty string instead of null for empty primaryLanguageId field
-  - Fixed data cleaning logic to properly handle primaryLanguageId as null when empty
-  - Updated Select component to parse string values to integers or null correctly
-  - Now all profile fields save properly including name, date of birth, nationality, address, and languages
-- **Major Authentication Migration** (January 3-4, 2025): Migrated from Replit Auth to Supabase Authentication
-  - Created new authentication infrastructure: `server/supabaseAuth.ts`, `client/src/lib/supabase.ts`
-  - Updated authentication hooks: `client/src/hooks/useAuth.ts` now uses Supabase with proper session management
-  - Created new login page: `client/src/pages/login.tsx` with sign in/sign up functionality
-  - Updated navigation component to use Supabase signOut method
-  - Updated queryClient to include Supabase JWT tokens in API requests
-  - Removed old Replit Auth dependency: deleted `server/replitAuth.ts`
-  - All authentication now flows through Supabase while maintaining existing user data structure
-  - **Google OAuth Fix** (January 4, 2025): Fixed authentication issue where existing users couldn't log in with Google OAuth
-    - Modified `upsertUser` to properly handle existing users by email lookup
-    - Updated authentication middleware to support migration from old user IDs to Supabase IDs
-    - Added `getUserByEmail` method to storage layer for proper user lookup during OAuth flow
-  - **OAuth Account Linking** (January 4, 2025): Implemented comprehensive OAuth account linking to prevent duplicate users
-    - Created `userAuthProviders` table to track multiple OAuth providers per user
-    - Updated `upsertUser` to automatically link new OAuth providers to existing accounts with same email
-    - Added storage methods: `linkAuthProvider`, `unlinkAuthProvider`, `getUserAuthProviders`, `getUserByProviderInfo`, `updateAuthProviderLastUsed`
-    - Users can now sign in with Google and LinkedIn (same email) and have both providers linked to single account
-    - Migration script successfully merged existing duplicate accounts
-- **Documentation Update**: Created comprehensive README.md with extensive project documentation
-- **Translation Implementation**: Updated dashboard.tsx to use proper i18n keys instead of hardcoded Spanish text
-- **Live Session System**: Complete video call flow with pre-call lobby and post-session ratings
-- **Admin Dashboard**: Enhanced with interactive analytics and comprehensive session management
-- **Host Service Configuration**: Hosts can now enable/disable additional services (screen sharing, translation, recording, transcription)
-- **Admin Controls**: Admin can control which services hosts can offer through admin configuration settings
-- **Free Consultation Update**: Changed free consultation duration from 0 to 5 minutes with admin toggle
-- **Image Optimization Update**: Increased file size limits from 3MB to 5MB and improved compression quality from 80% to 90-95% across all image processing functions (profile images, media uploads, public images)
-- **Social Media @ Symbol Fix**: Completely removed automatic @ prepending logic for all social media platforms - users now see exactly what they input without any automatic modifications
-- **Profile Edit Fix**: Fixed TanStack Query compatibility issues in enhanced-profile-edit component by removing deprecated onSuccess callback
-- **Admin Multimedia Management**: Implemented full multimedia management in admin dashboard - admins can now view, edit, and delete user media content directly from the admin interface
-- **AI Enhancement Button UI Update** (January 3, 2025): Removed separate "Asistente IA Loomia" block and integrated the AI enhancement functionality directly into the Professional Description section with gradient styling and LinkedIn integration explanation
-- **Authentication Fix** (January 3, 2025): Fixed localhost authentication strategy mapping for development environment (127.0.0.1 -> localhost)
-- **Profile Edit Modal Auto-Close Removed** (January 8, 2025): Removed automatic dialog closure after successful profile save to allow users to verify their data was saved correctly
-- **AI Enhancement Tone Update** (January 3, 2025): Modified AI prompt to generate more humble and professional descriptions, avoiding superlatives and grandiose claims in favor of modest, client-focused language
-- **User Sync Fix Between Supabase and NEON** (January 4, 2025): Fixed critical issue where users created in Supabase weren't being created in NEON database
-  - Updated signup endpoint to create users in NEON immediately after Supabase creation
-  - OAuth users (Google, LinkedIn) are now properly created in NEON during first authentication
-  - Ensured all authentication flows maintain proper user data synchronization between Supabase and NEON
+## System Architecture
+The system employs a client-server architecture.
+- **UI/UX Decisions**: Mobile-first design with accessibility in mind. Utilizes `shadcn/ui` for consistent component styling.
+- **Technical Implementations**:
+    - **Responsive Logo System**: JavaScript-based logo switching based on screen size, with image fallbacks.
+    - **Multi-Select Filter UI**: Minimalist dropdowns for search filters (Categories, Skills, Languages, Purpose) with smart text display and tooltips.
+    - **Host Card Enhancement**: Display of categories and video call topics as badges on host search cards.
+    - **Purpose Filter**: Integration of a new 'Purpose' filter for host search, managed by Zustand for global state.
+    - **Profile Management**: Robust profile saving and persistence, with data synchronized between Supabase and NEON.
+    - **AI Enhancement**: Integrated AI assistance for professional descriptions, focusing on humble and professional tone.
+    - **Live Session System**: Complete video call flow including pre-call lobby and post-session ratings.
+    - **Host Service Configuration**: Allows hosts to enable/disable additional services like screen sharing, translation, recording, and transcription.
+    - **Free Consultation**: Configurable free consultation duration.
+    - **Image Optimization**: Increased limits and improved compression for uploaded images.
+    - **Admin Panel**: Enhanced with analytics, session management, multimedia management, theme editor, and robust role assignment and impersonation features.
+- **System Design Choices**:
+    - **Authentication**: All user authentication is handled via Supabase Auth.
+    - **File Storage**: `ObjectStorageService` is the standard for all file operations.
+    - **Database Management**: Drizzle ORM is used; database schema changes are managed via `npm run db:push`, avoiding manual SQL migrations. User data is synchronized between Supabase and the NEON database.
+    - **Internationalization**: All UI text uses i18n keys for multi-language support (Spanish, English, Catalan).
 
-## Critical Architecture Notes
-- **Authentication**: Always use Supabase Auth for user authentication
-- **File Storage**: Use ObjectStorageService for all file operations
-- **Database**: Never manually write SQL migrations - use `npm run db:push`
-- **Translations**: All UI text must use i18n keys from translation files
-
-## Development Reminders
-- Always check LSP diagnostics after making code changes
-- Use parallel tool calls when possible for efficiency
-- Document any architectural changes immediately
-- Test with real data - never use mock data unless explicitly requested
-
-## Quick Reference
-- **Admin Users**: nachosaladrigas, marcgarcia10
-- **Default Language**: Spanish (es)
-- **Supported Languages**: Spanish (es), English (en), Catalan (ca)
-- **Main Entry Points**: 
-  - Frontend: `/client/src/App.tsx`
-  - Backend: `/server/routes.ts`
-  - Database Schema: `/shared/schema.ts`
+## External Dependencies
+- **Supabase**: Primary service for user authentication and managing user profiles.
+- **NEON**: PostgreSQL database for storing application data.
+- **TanStack Query**: For server state management and data fetching.
+- **Zustand**: For global UI state management, particularly for filters.
+- **shadcn/ui**: UI component library for consistent and accessible design.
+- **react-range**: For price range selection sliders.
+- **Multer**: Middleware for handling `multipart/form-data`, primarily for file uploads.
+- **Google OAuth**: For user authentication via Google.
+- **LinkedIn OAuth**: For user authentication via LinkedIn.
