@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ interface DemoCallData {
 }
 
 export default function Demo() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [isInCall, setIsInCall] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -126,10 +128,10 @@ export default function Demo() {
               <Video className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-[hsl(17,12%,6%)] mb-4">
-              Demo de Videollamadas
+              {t('demo.title')}
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Prueba nuestra tecnología de videollamadas sin necesidad de registro. Conecta con otros usuarios de forma anónima y experimenta la calidad de Dialoom.
+              {t('demo.subtitle')}
             </p>
           </div>
         </div>
@@ -142,14 +144,14 @@ export default function Demo() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-[hsl(17,12%,6%)]">
                   <Users className="w-6 h-6 text-[hsl(188,100%,38%)]" />
-                  Unirse a Videollamada
+                  {t('demo.joinVideoCall')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="userName" className="text-sm font-medium text-gray-700">
-                      Tu nombre (será visible para otros participantes)
+                      {t('demo.yourName')}
                     </Label>
                     <Input
                       id="userName"
@@ -163,7 +165,7 @@ export default function Demo() {
                   
                   <div>
                     <Label htmlFor="roomName" className="text-sm font-medium text-gray-700">
-                      Nombre de la sala
+                      {t('demo.roomName')}
                     </Label>
                     <div className="flex gap-2 mt-1">
                       <Input
@@ -184,7 +186,7 @@ export default function Demo() {
                       </Button>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Comparte este nombre con otros para que se unan a la misma sala
+                      {t('demo.roomNameDesc')}
                     </p>
                   </div>
                 </div>
@@ -197,12 +199,12 @@ export default function Demo() {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Conectando...
+                      {t('demo.connecting')}
                     </>
                   ) : (
                     <>
                       <Video className="w-5 h-5 mr-2" />
-                      Unirse a la Videollamada
+                      {t('demo.joinCall')}
                     </>
                   )}
                 </Button>
@@ -216,7 +218,7 @@ export default function Demo() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-[hsl(17,12%,6%)]">
                   <Coffee className="w-6 h-6 text-[hsl(188,100%,38%)]" />
-                  Cómo funciona
+                  {t('demo.howItWorks')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -225,25 +227,25 @@ export default function Demo() {
                     <div className="w-6 h-6 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-[hsl(188,100%,38%)] font-semibold text-xs">1</span>
                     </div>
-                    <p>Ingresa tu nombre y el nombre de la sala</p>
+                    <p>{t('demo.step1')}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-[hsl(188,100%,38%)] font-semibold text-xs">2</span>
                     </div>
-                    <p>Haz clic en "Unirse a la Videollamada"</p>
+                    <p>{t('demo.step2')}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-[hsl(188,100%,38%)] font-semibold text-xs">3</span>
                     </div>
-                    <p>Permite acceso a tu cámara y micrófono</p>
+                    <p>{t('demo.step3')}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-[hsl(188,100%,38%)] font-semibold text-xs">4</span>
                     </div>
-                    <p>¡Comienza a conversar con otros usuarios!</p>
+                    <p>{t('demo.step4')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -252,14 +254,14 @@ export default function Demo() {
             <Card className="bg-gradient-to-br from-[hsl(188,100%,95%)] to-[hsl(188,80%,90%)] border-[hsl(188,100%,85%)] shadow-lg">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-[hsl(188,100%,25%)] mb-3">
-                  ✨ Características del Demo
+                  ✨ {t('demo.features')}
                 </h3>
                 <ul className="space-y-2 text-sm text-[hsl(188,100%,30%)]">
-                  <li>• Videollamadas HD sin registro</li>
-                  <li>• Audio cristalino</li>
-                  <li>• Hasta 10 participantes</li>
-                  <li>• Compatible con móviles</li>
-                  <li>• Sin límite de tiempo</li>
+                  <li>• {t('demo.feature1')}</li>
+                  <li>• {t('demo.feature2')}</li>
+                  <li>• {t('demo.feature3')}</li>
+                  <li>• {t('demo.feature4')}</li>
+                  <li>• {t('demo.feature5')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -269,7 +271,7 @@ export default function Demo() {
         {/* Features Section */}
         <div className="mt-16">
           <h2 className="text-2xl font-bold text-center text-[hsl(17,12%,6%)] mb-8">
-            Experimenta la Tecnología de Dialoom
+            {t('demo.experienceTitle')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg p-6 text-center shadow-lg border border-[hsl(220,13%,90%)]">
@@ -277,10 +279,10 @@ export default function Demo() {
                 <Video className="w-6 h-6 text-[hsl(188,100%,38%)]" />
               </div>
               <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-2">
-                Video HD
+                {t('demo.videoHD')}
               </h3>
               <p className="text-gray-600 text-sm">
-                Calidad de video excepcional con tecnología Agora
+                {t('demo.videoHDDesc')}
               </p>
             </div>
             
@@ -289,10 +291,10 @@ export default function Demo() {
                 <Users className="w-6 h-6 text-[hsl(188,100%,38%)]" />
               </div>
               <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-2">
-                Multiparticipante
+                {t('demo.multiParticipant')}
               </h3>
               <p className="text-gray-600 text-sm">
-                Conecta con múltiples personas simultáneamente
+                {t('demo.multiParticipantDesc')}
               </p>
             </div>
             
@@ -301,10 +303,10 @@ export default function Demo() {
                 <Coffee className="w-6 h-6 text-[hsl(188,100%,38%)]" />
               </div>
               <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-2">
-                Fácil de Usar
+                {t('demo.easyToUse')}
               </h3>
               <p className="text-gray-600 text-sm">
-                Interfaz intuitiva, sin configuraciones complejas
+                {t('demo.easyToUseDesc')}
               </p>
             </div>
           </div>
