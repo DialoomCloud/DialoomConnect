@@ -54,6 +54,7 @@ import {
   Camera
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { TopicsEditor } from "@/components/topics-editor";
 
 // Schema for form validation
 const profileSchema = z.object({
@@ -137,6 +138,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   });
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [videoCallTopics, setVideoCallTopics] = useState<string[]>([]);
 
   // Form setup with dynamic values that sync with user data
   const form = useForm<ProfileFormData>({
@@ -271,6 +273,15 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       setSelectedLanguages(typedUserLanguages.map((ul: any) => ul.languageId));
     }
   }, [typedUserLanguages]);
+
+  // Initialize video call topics
+  useEffect(() => {
+    if (typedUser?.videoCallTopics && Array.isArray(typedUser.videoCallTopics)) {
+      setVideoCallTopics(typedUser.videoCallTopics);
+    } else {
+      setVideoCallTopics([]);
+    }
+  }, [typedUser?.videoCallTopics]);
 
   // AI Description improvement mutation
   const improveDescriptionMutation = useMutation({
@@ -416,6 +427,31 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/social-profiles", typedUser?.id] });
       // Don't show toast here, we'll show a combined one at the end
+    },
+  });
+
+  // Video call topics update mutation
+  const updateTopicsMutation = useMutation({
+    mutationFn: async (topics: string[]) => {
+      const response = await apiRequest("/api/profile/video-call-topics", {
+        method: "PUT",
+        body: { topics }
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "✓ Temas actualizados",
+        description: "Los temas de videollamada se han guardado correctamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudieron actualizar los temas",
+        variant: "destructive",
+      });
     },
   });
 
@@ -611,10 +647,11 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       </div>
 
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic">Información Básica</TabsTrigger>
           <TabsTrigger value="categories">Categorías</TabsTrigger>
           <TabsTrigger value="social">Redes Sociales</TabsTrigger>
+          <TabsTrigger value="topics">Temas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-6">
@@ -1102,6 +1139,25 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Topics Tab - Add after social tab */}
+      <TabsContent value="topics" className="space-y-6">
+        <TopicsEditor
+          topics={videoCallTopics}
+          onTopicsChange={setVideoCallTopics}
+          disabled={updateTopicsMutation.isPending}
+        />
+        
+        <div className="flex justify-center">
+          <Button
+            onClick={() => updateTopicsMutation.mutate(videoCallTopics)}
+            disabled={updateTopicsMutation.isPending}
+            className="w-full max-w-md"
+          >
+            {updateTopicsMutation.isPending ? "Guardando..." : "Guardar Temas"}
+          </Button>
+        </div>
+      </TabsContent>
     </div>
   );
 }
