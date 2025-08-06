@@ -303,8 +303,13 @@ export default function UserProfile() {
                 <FileText className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
                 Multimedia
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {mediaContent.slice(0, 6).map((media) => (
+              <div className={`grid gap-4 justify-center ${
+                mediaContent.length === 1 ? 'grid-cols-1 max-w-md mx-auto' :
+                mediaContent.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto' :
+                mediaContent.length === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' :
+                'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+              }`}>
+                {mediaContent.slice(0, mediaContent.length <= 3 ? mediaContent.length : 6).map((media) => (
                   <div key={media.id} className="group relative overflow-hidden rounded-lg bg-gray-100 hover:shadow-lg transition-all duration-300">
                     <MediaEmbed 
                       content={media}
@@ -313,10 +318,10 @@ export default function UserProfile() {
                   </div>
                 ))}
               </div>
-              {mediaContent.length > 6 && (
+              {mediaContent.length > 3 && (
                 <div className="mt-4 text-center">
                   <button className="text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] text-sm font-medium">
-                    Ver más contenido ({mediaContent.length - 6} elementos)
+                    Ver más contenido ({mediaContent.length - 3} elementos)
                   </button>
                 </div>
               )}
@@ -324,16 +329,16 @@ export default function UserProfile() {
           </Card>
         )}
 
-        {/* Pricing & Schedule Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Pricing & Schedule Section - Reduced Height */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Pricing Section */}
-          <Card className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] text-white border-0 shadow-xl">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-4">TARIFAS</h2>
+          <Card className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] text-white border-0 shadow-lg">
+            <CardContent className="p-4">
+              <h2 className="text-lg font-bold mb-3">TARIFAS</h2>
               
               {/* Pricing Options - Ordenadas por duración */}
               {pricing && pricing.length > 0 ? (
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2 mb-4">
                   {pricing
                     .filter(p => p?.isActive !== false)
                     .sort((a, b) => {
@@ -345,36 +350,36 @@ export default function UserProfile() {
                     .map((price) => (
                     <div 
                       key={price.id}
-                      className="bg-white/20 rounded-lg p-3 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
+                      className="bg-white/20 rounded-md p-2 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
                       onClick={() => setSelectedPricing({ duration: price.duration || 0, price: String(price.price || '0') })}
                     >
                       <div className="flex justify-between items-center">
                         <div className="flex items-center">
-                          <Clock className="w-4 h-4 mr-2" />
-                          <span className="font-medium">
+                          <Clock className="w-3 h-3 mr-2" />
+                          <span className="font-medium text-sm">
                             {(price.duration === 0 || !price.duration) ? 'Gratis' : `${price.duration} min`}
                           </span>
                         </div>
-                        <div className="text-lg font-bold">
-                          {(price.duration === 0 || !price.duration) ? 'Gratis' : `€${price.price || '0'}`}
+                        <div className="text-sm font-bold">
+                          {(price.duration === 0 || !price.duration) ? 'GRATIS' : `€${price.price || '0'}`}
                         </div>
                       </div>
                       
                       {/* Service Icons */}
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex gap-1 mt-1">
                         {price.includesScreenSharing && (
-                          <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Compartir pantalla">
-                            <Monitor className="w-3 h-3" />
+                          <div className="w-5 h-5 bg-white/30 rounded flex items-center justify-center" title="Compartir pantalla">
+                            <Monitor className="w-2.5 h-2.5" />
                           </div>
                         )}
                         {price.includesRecording && (
-                          <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Grabación">
-                            <Video className="w-3 h-3" />
+                          <div className="w-5 h-5 bg-white/30 rounded flex items-center justify-center" title="Grabación">
+                            <Video className="w-2.5 h-2.5" />
                           </div>
                         )}
                         {price.includesTranslation && (
-                          <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Traducción">
-                            <Languages className="w-3 h-3" />
+                          <div className="w-5 h-5 bg-white/30 rounded flex items-center justify-center" title="Traducción">
+                            <Languages className="w-2.5 h-2.5" />
                           </div>
                         )}
                       </div>
@@ -382,14 +387,14 @@ export default function UserProfile() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white/20 rounded-lg p-4 mb-6">
-                  <p className="text-white/80 text-sm">No hay precios configurados</p>
+                <div className="bg-white/20 rounded-md p-2 mb-4">
+                  <p className="text-white/80 text-xs">No hay precios configurados</p>
                 </div>
               )}
 
               {/* Book Call Button */}
               <Button 
-                className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-bold py-3"
+                className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-semibold py-2 text-sm"
                 onClick={() => setShowBookingFlow(true)}
               >
                 Reservar Llamada
@@ -399,24 +404,24 @@ export default function UserProfile() {
 
           {/* Schedule */}
           <Card className="lg:col-span-2 bg-white border-[hsl(220,13%,90%)] shadow-lg">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
-                <Calendar className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
+            <CardContent className="p-4">
+              <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3 flex items-center">
+                <Calendar className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
                 Horarios Disponibles - {format(new Date(), 'MMMM yyyy', { locale: es })}
               </h3>
               
               {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1 mb-4">
+              <div className="grid grid-cols-7 gap-1 mb-3">
                 {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
-                  <div key={day} className="text-center text-xs font-medium text-gray-600 py-2">
+                  <div key={day} className="text-center text-xs font-medium text-gray-600 py-1">
                     {day}
                   </div>
                 ))}
                 {/* Calendar days */}
-                {Array.from({ length: 35 }, (_, i) => (
+                {Array.from({ length: 21 }, (_, i) => (
                   <div 
                     key={i} 
-                    className="aspect-square flex items-center justify-center text-sm hover:bg-[hsl(188,100%,95%)] rounded cursor-pointer"
+                    className="aspect-square flex items-center justify-center text-xs hover:bg-[hsl(188,100%,95%)] rounded cursor-pointer"
                   >
                     {i % 7 === 0 || i % 7 === 6 ? '' : Math.floor(i / 7) + 1}
                   </div>
@@ -425,12 +430,12 @@ export default function UserProfile() {
 
               {/* Time Slots */}
               <div className="space-y-2">
-                <h4 className="font-medium text-[hsl(17,12%,20%)]">Hoy disponible:</h4>
-                <div className="grid grid-cols-4 gap-2">
+                <h4 className="font-medium text-[hsl(17,12%,20%)] text-sm">Hoy disponible:</h4>
+                <div className="grid grid-cols-4 gap-1">
                   {['09:00', '10:30', '14:00', '16:30'].map((time) => (
                     <button
                       key={time}
-                      className="py-2 px-3 text-xs rounded-lg border border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
+                      className="py-1 px-2 text-xs rounded border border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
                     >
                       {time}
                     </button>
@@ -440,7 +445,7 @@ export default function UserProfile() {
 
               <Button 
                 variant="outline" 
-                className="w-full mt-4 border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,38%)] hover:text-white"
+                className="w-full mt-3 py-1 text-xs border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,38%)] hover:text-white"
               >
                 Ver Más Horarios
               </Button>
