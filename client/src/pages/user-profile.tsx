@@ -12,7 +12,8 @@ import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { BookingFlow } from "@/components/booking-flow";
 import { DateTimeSelector } from "@/components/date-time-selector";
 
-import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe, Eye, Edit, Plus, X } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe, Eye, Edit, Plus, X, ExternalLink } from "lucide-react";
+import { SiInstagram, SiX, SiLinkedin, SiFacebook, SiYoutube, SiTiktok, SiGithub } from "react-icons/si";
 import { Input } from "@/components/ui/input";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { format } from "date-fns";
@@ -417,11 +418,15 @@ export default function UserProfile() {
 
                       const getIcon = (platformName: string) => {
                         switch (platformName?.toLowerCase()) {
-                          case 'instagram': return <Instagram className="w-5 h-5" />;
-                          case 'twitter': return <Twitter className="w-5 h-5" />;
-                          case 'linkedin': return <Linkedin className="w-5 h-5" />;
+                          case 'instagram': return <SiInstagram className="w-5 h-5" />;
+                          case 'twitter': return <SiX className="w-5 h-5" />;
+                          case 'linkedin': return <SiLinkedin className="w-5 h-5" />;
+                          case 'facebook': return <SiFacebook className="w-5 h-5" />;
+                          case 'youtube': return <SiYoutube className="w-5 h-5" />;
+                          case 'tiktok': return <SiTiktok className="w-5 h-5" />;
+                          case 'github': return <SiGithub className="w-5 h-5" />;
                           case 'web': return <Globe className="w-5 h-5" />;
-                          default: return <Globe className="w-5 h-5" />;
+                          default: return <ExternalLink className="w-5 h-5" />;
                         }
                       };
 
