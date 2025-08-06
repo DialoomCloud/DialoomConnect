@@ -1,6 +1,7 @@
 {
   "navigation": {
     "home": "Inicio",
+    "demo": "Demo",
     "profile": "Perfil",
     "admin": "Admin",
     "logout": "Cerrar Sesión",

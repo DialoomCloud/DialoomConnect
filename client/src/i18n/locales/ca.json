@@ -1,6 +1,7 @@
 {
   "navigation": {
     "home": "Inici",
+    "demo": "Demo",
     "profile": "Perfil",
     "admin": "Admin",
     "logout": "Tancar Sessió",

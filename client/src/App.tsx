@@ -35,6 +35,7 @@ import HowItWorks from "@/pages/how-it-works";
 import TestAIFeatures from "@/pages/test-ai-features";
 import PaymentDemo from "@/pages/payment-demo";
 import PaymentSettings from "@/pages/payment-settings";
+import Demo from "@/pages/demo";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 
@@ -45,6 +46,7 @@ function Router() {
         <Switch>
           {/* Public routes available to everyone */}
           <Route path="/" component={Landing} />
+          <Route path="/demo" component={Demo} />
           <Route path="/hosts" component={HostSearch} />
           <Route path="/user/:id" component={UserProfile} />
           <Route path="/login" component={LoginPage} />

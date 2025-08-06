@@ -2835,6 +2835,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo Video Call Token (No authentication required)
+  app.post("/api/video-call/demo-token", async (req, res) => {
+    try {
+      const { channelName, userName } = req.body;
+      
+      if (!channelName || !userName) {
+        return res.status(400).json({ message: "Channel name and user name are required" });
+      }
+      
+      // Generate random user ID for demo
+      const randomUserId = Math.floor(Math.random() * 999999) + 1;
+      
+      // Generate Agora token for demo
+      const token = await generateAgoraToken(channelName.trim(), randomUserId.toString());
+      
+      res.json({
+        token,
+        channelName: channelName.trim(),
+        appId: process.env.AGORA_APP_ID || "",
+        userId: randomUserId.toString(),
+        userName: userName.trim()
+      });
+    } catch (error) {
+      console.error("Error generating demo video call token:", error);
+      res.status(500).json({ message: "Failed to generate demo video call token" });
+    }
+  });
+
   // Email template management endpoints (Admin only)
   app.get('/api/admin/email-templates', isAdminAuthenticated, async (req: any, res) => {
     try {

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./language-selector";
-import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon, Menu, X, Newspaper } from "lucide-react";
+import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon, Menu, X, Newspaper, Video } from "lucide-react";
 import type { User } from "@shared/schema";
 import { useState } from "react";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
@@ -97,6 +97,17 @@ export function Navigation() {
               >
                 <Home className="w-4 h-4 mr-2" />
                 {t('navigation.home')}
+              </Button>
+            </Link>
+
+            <Link href="/demo">
+              <Button
+                variant={isActive("/demo") ? "default" : "ghost"}
+                size="sm"
+                className={isActive("/demo") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+              >
+                <Video className="w-4 h-4 mr-2" />
+                {t('navigation.demo', 'Demo')}
               </Button>
             </Link>
           
@@ -217,8 +228,19 @@ export function Navigation() {
           <div className="md:hidden bg-white border-t border-[hsl(220,13%,90%)] absolute left-0 right-0 top-16 shadow-lg z-40">
             <div className="px-4 py-4 space-y-2">
               {!user ? (
-                // Menu for non-authenticated users: Hosts, Cómo Funciona, Comenzar Ahora, Idioma
+                // Menu for non-authenticated users: Demo, Hosts, Cómo Funciona, Comenzar Ahora, Idioma
                 <>
+                  <Link href="/demo" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/demo") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/demo") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Video className="w-4 h-4 mr-2" />
+                      {t('navigation.demo')}
+                    </Button>
+                  </Link>
+
                   <Link href="/hosts" onClick={closeMobileMenu}>
                     <Button
                       variant={isActive("/hosts") ? "default" : "ghost"}
@@ -268,6 +290,17 @@ export function Navigation() {
                     >
                       <Home className="w-4 h-4 mr-2" />
                       {t('navigation.home')}
+                    </Button>
+                  </Link>
+
+                  <Link href="/demo" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/demo") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/demo") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Video className="w-4 h-4 mr-2" />
+                      {t('navigation.demo')}
                     </Button>
                   </Link>
 
