@@ -223,7 +223,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (purposes && typeof purposes === 'string' && purposes.length > 0) {
         const purposesArray = purposes.split(',').map(p => p.trim());
         hosts = hosts.filter(host => {
-          return host.purpose && purposesArray.includes(host.purpose);
+          return host.purpose && Array.isArray(host.purpose) && 
+            purposesArray.some(p => host.purpose.includes(p));
         });
       }
       

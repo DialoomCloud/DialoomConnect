@@ -479,6 +479,54 @@ export default function HostSearch() {
                         <span>{countries.find((c: Country) => c.code === host.countryCode)?.name || host.countryCode}</span>
                       </div>
                     )}
+
+                    {/* Purpose/Categories */}
+                    {host.purpose && Array.isArray(host.purpose) && host.purpose.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center text-gray-700 text-sm font-medium">
+                          <span>Categorías:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {host.purpose.map((purpose: string, index: number) => (
+                            <Badge 
+                              key={index} 
+                              variant="outline" 
+                              className="text-xs bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                            >
+                              {purpose}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Video Call Topics */}
+                    {host.videoCallTopics && Array.isArray(host.videoCallTopics) && host.videoCallTopics.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center text-gray-700 text-sm font-medium">
+                          <span>Temas de videollamada:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {host.videoCallTopics.slice(0, 3).map((topic: string, index: number) => (
+                            <Badge 
+                              key={index} 
+                              variant="outline" 
+                              className="text-xs bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                            >
+                              {topic}
+                            </Badge>
+                          ))}
+                          {host.videoCallTopics.length > 3 && (
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs bg-gray-50 text-gray-600 border-gray-200"
+                            >
+                              +{host.videoCallTopics.length - 3} más
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     
                     {/* Quick Stats */}
                     <div className="grid grid-cols-2 gap-2">
