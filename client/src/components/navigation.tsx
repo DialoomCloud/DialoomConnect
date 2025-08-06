@@ -81,17 +81,28 @@ export function Navigation() {
             <Link href="/" className="flex items-center">
               {/* Mobile Logo - only (d) symbol */}
               <img
-                src="/storage/Media/ic_app_logo-playstore.png"
+                src="/uploads/images/1_1 logo.png"
                 alt="Dialoom"
                 className="h-12 w-auto object-contain md:hidden"
                 style={{ maxWidth: '48px' }}
+                onError={(e) => {
+                  console.error('Mobile logo failed to load:', e.currentTarget.src);
+                  // Try fallback
+                  e.currentTarget.src = '/storage/Media/ic_app_logo-playstore.png';
+                }}
               />
               {/* Desktop Logo - full logo */}
               <img
-                src={logoUrl}
+                src="/uploads/images/dialoomblue.png"
                 alt="Dialoom"
                 className="h-12 w-auto object-contain hidden md:block"
                 style={{ maxWidth: '200px' }}
+                onError={(e) => {
+                  console.error('Logo failed to load:', e.currentTarget.src);
+                  // Try fallback
+                  e.currentTarget.src = '/storage/Media/dialoomblue.png';
+                }}
+                onLoad={() => console.log('Logo loaded successfully')}
               />
             </Link>
           </div>
