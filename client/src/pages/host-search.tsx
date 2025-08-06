@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, Mail, MapPin, CheckCircle, Eye, Sparkles, Brain, Filter, X } from "lucide-react";
-import { Link } from "wouter";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, Filter, X } from "lucide-react";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
 
@@ -17,6 +17,7 @@ type SearchResult = UserType & { relevance?: number };
 
 export default function HostSearch() {
   const { t } = useTranslation();
+  const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [aiResults, setAiResults] = useState<SearchResult[]>([]);
   const [isAISearch, setIsAISearch] = useState(false);
@@ -346,31 +347,47 @@ export default function HostSearch() {
         ) : displayHosts && displayHosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayHosts.map((host, index) => (
-              <Card 
-                key={host.id} 
-                className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up"
+              <Card
+                key={host.id}
+                className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up cursor-pointer"
                 style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => navigate(`/host/${host.id}`)}
               >
                 <CardContent className="p-6">
                   <div className="text-center mb-4">
                     <div className="w-48 h-48 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)] animate-glow">
                       {host.profileImageUrl ? (
-                        <img 
-                          src={host.profileImageUrl.startsWith('http') || host.profileImageUrl.startsWith('/') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`} 
-                          alt="Profile" 
+                        <img
+                          src={host.profileImageUrl.startsWith('http') || host.profileImageUrl.startsWith('/') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`}
+                          alt="Profile"
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
                         <User className="w-24 h-24 text-gray-400" />
                       )}
                     </div>
-                    <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">
-                      {host.firstName && host.lastName 
-                        ? `${host.firstName} ${host.lastName}` 
-                        : host.email}
-                    </h3>
-                    {host.title && (
-                      <p className="text-gray-600 mb-3">{host.title}</p>
+                    {host.isCelebrity ? (
+                      <>
+                        <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">
+                          {host.firstName && host.lastName
+                            ? `${host.firstName} ${host.lastName}`
+                            : host.email}
+                        </h3>
+                        {host.title && (
+                          <p className="text-gray-600 mb-3">{host.title}</p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {host.title && (
+                          <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">{host.title}</h3>
+                        )}
+                        <p className="text-gray-600 mb-3">
+                          {host.firstName && host.lastName
+                            ? `${host.firstName} ${host.lastName}`
+                            : host.email}
+                        </p>
+                      </>
                     )}
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
@@ -386,7 +403,7 @@ export default function HostSearch() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2">
                     {host.countryCode && (
                       <div className="flex items-center text-gray-600 text-sm">
                         <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
@@ -394,22 +411,19 @@ export default function HostSearch() {
                       </div>
                     )}
                   </div>
-
-                  <Link href={`/user/${host.id}`}>
-                    <Button 
-                      className="w-full bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] glow-button relative overflow-hidden"
-                    >
-                      <Eye className="w-4 h-4 mr-2 relative z-10" />
-                      <span className="relative z-10">{t('hosts.viewProfile')}</span>
-                    </Button>
-                  </Link>
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">{t('hosts.noResults')}</p>
+            <p className="text-gray-500 text-lg">Tell us which host you are looking for</p>
+            <Button
+              className="mt-4 bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
+              onClick={() => navigate('/request-host')}
+            >
+              Request a Host
+            </Button>
           </div>
         )}
       </div>
