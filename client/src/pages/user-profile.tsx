@@ -96,10 +96,10 @@ export default function UserProfile() {
   // Check if user is viewing their own profile
   const isOwnProfile = authenticatedUser?.id === userId;
 
-  // Fetch user social profiles (only for own profile)
+  // Fetch user social profiles (visible to everyone)
   const { data: socialProfiles = [] } = useQuery<any[]>({
     queryKey: [`/api/user/social-profiles/${userId}`],
-    enabled: !!userId && isOwnProfile,
+    enabled: !!userId,
   });
 
   // Initialize edit topics when user data is loaded
