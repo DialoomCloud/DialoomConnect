@@ -48,7 +48,7 @@ export default function NewLanding() {
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
                 <img 
-                  src={isMobile ? "/storage/Media/ic_app_logo-playstore.png" : "/storage/Media/dialoomblue.png"}
+                  src={isMobile ? "/storage/Media/ic_app_logo_foreground.webp" : "/storage/Media/dialoomblue.png"}
                   alt="Dialoom" 
                   className="h-10 sm:h-12 w-auto object-contain transition-all duration-300"
                   style={{ maxWidth: isMobile ? '48px' : '150px' }}

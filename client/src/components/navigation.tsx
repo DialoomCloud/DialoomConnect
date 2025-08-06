@@ -114,7 +114,7 @@ export function Navigation() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <img
-                src={isMobile ? "/storage/Media/ic_app_logo-playstore.png" : "/storage/Media/dialoomblue.png"}
+                src={isMobile ? "/storage/Media/ic_app_logo_foreground.webp" : "/storage/Media/dialoomblue.png"}
                 alt="Dialoom"
                 className="h-12 w-auto object-contain transition-all duration-300"
                 style={{ maxWidth: isMobile ? "48px" : "200px" }}
