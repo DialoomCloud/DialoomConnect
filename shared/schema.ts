@@ -124,8 +124,8 @@ export const users = pgTable("users", {
   hostRejectionReason: text("host_rejection_reason"),
   // Video call topics - editable by the host
   videoCallTopics: jsonb("video_call_topics").$type<string[]>(),
-  // Purpose/goal of the host's services - for filtering
-  purpose: varchar("purpose", { length: 50 }), // Meet & Greet, Professionals, Discover
+  // Purpose/goal of the host's services - for filtering (multiple purposes stored as JSON array)
+  purpose: jsonb("purpose").$type<string[]>(), // ["Meet & Greet", "Professionals", "Discover"]
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -408,6 +408,8 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   isVerified: z.boolean().optional(),
   // Video call topics for hosts
   videoCallTopics: z.array(z.string()).optional(),
+  // Purpose/goal of the host's services - for filtering
+  purpose: z.array(z.string()).optional(),
 });
 
 export const insertUserLanguageSchema = createInsertSchema(userLanguages).omit({

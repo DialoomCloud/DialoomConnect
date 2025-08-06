@@ -55,6 +55,7 @@ import {
   Camera
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { PURPOSES } from "@/stores/exploreFilterStore";
 
 // Schema for form validation
 const profileSchema = z.object({
@@ -70,6 +71,7 @@ const profileSchema = z.object({
   countryCode: z.string().nullable().optional(),
   primaryLanguageId: z.number().nullable().optional(),
   phone: z.string().nullable().optional(),
+  purpose: z.array(z.string()).nullable().optional(),
 });
 
 const socialProfileSchema = z.object({
@@ -132,6 +134,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const [aiSuggestions, setAISuggestions] = useState<AISuggestions | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
+  const [selectedPurposes, setSelectedPurposes] = useState<string[]>([]);
   const [socialProfiles, setSocialProfiles] = useState<{platformId: number, username: string}[]>([]);
   const [newSocialProfile, setNewSocialProfile] = useState<SocialProfileData>({
     platformId: 1, // Default to LinkedIn (assuming ID 1)
@@ -156,8 +159,16 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       countryCode: "",
       primaryLanguageId: undefined,
       phone: "",
+      purpose: [],
     },
   });
+
+  // Initialize purpose selection from user data
+  useEffect(() => {
+    if (typedUser?.purpose) {
+      setSelectedPurposes(Array.isArray(typedUser.purpose) ? typedUser.purpose : []);
+    }
+  }, [typedUser?.purpose]);
 
   // Sync form with current user data only when dialog opens or user data changes
   useEffect(() => {
@@ -187,6 +198,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         countryCode: typedUser.countryCode || "",
         primaryLanguageId: typedUser.primaryLanguageId || undefined,
         phone: typedUser.phone || "",
+        purpose: typedUser.purpose || [],
       });
     }
   }, [typedUser?.id]); // Only depend on user ID to avoid infinite loops
@@ -473,6 +485,15 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         ? prev.filter(id => id !== languageId)
         : [...prev, languageId]
     );
+  };
+
+  const handlePurposeToggle = (purpose: string) => {
+    const newPurposes = selectedPurposes.includes(purpose)
+      ? selectedPurposes.filter(p => p !== purpose)
+      : [...selectedPurposes, purpose];
+    
+    setSelectedPurposes(newPurposes);
+    form.setValue('purpose', newPurposes);
   };
 
   const handleAddSocialProfile = () => {
@@ -971,6 +992,45 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
               >
                 {updateCategoriesMutation.isPending ? "Guardando..." : "Guardar Categorías"}
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Purpose Selection Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Propósito de tus servicios</CardTitle>
+              <CardDescription>
+                Selecciona los propósitos que mejor describan el objetivo de tus servicios como host
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {PURPOSES.map((purpose) => (
+                  <div key={purpose} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={purpose}
+                      checked={selectedPurposes.includes(purpose)}
+                      onCheckedChange={() => handlePurposeToggle(purpose)}
+                    />
+                    <Label htmlFor={purpose} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      {purpose}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              
+              {selectedPurposes.length > 0 && (
+                <div className="mt-4">
+                  <Label>Propósitos seleccionados:</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedPurposes.map(purpose => (
+                      <Badge key={purpose} variant="secondary">
+                        {purpose}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
