@@ -34,6 +34,7 @@ export default function UserProfile() {
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
   const [showStripeCheckout, setShowStripeCheckout] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -181,56 +182,75 @@ export default function UserProfile() {
                   </div>
 
                   {/* Availability Status with Color Indicator */}
-                  <div className="flex justify-center lg:justify-start">
+                  <div className="flex justify-center lg:justify-start mb-3">
                     <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                       <span className="font-medium">Disponibilidad:</span>
                       <span className="ml-1 font-bold">Alta</span>
                     </div>
                   </div>
+
+                  {/* Topics during videocall */}
+                  <div className="mb-3">
+                    <h4 className="text-sm font-bold text-[hsl(17,12%,6%)] mb-2">Temas durante videollamada</h4>
+                    <div className="flex flex-wrap gap-1 justify-center lg:justify-start">
+                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Marketing</Badge>
+                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Growth</Badge>
+                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Analytics</Badge>
+                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Ads</Badge>
+                    </div>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-3 text-white text-center">
+                      <div className="text-lg font-bold">150+</div>
+                      <div className="text-xs opacity-90">Sesiones</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-3 text-white text-center">
+                      <div className="text-lg font-bold">98%</div>
+                      <div className="text-xs opacity-90">Satisfacción</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Description & Topics */}
+            {/* Right Column - Description */}
             <div className="lg:col-span-1">
-              <div className="space-y-6">
-                {/* Professional Description */}
+              <div className="space-y-4">
+                {/* Professional Description with More Button */}
                 <div>
                   <h2 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4">Descripción</h2>
                   <div className="bg-[hsl(220,9%,98%)] rounded-lg p-4 border border-[hsl(220,13%,90%)]">
                     <p className="text-[hsl(17,12%,20%)] leading-relaxed text-sm">
                       {user.description ? (
-                        user.description.length > 300 
-                          ? `${user.description.substring(0, 300)}...` 
-                          : user.description
-                      ) : "Información no disponible"}
+                        <>
+                          {user.description.length > 150 ? (
+                            <>
+                              <span>{user.description.substring(0, 150)}...</span>
+                              <button 
+                                className="ml-2 text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] font-medium text-sm"
+                                onClick={() => setShowFullDescription(!showFullDescription)}
+                              >
+                                {showFullDescription ? 'menos' : 'more'}
+                              </button>
+                              {showFullDescription && (
+                                <div className="mt-2 p-3 bg-white rounded border border-[hsl(220,13%,90%)]">
+                                  <p className="text-[hsl(17,12%,20%)] leading-relaxed text-sm">
+                                    {user.description}
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            user.description
+                          )}
+                        </>
+                      ) : (
+                        "Información no disponible"
+                      )}
                     </p>
-                  </div>
-                </div>
-
-                {/* Topics during videocall */}
-                <div>
-                  <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Temas durante videocall</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Estrategia de Marketing</Badge>
-                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Growth Hacking</Badge>
-                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Analytics</Badge>
-                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Paid Ads</Badge>
-                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">E-commerce</Badge>
-                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Lead Generation</Badge>
-                  </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-4 text-white text-center">
-                    <div className="text-2xl font-bold">150+</div>
-                    <div className="text-sm opacity-90">Sesiones</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-4 text-white text-center">
-                    <div className="text-2xl font-bold">98%</div>
-                    <div className="text-sm opacity-90">Satisfacción</div>
                   </div>
                 </div>
 
@@ -276,17 +296,54 @@ export default function UserProfile() {
           </div>
         </div>
 
+        {/* Multimedia Section */}
+        {mediaContent && mediaContent.length > 0 && (
+          <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg mb-8">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
+                <FileText className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
+                Multimedia
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mediaContent.slice(0, 6).map((media) => (
+                  <div key={media.id} className="group relative overflow-hidden rounded-lg bg-gray-100 hover:shadow-lg transition-all duration-300">
+                    <MediaEmbed 
+                      content={media}
+                      showEdit={false}
+                    />
+                  </div>
+                ))}
+              </div>
+              {mediaContent.length > 6 && (
+                <div className="mt-4 text-center">
+                  <button className="text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] text-sm font-medium">
+                    Ver más contenido ({mediaContent.length - 6} elementos)
+                  </button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Pricing & Schedule Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Pricing Section */}
           <Card className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] text-white border-0 shadow-xl">
             <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-4">Precios Dinámicos</h2>
+              <h2 className="text-xl font-bold mb-4">TARIFAS</h2>
               
-              {/* Pricing Options */}
+              {/* Pricing Options - Ordenadas por duración */}
               {pricing && pricing.length > 0 ? (
                 <div className="space-y-3 mb-6">
-                  {pricing.filter(p => p?.isActive !== false).map((price) => (
+                  {pricing
+                    .filter(p => p?.isActive !== false)
+                    .sort((a, b) => {
+                      // Ordenar por duración: 0 (gratis) primero, luego por duración ascendente
+                      if (a.duration === 0 || !a.duration) return -1;
+                      if (b.duration === 0 || !b.duration) return 1;
+                      return (a.duration || 0) - (b.duration || 0);
+                    })
+                    .map((price) => (
                     <div 
                       key={price.id}
                       className="bg-white/20 rounded-lg p-3 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
@@ -346,7 +403,7 @@ export default function UserProfile() {
             <CardContent className="p-6">
               <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
                 <Calendar className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
-                Horarios Disponibles
+                Horarios Disponibles - {format(new Date(), 'MMMM yyyy', { locale: es })}
               </h3>
               
               {/* Calendar Grid */}
