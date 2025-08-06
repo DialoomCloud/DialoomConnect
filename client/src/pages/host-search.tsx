@@ -12,28 +12,53 @@ import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, Instagram, Twitt
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
+import { useExploreFilterStore } from "@/stores/exploreFilterStore";
+import PriceRangeSlider from "@/components/PriceRangeSlider";
 
 type SearchResult = UserType & { relevance?: number };
 
 export default function HostSearch() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
-  const [searchTerm, setSearchTerm] = useState("");
   const [aiResults, setAiResults] = useState<SearchResult[]>([]);
   const [isAISearch, setIsAISearch] = useState(false);
   
-  // Filter states
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<number[]>([0, 200]);
+  // Filter states from store
+  const {
+    minPrice,
+    maxPrice,
+    category: selectedCategory,
+    skills: selectedSkills,
+    languages: selectedLanguages,
+    searchTerm,
+    setMinPrice,
+    setMaxPrice,
+    setPriceRange,
+    setCategory: setSelectedCategory,
+    setSkills: setSelectedSkills,
+    setLanguages: setSelectedLanguages,
+    setSearchTerm,
+    clearFilters
+  } = useExploreFilterStore();
+
+  // Build query parameters for API call
+  const queryParams = new URLSearchParams();
+  if (selectedCategory !== 'all') queryParams.set('category', selectedCategory);
+  if (selectedSkills.length > 0) queryParams.set('skills', selectedSkills.join(','));
+  if (selectedLanguages.length > 0) queryParams.set('languages', selectedLanguages.join(','));
+  queryParams.set('minPrice', minPrice.toString());
+  queryParams.set('maxPrice', maxPrice.toString());
+  
+  const queryString = queryParams.toString();
+  const apiUrl = queryString ? `/api/hosts?${queryString}` : '/api/hosts';
 
   const { data: hosts, isLoading } = useQuery<UserType[]>({
-    queryKey: ["/api/hosts"],
+    queryKey: ["/api/hosts", selectedCategory, selectedSkills, selectedLanguages, minPrice, maxPrice],
+    queryFn: () => fetch(apiUrl).then(res => res.json()),
   });
 
   // Fetch social profiles for all hosts
-  const { data: hostsSocialProfiles = [] } = useQuery({
+  const { data: hostsSocialProfiles = [] } = useQuery<any[]>({
     queryKey: ["/api/hosts/social-profiles"],
   });
 
@@ -120,8 +145,11 @@ export default function HostSearch() {
       // Similar to skills, this would need to be adjusted based on actual data structure
     }
 
-    // Price range filter would need actual pricing data
-    // This would be implemented once we have access to pricing information
+    // Price range filter - placeholder until we have actual pricing data
+    // For now we'll just ignore this filter since we don't have pricing info
+    // if (minPrice > 0 || maxPrice < 200) {
+    //   // Would filter by actual host pricing here
+    // }
 
     return true;
   });
@@ -189,15 +217,10 @@ export default function HostSearch() {
         {/* Filters Section */}
         <div className="mb-8 sticky top-0 z-20 bg-[hsl(220,9%,98%)] sm:static">
           <div className="flex justify-end mb-4">
-            {(selectedCategory && selectedCategory !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0) && (
+            {(selectedCategory && selectedCategory !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0 || minPrice > 0 || maxPrice < 200) && (
               <Button
                 variant="ghost"
-                onClick={() => {
-                  setSelectedCategory("all");
-                  setSelectedSkills([]);
-                  setSelectedLanguages([]);
-                  setPriceRange([0, 200]);
-                }}
+                onClick={clearFilters}
                 className="text-red-600 hover:text-red-700"
               >
                 <X className="w-4 h-4 mr-2" />
@@ -313,20 +336,16 @@ export default function HostSearch() {
                   {/* Price Range Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('hosts.priceRange')} (€{priceRange[0]} - €{priceRange[1]})
+                      {t('hosts.priceRange')} (€{minPrice} - €{maxPrice})
                     </label>
-                    <Slider
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                      max={200}
+                    <PriceRangeSlider
+                      values={[minPrice, maxPrice]}
+                      onChange={(values) => setPriceRange(values[0], values[1])}
                       min={0}
+                      max={200}
                       step={10}
                       className="mt-2"
                     />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>€0</span>
-                      <span>€200+</span>
-                    </div>
                   </div>
                 </div>
               </CardContent>
