@@ -122,6 +122,8 @@ export const users = pgTable("users", {
   hostActivationTokenExpiry: timestamp("host_activation_token_expiry"),
   hostRequestedAt: timestamp("host_requested_at"),
   hostRejectionReason: text("host_rejection_reason"),
+  // Video call topics - editable by the host
+  videoCallTopics: jsonb("video_call_topics").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -402,6 +404,8 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   role: z.string().optional(),
   isActive: z.boolean().optional(),
   isVerified: z.boolean().optional(),
+  // Video call topics for hosts
+  videoCallTopics: z.array(z.string()).optional(),
 });
 
 export const insertUserLanguageSchema = createInsertSchema(userLanguages).omit({

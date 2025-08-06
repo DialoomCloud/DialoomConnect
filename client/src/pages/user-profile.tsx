@@ -12,7 +12,8 @@ import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { BookingFlow } from "@/components/booking-flow";
 import { DateTimeSelector } from "@/components/date-time-selector";
 
-import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe, Eye } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe, Eye, Edit, Plus, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -32,6 +33,11 @@ export default function UserProfile() {
   const [selectedBookingTime, setSelectedBookingTime] = useState<string | null>(null);
 
   const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // Video call topics editing states
+  const [isEditingTopics, setIsEditingTopics] = useState(false);
+  const [editTopics, setEditTopics] = useState<string[]>([]);
+  const [newTopic, setNewTopic] = useState("");
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -74,6 +80,11 @@ export default function UserProfile() {
     enabled: !!userId,
   });
 
+  // Fetch authenticated user to check if viewing own profile
+  const { data: authenticatedUser } = useQuery<User>({
+    queryKey: ['/api/auth/user'],
+  });
+
   if (userError) {
     return (
       <div className="min-h-screen bg-[hsl(220,9%,98%)]">
@@ -108,6 +119,68 @@ export default function UserProfile() {
   const getDayName = (day: number) => {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     return t(`availability.${days[day]}`);
+  };
+
+  // Check if user is viewing their own profile
+  const isOwnProfile = authenticatedUser?.id === userId;
+
+  // Initialize edit topics when user data is loaded
+  useEffect(() => {
+    if (user?.videoCallTopics && Array.isArray(user.videoCallTopics)) {
+      setEditTopics(user.videoCallTopics);
+    } else {
+      setEditTopics([]);
+    }
+  }, [user]);
+
+  // Functions for video call topics editing
+  const startEditingTopics = () => {
+    setIsEditingTopics(true);
+    setEditTopics(user?.videoCallTopics || []);
+  };
+
+  const cancelEditingTopics = () => {
+    setIsEditingTopics(false);
+    setEditTopics(user?.videoCallTopics || []);
+    setNewTopic("");
+  };
+
+  const addTopic = () => {
+    const trimmedTopic = newTopic.trim();
+    if (trimmedTopic && !editTopics.includes(trimmedTopic) && editTopics.length < 10) {
+      setEditTopics([...editTopics, trimmedTopic]);
+      setNewTopic("");
+    }
+  };
+
+  const removeTopic = (topicToRemove: string) => {
+    setEditTopics(editTopics.filter(topic => topic !== topicToRemove));
+  };
+
+  const saveTopics = async () => {
+    try {
+      await apiRequest('/api/profile/video-call-topics', {
+        method: 'PUT',
+        body: JSON.stringify({ topics: editTopics }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      toast({
+        title: "Temas actualizados",
+        description: "Los temas de videollamada se han guardado correctamente.",
+      });
+      
+      setIsEditingTopics(false);
+      // Refetch user data to get updated topics
+      window.location.reload();
+    } catch (error) {
+      console.error("Error saving topics:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar los temas. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -189,13 +262,94 @@ export default function UserProfile() {
 
                   {/* Topics during videocall */}
                   <div className="mb-3">
-                    <h4 className="text-sm font-bold text-[hsl(17,12%,6%)] mb-2">Temas durante videollamada</h4>
-                    <div className="flex flex-wrap gap-1 justify-center lg:justify-start">
-                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Marketing</Badge>
-                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Growth</Badge>
-                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Analytics</Badge>
-                      <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs">Ads</Badge>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-bold text-[hsl(17,12%,6%)]">Temas durante videollamada</h4>
+                      {isOwnProfile && !isEditingTopics && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={startEditingTopics}
+                          className="p-1 h-6 w-6"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
+                    
+                    {isEditingTopics ? (
+                      <div className="space-y-3">
+                        {/* Editing interface */}
+                        <div className="flex flex-wrap gap-1 justify-center lg:justify-start">
+                          {editTopics.map((topic, index) => (
+                            <div key={index} className="flex items-center gap-1 bg-[hsl(188,100%,45%)] text-white rounded-full px-2 py-1 text-xs">
+                              <span>{topic}</span>
+                              <button
+                                onClick={() => removeTopic(topic)}
+                                className="hover:bg-red-500 rounded-full p-0.5"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Add new topic */}
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={newTopic}
+                            onChange={(e) => setNewTopic(e.target.value)}
+                            placeholder="Agregar nuevo tema..."
+                            className="flex-1 text-xs"
+                            maxLength={50}
+                            onKeyPress={(e) => e.key === 'Enter' && addTopic()}
+                          />
+                          <Button 
+                            size="sm" 
+                            onClick={addTopic}
+                            disabled={!newTopic.trim() || editTopics.length >= 10}
+                            className="p-1 h-7 w-7"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        
+                        {/* Save/Cancel buttons */}
+                        <div className="flex gap-2 justify-end">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={cancelEditingTopics}
+                            className="text-xs"
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={saveTopics}
+                            className="text-xs"
+                          >
+                            Guardar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1 justify-center lg:justify-start">
+                        {user?.videoCallTopics && user.videoCallTopics.length > 0 ? (
+                          user.videoCallTopics.map((topic, index) => (
+                            <Badge 
+                              key={index} 
+                              className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs"
+                            >
+                              {topic}
+                            </Badge>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500 italic">
+                            {isOwnProfile ? "Haz clic en el botón de editar para agregar temas" : "No hay temas configurados"}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
 

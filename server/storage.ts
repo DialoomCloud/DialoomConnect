@@ -554,6 +554,9 @@ export class DatabaseStorage implements IStorage {
     if (profile.role !== undefined) updateData.role = profile.role;
     if (profile.isActive !== undefined) updateData.isActive = profile.isActive;
     if (profile.isVerified !== undefined) updateData.isVerified = profile.isVerified;
+    
+    // Video call topics for hosts
+    if (profile.videoCallTopics !== undefined) updateData.videoCallTopics = profile.videoCallTopics;
 
     console.log('[updateUserProfile] Final update data:', updateData);
 

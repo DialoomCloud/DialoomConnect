@@ -514,6 +514,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update video call topics for hosts
+  app.put('/api/profile/video-call-topics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const { topics } = req.body;
+      
+      console.log('Video call topics update request:', { userId, topics });
+      
+      // Validate that topics is an array of strings
+      if (!Array.isArray(topics) || !topics.every((topic) => typeof topic === 'string')) {
+        return res.status(400).json({ message: "Topics must be an array of strings" });
+      }
+      
+      // Filter out empty topics and limit to 10 topics
+      const cleanedTopics = topics
+        .filter((topic) => topic.trim().length > 0)
+        .slice(0, 10)
+        .map((topic) => topic.trim());
+      
+      const updatedUser = await storage.updateUserProfile(userId, { 
+        videoCallTopics: cleanedTopics 
+      });
+      
+      console.log('Video call topics updated successfully:', { userId, topics: cleanedTopics });
+      
+      res.json({
+        success: true,
+        videoCallTopics: updatedUser.videoCallTopics || []
+      });
+    } catch (error) {
+      console.error("Error updating video call topics:", error);
+      res.status(500).json({ message: "Failed to update video call topics" });
+    }
+  });
+
   // User-specific profile route - matches frontend calls
   app.put('/api/users/:userId/profile', isAuthenticated, async (req: any, res) => {
     try {
