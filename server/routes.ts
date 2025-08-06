@@ -1019,17 +1019,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user social profiles
-  app.get('/api/user/social-profiles/:userId', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/social-profiles/:userId', async (req: any, res) => {
     try {
       const requestedUserId = req.params.userId;
-      const authenticatedUserId = req.userId;
       
-      // Users can only view their own social profiles
-      if (requestedUserId !== authenticatedUserId) {
-        return res.status(403).json({ message: "No autorizado para ver estos perfiles sociales" });
-      }
-      
-      const userSocialProfiles = await storage.getUserSocialProfiles(authenticatedUserId);
+      // Social profiles are now public - anyone can view them
+      const userSocialProfiles = await storage.getUserSocialProfiles(requestedUserId);
       res.json(userSocialProfiles);
     } catch (error) {
       console.error("Error fetching user social profiles:", error);
