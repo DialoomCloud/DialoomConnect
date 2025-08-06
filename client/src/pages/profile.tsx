@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
-import { EnhancedProfileEdit } from "@/components/enhanced-profile-edit";
+import { SimpleProfileEdit } from "@/components/simple-profile-edit";
 import { MediaUploadModal } from "@/components/media-upload-modal";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
@@ -340,7 +340,7 @@ export default function Profile() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <EnhancedProfileEdit onClose={() => setShowProfileModal(false)} />
+              <SimpleProfileEdit />
             </div>
           </div>
         </div>

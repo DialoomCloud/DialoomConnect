@@ -127,6 +127,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   // Type guard for user
   const typedUser = user as any;
   
+  const [open, setOpen] = useState(true);
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<AISuggestions | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -161,7 +162,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   // Sync form with current user data only when dialog opens or user data changes
   useEffect(() => {
-    if (typedUser && open) {
+    if (typedUser && open && typeof typedUser === 'object') {
       console.log('🔄 [PROFILE SYNC] Syncing form with user data:', {
         address: typedUser.address,
         phone: typedUser.phone,
@@ -645,7 +646,18 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   if (!user) return null;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Editar Perfil</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Editar Perfil</DialogTitle>
+          <DialogDescription>
+            Personaliza tu información profesional
+          </DialogDescription>
+        </DialogHeader>
+    <div className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <User className="h-8 w-8 text-primary" />
         <div>
@@ -998,7 +1010,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                   <Label>Categorías seleccionadas:</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedCategories.map(categoryId => {
-                      const category = categories.find((c: Category) => c.id === categoryId);
+                      const category = typedCategories.find((c: any) => c.id === categoryId);
                       return category ? (
                         <Badge key={categoryId} variant="secondary">
                           {category.name}
@@ -1067,7 +1079,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                 <div className="space-y-2">
                   <Label>Perfiles añadidos:</Label>
                   {socialProfiles.map((profile, index) => {
-                    const platform = socialPlatforms.find((p: SocialPlatform) => p.id === profile.platformId);
+                    const platform = typedSocialPlatforms.find((p: any) => p.id === profile.platformId);
                     const IconComponent = socialIcons[platform?.name] || ExternalLink;
                     
                     return (
@@ -1147,27 +1159,82 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
               )}
             </div>
           )}
+        <TabsContent value="topics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Temas de Videollamada</CardTitle>
+              <CardDescription>
+                Personaliza los temas que ofreces en tus videollamadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TopicsEditor
+                topics={videoCallTopics}
+                onTopicsChange={setVideoCallTopics}
+                disabled={updateTopicsMutation.isPending}
+              />
+              
+              <div className="flex justify-center mt-4">
+                <Button
+                  onClick={() => updateTopicsMutation.mutate(videoCallTopics)}
+                  disabled={updateTopicsMutation.isPending}
+                  className="w-full max-w-md"
+                >
+                  {updateTopicsMutation.isPending ? "Guardando..." : "Guardar Temas"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        </Tabs>
         </DialogContent>
       </Dialog>
 
-      {/* Topics Tab - Add after social tab */}
-      <TabsContent value="topics" className="space-y-6">
-        <TopicsEditor
-          topics={videoCallTopics}
-          onTopicsChange={setVideoCallTopics}
-          disabled={updateTopicsMutation.isPending}
-        />
-        
-        <div className="flex justify-center">
-          <Button
-            onClick={() => updateTopicsMutation.mutate(videoCallTopics)}
-            disabled={updateTopicsMutation.isPending}
-            className="w-full max-w-md"
-          >
-            {updateTopicsMutation.isPending ? "Guardando..." : "Guardar Temas"}
-          </Button>
-        </div>
-      </TabsContent>
+      {/* AI Dialog */}
+      <Dialog open={isAIDialogOpen} onOpenChange={setIsAIDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              Sugerencias de Loomia
+            </DialogTitle>
+            <DialogDescription>
+              Obtén recomendaciones personalizadas para tu perfil profesional
+            </DialogDescription>
+          </DialogHeader>
+
+          {aiSuggestions && (
+            <div className="space-y-4">
+              {aiSuggestions.categories.length > 0 && (
+                <div>
+                  <Label className="text-base font-semibold">Categorías sugeridas:</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {aiSuggestions.categories.map((category, index) => (
+                      <Badge key={index} variant="outline">
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {aiSuggestions.skills.length > 0 && (
+                <div>
+                  <Label className="text-base font-semibold">Habilidades sugeridas:</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {aiSuggestions.skills.map((skill, index) => (
+                      <Badge key={index} variant="secondary">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
