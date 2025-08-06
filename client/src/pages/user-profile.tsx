@@ -11,8 +11,7 @@ import { MediaEmbed } from "@/components/media-embed";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
 import { BookingFlow } from "@/components/booking-flow";
 import { DateTimeSelector } from "@/components/date-time-selector";
-import { PaymentMethods } from "@/components/payment-methods";
-import { StripeConnectCheckout } from "@/components/stripe-connect-checkout";
+
 import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe, Eye } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
 import { format } from "date-fns";
@@ -31,9 +30,7 @@ export default function UserProfile() {
   const [showDateTimeSelector, setShowDateTimeSelector] = useState(false);
   const [selectedBookingDate, setSelectedBookingDate] = useState<Date | null>(null);
   const [selectedBookingTime, setSelectedBookingTime] = useState<string | null>(null);
-  const [showPaymentMethods, setShowPaymentMethods] = useState(false);
-  const [showStripeCheckout, setShowStripeCheckout] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Fetch user profile
@@ -201,17 +198,7 @@ export default function UserProfile() {
                     </div>
                   </div>
 
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-3 text-white text-center">
-                      <div className="text-lg font-bold">150+</div>
-                      <div className="text-xs opacity-90">Sesiones</div>
-                    </div>
-                    <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-3 text-white text-center">
-                      <div className="text-lg font-bold">98%</div>
-                      <div className="text-xs opacity-90">Satisfacción</div>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -251,6 +238,18 @@ export default function UserProfile() {
                         "Información no disponible"
                       )}
                     </p>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-4 text-white text-center">
+                    <div className="text-2xl font-bold">150+</div>
+                    <div className="text-sm opacity-90">Sesiones</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-4 text-white text-center">
+                    <div className="text-2xl font-bold">98%</div>
+                    <div className="text-sm opacity-90">Satisfacción</div>
                   </div>
                 </div>
 
@@ -448,78 +447,10 @@ export default function UserProfile() {
             </CardContent>
           </Card>
 
-          {/* Payment Gateway */}
-          <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4">Pasarela de Pago</h3>
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <DollarSign className="w-8 h-8 text-[hsl(188,100%,38%)]" />
-                </div>
-                <p className="text-[hsl(17,12%,40%)] mb-4">
-                  Proceso de pago seguro y rápido
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)]"
-                >
-                  Configurar Pago
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
         </div>
 
-        {/* Multimedia Section */}
-        <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-6 flex items-center">
-              <Video className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
-              Multimedia
-            </h3>
-            
-            {mediaLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
-                    <div className="aspect-video bg-gray-300 rounded mb-3"></div>
-                    <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                    <div className="h-3 bg-gray-300 rounded w-2/3"></div>
-                  </div>
-                ))}
-              </div>
-            ) : mediaContent.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {mediaContent.slice(0, 6).map((content: MediaContent) => (
-                  <div key={content.id} className="cursor-pointer group" onClick={() => {
-                    setViewingContent(content);
-                    setShowViewerModal(true);
-                  }}>
-                    <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-video mb-3 group-hover:shadow-lg transition-shadow">
-                      <MediaEmbed 
-                        content={content} 
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Eye className="w-8 h-8 text-white" />
-                      </div>
-                    </div>
-                    <h4 className="font-medium text-[hsl(17,12%,20%)] mb-1 group-hover:text-[hsl(188,100%,38%)] transition-colors">
-                      {content.title}
-                    </h4>
-                    <p className="text-sm text-[hsl(17,12%,40%)] line-clamp-2">
-                      {content.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Video className="w-16 h-16 text-[hsl(188,100%,38%)] mx-auto mb-4" />
-                <p className="text-[hsl(17,12%,40%)]">No hay contenido multimedia disponible</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* Modals */}
