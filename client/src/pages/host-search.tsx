@@ -15,6 +15,7 @@ import type { User as UserType, Category, Skill, Language, Country } from "@shar
 import { useExploreFilterStore, PURPOSES } from "@/stores/exploreFilterStore";
 import PriceRangeSlider from "@/components/PriceRangeSlider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
 
 type SearchResult = UserType & { relevance?: number };
 
@@ -165,6 +166,9 @@ export default function HostSearch() {
     <div className="min-h-screen bg-[hsl(220,9%,98%)]">
       <Navigation />
       
+      {/* Progressive Disclosure for Host Search Flow */}
+      <ProgressiveDisclosure steps={ONBOARDING_SEQUENCES.hostSearch} />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-12 animate-fade-in-up">
           <h1 className="text-4xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('hosts.exploreTitle')}</h1>
@@ -187,7 +191,7 @@ export default function HostSearch() {
                 placeholder={t('hosts.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-6 text-lg shadow-lg border-0 focus:ring-2 focus:ring-[hsl(188,100%,38%)] transition-all"
+                className="pl-10 pr-4 py-6 text-lg shadow-lg border-0 focus:ring-2 focus:ring-[hsl(188,100%,38%)] transition-all ai-search-input"
               />
               {isAISearch && (
                 <div className="absolute right-3 top-3">
@@ -234,7 +238,7 @@ export default function HostSearch() {
             )}
           </div>
 
-          <Card className="mb-6">
+          <Card className="mb-6 filter-container">
             <CardHeader>
               <CardTitle className="text-lg">{t('hosts.filters')}</CardTitle>
             </CardHeader>

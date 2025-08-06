@@ -12,6 +12,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// Mobile logo will be loaded directly from public path
 
 export function Navigation() {
   const { user } = useAuth() as { user: User | undefined };
@@ -78,10 +79,18 @@ export function Navigation() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
+              {/* Mobile Logo - only (d) symbol */}
+              <img
+                src="/ic_app_logo_foreground.webp"
+                alt="Dialoom"
+                className="h-12 w-auto object-contain md:hidden"
+                style={{ maxWidth: '48px' }}
+              />
+              {/* Desktop Logo - full logo */}
               <img
                 src={logoUrl}
                 alt="Dialoom"
-                className="h-12 w-auto object-contain"
+                className="h-12 w-auto object-contain hidden md:block"
                 style={{ maxWidth: '200px' }}
               />
             </Link>

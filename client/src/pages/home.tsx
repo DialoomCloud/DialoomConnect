@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { OnboardingTutorial, useOnboarding } from "@/components/onboarding-tutorial";
 
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
@@ -22,6 +23,7 @@ export default function Home() {
   const { adminUser, isLoading: adminLoading } = useAdminAuth();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { showOnboarding, handleClose, handleComplete } = useOnboarding();
 
   // Debug authentication state
   console.log("Home: Auth state", { isAuthenticated, authLoading, adminUser, adminLoading });
@@ -52,6 +54,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[hsl(220,9%,98%)] to-[hsl(220,20%,95%)]">
       <Navigation />
+      
+      {/* Onboarding Tutorial */}
+      <OnboardingTutorial 
+        isOpen={showOnboarding}
+        onClose={handleClose}
+        onComplete={handleComplete}
+      />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}

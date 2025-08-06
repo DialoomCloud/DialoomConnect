@@ -19,6 +19,8 @@ import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
+import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
+import { trackUserAction } from "@/hooks/useOnboardingState";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -46,6 +48,16 @@ export default function UserProfile() {
     queryKey: [`/api/users/${userId}`],
     enabled: !!userId,
   });
+
+  // Track profile view on successful data load
+  useEffect(() => {
+    if (user && !userLoading) {
+      trackUserAction('hasViewedProfile');
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('profile_viewed'));
+      }, 1000);
+    }
+  }, [user, userLoading]);
 
   // Fetch user's media content
   const { data: mediaContent = [], isLoading: mediaLoading } = useQuery<MediaContent[]>({
@@ -187,6 +199,9 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[hsl(220,9%,98%)] to-[hsl(220,20%,95%)]">
       <Navigation />
+      
+      {/* Progressive Disclosure for Profile Flow */}
+      <ProgressiveDisclosure steps={ONBOARDING_SEQUENCES.profile} />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
@@ -553,7 +568,7 @@ export default function UserProfile() {
 
               {/* Book Call Button */}
               <Button 
-                className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-semibold py-2 text-sm"
+                className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-semibold py-2 text-sm booking-button"
                 onClick={() => setShowBookingFlow(true)}
               >
                 Reservar Llamada

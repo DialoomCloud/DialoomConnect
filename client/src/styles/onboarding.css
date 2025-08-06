@@ -1,0 +1,131 @@
+/* Onboarding animations and effects */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(188, 100%, 38%), 0 0 10px hsl(188, 100%, 38%), 0 0 15px hsl(188, 100%, 38%);
+  }
+  50% {
+    box-shadow: 0 0 10px hsl(188, 100%, 38%), 0 0 20px hsl(188, 100%, 38%), 0 0 30px hsl(188, 100%, 38%);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Onboarding overlay styles */
+.onboarding-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: fade-in-up 0.3s ease-out;
+}
+
+/* Highlight effects */
+.highlight-border {
+  position: absolute;
+  border: 3px solid hsl(188, 100%, 38%);
+  border-radius: 8px;
+  pointer-events: none;
+  animation: glow 2s ease-in-out infinite;
+  z-index: 9998;
+}
+
+/* Progressive disclosure tooltip */
+.progressive-tooltip {
+  position: fixed;
+  z-index: 10000;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid hsl(188, 100%, 38%);
+  max-width: 300px;
+  animation: fade-in-up 0.2s ease-out;
+}
+
+.progressive-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid hsl(188, 100%, 38%);
+}
+
+/* Step indicator dots */
+.onboarding-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.onboarding-dot.active {
+  background: hsl(188, 100%, 38%);
+}
+
+.onboarding-dot.completed {
+  background: hsl(188, 100%, 60%);
+}
+
+.onboarding-dot.pending {
+  background: hsl(0, 0%, 80%);
+}
