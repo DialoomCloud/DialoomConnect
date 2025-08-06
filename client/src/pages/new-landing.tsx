@@ -35,7 +35,7 @@ export default function NewLanding() {
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
                 <img 
-                  src="/uploads/images/ic_app_logo_foreground.webp"
+                  src="/uploads/images/dialoom-logo.png"
                   alt="Dialoom" 
                   className="h-10 sm:h-12 w-auto object-contain"
                   style={{ maxWidth: '150px' }}
