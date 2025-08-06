@@ -488,18 +488,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin profile image upload route (for admins uploading images for other users)
-  app.post('/api/admin/upload/profile-image', isAdminAuthenticated, uploadAdmin.single('image'), async (req: any, res) => {
+  app.post('/api/admin/upload/profile-image', 
+    isAdminAuthenticated, 
+    (req, res, next) => {
+      console.log('[Pre-Multer] Admin upload headers:', {
+        'content-type': req.headers['content-type'],
+        'content-length': req.headers['content-length']
+      });
+      next();
+    },
+    uploadAdmin.single('image'), 
+    async (req: any, res) => {
     try {
       console.log('Admin image upload request received:');
-      console.log('- Files:', req.file ? 'File present' : 'No file');
+      console.log('- File present:', !!req.file);
+      console.log('- File details:', req.file ? {
+        fieldname: req.file.fieldname,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      } : 'No file');
       console.log('- Body:', req.body);
       console.log('- Content-Type:', req.headers['content-type']);
       
       if (!req.file) {
-        console.error('No file in request:', {
+        console.error('No file in request. Debug info:', {
           body: req.body,
           files: req.files,
-          contentType: req.headers['content-type']
+          file: req.file,
+          headers: req.headers
         });
         return res.status(400).json({ message: "No se proporcionó ninguna imagen" });
       }

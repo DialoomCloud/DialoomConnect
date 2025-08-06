@@ -3,8 +3,28 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Conditional middleware - skip JSON parsing for multipart routes
+app.use((req, res, next) => {
+  // Skip body parsing for file upload routes
+  if (req.path.includes('/upload') || 
+      (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data'))) {
+    console.log('[Middleware] Skipping body parser for:', req.path);
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
+app.use((req, res, next) => {
+  // Skip URL encoding for file upload routes
+  if (req.path.includes('/upload') || 
+      (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data'))) {
+    next();
+  } else {
+    express.urlencoded({ extended: false })(req, res, next);
+  }
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
