@@ -409,39 +409,39 @@ export default function UserProfile() {
 
                 {/* Social Links */}
                 {socialProfiles && Array.isArray(socialProfiles) && socialProfiles.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Redes Sociales</h3>
-                    <div className="flex gap-3">
-                      {socialProfiles.map((profile: any) => {
-                        if (!profile?.platform?.baseUrl || !profile?.username) {
-                          return null;
+                  <div className="flex gap-3">
+                    {socialProfiles.map((profile: any) => {
+                      if (!profile?.platform?.baseUrl || !profile?.username) {
+                        return null;
+                      }
+
+                      const getIcon = (platformName: string) => {
+                        switch (platformName?.toLowerCase()) {
+                          case 'instagram': return <Instagram className="w-5 h-5" />;
+                          case 'twitter': return <Twitter className="w-5 h-5" />;
+                          case 'linkedin': return <Linkedin className="w-5 h-5" />;
+                          case 'web': return <Globe className="w-5 h-5" />;
+                          default: return <Globe className="w-5 h-5" />;
                         }
+                      };
 
-                        const getIcon = (platformName: string) => {
-                          switch (platformName?.toLowerCase()) {
-                            case 'instagram': return <Instagram className="w-5 h-5" />;
-                            case 'twitter': return <Twitter className="w-5 h-5" />;
-                            case 'linkedin': return <Linkedin className="w-5 h-5" />;
-                            default: return <Globe className="w-5 h-5" />;
-                          }
-                        };
+                      const platformUrl = profile.username.startsWith('http') 
+                        ? profile.username 
+                        : profile.platform.baseUrl + profile.username;
 
-                        const platformUrl = profile.platform.baseUrl + profile.username;
-
-                        return (
-                          <a
-                            key={profile.id}
-                            href={platformUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
-                            title={`${profile.platform.name || 'Social'}: ${profile.username}`}
-                          >
-                            {getIcon(profile.platform.name || '')}
-                          </a>
-                        );
-                      }).filter(Boolean)}
-                    </div>
+                      return (
+                        <a
+                          key={profile.id}
+                          href={platformUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
+                          title={`${profile.platform.name || 'Social'}: ${profile.username}`}
+                        >
+                          {getIcon(profile.platform.name || '')}
+                        </a>
+                      );
+                    }).filter(Boolean)}
                   </div>
                 )}
               </div>

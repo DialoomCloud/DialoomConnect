@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X } from "lucide-react";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, Instagram, Twitter, Linkedin, Globe, ExternalLink } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
@@ -30,6 +30,11 @@ export default function HostSearch() {
 
   const { data: hosts, isLoading } = useQuery<UserType[]>({
     queryKey: ["/api/hosts"],
+  });
+
+  // Fetch social profiles for all hosts
+  const { data: hostsSocialProfiles = [] } = useQuery({
+    queryKey: ["/api/hosts/social-profiles"],
   });
 
   // Fetch filter options
@@ -376,11 +381,60 @@ export default function HostSearch() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {host.countryCode && (
                       <div className="flex items-center text-gray-600 text-sm">
                         <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
                         <span>{countries.find((c: Country) => c.code === host.countryCode)?.name || host.countryCode}</span>
+                      </div>
+                    )}
+                    
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-2 text-white text-center">
+                        <div className="text-lg font-bold">150+</div>
+                        <div className="text-xs opacity-90">Sesiones</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-2 text-white text-center">
+                        <div className="text-lg font-bold">98%</div>
+                        <div className="text-xs opacity-90">Satisfacción</div>
+                      </div>
+                    </div>
+
+                    {/* Social Media Icons */}
+                    {hostsSocialProfiles.filter((profile: any) => profile.userId === host.id).length > 0 && (
+                      <div className="flex gap-2 justify-center">
+                        {hostsSocialProfiles
+                          .filter((profile: any) => profile.userId === host.id)
+                          .map((profile: any) => {
+                            const getIcon = (platformName: string) => {
+                              switch (platformName?.toLowerCase()) {
+                                case 'instagram': return <Instagram className="w-4 h-4" />;
+                                case 'twitter': return <Twitter className="w-4 h-4" />;
+                                case 'linkedin': return <Linkedin className="w-4 h-4" />;
+                                case 'web': return <Globe className="w-4 h-4" />;
+                                default: return <ExternalLink className="w-4 h-4" />;
+                              }
+                            };
+
+                            const platformUrl = profile.username && profile.username.startsWith('http') 
+                              ? profile.username 
+                              : (profile.platform?.baseUrl ? profile.platform.baseUrl + profile.username : profile.username);
+
+                            return (
+                              <a
+                                key={profile.id}
+                                href={platformUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-8 h-8 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
+                                title={`${profile.platform?.name || 'Social'}: ${profile.username}`}
+                                onClick={(e) => e.stopPropagation()} // Prevent card click navigation
+                              >
+                                {getIcon(profile.platform?.name || '')}
+                              </a>
+                            );
+                          })}
                       </div>
                     )}
                   </div>

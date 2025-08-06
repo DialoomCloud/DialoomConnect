@@ -1783,6 +1783,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all social profiles for hosts (public route for host exploration)
+  app.get('/api/hosts/social-profiles', async (req, res) => {
+    try {
+      // Get all users who are active hosts
+      const allUsers = await storage.getAllUsers();
+      const hosts = allUsers.filter(user => user.isHost && user.isActive);
+      
+      // Get social profiles for all hosts
+      const hostSocialProfiles = [];
+      for (const host of hosts) {
+        const profiles = await storage.getUserSocialProfiles(host.id);
+        hostSocialProfiles.push(...profiles);
+      }
+      
+      res.json(hostSocialProfiles);
+    } catch (error) {
+      console.error("Error fetching hosts social profiles:", error);
+      res.status(500).json({ message: "Failed to fetch hosts social profiles" });
+    }
+  });
+
   // Stripe Connect routes for hosts
   app.post('/api/stripe/connect/create-account', isAuthenticated, async (req: any, res) => {
     try {
