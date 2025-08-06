@@ -262,38 +262,38 @@ export default function UserProfile() {
                 {/* Pricing Options */}
                 {pricing && pricing.length > 0 ? (
                   <div className="space-y-3 mb-6">
-                    {pricing.filter(p => p.isActive).map((price) => (
+                    {pricing.filter(p => p?.isActive !== false).map((price) => (
                       <div 
                         key={price.id}
                         className="bg-white/20 rounded-lg p-3 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
-                        onClick={() => setSelectedPricing({ duration: price.duration, price: price.price })}
+                        onClick={() => setSelectedPricing({ duration: price.duration || 0, price: String(price.price || '0') })}
                       >
                         <div className="flex justify-between items-center">
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-2" />
                             <span className="font-medium">
-                              {price.duration === 0 ? 'Gratis' : `${price.duration} min`}
+                              {(price.duration === 0 || !price.duration) ? 'Gratis' : `${price.duration} min`}
                             </span>
                           </div>
                           <div className="text-lg font-bold">
-                            {price.duration === 0 ? 'Gratis' : `€${price.price}`}
+                            {(price.duration === 0 || !price.duration) ? 'Gratis' : `€${price.price || '0'}`}
                           </div>
                         </div>
                         
-                        {/* Service Icons */}
+                        {/* Service Icons - Solo mostrar si existen */}
                         <div className="flex gap-2 mt-2">
                           {price.includesScreenSharing && (
-                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center">
+                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Compartir pantalla">
                               <Monitor className="w-3 h-3" />
                             </div>
                           )}
                           {price.includesRecording && (
-                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center">
+                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Grabación">
                               <Video className="w-3 h-3" />
                             </div>
                           )}
                           {price.includesTranslation && (
-                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center">
+                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Traducción">
                               <Languages className="w-3 h-3" />
                             </div>
                           )}
