@@ -1558,8 +1558,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   // User social profiles operations
-  async getUserSocialProfiles(userId: string): Promise<UserSocialProfile[]> {
-    return await db.select().from(userSocialProfiles).where(eq(userSocialProfiles.userId, userId));
+  async getUserSocialProfiles(userId: string): Promise<any[]> {
+    const profiles = await db
+      .select({
+        id: userSocialProfiles.id,
+        userId: userSocialProfiles.userId,
+        platformId: userSocialProfiles.platformId,
+        username: userSocialProfiles.username,
+        url: userSocialProfiles.url,
+        isVisible: userSocialProfiles.isVisible,
+        createdAt: userSocialProfiles.createdAt,
+        updatedAt: userSocialProfiles.updatedAt,
+        platform: {
+          id: socialPlatforms.id,
+          name: socialPlatforms.name,
+          baseUrl: socialPlatforms.baseUrl,
+        }
+      })
+      .from(userSocialProfiles)
+      .leftJoin(socialPlatforms, eq(userSocialProfiles.platformId, socialPlatforms.id))
+      .where(eq(userSocialProfiles.userId, userId));
+    
+    return profiles;
   }
 
   async updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string}[]): Promise<void> {

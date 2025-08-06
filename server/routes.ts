@@ -1629,6 +1629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: user.description,
         isVerified: user.isVerified,
         createdAt: user.createdAt,
+        videoCallTopics: user.videoCallTopics, // Include videoCallTopics in public profile
       };
       
       res.json(publicProfile);
