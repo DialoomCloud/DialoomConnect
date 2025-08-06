@@ -119,138 +119,118 @@ export default function UserProfile() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-xl border border-[hsl(220,13%,90%)] p-8 mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            {/* Left Column - Profile Info */}
+            {/* Left Column - Profile Photo & Basic Info */}
             <div className="lg:col-span-1">
-              {/* Profile Image */}
-              <div className="flex justify-center mb-6">
-                <div className="relative">
+              <div className="flex flex-col items-center lg:items-start lg:flex-row lg:space-x-6">
+                {/* Profile Photo */}
+                <div className="relative mb-4 lg:mb-0 flex-shrink-0">
                   {user.profileImageUrl ? (
                     <img
                       src={user.profileImageUrl.startsWith('/storage/') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`}
                       alt={`${user.firstName} ${user.lastName}`}
-                      className="w-32 h-32 rounded-full object-cover border-4 border-[hsl(188,100%,38%)] shadow-lg"
+                      className="w-24 h-24 lg:w-32 lg:h-32 rounded-full object-cover border-4 border-[hsl(188,100%,38%)] shadow-lg"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center shadow-lg">
-                      <UserIcon className="w-16 h-16 text-white" />
+                    <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center shadow-lg">
+                      <UserIcon className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
                     </div>
                   )}
                   {user.isVerified && (
-                    <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-1">
-                      <CheckCircle className="w-6 h-6 text-white" />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Basic Info */}
-              <div className="text-center space-y-3">
-                <h1 className="text-2xl font-bold text-[hsl(17,12%,6%)]">
-                  {user.firstName} {user.lastName}
-                </h1>
-                {user.title && (
-                  <p className="text-lg text-[hsl(188,100%,38%)] font-semibold">{user.title}</p>
-                )}
-                {/* Rating Stars */}
-                <div className="flex items-center justify-center text-[hsl(17,12%,40%)]">
-                  <div className="flex items-center mr-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star 
-                        key={star} 
-                        className="w-4 h-4 text-yellow-500 fill-yellow-500" 
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm font-medium">5.0</span>
-                  <span className="text-sm text-[hsl(17,12%,60%)] ml-1">(12 reseñas)</span>
-                </div>
-                
-                {/* Contact Info */}
-                <div className="space-y-2 pt-4">
-                  {user.phone && (
-                    <div className="flex items-center text-sm text-[hsl(17,12%,40%)]">
-                      <Phone className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
-                      {user.phone}
-                    </div>
-                  )}
-                  {user.email && (
-                    <div className="flex items-center text-sm text-[hsl(17,12%,40%)]">
-                      <Mail className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
-                      {user.email}
-                    </div>
-                  )}
-                  {(user.city || user.countryCode) && (
-                    <div className="flex items-center text-sm text-[hsl(17,12%,40%)]">
-                      <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
-                      {user.city}{user.city && user.countryCode && ', '}{user.countryCode}
+                    <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
+                      <CheckCircle className="w-5 h-5 text-white" />
                     </div>
                   )}
                 </div>
 
-                {/* Languages */}
-                <div className="pt-4">
-                  <div className="flex items-center justify-center mb-3">
-                    <Languages className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
-                    <span className="text-sm font-medium text-[hsl(17,12%,20%)]">Idiomas</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    <div className="flex items-center bg-[hsl(188,100%,45%)] text-white px-3 py-1 rounded-full text-xs">
-                      <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                      Español (Nativo)
-                    </div>
-                    <div className="flex items-center bg-[hsl(188,100%,45%)] text-white px-3 py-1 rounded-full text-xs">
-                      <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
-                      Catalán (Fluido)
-                    </div>
-                    <div className="flex items-center bg-[hsl(188,100%,45%)] text-white px-3 py-1 rounded-full text-xs">
-                      <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
-                      Inglés (Intermedio)
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stats and Status */}
-                <div className="pt-4 space-y-3">
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div className="bg-[hsl(220,9%,98%)] rounded-lg p-3">
-                      <div className="text-lg font-bold text-[hsl(188,100%,38%)]">150+</div>
-                      <div className="text-xs text-[hsl(17,12%,60%)]">Sesiones</div>
-                    </div>
-                    <div className="bg-[hsl(220,9%,98%)] rounded-lg p-3">
-                      <div className="text-lg font-bold text-[hsl(188,100%,38%)]">98%</div>
-                      <div className="text-xs text-[hsl(17,12%,60%)]">Satisfacción</div>
-                    </div>
-                  </div>
+                {/* Basic Info */}
+                <div className="text-center lg:text-left flex-grow">
+                  <h1 className="text-xl lg:text-2xl font-bold text-[hsl(17,12%,6%)] mb-1">
+                    {user.firstName} {user.lastName}
+                  </h1>
+                  {user.title && (
+                    <p className="text-lg text-[hsl(188,100%,38%)] font-semibold mb-2">{user.title}</p>
+                  )}
                   
-                  {/* Availability Status */}
-                  <div className="flex justify-center">
-                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-medium">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                      Disponible ahora
+                  {/* Rating Stars */}
+                  <div className="flex items-center justify-center lg:justify-start mb-3">
+                    <div className="flex items-center mr-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                          key={star} 
+                          className="w-4 h-4 text-yellow-500 fill-yellow-500" 
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium">5.0</span>
+                    <span className="text-sm text-[hsl(17,12%,60%)] ml-1">(12 reseñas)</span>
+                  </div>
+
+                  {/* Languages */}
+                  <div className="mb-3">
+                    <div className="flex items-center justify-center lg:justify-start mb-2">
+                      <Languages className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
+                      <span className="text-sm font-medium text-[hsl(17,12%,20%)]">Idiomas</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 justify-center lg:justify-start">
+                      <Badge variant="secondary" className="text-xs">Español</Badge>
+                      <Badge variant="secondary" className="text-xs">Catalán</Badge>
+                      <Badge variant="secondary" className="text-xs">Inglés</Badge>
+                    </div>
+                  </div>
+
+                  {/* Availability Status with Color Indicator */}
+                  <div className="flex justify-center lg:justify-start">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                      <span className="font-medium">Disponibilidad:</span>
+                      <span className="ml-1 font-bold">Alta</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Middle Column - Description */}
+            {/* Right Column - Description & Topics */}
             <div className="lg:col-span-1">
               <div className="space-y-6">
+                {/* Professional Description */}
                 <div>
                   <h2 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4">Descripción</h2>
-                  <div className="bg-[hsl(220,9%,98%)] p-4 rounded-lg border border-[hsl(220,13%,90%)]">
-                    {user.description ? (
-                      <p className="text-[hsl(17,12%,40%)] leading-relaxed text-sm">
-                        {user.description}
-                      </p>
-                    ) : (
-                      <p className="text-[hsl(17,12%,60%)] italic text-sm">
-                        {t('profile.noDescription')}
-                      </p>
-                    )}
+                  <div className="bg-[hsl(220,9%,98%)] rounded-lg p-4 border border-[hsl(220,13%,90%)]">
+                    <p className="text-[hsl(17,12%,20%)] leading-relaxed text-sm">
+                      {user.description ? (
+                        user.description.length > 300 
+                          ? `${user.description.substring(0, 300)}...` 
+                          : user.description
+                      ) : "Información no disponible"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Topics during videocall */}
+                <div>
+                  <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Temas durante videocall</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Estrategia de Marketing</Badge>
+                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Growth Hacking</Badge>
+                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Analytics</Badge>
+                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Paid Ads</Badge>
+                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">E-commerce</Badge>
+                    <Badge className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)]">Lead Generation</Badge>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-4 text-white text-center">
+                    <div className="text-2xl font-bold">150+</div>
+                    <div className="text-sm opacity-90">Sesiones</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-lg p-4 text-white text-center">
+                    <div className="text-2xl font-bold">98%</div>
+                    <div className="text-sm opacity-90">Satisfacción</div>
                   </div>
                 </div>
 
@@ -260,7 +240,6 @@ export default function UserProfile() {
                     <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Redes Sociales</h3>
                     <div className="flex gap-3">
                       {socialProfiles.map((profile: any) => {
-                        // Solo mostrar perfiles que tengan platform y username válidos
                         if (!profile?.platform?.baseUrl || !profile?.username) {
                           return null;
                         }
@@ -294,91 +273,76 @@ export default function UserProfile() {
                 )}
               </div>
             </div>
-
-            {/* Right Column - Pricing & Booking */}
-            <div className="lg:col-span-1">
-              <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-xl p-6 text-white">
-                <h2 className="text-xl font-bold mb-4">Precios Dinámicos</h2>
-                
-                {/* Pricing Options */}
-                {pricing && pricing.length > 0 ? (
-                  <div className="space-y-3 mb-6">
-                    {pricing.filter(p => p?.isActive !== false).map((price) => (
-                      <div 
-                        key={price.id}
-                        className="bg-white/20 rounded-lg p-3 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
-                        onClick={() => setSelectedPricing({ duration: price.duration || 0, price: String(price.price || '0') })}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-2" />
-                            <span className="font-medium">
-                              {(price.duration === 0 || !price.duration) ? 'Gratis' : `${price.duration} min`}
-                            </span>
-                          </div>
-                          <div className="text-lg font-bold">
-                            {(price.duration === 0 || !price.duration) ? 'Gratis' : `€${price.price || '0'}`}
-                          </div>
-                        </div>
-                        
-                        {/* Service Icons - Solo mostrar si existen */}
-                        <div className="flex gap-2 mt-2">
-                          {price.includesScreenSharing && (
-                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Compartir pantalla">
-                              <Monitor className="w-3 h-3" />
-                            </div>
-                          )}
-                          {price.includesRecording && (
-                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Grabación">
-                              <Video className="w-3 h-3" />
-                            </div>
-                          )}
-                          {price.includesTranslation && (
-                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Traducción">
-                              <Languages className="w-3 h-3" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-white/20 rounded-lg p-4 mb-6">
-                    <p className="text-white/80 text-sm">No hay precios configurados</p>
-                  </div>
-                )}
-
-                {/* Duration Selector */}
-                <div className="space-y-2 mb-6">
-                  <label className="text-sm font-medium">Duración de la sesión:</label>
-                  <div className="flex gap-2">
-                    {['5min', '30min', '60min'].map((duration) => (
-                      <button
-                        key={duration}
-                        className="flex-1 py-2 px-3 text-sm rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-                      >
-                        {duration}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Book Call Button */}
-                <Button 
-                  className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-bold py-3"
-                  onClick={() => setShowBookingFlow(true)}
-                >
-                  Reservar Llamada
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Schedule Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Pricing & Schedule Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          {/* Pricing Section */}
+          <Card className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] text-white border-0 shadow-xl">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold mb-4">Precios Dinámicos</h2>
+              
+              {/* Pricing Options */}
+              {pricing && pricing.length > 0 ? (
+                <div className="space-y-3 mb-6">
+                  {pricing.filter(p => p?.isActive !== false).map((price) => (
+                    <div 
+                      key={price.id}
+                      className="bg-white/20 rounded-lg p-3 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
+                      onClick={() => setSelectedPricing({ duration: price.duration || 0, price: String(price.price || '0') })}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-2" />
+                          <span className="font-medium">
+                            {(price.duration === 0 || !price.duration) ? 'Gratis' : `${price.duration} min`}
+                          </span>
+                        </div>
+                        <div className="text-lg font-bold">
+                          {(price.duration === 0 || !price.duration) ? 'Gratis' : `€${price.price || '0'}`}
+                        </div>
+                      </div>
+                      
+                      {/* Service Icons */}
+                      <div className="flex gap-2 mt-2">
+                        {price.includesScreenSharing && (
+                          <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Compartir pantalla">
+                            <Monitor className="w-3 h-3" />
+                          </div>
+                        )}
+                        {price.includesRecording && (
+                          <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Grabación">
+                            <Video className="w-3 h-3" />
+                          </div>
+                        )}
+                        {price.includesTranslation && (
+                          <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center" title="Traducción">
+                            <Languages className="w-3 h-3" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white/20 rounded-lg p-4 mb-6">
+                  <p className="text-white/80 text-sm">No hay precios configurados</p>
+                </div>
+              )}
+
+              {/* Book Call Button */}
+              <Button 
+                className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-bold py-3"
+                onClick={() => setShowBookingFlow(true)}
+              >
+                Reservar Llamada
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Schedule */}
-          <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+          <Card className="lg:col-span-2 bg-white border-[hsl(220,13%,90%)] shadow-lg">
             <CardContent className="p-6">
               <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
                 <Calendar className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
