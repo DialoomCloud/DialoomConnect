@@ -153,9 +153,18 @@ export default function UserProfile() {
                 {user.title && (
                   <p className="text-lg text-[hsl(188,100%,38%)] font-semibold">{user.title}</p>
                 )}
+                {/* Rating Stars */}
                 <div className="flex items-center justify-center text-[hsl(17,12%,40%)]">
-                  <Star className="w-4 h-4 mr-1 text-yellow-500" />
-                  <span className="text-sm">5.0 (10 reseñas)</span>
+                  <div className="flex items-center mr-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star 
+                        key={star} 
+                        className="w-4 h-4 text-yellow-500 fill-yellow-500" 
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium">5.0</span>
+                  <span className="text-sm text-[hsl(17,12%,60%)] ml-1">(12 reseñas)</span>
                 </div>
                 
                 {/* Contact Info */}
@@ -182,22 +191,46 @@ export default function UserProfile() {
 
                 {/* Languages */}
                 <div className="pt-4">
-                  <div className="flex items-center justify-center mb-2">
+                  <div className="flex items-center justify-center mb-3">
                     <Languages className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
                     <span className="text-sm font-medium text-[hsl(17,12%,20%)]">Idiomas</span>
                   </div>
-                  <div className="flex flex-wrap gap-1 justify-center">
-                    <Badge variant="secondary" className="text-xs">Español</Badge>
-                    <Badge variant="secondary" className="text-xs">Catalán</Badge>
-                    <Badge variant="secondary" className="text-xs">Inglés</Badge>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <div className="flex items-center bg-[hsl(188,100%,45%)] text-white px-3 py-1 rounded-full text-xs">
+                      <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                      Español (Nativo)
+                    </div>
+                    <div className="flex items-center bg-[hsl(188,100%,45%)] text-white px-3 py-1 rounded-full text-xs">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                      Catalán (Fluido)
+                    </div>
+                    <div className="flex items-center bg-[hsl(188,100%,45%)] text-white px-3 py-1 rounded-full text-xs">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+                      Inglés (Intermedio)
+                    </div>
                   </div>
                 </div>
 
-                {/* Availability Status */}
-                <div className="pt-4">
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Disponible ahora
+                {/* Stats and Status */}
+                <div className="pt-4 space-y-3">
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="bg-[hsl(220,9%,98%)] rounded-lg p-3">
+                      <div className="text-lg font-bold text-[hsl(188,100%,38%)]">150+</div>
+                      <div className="text-xs text-[hsl(17,12%,60%)]">Sesiones</div>
+                    </div>
+                    <div className="bg-[hsl(220,9%,98%)] rounded-lg p-3">
+                      <div className="text-lg font-bold text-[hsl(188,100%,38%)]">98%</div>
+                      <div className="text-xs text-[hsl(17,12%,60%)]">Satisfacción</div>
+                    </div>
+                  </div>
+                  
+                  {/* Availability Status */}
+                  <div className="flex justify-center">
+                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-medium">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                      Disponible ahora
+                    </div>
                   </div>
                 </div>
               </div>
