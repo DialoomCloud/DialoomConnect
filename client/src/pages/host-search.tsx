@@ -366,29 +366,14 @@ export default function HostSearch() {
                         <User className="w-24 h-24 text-gray-400" />
                       )}
                     </div>
-                    {host.isCelebrity ? (
-                      <>
-                        <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">
-                          {host.firstName && host.lastName
-                            ? `${host.firstName} ${host.lastName}`
-                            : host.email}
-                        </h3>
-                        {host.title && (
-                          <p className="text-gray-600 mb-3">{host.title}</p>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {host.title && (
-                          <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">{host.title}</h3>
-                        )}
-                        <p className="text-gray-600 mb-3">
-                          {host.firstName && host.lastName
-                            ? `${host.firstName} ${host.lastName}`
-                            : host.email}
-                        </p>
-                      </>
+                    {host.title && (
+                      <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">{host.title}</h3>
                     )}
+                    <p className="text-gray-600 mb-3">
+                      {host.firstName && host.lastName
+                        ? `${host.firstName} ${host.lastName}`
+                        : host.email}
+                    </p>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
                         <CheckCircle className="w-4 h-4 mr-1" />

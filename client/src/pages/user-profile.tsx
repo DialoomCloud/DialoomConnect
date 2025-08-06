@@ -126,8 +126,7 @@ export default function UserProfile() {
     try {
       await apiRequest('/api/profile/video-call-topics', {
         method: 'PUT',
-        body: JSON.stringify({ topics: editTopics }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { topics: editTopics },
       });
       
       toast({
