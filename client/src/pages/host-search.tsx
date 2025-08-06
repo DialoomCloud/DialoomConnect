@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X } from "lucide-react";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
@@ -23,6 +23,7 @@ export default function HostSearch() {
   const [, navigate] = useLocation();
   const [aiResults, setAiResults] = useState<SearchResult[]>([]);
   const [isAISearch, setIsAISearch] = useState(false);
+  const [gridCols, setGridCols] = useState(3); // Default to 3 columns
   
   // Filter states from store
   const {
@@ -391,7 +392,40 @@ export default function HostSearch() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[hsl(188,100%,38%)]"></div>
           </div>
         ) : displayHosts && displayHosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <>
+            {/* Zoom Controls */}
+            <div className="flex justify-end mb-4">
+              <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setGridCols(Math.min(4, gridCols + 1))}
+                  disabled={gridCols >= 4}
+                  className="h-8 w-8 p-0"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <span className="text-sm text-gray-600 min-w-[60px] text-center">
+                  {gridCols} cols
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setGridCols(Math.max(1, gridCols - 1))}
+                  disabled={gridCols <= 1}
+                  className="h-8 w-8 p-0"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className={`grid gap-6 ${
+              gridCols === 1 ? 'grid-cols-1' :
+              gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' :
+              gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+              'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            }`}>
             {displayHosts.map((host, index) => (
               <Card
                 key={host.id}
@@ -460,11 +494,20 @@ export default function HostSearch() {
               </Card>
             ))}
           </div>
+          </>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Tell us which host you are looking for</p>
+            <div className="mb-6">
+              <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                No hosts found
+              </h3>
+              <p className="text-gray-500 text-lg mb-6">
+                Tell us which host you are looking for
+              </p>
+            </div>
             <Button
-              className="mt-4 bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
+              className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] text-white px-6 py-3"
               onClick={() => navigate('/request-host')}
             >
               Request a Host
