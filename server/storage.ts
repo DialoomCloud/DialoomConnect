@@ -62,6 +62,14 @@ import {
   type SocialPlatform,
   type UserSocialProfile,
   type InsertUserSocialProfile,
+  networkingRecommendations,
+  userNetworkingPreferences,
+  type NetworkingRecommendation,
+  type InsertNetworkingRecommendation,
+  type UserNetworkingPreferences,
+  type InsertUserNetworkingPreferences,
+  type CreateNetworkingRecommendation,
+  type UpdateNetworkingPreferences,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, asc, sql, gte, lte, or } from "drizzle-orm";
@@ -261,9 +269,18 @@ export interface IStorage {
   updateUserCategories(userId: string, categoryIds: number[]): Promise<void>;
   
   // User profile operations (for admin complete editing)
-
   updateUserSkills(userId: string, skillIds: number[]): Promise<void>;
   updateUserLanguages(userId: string, languageIds: number[]): Promise<void>;
+  
+  // Networking recommendation operations
+  getUserNetworkingPreferences(userId: string): Promise<UserNetworkingPreferences | null>;
+  updateUserNetworkingPreferences(userId: string, preferences: UpdateNetworkingPreferences): Promise<UserNetworkingPreferences>;
+  getPotentialNetworkingMatches(userId: string): Promise<User[]>;
+  getUserWithSkillsAndCategories(userId: string): Promise<User | null>;
+  createNetworkingRecommendation(recommendation: CreateNetworkingRecommendation): Promise<NetworkingRecommendation>;
+  getUserNetworkingRecommendations(userId: string): Promise<NetworkingRecommendation[]>;
+  updateNetworkingRecommendationStatus(userId: string, recommendationId: string, status: string): Promise<void>;
+  clearOldNetworkingRecommendations(userId: string): Promise<void>;
 
   // Skills by name operations
   getSkillByName(name: string): Promise<any | undefined>;
@@ -1806,6 +1823,171 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(userAuthProviders.userId, userId),
         eq(userAuthProviders.provider, provider as any)
+      ));
+  }
+
+  // Networking recommendation operations
+  async getUserNetworkingPreferences(userId: string): Promise<UserNetworkingPreferences | null> {
+    const result = await db.select().from(userNetworkingPreferences)
+      .where(eq(userNetworkingPreferences.userId, userId))
+      .limit(1);
+    return result[0] || null;
+  }
+
+  async updateUserNetworkingPreferences(userId: string, preferences: UpdateNetworkingPreferences): Promise<UserNetworkingPreferences> {
+    // Try to update first
+    const existing = await this.getUserNetworkingPreferences(userId);
+    
+    if (existing) {
+      const updated = await db.update(userNetworkingPreferences)
+        .set({ ...preferences, updatedAt: sql`CURRENT_TIMESTAMP` })
+        .where(eq(userNetworkingPreferences.userId, userId))
+        .returning();
+      return updated[0];
+    } else {
+      // Create new preferences
+      const created = await db.insert(userNetworkingPreferences)
+        .values({ userId, ...preferences })
+        .returning();
+      return created[0];
+    }
+  }
+
+  async getPotentialNetworkingMatches(userId: string): Promise<User[]> {
+    // Get users excluding the current user and those already recommended
+    const existingRecommendations = await db.select({ recommendedUserId: networkingRecommendations.recommendedUserId })
+      .from(networkingRecommendations)
+      .where(and(
+        eq(networkingRecommendations.userId, userId),
+        gte(networkingRecommendations.createdAt, sql`CURRENT_DATE - INTERVAL '30 days'`)
+      ));
+
+    const excludeIds = existingRecommendations.map(r => r.recommendedUserId);
+    excludeIds.push(userId); // Exclude self
+
+    const matches = await db.select({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      title: users.title,
+      description: users.description,
+      city: users.city,
+      nationality: users.nationality,
+      videoCallTopics: users.videoCallTopics,
+      isHost: users.isHost,
+      isVerified: users.isVerified,
+      profileImageUrl: users.profileImageUrl,
+    }).from(users)
+      .where(and(
+        sql`${users.id} NOT IN (${excludeIds.map(() => '?').join(',')})`,
+        eq(users.isActive, true)
+      ))
+      .limit(20);
+
+    return matches as User[];
+  }
+
+  async getUserWithSkillsAndCategories(userId: string): Promise<User | null> {
+    const user = await db.select({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      title: users.title,
+      description: users.description,
+      city: users.city,
+      nationality: users.nationality,
+      videoCallTopics: users.videoCallTopics,
+      isHost: users.isHost,
+      isVerified: users.isVerified,
+      profileImageUrl: users.profileImageUrl,
+    }).from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user[0]) return null;
+
+    // Get user skills
+    const userSkillsData = await db.select({
+      id: skills.id,
+      name: skills.name,
+    }).from(userSkills)
+      .leftJoin(skills, eq(userSkills.skillId, skills.id))
+      .where(eq(userSkills.userId, userId));
+
+    // Get user categories  
+    const userCategoriesData = await db.select({
+      id: categories.id,
+      name: categories.name,
+    }).from(userCategories)
+      .leftJoin(categories, eq(userCategories.categoryId, categories.id))
+      .where(eq(userCategories.userId, userId));
+
+    return {
+      ...user[0],
+      skills: userSkillsData.filter(s => s.id !== null),
+      categories: userCategoriesData.filter(c => c.id !== null),
+    } as any;
+  }
+
+  async createNetworkingRecommendation(recommendation: CreateNetworkingRecommendation): Promise<NetworkingRecommendation> {
+    const created = await db.insert(networkingRecommendations)
+      .values(recommendation)
+      .returning();
+    return created[0];
+  }
+
+  async getUserNetworkingRecommendations(userId: string): Promise<NetworkingRecommendation[]> {
+    const recommendations = await db.select({
+      id: networkingRecommendations.id,
+      userId: networkingRecommendations.userId,
+      recommendedUserId: networkingRecommendations.recommendedUserId,
+      matchType: networkingRecommendations.matchType,
+      matchScore: networkingRecommendations.matchScore,
+      reasoning: networkingRecommendations.reasoning,
+      status: networkingRecommendations.status,
+      createdAt: networkingRecommendations.createdAt,
+      updatedAt: networkingRecommendations.updatedAt,
+      // Join with recommended user data
+      recommendedUser: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        title: users.title,
+        description: users.description,
+        city: users.city,
+        nationality: users.nationality,
+        profileImageUrl: users.profileImageUrl,
+        isHost: users.isHost,
+        isVerified: users.isVerified,
+      }
+    }).from(networkingRecommendations)
+      .leftJoin(users, eq(networkingRecommendations.recommendedUserId, users.id))
+      .where(eq(networkingRecommendations.userId, userId))
+      .orderBy(desc(networkingRecommendations.matchScore), desc(networkingRecommendations.createdAt));
+
+    return recommendations as NetworkingRecommendation[];
+  }
+
+  async updateNetworkingRecommendationStatus(userId: string, recommendationId: string, status: string): Promise<void> {
+    await db.update(networkingRecommendations)
+      .set({ status, updatedAt: sql`CURRENT_TIMESTAMP` })
+      .where(and(
+        eq(networkingRecommendations.id, recommendationId),
+        eq(networkingRecommendations.userId, userId)
+      ));
+  }
+
+  async clearOldNetworkingRecommendations(userId: string): Promise<void> {
+    // Remove recommendations older than 30 days or with status 'dismissed'
+    await db.delete(networkingRecommendations)
+      .where(and(
+        eq(networkingRecommendations.userId, userId),
+        or(
+          lte(networkingRecommendations.createdAt, sql`CURRENT_DATE - INTERVAL '30 days'`),
+          eq(networkingRecommendations.status, 'dismissed')
+        )
       ));
   }
 

@@ -36,6 +36,7 @@ import TestAIFeatures from "@/pages/test-ai-features";
 import PaymentDemo from "@/pages/payment-demo";
 import PaymentSettings from "@/pages/payment-settings";
 import Demo from "@/pages/demo";
+import Networking from "@/pages/networking";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 
@@ -75,6 +76,11 @@ function Router() {
           <Route path="/dashboard">
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/networking">
+            <ProtectedRoute>
+              <Networking />
             </ProtectedRoute>
           </Route>
           <Route path="/payment-settings">

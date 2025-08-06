@@ -775,3 +775,74 @@ export const createHostVerificationDocumentSchema = createInsertSchema(hostVerif
 });
 
 export type CreateHostVerificationDocument = z.infer<typeof createHostVerificationDocumentSchema>;
+
+// Networking recommendations table
+export const networkingRecommendations = pgTable("networking_recommendations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  recommendedUserId: varchar("recommended_user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  matchType: varchar("match_type", { length: 50 }).notNull(), // 'skills_complement', 'common_interests', 'similar_goals', 'location_based'
+  matchScore: decimal("match_score", { precision: 5, scale: 2 }).notNull(), // 0.00 to 100.00
+  reasoning: text("reasoning"), // AI-generated explanation of why this match was suggested
+  status: varchar("status", { length: 20 }).default('pending'), // 'pending', 'viewed', 'contacted', 'dismissed'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Networking recommendation relations
+export const networkingRecommendationsRelations = relations(networkingRecommendations, ({ one }) => ({
+  user: one(users, {
+    fields: [networkingRecommendations.userId],
+    references: [users.id],
+  }),
+  recommendedUser: one(users, {
+    fields: [networkingRecommendations.recommendedUserId], 
+    references: [users.id],
+  }),
+}));
+
+// User networking preferences table
+export const userNetworkingPreferences = pgTable("user_networking_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  interestedInMentoring: boolean("interested_in_mentoring").default(false),
+  lookingForMentor: boolean("looking_for_mentor").default(false),
+  openToCollaboration: boolean("open_to_collaboration").default(true),
+  preferredNetworkingGoals: text("preferred_networking_goals").array(), // ['knowledge_sharing', 'business_partnerships', 'career_development', 'skill_exchange']
+  locationPreference: varchar("location_preference", { length: 20 }).default('any'), // 'local', 'remote', 'any'
+  experienceLevel: varchar("experience_level", { length: 20 }), // 'beginner', 'intermediate', 'advanced', 'expert'
+  availabilityForNetworking: varchar("availability", { length: 20 }).default('moderate'), // 'low', 'moderate', 'high'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User networking preferences relations
+export const userNetworkingPreferencesRelations = relations(userNetworkingPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userNetworkingPreferences.userId],
+    references: [users.id],
+  }),
+}));
+
+// Networking recommendations types
+export type NetworkingRecommendation = typeof networkingRecommendations.$inferSelect;
+export type InsertNetworkingRecommendation = typeof networkingRecommendations.$inferInsert;
+export type UserNetworkingPreferences = typeof userNetworkingPreferences.$inferSelect;
+export type InsertUserNetworkingPreferences = typeof userNetworkingPreferences.$inferInsert;
+
+// Networking recommendation schemas
+export const createNetworkingRecommendationSchema = createInsertSchema(networkingRecommendations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateNetworkingPreferencesSchema = createInsertSchema(userNetworkingPreferences).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial();
+
+export type CreateNetworkingRecommendation = z.infer<typeof createNetworkingRecommendationSchema>;
+export type UpdateNetworkingPreferences = z.infer<typeof updateNetworkingPreferencesSchema>;

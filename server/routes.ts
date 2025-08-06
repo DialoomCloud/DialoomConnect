@@ -4289,5 +4289,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import networking service
+  const { networkingService } = await import('./networking-service');
+
+  // Networking recommendation routes
+  app.get('/api/networking/recommendations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const recommendations = await networkingService.getUserRecommendations(userId);
+      res.json(recommendations);
+    } catch (error) {
+      console.error('Error fetching networking recommendations:', error);
+      res.status(500).json({ message: 'Failed to fetch recommendations' });
+    }
+  });
+
+  app.post('/api/networking/recommendations/generate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const newRecommendations = await networkingService.generateRecommendationsForUser(userId);
+      await networkingService.saveRecommendations(userId, newRecommendations);
+      res.json({ message: 'Recommendations generated successfully', count: newRecommendations.length });
+    } catch (error) {
+      console.error('Error generating networking recommendations:', error);
+      res.status(500).json({ message: 'Failed to generate recommendations' });
+    }
+  });
+
+  app.patch('/api/networking/recommendations/:id/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!['viewed', 'contacted', 'dismissed'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value' });
+      }
+
+      await networkingService.updateRecommendationStatus(userId, id, status);
+      res.json({ message: 'Recommendation status updated successfully' });
+    } catch (error) {
+      console.error('Error updating recommendation status:', error);
+      res.status(500).json({ message: 'Failed to update recommendation status' });
+    }
+  });
+
+  app.get('/api/networking/preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const preferences = await storage.getUserNetworkingPreferences(userId);
+      res.json(preferences);
+    } catch (error) {
+      console.error('Error fetching networking preferences:', error);
+      res.status(500).json({ message: 'Failed to fetch preferences' });
+    }
+  });
+
+  app.put('/api/networking/preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const preferences = req.body;
+      
+      const updatedPreferences = await storage.updateUserNetworkingPreferences(userId, preferences);
+      res.json(updatedPreferences);
+    } catch (error) {
+      console.error('Error updating networking preferences:', error);
+      res.status(500).json({ message: 'Failed to update preferences' });
+    }
+  });
+
   return httpServer;
 }

@@ -3,6 +3,7 @@
     "home": "Inicio",
     "demo": "Demo",
     "profile": "Perfil",
+    "networking": "Networking",
     "admin": "Admin",
     "logout": "Cerrar Sesión",
     "login": "Iniciar Sesión",
@@ -677,6 +678,69 @@
       "export": "Exportar",
       "markPaid": "Marcar como pagado",
       "processRefund": "Procesar reembolso"
+    }
+  },
+  "networking": {
+    "title": "Recomendaciones de Networking",
+    "description": "Sugerencias inteligentes para conexiones profesionales significativas",
+    "loading": "Cargando recomendaciones...",
+    "refresh": "Actualizar",
+    "generate": "Generar Nuevas",
+    "generateFirst": "Generar Primeras Recomendaciones",
+    "noRecommendations": "Aún no hay recomendaciones de networking",
+    "noRecommendationsDesc": "Completa tu perfil y genera recomendaciones para encontrar conexiones profesionales significativas",
+    "match": "coincidencia",
+    "whyMatch": "¿Por qué esta coincidencia?",
+    "showMore": "Ver Más",
+    "showLess": "Ver Menos",
+    "markViewed": "Visto",
+    "markContacted": "Contactado",
+    "dismiss": "Descartar",
+    "hostAvailable": "Host",
+    "matchTypes": {
+      "skillsComplement": "Complemento de Habilidades",
+      "commonInterests": "Intereses Comunes",
+      "similarGoals": "Objetivos Similares",
+      "locationBased": "Basado en Ubicación"
+    },
+    "status": {
+      "viewed": "Visto",
+      "contacted": "Contactado",
+      "dismissed": "Descartado"
+    },
+    "preferences": {
+      "title": "Preferencias de Networking",
+      "description": "Personaliza tus preferencias para obtener mejores recomendaciones",
+      "interestedInMentoring": "Interesado en ser mentor",
+      "lookingForMentor": "Buscando un mentor",
+      "openToCollaboration": "Abierto a colaboraciones",
+      "networkingGoals": "Objetivos de networking",
+      "locationPreference": "Preferencia de ubicación",
+      "experienceLevel": "Nivel de experiencia",
+      "availability": "Disponibilidad para networking",
+      "save": "Guardar Preferencias",
+      "goals": {
+        "knowledgeSharing": "Compartir conocimiento",
+        "businessPartnerships": "Asociaciones comerciales",
+        "careerDevelopment": "Desarrollo profesional",
+        "skillExchange": "Intercambio de habilidades"
+      },
+      "locations": {
+        "local": "Local",
+        "remote": "Remoto",
+        "any": "Cualquiera"
+      },
+      "experience": {
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzado",
+        "expert": "Experto"
+      },
+      "availabilityLevels": {
+        "low": "Baja",
+        "moderate": "Moderada",
+        "high": "Alta"
+      }
     }
   }
 }

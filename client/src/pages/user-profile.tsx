@@ -85,42 +85,6 @@ export default function UserProfile() {
     queryKey: ['/api/auth/user'],
   });
 
-  if (userError) {
-    return (
-      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
-        <Navigation />
-        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">{t('profile.notFound')}</h1>
-          <p className="text-gray-600">{t('profile.notFoundDesc')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (userLoading) {
-    return (
-      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
-        <Navigation />
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-32 bg-gray-200 rounded-lg mb-4"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const getDayName = (day: number) => {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    return t(`availability.${days[day]}`);
-  };
-
   // Check if user is viewing their own profile
   const isOwnProfile = authenticatedUser?.id === userId;
 
@@ -182,6 +146,42 @@ export default function UserProfile() {
       });
     }
   };
+
+  const getDayName = (day: number) => {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return t(`availability.${days[day]}`);
+  };
+
+  if (userError) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">{t('profile.notFound')}</h1>
+          <p className="text-gray-600">{t('profile.notFoundDesc')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-32 bg-gray-200 rounded-lg mb-4"></div>
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[hsl(220,9%,98%)] to-[hsl(220,20%,95%)]">

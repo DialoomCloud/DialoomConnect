@@ -145,6 +145,19 @@ export function Navigation() {
                 </Button>
               </Link>
             )}
+
+            {user && (
+              <Link href="/networking">
+                <Button
+                  variant={isActive("/networking") ? "default" : "ghost"}
+                  size="sm"
+                  className={isActive("/networking") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  {t('networking.title', 'Networking')}
+                </Button>
+              </Link>
+            )}
             
             {user && (user.isAdmin || user.role === 'admin') && (
               <Link href="/admin-dashboard">
@@ -334,6 +347,17 @@ export function Navigation() {
                     >
                       <UserIcon className="w-4 h-4 mr-2" />
                       {t('navigation.profile')}
+                    </Button>
+                  </Link>
+
+                  <Link href="/networking" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/networking") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/networking") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      {t('networking.title', 'Networking')}
                     </Button>
                   </Link>
                   
