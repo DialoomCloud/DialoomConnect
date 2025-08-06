@@ -4424,5 +4424,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Request Host Contact Form
+  app.post('/api/request-host', async (req, res) => {
+    try {
+      const { name, email, phone, company, message } = req.body;
+      
+      // Validate required fields
+      if (!name || !email || !message) {
+        return res.status(400).json({ 
+          message: "Nombre, email y mensaje son requeridos" 
+        });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ 
+          message: "Email inválido" 
+        });
+      }
+
+      // Import Resend
+      const { Resend } = await import('resend');
+      
+      if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is not configured');
+        return res.status(500).json({ 
+          message: "Servicio de email no configurado" 
+        });
+      }
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      // Create email content
+      const emailContent = `
+        <h2>Nueva Solicitud para ser Host - Dialoom</h2>
+        
+        <p><strong>Se ha recibido una nueva solicitud para convertirse en host.</strong></p>
+        
+        <h3>Información del Solicitante:</h3>
+        <ul>
+          <li><strong>Nombre:</strong> ${name}</li>
+          <li><strong>Email:</strong> ${email}</li>
+          ${phone ? `<li><strong>Teléfono:</strong> ${phone}</li>` : ''}
+          ${company ? `<li><strong>Empresa:</strong> ${company}</li>` : ''}
+        </ul>
+        
+        <h3>Mensaje:</h3>
+        <p style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #188db8;">
+          ${message.replace(/\n/g, '<br>')}
+        </p>
+        
+        <hr style="margin: 20px 0;">
+        
+        <p style="color: #666; font-size: 14px;">
+          Este email fue enviado automáticamente desde el formulario de solicitud de host en Dialoom.
+          <br>
+          Fecha: ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}
+        </p>
+      `;
+
+      // Send email using Resend
+      const { data, error } = await resend.emails.send({
+        from: 'Dialoom <noreply@dialoom.cloud>',
+        to: ['nachosaladrigas@gmail.com'],
+        subject: `Nueva Solicitud de Host - ${name}`,
+        html: emailContent,
+        reply_to: email, // Allow replying directly to the applicant
+      });
+
+      if (error) {
+        console.error('Error sending email with Resend:', error);
+        return res.status(500).json({ 
+          message: "Error al enviar el email" 
+        });
+      }
+
+      console.log('Host request email sent successfully:', data);
+
+      // Send confirmation email to applicant
+      const confirmationContent = `
+        <h2>¡Gracias por tu interés en ser Host de Dialoom!</h2>
+        
+        <p>Hola ${name},</p>
+        
+        <p>Hemos recibido tu solicitud para convertirte en host de nuestra plataforma. Estamos emocionados de conocer más sobre ti y tu experiencia.</p>
+        
+        <h3>¿Qué sigue?</h3>
+        <ul>
+          <li>Revisaremos tu solicitud en las próximas 24-48 horas</li>
+          <li>Te contactaremos para una breve entrevista</li>
+          <li>Te guiaremos en el proceso de configuración del perfil</li>
+          <li>Te ayudaremos a empezar a ofrecer tus servicios</li>
+        </ul>
+        
+        <p style="background-color: #e7f3ff; padding: 15px; border-radius: 5px; border-left: 4px solid #188db8;">
+          <strong>💡 Mientras tanto:</strong> Piensa en los temas en los que te especializas y cómo podrías ayudar a otros a alcanzar sus objetivos.
+        </p>
+        
+        <p>Si tienes alguna pregunta, no dudes en responder a este email.</p>
+        
+        <p>¡Gracias por querer formar parte de la comunidad Dialoom!</p>
+        
+        <hr style="margin: 20px 0;">
+        
+        <p style="color: #666; font-size: 14px;">
+          Equipo de Dialoom
+          <br>
+          <a href="https://dialoom.cloud" style="color: #188db8;">dialoom.cloud</a>
+        </p>
+      `;
+
+      await resend.emails.send({
+        from: 'Dialoom <noreply@dialoom.cloud>',
+        to: [email],
+        subject: 'Solicitud recibida - Próximos pasos para ser Host',
+        html: confirmationContent,
+      });
+
+      res.json({ 
+        success: true,
+        message: "Solicitud enviada exitosamente" 
+      });
+
+    } catch (error) {
+      console.error("Error processing host request:", error);
+      res.status(500).json({ 
+        message: "Error interno del servidor" 
+      });
+    }
+  });
+
   return httpServer;
 }

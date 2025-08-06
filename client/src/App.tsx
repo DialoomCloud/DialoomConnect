@@ -37,6 +37,7 @@ import PaymentDemo from "@/pages/payment-demo";
 import PaymentSettings from "@/pages/payment-settings";
 import Demo from "@/pages/demo";
 import Networking from "@/pages/networking";
+import RequestHost from "@/pages/request-host";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "./i18n/config";
 
@@ -62,6 +63,7 @@ function Router() {
           <Route path="/how-it-works" component={HowItWorks} />
           <Route path="/test-ai" component={TestAIFeatures} />
           <Route path="/payment-demo" component={PaymentDemo} />
+          <Route path="/request-host" component={RequestHost} />
           
           {/* Routes that require authentication */}
           <Route path="/home">
