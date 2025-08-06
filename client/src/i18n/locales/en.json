@@ -693,6 +693,10 @@
     "howToSignUp": "How do I sign up?",
     "howToSignUpAnswer": "Click \"Sign In\" and use your Replit account to access. Once inside, you can complete your profile and start using the platform.",
     "setAvailability": "How do I set my availability?",
-    "setAvailabilityAnswer": "Go to your profile and in the 'Availability' section you can configure your available hours for each day of the week. You can also set specific dates with different schedules."
+    "setAvailabilityAnswer": "Go to your profile and look for the \"Availability and Pricing\" section. You can set weekly recurring schedules or select specific dates on the calendar.",
+    "setRates": "How do I set my rates?",
+    "setRatesAnswer": "In the same \"Availability and Pricing\" section, you can set up to 4 different price tiers, including a free option if desired.",
+    "receivePayments": "How do I receive payments?",
+    "receivePaymentsAnswer": "You need to connect your Stripe account from the dashboard. Once connected, you'll receive payments directly after each completed video call, minus Dialoom's commission (10% + VAT)."
   }
 }

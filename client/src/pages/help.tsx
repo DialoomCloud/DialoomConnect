@@ -46,16 +46,10 @@ export default function Help() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">
-                      {i18n.language === 'es' ? '¿Cómo me registro?' : 
-                       i18n.language === 'ca' ? 'Com em registro?' : 
-                       'How do I sign up?'}
+                      {t('help.howToSignUp')}
                     </h4>
                     <p className="text-gray-600">
-                      {i18n.language === 'es' ? 
-                        'Haz clic en "Iniciar Sesión" y usa tu cuenta de Replit para acceder. Una vez dentro, podrás completar tu perfil y comenzar a usar la plataforma.' : 
-                       i18n.language === 'ca' ? 
-                        'Fes clic a "Iniciar Sessió" i utilitza el teu compte de Replit per accedir. Un cop dins, podràs completar el teu perfil i començar a utilitzar la plataforma.' : 
-                        'Click "Sign In" and use your Replit account to access. Once inside, you can complete your profile and start using the platform.'}
+                      {t('help.howToSignUpAnswer')}
                     </p>
                   </div>
                 </AccordionContent>
@@ -72,44 +66,26 @@ export default function Help() {
                 <AccordionContent className="space-y-4 pt-4">
                   <div>
                     <h4 className="font-semibold mb-2">
-                      {i18n.language === 'es' ? '¿Cómo configuro mi disponibilidad?' : 
-                       i18n.language === 'ca' ? 'Com configuro la meva disponibilitat?' : 
-                       'How do I set my availability?'}
+                      {t('help.setAvailability')}
                     </h4>
                     <p className="text-gray-600">
-                      {i18n.language === 'es' ? 
-                        'Ve a tu perfil y busca la sección "Disponibilidad y Precios". Puedes configurar horarios recurrentes semanales o seleccionar fechas específicas en el calendario.' : 
-                       i18n.language === 'ca' ? 
-                        'Ves al teu perfil i busca la secció "Disponibilitat i Preus". Pots configurar horaris recurrents setmanals o seleccionar dates específiques al calendari.' : 
-                        'Go to your profile and look for the "Availability and Pricing" section. You can set weekly recurring schedules or select specific dates on the calendar.'}
+                      {t('help.setAvailabilityAnswer')}
                     </p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">
-                      {i18n.language === 'es' ? '¿Cómo establezco mis tarifas?' : 
-                       i18n.language === 'ca' ? 'Com estableixo les meves tarifes?' : 
-                       'How do I set my rates?'}
+                      {t('help.setRates')}
                     </h4>
                     <p className="text-gray-600">
-                      {i18n.language === 'es' ? 
-                        'En la misma sección de "Disponibilidad y Precios", puedes configurar hasta 4 niveles de precios diferentes, incluyendo una opción gratuita si lo deseas.' : 
-                       i18n.language === 'ca' ? 
-                        'A la mateixa secció de "Disponibilitat i Preus", pots configurar fins a 4 nivells de preus diferents, incloent una opció gratuïta si ho desitges.' : 
-                        'In the same "Availability and Pricing" section, you can set up to 4 different price tiers, including a free option if desired.'}
+                      {t('help.setRatesAnswer')}
                     </p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">
-                      {i18n.language === 'es' ? '¿Cómo recibo mis pagos?' : 
-                       i18n.language === 'ca' ? 'Com rebo els meus pagaments?' : 
-                       'How do I receive payments?'}
+                      {t('help.receivePayments')}
                     </h4>
                     <p className="text-gray-600">
-                      {i18n.language === 'es' ? 
-                        'Necesitas conectar tu cuenta de Stripe desde el dashboard. Una vez conectada, recibirás pagos directamente después de cada videollamada completada, menos la comisión de Dialoom (10% + IVA).' : 
-                       i18n.language === 'ca' ? 
-                        'Necessites connectar el teu compte de Stripe des del dashboard. Un cop connectada, rebràs pagaments directament després de cada videotrucada completada, menys la comissió de Dialoom (10% + IVA).' : 
-                        'You need to connect your Stripe account from the dashboard. Once connected, you\'ll receive payments directly after each completed video call, minus Dialoom\'s commission (10% + VAT).'}
+                      {t('help.receivePaymentsAnswer')}
                     </p>
                   </div>
                 </AccordionContent>
@@ -347,9 +323,7 @@ export default function Help() {
 
         <div className="mt-6 text-center">
           <Link href="/" className="text-[hsl(188,100%,38%)] hover:underline">
-            {i18n.language === 'es' ? '← Volver al inicio' : 
-             i18n.language === 'ca' ? '← Tornar a l\'inici' : 
-             '← Back to home'}
+            {t('help.returnHome')}
           </Link>
         </div>
       </div>

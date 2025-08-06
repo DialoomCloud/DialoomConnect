@@ -399,7 +399,11 @@
     "howToSignUp": "¿Cómo me registro?",
     "howToSignUpAnswer": "Haz clic en \"Iniciar Sesión\" y usa tu cuenta de Replit para acceder. Una vez dentro, podrás completar tu perfil y comenzar a usar la plataforma.",
     "setAvailability": "¿Cómo configuro mi disponibilidad?",
-    "setAvailabilityAnswer": "Ve a tu perfil y en la sección 'Disponibilidad' podrás configurar tus horarios disponibles para cada día de la semana. También puedes establecer fechas específicas con horarios diferentes."
+    "setAvailabilityAnswer": "Ve a tu perfil y busca la sección \"Disponibilidad y Precios\". Puedes configurar horarios recurrentes semanales o seleccionar fechas específicas en el calendario.",
+    "setRates": "¿Cómo establezco mis tarifas?",
+    "setRatesAnswer": "En la misma sección de \"Disponibilidad y Precios\", puedes configurar hasta 4 niveles de precios diferentes, incluyendo una opción gratuita si lo deseas.",
+    "receivePayments": "¿Cómo recibo mis pagos?",
+    "receivePaymentsAnswer": "Necesitas conectar tu cuenta de Stripe desde el dashboard. Una vez conectada, recibirás pagos directamente después de cada videollamada completada, menos la comisión de Dialoom (10% + IVA)."
   },
   "ai": {
     "title": "Sugerencias Inteligentes de Perfil",

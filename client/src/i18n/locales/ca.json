@@ -693,6 +693,10 @@
     "howToSignUp": "Com em registro?",
     "howToSignUpAnswer": "Fes clic a \"Iniciar Sessió\" i utilitza el teu compte de Replit per accedir. Un cop dins, podràs completar el teu perfil i començar a utilitzar la plataforma.",
     "setAvailability": "Com configuro la meva disponibilitat?",
-    "setAvailabilityAnswer": "Vés al teu perfil i a la secció 'Disponibilitat' podràs configurar els teus horaris disponibles per a cada dia de la setmana. També pots establir dates específiques amb horaris diferents."
+    "setAvailabilityAnswer": "Vés al teu perfil i busca la secció \"Disponibilitat i Preus\". Pots configurar horaris recurrents setmanals o seleccionar dates específiques al calendari.",
+    "setRates": "Com estableixo les meves tarifes?",
+    "setRatesAnswer": "A la mateixa secció de \"Disponibilitat i Preus\", pots configurar fins a 4 nivells de preus diferents, incloent una opció gratuïta si ho desitges.",
+    "receivePayments": "Com rebo els meus pagaments?",
+    "receivePaymentsAnswer": "Necessites connectar el teu compte de Stripe des del dashboard. Un cop connectada, rebràs pagaments directament després de cada videotrucada completada, menys la comissió de Dialoom (10% + IVA)."
   }
 }
