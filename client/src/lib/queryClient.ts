@@ -32,6 +32,23 @@ export async function apiRequest(
   // Handle FormData differently from JSON
   const isFormData = body instanceof FormData;
   
+  console.log(`[apiRequest] ${method} ${url}`, {
+    isFormData,
+    bodyType: body ? body.constructor.name : 'none',
+    hasAuthHeaders: !!authHeaders.Authorization
+  });
+  
+  if (isFormData) {
+    console.log('[apiRequest] FormData detected, entries:');
+    for (let [key, value] of (body as FormData).entries()) {
+      if (value instanceof File) {
+        console.log(`  - ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`  - ${key}:`, value);
+      }
+    }
+  }
+  
   const res = await fetch(url, {
     method,
     headers: {
@@ -42,6 +59,8 @@ export async function apiRequest(
     // Don't stringify FormData
     body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
   });
+
+  console.log(`[apiRequest] Response: ${res.status} ${res.statusText}`);
 
   await throwIfResNotOk(res);
   return res;

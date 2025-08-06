@@ -36,6 +36,13 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB limit
   },
   fileFilter: (req, file, cb) => {
+    console.log('[Multer] Processing file:', {
+      fieldname: file.fieldname,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size || 'unknown'
+    });
+    
     if (file.fieldname === 'video') {
       if (file.mimetype.startsWith('video/mp4')) {
         cb(null, true);
@@ -51,6 +58,14 @@ const upload = multer({
     } else {
       cb(new Error('Tipo de archivo no permitido'));
     }
+  }
+});
+
+// Special multer config for admin uploads that doesn't filter
+const uploadAdmin = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
   }
 });
 
@@ -473,7 +488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin profile image upload route (for admins uploading images for other users)
-  app.post('/api/admin/upload/profile-image', isAdminAuthenticated, upload.single('image'), async (req: any, res) => {
+  app.post('/api/admin/upload/profile-image', isAdminAuthenticated, uploadAdmin.single('image'), async (req: any, res) => {
     try {
       console.log('Admin image upload request received:');
       console.log('- Files:', req.file ? 'File present' : 'No file');

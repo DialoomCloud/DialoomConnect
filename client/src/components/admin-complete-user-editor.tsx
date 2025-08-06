@@ -231,28 +231,63 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     // Handle profile image upload if a new file was selected
     if (profileImageFile) {
       try {
+        console.log('Uploading profile image:', {
+          fileName: profileImageFile.name,
+          fileSize: profileImageFile.size,
+          fileType: profileImageFile.type,
+          userId: userId
+        });
+        
         const imageFormData = new FormData();
         imageFormData.append('image', profileImageFile);
         imageFormData.append('userId', userId);
+        
+        // Log FormData contents
+        console.log('FormData contents:');
+        for (let [key, value] of imageFormData.entries()) {
+          console.log(`- ${key}:`, value);
+        }
         
         const uploadResponse = await apiRequest('/api/admin/upload/profile-image', {
           method: 'POST',
           body: imageFormData,
         });
         
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error('Upload failed:', errorText);
+          throw new Error(errorText);
+        }
+        
         const uploadResult = await uploadResponse.json();
-        // Note: profileImageUrl is handled separately by the backend
+        console.log('Upload successful:', uploadResult);
         
         toast({
           title: "Imagen de perfil actualizada",
           description: "La imagen se ha subido correctamente",
         });
+        
+        // Clear the file after successful upload
+        setProfileImageFile(null);
       } catch (error: any) {
-        toast({
-          title: "Error al subir imagen",
-          description: error?.message || "No se pudo subir la imagen de perfil",
-          variant: "destructive",
-        });
+        console.error('Error during image upload:', error);
+        const errorMessage = error?.message || "No se pudo subir la imagen de perfil";
+        
+        // Try to parse JSON error if present
+        try {
+          const errorObj = JSON.parse(errorMessage);
+          toast({
+            title: "Error al subir imagen",
+            description: errorObj.message || errorMessage,
+            variant: "destructive",
+          });
+        } catch {
+          toast({
+            title: "Error al subir imagen",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        }
         return;
       }
     }
