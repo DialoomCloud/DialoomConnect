@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut, Grid3X3, Plus, Minus } from "lucide-react";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut, Grid3X3, Plus, Minus, HelpCircle, Info } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
 import { useExploreFilterStore, PURPOSES } from "@/stores/exploreFilterStore";
 import PriceRangeSlider from "@/components/PriceRangeSlider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
 
 type SearchResult = UserType & { relevance?: number };
@@ -227,6 +228,7 @@ export default function HostSearch() {
         </div>
 
         {/* Filters Section */}
+        <TooltipProvider>
         <div className="mb-8 sticky top-0 z-20 bg-[hsl(220,9%,98%)] sm:static">
           <div className="flex justify-end mb-4">
             {(selectedCategories.length > 0 || selectedSkills.length > 0 || selectedLanguages.length > 0 || selectedPurposes.length > 0 || minPrice > 0 || maxPrice < 200) && (
@@ -249,9 +251,19 @@ export default function HostSearch() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   {/* Category Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('profile.category')}
-                    </label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        {t('profile.category')}
+                      </label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Selecciona una o más categorías para filtrar hosts por su área de especialización</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
                       {categories.map((category) => (
                         <div key={category.id} className="flex items-center space-x-2">
@@ -279,9 +291,19 @@ export default function HostSearch() {
 
                   {/* Skills Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('profile.skills')}
-                    </label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        {t('profile.skills')}
+                      </label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Filtra hosts por habilidades técnicas específicas que dominan</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
                       {skills.map((skill) => (
                         <div key={skill.id} className="flex items-center space-x-2">
@@ -309,9 +331,19 @@ export default function HostSearch() {
 
                   {/* Languages Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('profile.languages')}
-                    </label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        {t('profile.languages')}
+                      </label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Selecciona idiomas para encontrar hosts que pueden comunicarse en esos idiomas</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
                       {languages.map((language) => (
                         <div key={language.id} className="flex items-center space-x-2">
@@ -339,9 +371,19 @@ export default function HostSearch() {
 
                   {/* Purpose Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Purpose
-                    </label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Purpose
+                      </label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Filtra por el propósito de la sesión: conocer personas, consulta profesional o descubrir nuevos temas</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <div className="space-y-2">
                       {PURPOSES.map((purpose) => (
                         <div key={purpose} className="flex items-center space-x-2">
@@ -369,9 +411,19 @@ export default function HostSearch() {
 
                   {/* Price Range Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('hosts.priceRange')} (€{minPrice} - €{maxPrice})
-                    </label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        {t('hosts.priceRange')} (€{minPrice} - €{maxPrice})
+                      </label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Establece un rango de precios por sesión para filtrar hosts según tu presupuesto</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <PriceRangeSlider
                       values={[minPrice, maxPrice]}
                       onChange={(values) => setPriceRange(values[0], values[1])}
@@ -385,6 +437,7 @@ export default function HostSearch() {
               </CardContent>
             </Card>
         </div>
+        </TooltipProvider>
 
         {isLoading || aiSearchMutation.isPending ? (
           <div className="flex justify-center">
