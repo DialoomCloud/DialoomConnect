@@ -206,9 +206,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public route to get all hosts
   app.get('/api/hosts', async (req, res) => {
     try {
-      const { minPrice, maxPrice, category, skills, languages } = req.query;
+      const { minPrice, maxPrice, category, skills, languages, purposes } = req.query;
       
-      console.log('Host search with filters:', { minPrice, maxPrice, category, skills, languages });
+      console.log('Host search with filters:', { minPrice, maxPrice, category, skills, languages, purposes });
       
       // Get all hosts and filter by active status
       const allUsers = await storage.getAllUsers();
@@ -217,6 +217,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Apply additional filters if provided
       if (category && category !== 'all') {
         hosts = hosts.filter(host => host.categoryId?.toString() === category);
+      }
+      
+      // Filter by purposes if provided
+      if (purposes && typeof purposes === 'string' && purposes.length > 0) {
+        const purposesArray = purposes.split(',').map(p => p.trim());
+        hosts = hosts.filter(host => {
+          return host.purpose && purposesArray.includes(host.purpose);
+        });
       }
       
       // Note: Price filtering would be implemented once we have pricing data

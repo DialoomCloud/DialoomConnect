@@ -124,6 +124,8 @@ export const users = pgTable("users", {
   hostRejectionReason: text("host_rejection_reason"),
   // Video call topics - editable by the host
   videoCallTopics: jsonb("video_call_topics").$type<string[]>(),
+  // Purpose/goal of the host's services - for filtering
+  purpose: varchar("purpose", { length: 50 }), // Meet & Greet, Professionals, Discover
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -12,8 +12,9 @@ import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, Instagram, Twitt
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
-import { useExploreFilterStore } from "@/stores/exploreFilterStore";
+import { useExploreFilterStore, PURPOSES } from "@/stores/exploreFilterStore";
 import PriceRangeSlider from "@/components/PriceRangeSlider";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type SearchResult = UserType & { relevance?: number };
 
@@ -30,6 +31,7 @@ export default function HostSearch() {
     category: selectedCategory,
     skills: selectedSkills,
     languages: selectedLanguages,
+    purposes: selectedPurposes,
     searchTerm,
     setMinPrice,
     setMaxPrice,
@@ -37,6 +39,7 @@ export default function HostSearch() {
     setCategory: setSelectedCategory,
     setSkills: setSelectedSkills,
     setLanguages: setSelectedLanguages,
+    setPurposes: setSelectedPurposes,
     setSearchTerm,
     clearFilters
   } = useExploreFilterStore();
@@ -46,6 +49,7 @@ export default function HostSearch() {
   if (selectedCategory !== 'all') queryParams.set('category', selectedCategory);
   if (selectedSkills.length > 0) queryParams.set('skills', selectedSkills.join(','));
   if (selectedLanguages.length > 0) queryParams.set('languages', selectedLanguages.join(','));
+  if (selectedPurposes.length > 0) queryParams.set('purposes', selectedPurposes.join(','));
   queryParams.set('minPrice', minPrice.toString());
   queryParams.set('maxPrice', maxPrice.toString());
   
@@ -53,7 +57,7 @@ export default function HostSearch() {
   const apiUrl = queryString ? `/api/hosts?${queryString}` : '/api/hosts';
 
   const { data: hosts, isLoading } = useQuery<UserType[]>({
-    queryKey: ["/api/hosts", selectedCategory, selectedSkills, selectedLanguages, minPrice, maxPrice],
+    queryKey: ["/api/hosts", selectedCategory, selectedSkills, selectedLanguages, selectedPurposes, minPrice, maxPrice],
     queryFn: () => fetch(apiUrl).then(res => res.json()),
   });
 
@@ -217,7 +221,7 @@ export default function HostSearch() {
         {/* Filters Section */}
         <div className="mb-8 sticky top-0 z-20 bg-[hsl(220,9%,98%)] sm:static">
           <div className="flex justify-end mb-4">
-            {(selectedCategory && selectedCategory !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0 || minPrice > 0 || maxPrice < 200) && (
+            {(selectedCategory && selectedCategory !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0 || selectedPurposes.length > 0 || minPrice > 0 || maxPrice < 200) && (
               <Button
                 variant="ghost"
                 onClick={clearFilters}
@@ -234,7 +238,7 @@ export default function HostSearch() {
               <CardTitle className="text-lg">{t('hosts.filters')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   {/* Category Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -331,6 +335,36 @@ export default function HostSearch() {
                         })}
                       </div>
                     )}
+                  </div>
+
+                  {/* Purpose Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Purpose
+                    </label>
+                    <div className="space-y-2">
+                      {PURPOSES.map((purpose) => (
+                        <div key={purpose} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`purpose-${purpose}`}
+                            checked={selectedPurposes.includes(purpose)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedPurposes([...selectedPurposes, purpose]);
+                              } else {
+                                setSelectedPurposes(selectedPurposes.filter(p => p !== purpose));
+                              }
+                            }}
+                          />
+                          <label 
+                            htmlFor={`purpose-${purpose}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {purpose}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Price Range Filter */}
