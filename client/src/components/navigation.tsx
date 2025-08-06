@@ -102,17 +102,19 @@ export function Navigation() {
             <Link href="/" className="flex items-center">
               {/* Mobile Logo - only (d) symbol */}
               <img
-                src="/storage/Media/ic_app_logo-playstore.png"
+                src={`/storage/Media/ic_app_logo-playstore.png?t=${new Date().getTime()}`}
                 alt="Dialoom"
                 className="h-12 w-auto object-contain md:hidden"
                 style={{ maxWidth: "48px" }}
+                onError={(e) => console.error('Mobile logo failed:', e)}
               />
               {/* Desktop Logo - full logo */}
               <img
-                src="/storage/Media/dialoomblue.png"
+                src={`/storage/Media/dialoomblue.png?t=${new Date().getTime()}`}
                 alt="Dialoom"
                 className="h-12 w-auto object-contain hidden md:block"
                 style={{ maxWidth: "200px" }}
+                onError={(e) => console.error('Desktop logo failed:', e)}
               />
             </Link>
           </div>
