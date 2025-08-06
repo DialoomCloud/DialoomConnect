@@ -475,7 +475,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin profile image upload route (for admins uploading images for other users)
   app.post('/api/admin/upload/profile-image', isAdminAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
+      console.log('Admin image upload request received:');
+      console.log('- Files:', req.file ? 'File present' : 'No file');
+      console.log('- Body:', req.body);
+      console.log('- Content-Type:', req.headers['content-type']);
+      
       if (!req.file) {
+        console.error('No file in request:', {
+          body: req.body,
+          files: req.files,
+          contentType: req.headers['content-type']
+        });
         return res.status(400).json({ message: "No se proporcionó ninguna imagen" });
       }
 

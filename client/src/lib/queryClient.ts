@@ -29,13 +29,18 @@ export async function apiRequest(
   const { method = 'GET', body } = options || {};
   const authHeaders = await getAuthHeaders();
   
+  // Handle FormData differently from JSON
+  const isFormData = body instanceof FormData;
+  
   const res = await fetch(url, {
     method,
     headers: {
       ...authHeaders,
-      ...(body ? { "Content-Type": "application/json" } : {})
+      // Don't set Content-Type for FormData, let browser set it with boundary
+      ...(body && !isFormData ? { "Content-Type": "application/json" } : {})
     },
-    body: body ? JSON.stringify(body) : undefined,
+    // Don't stringify FormData
+    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
   });
 
   await throwIfResNotOk(res);
