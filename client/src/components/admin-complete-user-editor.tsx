@@ -209,6 +209,25 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     
     let updatedFormData = { ...formData };
     
+    // Clean data before sending - convert empty strings to null for foreign key fields
+    const cleanedData: any = {};
+    Object.keys(updatedFormData).forEach(key => {
+      const value = (updatedFormData as any)[key];
+      
+      // Handle foreign key fields that need null instead of empty strings
+      if (key === 'countryCode' || key === 'nationality') {
+        cleanedData[key] = value === '' || value === undefined ? null : value;
+      } else if (key === 'primaryLanguageId' || key === 'categoryId') {
+        // Ensure these are numbers or null
+        cleanedData[key] = value === '' || value === undefined || value === null ? null : parseInt(value, 10);
+      } else if (typeof value === 'string' && value === '') {
+        // Convert other empty strings to null for database consistency
+        cleanedData[key] = null;
+      } else {
+        cleanedData[key] = value;
+      }
+    });
+    
     // Handle profile image upload if a new file was selected
     if (profileImageFile) {
       try {
@@ -238,7 +257,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
       }
     }
     
-    updateUserMutation.mutate(updatedFormData);
+    updateUserMutation.mutate(cleanedData);
   };
 
   // Profile image handlers

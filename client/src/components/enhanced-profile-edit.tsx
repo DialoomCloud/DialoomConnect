@@ -157,9 +157,9 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     },
   });
 
-  // Sync form with current user data whenever user changes
+  // Sync form with current user data only when dialog opens or user data changes
   useEffect(() => {
-    if (typedUser) {
+    if (typedUser && open) {
       console.log('🔄 [PROFILE SYNC] Syncing form with user data:', {
         address: typedUser.address,
         phone: typedUser.phone,
@@ -171,14 +171,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         countryCode: typedUser.countryCode,
         primaryLanguageId: typedUser.primaryLanguageId,
         dateOfBirth: typedUser.dateOfBirth
-      });
-      console.log('🔍 [SYNC PROBLEMATIC] User data for problematic fields:', {
-        'nationality': typedUser.nationality,
-        'countryCode': typedUser.countryCode,
-        'primaryLanguageId': typedUser.primaryLanguageId,
-        'nationality type': typeof typedUser.nationality,
-        'countryCode type': typeof typedUser.countryCode,
-        'primaryLanguageId type': typeof typedUser.primaryLanguageId
       });
       form.reset({
         firstName: typedUser.firstName || "",
@@ -195,7 +187,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         phone: typedUser.phone || "",
       });
     }
-  }, [typedUser, form]);
+  }, [typedUser?.id, open]); // Only depend on user ID and open state to avoid infinite loops
 
   // Data queries
   const { data: socialPlatforms = [] } = useQuery({
@@ -374,24 +366,18 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       });
       return response.json();
     },
-    onSuccess: (updatedUser) => {
+    onSuccess: async (updatedUser) => {
       // Update the cache directly with the fresh data from server
-      queryClient.setQueryData(["/api/auth/user"], updatedUser);
+      queryClient.setQueryData(["/api/auth/user"], (oldData: any) => ({
+        ...oldData,
+        ...updatedUser
+      }));
       
-      // CRITICAL: Update form values immediately with the fresh data
-      Object.keys(updatedUser).forEach(key => {
-        if (form.setValue && updatedUser[key] !== undefined) {
-          // Convert null to empty string for form display
-          const value = updatedUser[key] === null ? "" : updatedUser[key];
-          try {
-            form.setValue(key as any, value);
-          } catch (e) {
-            // Ignore fields that don't exist in form
-          }
-        }
-      });
+      // Force refetch to ensure all related queries are updated
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
-      // Don't show toast here, we'll show a combined one at the end
+      // Don't update form values here to avoid conflicts with user input
+      // The form will be re-synced when the dialog is closed and reopened
     },
     onError: (error: any) => {
       console.error('Profile update error:', error);

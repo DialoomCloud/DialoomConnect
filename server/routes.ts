@@ -542,7 +542,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         languageIds,
       });
       
-      const validatedData = updateUserProfileSchema.parse(profileData);
+      // Clean and prepare data before validation
+      const cleanedData: any = {};
+      Object.keys(profileData).forEach(key => {
+        const value = profileData[key];
+        
+        // Convert empty strings to null for foreign key fields
+        if (key === 'nationality' || key === 'countryCode') {
+          cleanedData[key] = value === '' ? null : value;
+        } else if (key === 'primaryLanguageId') {
+          // Ensure primaryLanguageId is a number or null
+          cleanedData[key] = value === '' || value === null ? null : parseInt(value, 10);
+        } else if (typeof value === 'string' && value === '') {
+          // Convert other empty strings to null
+          cleanedData[key] = null;
+        } else {
+          cleanedData[key] = value;
+        }
+      });
+      
+      const validatedData = updateUserProfileSchema.parse(cleanedData);
       console.log('✅ [SERVER] Validated profile data:', {
         address: validatedData.address,
         phone: validatedData.phone,
@@ -2498,10 +2517,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         socialProfiles
       });
       
-      // Update basic profile data
-      if (Object.keys(profileData).length > 0) {
-        console.log('Updating basic profile data:', profileData);
-        const updatedUser = await storage.updateUserProfile(targetUserId, profileData);
+      // Clean and validate profile data
+      const cleanedProfileData: any = {};
+      
+      // Process each field to ensure proper types and convert empty strings to null
+      Object.keys(profileData).forEach(key => {
+        const value = profileData[key];
+        
+        // Convert empty strings to null for foreign key fields
+        if (key === 'nationality' || key === 'countryCode' || key === 'primaryLanguageId') {
+          if (value === '' || value === null) {
+            cleanedProfileData[key] = null;
+          } else if (key === 'primaryLanguageId' && value !== undefined) {
+            // Ensure primaryLanguageId is a number or null
+            cleanedProfileData[key] = value ? parseInt(value, 10) : null;
+          } else {
+            cleanedProfileData[key] = value;
+          }
+        } else if (typeof value === 'string' && value === '') {
+          // Convert other empty strings to null
+          cleanedProfileData[key] = null;
+        } else if (value !== undefined) {
+          cleanedProfileData[key] = value;
+        }
+      });
+      
+      // Update basic profile data if there are fields to update
+      if (Object.keys(cleanedProfileData).length > 0) {
+        console.log('Updating basic profile data (cleaned):', cleanedProfileData);
+        
+        // Validate using the schema
+        const validatedData = updateUserProfileSchema.parse(cleanedProfileData);
+        console.log('Validated profile data:', validatedData);
+        
+        const updatedUser = await storage.updateUserProfile(targetUserId, validatedData);
         console.log('Profile updated successfully:', updatedUser.id);
       }
       
@@ -2538,6 +2587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating user profile via admin:', error);
       if (error instanceof z.ZodError) {
+        console.error('Validation errors:', error.errors);
         return res.status(400).json({ message: "Datos de perfil inválidos", errors: error.errors });
       }
       res.status(500).json({ message: 'Error al actualizar perfil' });
