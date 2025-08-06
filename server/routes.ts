@@ -514,6 +514,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint to test JSON parsing
+  app.post('/test-json', (req, res) => {
+    console.log('🔍 [TEST] Raw body:', req.body);
+    console.log('🔍 [TEST] Body type:', typeof req.body);
+    res.json({ received: req.body });
+  });
+
   // Update video call topics for hosts
   app.put('/api/profile/video-call-topics', isAuthenticated, async (req: any, res) => {
     try {
@@ -521,8 +528,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('🔍 [TOPICS] Raw request body:', req.body);
       console.log('🔍 [TOPICS] Body type:', typeof req.body);
+      console.log('🔍 [TOPICS] Request headers:', req.headers);
       
-      const { topics } = req.body;
+      // Handle double JSON encoding issue
+      let parsedBody = req.body;
+      if (typeof req.body === 'string') {
+        try {
+          parsedBody = JSON.parse(req.body);
+          console.log('🔄 [TOPICS] Parsed string body:', parsedBody);
+        } catch (e) {
+          console.log('❌ [TOPICS] Failed to parse string body:', e);
+          return res.status(400).json({ message: "Invalid JSON format" });
+        }
+      }
+      
+      const { topics } = parsedBody;
       
       console.log('🔍 [TOPICS] Extracted topics:', topics);
       console.log('🔍 [TOPICS] Topics type:', typeof topics, 'isArray:', Array.isArray(topics));

@@ -334,16 +334,16 @@ export default function UserProfile() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-wrap gap-1 justify-center lg:justify-start">
+                      <div className="justify-center lg:justify-start">
                         {user?.videoCallTopics && user.videoCallTopics.length > 0 ? (
-                          user.videoCallTopics.map((topic, index) => (
-                            <Badge 
-                              key={index} 
-                              className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs"
-                            >
-                              {topic}
-                            </Badge>
-                          ))
+                          <div className="space-y-1">
+                            {user.videoCallTopics.map((topic, index) => (
+                              <div key={index} className="flex items-center">
+                                <div className="w-1.5 h-1.5 bg-[hsl(188,100%,38%)] rounded-full mr-2"></div>
+                                <span className="text-xs text-[hsl(17,12%,20%)]">{topic}</span>
+                              </div>
+                            ))}
+                          </div>
                         ) : (
                           <p className="text-sm text-gray-500 italic">
                             {isOwnProfile ? "Haz clic en el botón de editar para agregar temas" : "No hay temas configurados"}

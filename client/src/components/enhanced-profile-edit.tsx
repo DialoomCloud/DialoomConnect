@@ -442,8 +442,15 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       console.log('✅ [TOPICS] Server response:', result);
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: (data) => {
+      console.log('✅ [TOPICS] Server response:', data);
+      // Update the user data in the cache to immediately reflect changes
+      queryClient.setQueryData(["/api/auth/user"], (oldData: any) => {
+        if (oldData) {
+          return {...oldData, videoCallTopics: data.videoCallTopics};
+        }
+        return oldData;
+      });
       toast({
         title: "✓ Temas actualizados",
         description: "Los temas de videollamada se han guardado correctamente",
