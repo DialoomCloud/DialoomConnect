@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
@@ -16,7 +17,6 @@ import {
   Video,
 } from "lucide-react";
 import type { User } from "@shared/schema";
-import { useState } from "react";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
 import { signOut } from "@/lib/supabase";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -36,6 +36,7 @@ export function Navigation() {
   const { t } = useTranslation();
   const [location, navigate] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { logoUrl } = useThemeConfig();
   const { toast } = useToast();
 
@@ -87,6 +88,18 @@ export function Navigation() {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
   const roleOptions = [] as { value: string; label: string }[];
   if (user?.isHost) roleOptions.push({ value: "host", label: "Host" });
   if (user?.isAdmin) roleOptions.push({ value: "admin", label: "Admin" });
@@ -100,19 +113,11 @@ export function Navigation() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              {/* Mobile Logo - only (d) symbol */}
               <img
-                src="/storage/Media/ic_app_logo-playstore.png"
-                alt="Dialoom Mobile"
-                className="block md:hidden h-12 w-auto object-contain"
-                style={{ maxWidth: "48px" }}
-              />
-              {/* Desktop Logo - full logo */}
-              <img
-                src="/storage/Media/dialoomblue.png"
-                alt="Dialoom Desktop"
-                className="hidden md:block h-12 w-auto object-contain"
-                style={{ maxWidth: "200px" }}
+                src={isMobile ? "/storage/Media/ic_app_logo-playstore.png" : "/storage/Media/dialoomblue.png"}
+                alt="Dialoom"
+                className="h-12 w-auto object-contain transition-all duration-300"
+                style={{ maxWidth: isMobile ? "48px" : "200px" }}
               />
             </Link>
           </div>
