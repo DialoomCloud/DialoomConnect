@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/navigation";
@@ -22,6 +22,7 @@ import { apiRequest } from "@/lib/queryClient";
 export default function UserProfile() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const params = useParams();
   const userId = params.id;
   const [showViewerModal, setShowViewerModal] = useState(false);
@@ -74,12 +75,6 @@ export default function UserProfile() {
     enabled: !!userId,
   });
 
-  // Fetch user social profiles
-  const { data: socialProfiles = [] } = useQuery<any[]>({
-    queryKey: [`/api/user/social-profiles/${userId}`],
-    enabled: !!userId,
-  });
-
   // Fetch authenticated user to check if viewing own profile
   const { data: authenticatedUser } = useQuery<User>({
     queryKey: ['/api/auth/user'],
@@ -87,6 +82,12 @@ export default function UserProfile() {
 
   // Check if user is viewing their own profile
   const isOwnProfile = authenticatedUser?.id === userId;
+
+  // Fetch user social profiles (only for own profile)
+  const { data: socialProfiles = [] } = useQuery<any[]>({
+    queryKey: [`/api/user/social-profiles/${userId}`],
+    enabled: !!userId && isOwnProfile,
+  });
 
   // Initialize edit topics when user data is loaded
   useEffect(() => {
@@ -136,7 +137,7 @@ export default function UserProfile() {
       
       setIsEditingTopics(false);
       // Refetch user data to get updated topics
-      window.location.reload();
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}`] });
     } catch (error) {
       console.error("Error saving topics:", error);
       toast({
