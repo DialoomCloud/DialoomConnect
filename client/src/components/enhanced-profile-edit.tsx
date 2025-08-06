@@ -794,7 +794,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         
                         return (
                           <FormItem>
-                            <FormLabel>Temas de Videollamadas</FormLabel>
+                            <FormLabel>{t('userProfile.videoCallTopics')}</FormLabel>
                             <FormControl>
                               <Textarea
                                 value={topicsText}
@@ -804,14 +804,14 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                                   field.onChange(filteredLines);
                                 }}
                                 rows={6}
-                                placeholder="Escribe hasta 10 temas que cubres en videollamadas (uno por línea):&#10;• Estrategia de Marketing Digital&#10;• Análisis de Redes Sociales&#10;• Optimización SEO&#10;• Publicidad Online&#10;• Growth Hacking"
+                                placeholder={t('userProfile.videoCallTopicsPlaceholder') + ':&#10;• Estrategia de Marketing Digital&#10;• Análisis de Redes Sociales&#10;• Optimización SEO&#10;• Publicidad Online&#10;• Growth Hacking'}
                                 className="resize-none"
                               />
                             </FormControl>
                             <div className="flex items-center justify-between">
                               <FormMessage />
                               <p className="text-sm text-muted-foreground">
-                                {field.value ? field.value.length : 0}/10 temas
+                                {field.value ? field.value.length : 0}/10 {t('userProfile.videoCallTopicsCounter')}
                               </p>
                             </div>
                           </FormItem>

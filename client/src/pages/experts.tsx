@@ -44,7 +44,7 @@ export default function Experts() {
                 onClick={handleLogin}
                 className="text-gray-600 hover:text-primary font-medium"
               >
-                {currentLang === 'es' ? 'Iniciar Sesión' : currentLang === 'ca' ? 'Iniciar Sessió' : 'Login'}
+                {t('navigation.login')}
               </Button>
               <Button 
                 onClick={handleLogin}

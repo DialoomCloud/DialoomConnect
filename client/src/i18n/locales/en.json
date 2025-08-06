@@ -90,7 +90,10 @@
     "bookingError": "Booking Error",
     "multimediaContent": "Multimedia Content",
     "noAvailability": "No availability configured",
-    "noPricing": "No pricing configured"
+    "noPricing": "No pricing configured",
+    "videoCallTopics": "Video call topics",
+    "videoCallTopicsPlaceholder": "Write up to 10 topics you cover in video calls (one per line)",
+    "videoCallTopicsCounter": "topics"
   },
   "profile": {
     "title": "My Profile",
@@ -678,5 +681,18 @@
       "markPaid": "Mark as paid",
       "processRefund": "Process refund"
     }
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Find answers to frequently asked questions about Dialoom",
+    "gettingStarted": "Getting Started",
+    "whatIsDialoom": "What is Dialoom?",
+    "whatIsDialoomAnswer": "Dialoom is a platform that connects professionals (hosts) with clients to conduct paid professional video calls. Hosts can offer consultations, classes, advisory services, and more.",
+    "returnHome": "← Back to home",
+    "forHosts": "For Hosts",
+    "howToSignUp": "How do I sign up?",
+    "howToSignUpAnswer": "Click \"Sign In\" and use your Replit account to access. Once inside, you can complete your profile and start using the platform.",
+    "setAvailability": "How do I set my availability?",
+    "setAvailabilityAnswer": "Go to your profile and in the 'Availability' section you can configure your available hours for each day of the week. You can also set specific dates with different schedules."
   }
 }

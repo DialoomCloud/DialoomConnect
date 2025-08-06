@@ -17,18 +17,13 @@ export default function Help() {
           <CardHeader className="bg-[hsl(188,100%,38%)] text-white">
             <CardTitle className="text-2xl flex items-center gap-2">
               <HelpCircle className="w-6 h-6" />
-              {i18n.language === 'es' ? 'Centro de Ayuda' : 
-               i18n.language === 'ca' ? 'Centre d\'Ajuda' : 'Help Center'}
+              {t('help.title')}
             </CardTitle>
           </CardHeader>
           
           <CardContent className="p-8">
             <p className="text-gray-600 mb-8">
-              {i18n.language === 'es' ? 
-                'Encuentra respuestas a las preguntas más frecuentes sobre Dialoom' : 
-               i18n.language === 'ca' ? 
-                'Troba respostes a les preguntes més freqüents sobre Dialoom' : 
-                'Find answers to frequently asked questions about Dialoom'}
+              {t('help.subtitle')}
             </p>
 
             <Accordion type="single" collapsible className="space-y-4">
@@ -37,24 +32,16 @@ export default function Help() {
                 <AccordionTrigger className="text-lg font-semibold">
                   <span className="flex items-center gap-2">
                     <MessageCircle className="w-5 h-5 text-[hsl(188,100%,38%)]" />
-                    {i18n.language === 'es' ? 'Primeros Pasos' : 
-                     i18n.language === 'ca' ? 'Primers Passos' : 
-                     'Getting Started'}
+                    {t('help.gettingStarted')}
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                   <div>
                     <h4 className="font-semibold mb-2">
-                      {i18n.language === 'es' ? '¿Qué es Dialoom?' : 
-                       i18n.language === 'ca' ? 'Què és Dialoom?' : 
-                       'What is Dialoom?'}
+                      {t('help.whatIsDialoom')}
                     </h4>
                     <p className="text-gray-600">
-                      {i18n.language === 'es' ? 
-                        'Dialoom es una plataforma que conecta profesionales (hosts) con clientes para realizar videollamadas profesionales remuneradas. Los hosts pueden ofrecer consultas, clases, asesorías y más.' : 
-                       i18n.language === 'ca' ? 
-                        'Dialoom és una plataforma que connecta professionals (hosts) amb clients per realitzar videotrucades professionals remunerades. Els hosts poden oferir consultes, classes, assessories i més.' : 
-                        'Dialoom is a platform that connects professionals (hosts) with clients for paid professional video calls. Hosts can offer consultations, classes, coaching, and more.'}
+                      {t('help.whatIsDialoomAnswer')}
                     </p>
                   </div>
                   <div>
@@ -79,9 +66,7 @@ export default function Help() {
                 <AccordionTrigger className="text-lg font-semibold">
                   <span className="flex items-center gap-2">
                     <UserCheck className="w-5 h-5 text-[hsl(188,100%,38%)]" />
-                    {i18n.language === 'es' ? 'Para Hosts' : 
-                     i18n.language === 'ca' ? 'Per a Hosts' : 
-                     'For Hosts'}
+                    {t('help.forHosts')}
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">

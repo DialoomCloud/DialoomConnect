@@ -91,7 +91,10 @@
     "bookingError": "Error en la Reserva",
     "multimediaContent": "Contenido Multimedia",
     "noAvailability": "Sin disponibilidad configurada",
-    "noPricing": "Sin precios configurados"
+    "noPricing": "Sin precios configurados",
+    "videoCallTopics": "Temas de videollamadas",
+    "videoCallTopicsPlaceholder": "Escribe hasta 10 temas que cubres en videollamadas (uno por línea)",
+    "videoCallTopicsCounter": "temas"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -384,6 +387,19 @@
     "madeWith": "Hecho con",
     "in": "en Barcelona",
     "gdprCompliant": "Cumplimos con RGPD"
+  },
+  "help": {
+    "title": "Centro de Ayuda",
+    "subtitle": "Encuentra respuestas a las preguntas más frecuentes sobre Dialoom",
+    "gettingStarted": "Primeros Pasos",
+    "whatIsDialoom": "¿Qué es Dialoom?",
+    "whatIsDialoomAnswer": "Dialoom es una plataforma que conecta profesionales (hosts) con clientes para realizar videollamadas profesionales remuneradas. Los hosts pueden ofrecer consultas, clases, asesorías y más.",
+    "returnHome": "← Volver al inicio",
+    "forHosts": "Para Hosts",
+    "howToSignUp": "¿Cómo me registro?",
+    "howToSignUpAnswer": "Haz clic en \"Iniciar Sesión\" y usa tu cuenta de Replit para acceder. Una vez dentro, podrás completar tu perfil y comenzar a usar la plataforma.",
+    "setAvailability": "¿Cómo configuro mi disponibilidad?",
+    "setAvailabilityAnswer": "Ve a tu perfil y en la sección 'Disponibilidad' podrás configurar tus horarios disponibles para cada día de la semana. También puedes establecer fechas específicas con horarios diferentes."
   },
   "ai": {
     "title": "Sugerencias Inteligentes de Perfil",

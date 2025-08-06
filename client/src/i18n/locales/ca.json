@@ -90,7 +90,10 @@
     "bookingError": "Error en la Reserva",
     "multimediaContent": "Contingut Multimèdia",
     "noAvailability": "Sense disponibilitat configurada",
-    "noPricing": "Sense preus configurats"
+    "noPricing": "Sense preus configurats",
+    "videoCallTopics": "Temes de videotrucades",
+    "videoCallTopicsPlaceholder": "Escriu fins a 10 temes que cobreixes en videotrucades (un per línia)",
+    "videoCallTopicsCounter": "temes"
   },
   "profile": {
     "title": "El Meu Perfil",
@@ -678,5 +681,18 @@
       "markPaid": "Marcar com a pagat",
       "processRefund": "Processar reemborsament"
     }
+  },
+  "help": {
+    "title": "Centre d'Ajuda",
+    "subtitle": "Troba respostes a les preguntes més freqüents sobre Dialoom",
+    "gettingStarted": "Primers Passos",
+    "whatIsDialoom": "Què és Dialoom?",
+    "whatIsDialoomAnswer": "Dialoom és una plataforma que connecta professionals (hosts) amb clients per realitzar videotrucades professionals remunerades. Els hosts poden oferir consultes, classes, assessories i més.",
+    "returnHome": "← Tornar a l'inici",
+    "forHosts": "Per a Hosts",
+    "howToSignUp": "Com em registro?",
+    "howToSignUpAnswer": "Fes clic a \"Iniciar Sessió\" i utilitza el teu compte de Replit per accedir. Un cop dins, podràs completar el teu perfil i començar a utilitzar la plataforma.",
+    "setAvailability": "Com configuro la meva disponibilitat?",
+    "setAvailabilityAnswer": "Vés al teu perfil i a la secció 'Disponibilitat' podràs configurar els teus horaris disponibles per a cada dia de la setmana. També pots establir dates específiques amb horaris diferents."
   }
 }

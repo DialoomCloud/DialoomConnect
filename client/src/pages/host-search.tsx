@@ -622,7 +622,7 @@ export default function HostSearch() {
                     {host.videoCallTopics && Array.isArray(host.videoCallTopics) && host.videoCallTopics.length > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center text-gray-700 text-sm font-medium">
-                          <span>Temas de videollamada:</span>
+                          <span>{t('userProfile.videoCallTopics')}:</span>
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {host.videoCallTopics.slice(0, 3).map((topic: string, index: number) => (
