@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -13,9 +13,8 @@ import { BookingFlow } from "@/components/booking-flow";
 import { DateTimeSelector } from "@/components/date-time-selector";
 import { PaymentMethods } from "@/components/payment-methods";
 import { StripeConnectCheckout } from "@/components/stripe-connect-checkout";
-import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
+import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe, Eye } from "lucide-react";
 import type { User, MediaContent, HostAvailability, HostPricing } from "@shared/schema";
-import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
@@ -114,290 +113,370 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+    <div className="min-h-screen bg-gradient-to-br from-[hsl(220,9%,98%)] to-[hsl(220,20%,95%)]">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header */}
-        <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg mb-8">
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row items-start gap-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <div className="bg-white rounded-2xl shadow-xl border border-[hsl(220,13%,90%)] p-8 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left Column - Profile Info */}
+            <div className="lg:col-span-1">
               {/* Profile Image */}
-              <div className="relative">
-                {user.profileImageUrl ? (
-                  <img
-                    src={user.profileImageUrl.startsWith('http') || user.profileImageUrl.startsWith('/') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`}
-                    alt={`${user.firstName} ${user.lastName}`}
-                    className="w-64 h-64 rounded-full object-cover border-4 border-[hsl(188,100%,38%)]"
-                  />
-                ) : (
-                  <div className="w-64 h-64 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center">
-                    <UserIcon className="w-32 h-32 text-[hsl(188,100%,38%)]" />
-                  </div>
-                )}
-                {user.isVerified && (
-                  <Badge className="absolute -bottom-2 right-2 bg-[hsl(188,80%,42%)] text-white">
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    {t('home.verified')}
-                  </Badge>
-                )}
+              <div className="flex justify-center mb-6">
+                <div className="relative">
+                  {user.profileImageUrl ? (
+                    <img
+                      src={user.profileImageUrl.startsWith('/storage/') ? user.profileImageUrl : `/storage/${user.profileImageUrl}`}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className="w-32 h-32 rounded-full object-cover border-4 border-[hsl(188,100%,38%)] shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center shadow-lg">
+                      <UserIcon className="w-16 h-16 text-white" />
+                    </div>
+                  )}
+                  {user.isVerified && (
+                    <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-1">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Profile Info */}
-              <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-2">
-                      {user.firstName} {user.lastName}
-                    </h1>
-                    {user.title && (
-                      <p className="text-xl text-gray-600 mb-2">{user.title}</p>
-                    )}
-                    
-                    {/* Rating */}
-                    <div className="flex items-center gap-1 mb-4">
-                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">5.0</span>
-                      <span className="text-gray-500">(12 reseñas)</span>
+              {/* Basic Info */}
+              <div className="text-center space-y-3">
+                <h1 className="text-2xl font-bold text-[hsl(17,12%,6%)]">
+                  {user.firstName} {user.lastName}
+                </h1>
+                {user.title && (
+                  <p className="text-lg text-[hsl(188,100%,38%)] font-semibold">{user.title}</p>
+                )}
+                <div className="flex items-center justify-center text-[hsl(17,12%,40%)]">
+                  <Star className="w-4 h-4 mr-1 text-yellow-500" />
+                  <span className="text-sm">5.0 (10 reseñas)</span>
+                </div>
+                
+                {/* Contact Info */}
+                <div className="space-y-2 pt-4">
+                  {user.phone && (
+                    <div className="flex items-center text-sm text-[hsl(17,12%,40%)]">
+                      <Phone className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
+                      {user.phone}
                     </div>
-                  </div>
+                  )}
+                  {user.email && (
+                    <div className="flex items-center text-sm text-[hsl(17,12%,40%)]">
+                      <Mail className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
+                      {user.email}
+                    </div>
+                  )}
+                  {(user.city || user.countryCode) && (
+                    <div className="flex items-center text-sm text-[hsl(17,12%,40%)]">
+                      <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
+                      {user.city}{user.city && user.countryCode && ', '}{user.countryCode}
+                    </div>
+                  )}
+                </div>
 
-                  {/* Social Media Icons */}
-                  <div className="flex gap-3">
-                    {socialProfiles?.find((p: any) => p.platformId === 1) && (
-                      <a 
-                        href={socialProfiles.find((p: any) => p.platformId === 1)?.url || `https://instagram.com/${socialProfiles.find((p: any) => p.platformId === 1)?.username}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                      >
-                        <Instagram className="w-5 h-5 text-gray-700" />
-                      </a>
-                    )}
-                    {socialProfiles?.find((p: any) => p.platformId === 2) && (
-                      <a 
-                        href={socialProfiles.find((p: any) => p.platformId === 2)?.url || `https://linkedin.com/in/${socialProfiles.find((p: any) => p.platformId === 2)?.username}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                      >
-                        <Linkedin className="w-5 h-5 text-gray-700" />
-                      </a>
-                    )}
-                    {socialProfiles?.find((p: any) => p.platformId === 3) && (
-                      <a 
-                        href={socialProfiles.find((p: any) => p.platformId === 3)?.url || `https://twitter.com/${socialProfiles.find((p: any) => p.platformId === 3)?.username}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                      >
-                        <Twitter className="w-5 h-5 text-gray-700" />
-                      </a>
-                    )}
-                    {socialProfiles?.find((p: any) => p.platformId === 4) && (
-                      <a 
-                        href={socialProfiles.find((p: any) => p.platformId === 4)?.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                      >
-                        <Globe className="w-5 h-5 text-gray-700" />
-                      </a>
-                    )}
+                {/* Languages */}
+                <div className="pt-4">
+                  <div className="flex items-center justify-center mb-2">
+                    <Languages className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
+                    <span className="text-sm font-medium text-[hsl(17,12%,20%)]">Idiomas</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1 justify-center">
+                    <Badge variant="secondary" className="text-xs">Español</Badge>
+                    <Badge variant="secondary" className="text-xs">Catalán</Badge>
+                    <Badge variant="secondary" className="text-xs">Inglés</Badge>
                   </div>
                 </div>
 
-                {user.description && (
-                  <p className="text-gray-700 mb-4">{user.description}</p>
-                )}
-
-                <div className="flex flex-wrap gap-4">
-                  {user.email && (
-                    <div className="flex items-center text-gray-600">
-                      <Mail className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
-                      <span>{user.email}</span>
-                    </div>
-                  )}
-                  {user.city && user.countryCode && (
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
-                      <span>{user.city}, {user.countryCode}</span>
-                    </div>
-                  )}
-                  {user.phone && (
-                    <div className="flex items-center text-gray-600">
-                      <Phone className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
-                      <span>{user.phone}</span>
-                    </div>
-                  )}
+                {/* Availability Status */}
+                <div className="pt-4">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Disponible ahora
+                  </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Availability & Pricing */}
-          <div className="lg:col-span-1">
-            {/* Pricing Card */}
-            {pricing && pricing.length > 0 && (
-              <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg mb-6">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
-                    <DollarSign className="w-5 h-5 mr-2 text-[hsl(188,80%,42%)]" />
-                    {t('pricing.pricing')}
-                  </h3>
-                  <div className="space-y-3">
-                    {pricing.filter(p => p.isActive).map((option) => (
-                      <div key={option.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="font-medium">
-                          {option.duration === 0 ? t('pricing.freeSession') : `${option.duration} ${t('pricing.minutes')}`}
-                        </span>
-                        <span className="text-[hsl(188,80%,42%)] font-bold">
-                          {option.price === "0.00" ? t('pricing.free') : `€${option.price}`}
-                        </span>
-                      </div>
-                    ))}
+            {/* Middle Column - Description */}
+            <div className="lg:col-span-1">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4">Descripción</h2>
+                  <div className="bg-[hsl(220,9%,98%)] p-4 rounded-lg border border-[hsl(220,13%,90%)]">
+                    {user.description ? (
+                      <p className="text-[hsl(17,12%,40%)] leading-relaxed text-sm">
+                        {user.description}
+                      </p>
+                    ) : (
+                      <p className="text-[hsl(17,12%,60%)] italic text-sm">
+                        {t('profile.noDescription')}
+                      </p>
+                    )}
                   </div>
+                </div>
 
-                  {/* Service Options - Available for selection */}
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm font-medium text-gray-600 mb-3">{t('userProfile.additionalServices')}:</p>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <Monitor className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>{t('userProfile.screenSharing')}</span>
-                        </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.screenSharing || 10}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <Languages className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>{t('userProfile.simultaneousTranslation')}</span>
-                        </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.translation || 25}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <Video className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>{t('userProfile.recording')}</span>
-                        </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.recording || 10}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-[hsl(188,100%,38%)]" />
-                          <span>{t('userProfile.transcription')}</span>
-                        </div>
-                        <span className="font-medium text-[hsl(188,80%,42%)]">+€{(servicePrices as any)?.transcription || 5}</span>
-                      </div>
+                {/* Social Links */}
+                {socialProfiles && socialProfiles.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Redes Sociales</h3>
+                    <div className="flex gap-3">
+                      {socialProfiles.map((profile: any) => {
+                        const getIcon = (platformName: string) => {
+                          switch (platformName.toLowerCase()) {
+                            case 'instagram': return <Instagram className="w-5 h-5" />;
+                            case 'twitter': return <Twitter className="w-5 h-5" />;
+                            case 'linkedin': return <Linkedin className="w-5 h-5" />;
+                            default: return <Globe className="w-5 h-5" />;
+                          }
+                        };
+
+                        return (
+                          <a
+                            key={profile.id}
+                            href={profile.platform.baseUrl + profile.username}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
+                          >
+                            {getIcon(profile.platform.name)}
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
-                  
-                  <Button 
-                    className="w-full mt-4 bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)]"
-                    onClick={() => setShowBookingFlow(true)}
-                  >
-                    {t('userProfile.bookCall')}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+                )}
+              </div>
+            </div>
 
-            {/* Availability Card */}
-            {availability && availability.length > 0 && (
-              <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
-                    <Calendar className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
-                    {t('availability.weeklySchedule')}
-                  </h3>
-                  <div className="space-y-2">
-                    {availability.map((slot) => (
-                      <div key={slot.id} className="text-sm">
-                        <div className="font-medium text-gray-700">{slot.dayOfWeek !== null ? getDayName(slot.dayOfWeek) : format(new Date(slot.date!), "PPP", { locale: es })}</div>
-                        <div className="text-gray-600 flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
-                          {slot.startTime} - {slot.endTime}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Media Content */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-6">{t('home.multimedia')}</h3>
+            {/* Right Column - Pricing & Booking */}
+            <div className="lg:col-span-1">
+              <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-xl p-6 text-white">
+                <h2 className="text-xl font-bold mb-4">Precios Dinámicos</h2>
                 
-                {mediaLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
-                        <div className="aspect-video bg-gray-300 rounded mb-3"></div>
-                        <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                        <div className="h-3 bg-gray-300 rounded w-2/3"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : mediaContent.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {mediaContent.map((content: MediaContent) => (
-                      <div key={content.id} className="cursor-pointer" onClick={() => {
-                        setViewingContent(content);
-                        setShowViewerModal(true);
-                      }}>
-                        <MediaEmbed 
-                          content={content} 
-                          showEdit={false}
-                        />
+                {/* Pricing Options */}
+                {pricing && pricing.length > 0 ? (
+                  <div className="space-y-3 mb-6">
+                    {pricing.filter(p => p.isActive).map((price) => (
+                      <div 
+                        key={price.id}
+                        className="bg-white/20 rounded-lg p-3 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
+                        onClick={() => setSelectedPricing({ duration: price.duration, price: price.price })}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-2" />
+                            <span className="font-medium">
+                              {price.duration === 0 ? 'Gratis' : `${price.duration} min`}
+                            </span>
+                          </div>
+                          <div className="text-lg font-bold">
+                            {price.duration === 0 ? 'Gratis' : `€${price.price}`}
+                          </div>
+                        </div>
+                        
+                        {/* Service Icons */}
+                        <div className="flex gap-2 mt-2">
+                          {price.includesScreenSharing && (
+                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center">
+                              <Monitor className="w-3 h-3" />
+                            </div>
+                          )}
+                          {price.includesRecording && (
+                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center">
+                              <Video className="w-3 h-3" />
+                            </div>
+                          )}
+                          {price.includesTranslation && (
+                            <div className="w-6 h-6 bg-white/30 rounded flex items-center justify-center">
+                              <Languages className="w-3 h-3" />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <UserIcon className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-600">{t('profile.noMedia')}</p>
+                  <div className="bg-white/20 rounded-lg p-4 mb-6">
+                    <p className="text-white/80 text-sm">No hay precios configurados</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+
+                {/* Duration Selector */}
+                <div className="space-y-2 mb-6">
+                  <label className="text-sm font-medium">Duración de la sesión:</label>
+                  <div className="flex gap-2">
+                    {['5min', '30min', '60min'].map((duration) => (
+                      <button
+                        key={duration}
+                        className="flex-1 py-2 px-3 text-sm rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                      >
+                        {duration}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Book Call Button */}
+                <Button 
+                  className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-bold py-3"
+                  onClick={() => setShowBookingFlow(true)}
+                >
+                  Reservar Llamada
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Schedule Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Schedule */}
+          <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4 flex items-center">
+                <Calendar className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
+                Horarios Disponibles
+              </h3>
+              
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1 mb-4">
+                {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
+                  <div key={day} className="text-center text-xs font-medium text-gray-600 py-2">
+                    {day}
+                  </div>
+                ))}
+                {/* Calendar days */}
+                {Array.from({ length: 35 }, (_, i) => (
+                  <div 
+                    key={i} 
+                    className="aspect-square flex items-center justify-center text-sm hover:bg-[hsl(188,100%,95%)] rounded cursor-pointer"
+                  >
+                    {i % 7 === 0 || i % 7 === 6 ? '' : Math.floor(i / 7) + 1}
+                  </div>
+                ))}
+              </div>
+
+              {/* Time Slots */}
+              <div className="space-y-2">
+                <h4 className="font-medium text-[hsl(17,12%,20%)]">Hoy disponible:</h4>
+                <div className="grid grid-cols-4 gap-2">
+                  {['09:00', '10:30', '14:00', '16:30'].map((time) => (
+                    <button
+                      key={time}
+                      className="py-2 px-3 text-xs rounded-lg border border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,38%)] hover:text-white transition-colors"
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Button 
+                variant="outline" 
+                className="w-full mt-4 border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,38%)] hover:text-white"
+              >
+                Ver Más Horarios
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Payment Gateway */}
+          <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4">Pasarela de Pago</h3>
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <DollarSign className="w-8 h-8 text-[hsl(188,100%,38%)]" />
+                </div>
+                <p className="text-[hsl(17,12%,40%)] mb-4">
+                  Proceso de pago seguro y rápido
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)]"
+                >
+                  Configurar Pago
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Multimedia Section */}
+        <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-6 flex items-center">
+              <Video className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
+              Multimedia
+            </h3>
+            
+            {mediaLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
+                    <div className="aspect-video bg-gray-300 rounded mb-3"></div>
+                    <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+                  </div>
+                ))}
+              </div>
+            ) : mediaContent.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {mediaContent.slice(0, 6).map((content: MediaContent) => (
+                  <div key={content.id} className="cursor-pointer group" onClick={() => {
+                    setViewingContent(content);
+                    setShowViewerModal(true);
+                  }}>
+                    <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-video mb-3 group-hover:shadow-lg transition-shadow">
+                      <MediaEmbed 
+                        content={content} 
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Eye className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
+                    <h4 className="font-medium text-[hsl(17,12%,20%)] mb-1 group-hover:text-[hsl(188,100%,38%)] transition-colors">
+                      {content.title}
+                    </h4>
+                    <p className="text-sm text-[hsl(17,12%,40%)] line-clamp-2">
+                      {content.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Video className="w-16 h-16 text-[hsl(188,100%,38%)] mx-auto mb-4" />
+                <p className="text-[hsl(17,12%,40%)]">No hay contenido multimedia disponible</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Media Viewer Modal */}
-      <MediaViewerModal
-        isOpen={showViewerModal}
-        onClose={() => setShowViewerModal(false)}
-        content={viewingContent}
-      />
+      {/* Modals */}
+      {showViewerModal && viewingContent && (
+        <MediaViewerModal
+          content={viewingContent}
+          isOpen={showViewerModal}
+          onClose={() => setShowViewerModal(false)}
+        />
+      )}
 
-      {/* Booking Flow Modal */}
-      <BookingFlow
-        isOpen={showBookingFlow}
-        onClose={() => setShowBookingFlow(false)}
-        host={{
-          ...user,
-          pricing: pricing,
-          socialMedia: {
-            instagram: socialProfiles?.find((p: any) => p.platformId === 1)?.username,
-            linkedin: socialProfiles?.find((p: any) => p.platformId === 2)?.username,
-            twitter: socialProfiles?.find((p: any) => p.platformId === 3)?.username,
-            website: socialProfiles?.find((p: any) => p.platformId === 4)?.url
-          },
-          rating: 5.0,
-          reviewCount: 12,
-        }}
-        hostServices={hostServices || {}}
-      />
+      {showBookingFlow && (
+        <BookingFlow
+          host={user}
+          isOpen={showBookingFlow}
+          onClose={() => setShowBookingFlow(false)}
+          hostServices={hostServices}
+        />
+      )}
     </div>
   );
 }

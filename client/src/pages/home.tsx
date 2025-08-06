@@ -88,40 +88,189 @@ export default function Home() {
   if (!isAuthenticated && !adminUser) {
     console.log("Home: Rendering anonymous user view");
     return (
-      <div className="min-h-screen bg-[hsl(220,9%,98%)]">
+      <div className="min-h-screen bg-gradient-to-br from-[hsl(220,9%,98%)] to-[hsl(220,20%,95%)]">
         <Navigation />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)] mb-4">{t('home.title')}</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              {t('home.subtitle')}
-            </p>
-          </div>
-
-          {/* Call to action for anonymous users */}
-          <div className="text-center py-16">
-            <div className="max-w-2xl mx-auto">
-              <h3 className="text-2xl font-bold text-[hsl(17,12%,6%)] mb-4">
-                {t('home.joinDialoom', 'Únete a Dialoom')}
-              </h3>
-              <p className="text-gray-600 mb-8">
-                {t('home.joinDescription', 'Conecta con expertos o comparte tu conocimiento a través de videollamadas profesionales')}
+          {/* Hero Section */}
+          <div className="text-center mb-16">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-5xl font-bold text-[hsl(17,12%,6%)] mb-6">
+                Dialoom
+              </h1>
+              <h2 className="text-2xl text-[hsl(188,100%,38%)] font-semibold mb-4">
+                Conecta. Aprende. Crece.
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+                La plataforma que conecta a expertos y personas que buscan conocimiento a través de videollamadas personalizadas
               </p>
-              <div className="space-x-4">
-                <Button
-                  onClick={() => window.location.href = "/login"}
-                  className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] px-8 py-3"
-                >
-                  {t('nav.login', 'Iniciar Sesión')}
-                </Button>
-                <Link href="/hosts">
-                  <Button variant="outline" className="px-8 py-3">
-                    {t('home.exploreHosts', 'Explorar Expertos')}
+              
+              {/* Main CTA */}
+              <div className="bg-white rounded-2xl shadow-xl p-8 mb-12">
+                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-6">
+                  ¿Listo para empezar a explorar?
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/hosts">
+                    <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] px-8 py-3 text-lg">
+                      Buscar Expertos
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={() => window.location.href = "/login"}
+                    variant="outline" 
+                    className="border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,38%)] hover:text-white px-8 py-3 text-lg"
+                  >
+                    Iniciar Sesión
                   </Button>
-                </Link>
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* How it Works Section */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-center text-[hsl(17,12%,6%)] mb-12">
+              ¿Cómo funciona?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-[hsl(188,100%,38%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-3">
+                  1. Busca Expertos
+                </h3>
+                <p className="text-gray-600">
+                  Encuentra profesionales en tu área de interés y revisa sus perfiles
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-[hsl(188,100%,38%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-3">
+                  2. Reserva tu Sesión
+                </h3>
+                <p className="text-gray-600">
+                  Elige el horario que mejor te convenga y configura tu llamada
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Video className="w-8 h-8 text-[hsl(188,100%,38%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-3">
+                  3. Conecta y Aprende
+                </h3>
+                <p className="text-gray-600">
+                  Disfruta de tu videollamada personalizada con el experto
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Featured Hosts Section */}
+          <div className="mb-16">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold text-[hsl(17,12%,6%)]">
+                Expertos Destacados
+              </h2>
+              <Link href="/hosts">
+                <Button variant="outline" className="border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)]">
+                  Ver Todos
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-full flex items-center justify-center">
+                        <UserIcon className="w-8 h-8 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-[hsl(17,12%,6%)] mb-1">
+                          Expert {i}
+                        </h3>
+                        <p className="text-[hsl(188,100%,38%)] font-medium text-sm mb-2">
+                          Especialista en Marketing Digital
+                        </p>
+                        <div className="flex items-center mb-2">
+                          <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                          <span className="text-sm text-gray-600">5.0 (10 reseñas)</span>
+                        </div>
+                        <p className="text-gray-600 text-sm line-clamp-2">
+                          Experto en estrategias de marketing digital y crecimiento empresarial
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Why Choose Dialoom Section */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-center text-[hsl(17,12%,6%)] mb-12">
+              ¿Por qué elegir Dialoom?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg text-center p-6">
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-[hsl(188,100%,38%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-3">
+                  Expertos Verificados
+                </h3>
+                <p className="text-gray-600">
+                  Todos nuestros profesionales pasan por un proceso de verificación riguroso
+                </p>
+              </Card>
+              
+              <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg text-center p-6">
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-[hsl(188,100%,38%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-3">
+                  Horarios Flexibles
+                </h3>
+                <p className="text-gray-600">
+                  Reserva sesiones cuando mejor te convenga, 24/7
+                </p>
+              </Card>
+              
+              <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg text-center p-6">
+                <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Settings className="w-8 h-8 text-[hsl(188,100%,38%)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-3">
+                  Tecnología Avanzada
+                </h3>
+                <p className="text-gray-600">
+                  Plataforma de videollamadas de alta calidad con funciones avanzadas
+                </p>
+              </Card>
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="text-center bg-gradient-to-r from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-2xl p-12 text-white">
+            <h2 className="text-3xl font-bold mb-4">
+              ¿Listo para empezar a explorar?
+            </h2>
+            <p className="text-xl mb-8 opacity-90">
+              Únete a miles de usuarios que ya han encontrado su mentor ideal
+            </p>
+            <Button 
+              onClick={() => window.location.href = "/login"}
+              className="bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 px-8 py-3 text-lg font-bold"
+            >
+              Únete Ahora
+            </Button>
           </div>
         </div>
       </div>
