@@ -9,6 +9,20 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Mobile Logo Fix** (January 8, 2025): Fixed mobile responsive logo display in navigation header
+  - Moved logo file from project root to /uploads/Media/ directory for proper public access
+  - Updated navigation component to use correct storage path: /storage/Media/ic_app_logo_foreground.webp
+  - Mobile devices now correctly display compact "d" symbol logo instead of full Dialoom text
+  - Fixed path resolution issue that was causing 404 errors on mobile viewport
+- **Social Media Icons Fix** (January 8, 2025): Fixed social media icons not displaying on public host profiles
+  - Removed backend authorization restriction that only allowed profile owners to see social icons
+  - Social media profiles are now publicly accessible on host profile pages
+  - Icons display below session/satisfaction stats as intended with proper new-tab linking
+- **Multi-Select Filter UI Enhancement** (January 8, 2025): Redesigned filter interface from always-visible lists to clean dropdown popovers
+  - Implemented minimalist dropdown design for Categories, Skills, Languages, and Purpose filters
+  - Smart display text: shows "Seleccionar..." when empty, item name when one selected, count when multiple
+  - Added contextual help tooltips with Spanish explanations and HelpCircle icons
+  - Improved space efficiency and visual cleanliness of the search interface
 - **Host Card Enhancement** (January 8, 2025): Enhanced host search cards to display categories and video call topics
   - Added Purpose/Categories display as blue badges in host cards
   - Added Video Call Topics display as green badges (shows first 3 with overflow indicator)
