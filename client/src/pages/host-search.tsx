@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut, Grid3X3, Plus, Minus, HelpCircle, Info } from "lucide-react";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut, Grid3X3, Plus, Minus, HelpCircle, Info, ChevronDown, Check } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
@@ -16,6 +16,7 @@ import { useExploreFilterStore, PURPOSES } from "@/stores/exploreFilterStore";
 import PriceRangeSlider from "@/components/PriceRangeSlider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
 
 type SearchResult = UserType & { relevance?: number };
@@ -264,29 +265,52 @@ export default function HostSearch() {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
-                      {categories.map((category) => (
-                        <div key={category.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`category-${category.id}`}
-                            checked={selectedCategories.includes(category.id.toString())}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedCategories([...selectedCategories, category.id.toString()]);
-                              } else {
-                                setSelectedCategories(selectedCategories.filter(c => c !== category.id.toString()));
-                              }
-                            }}
-                          />
-                          <label 
-                            htmlFor={`category-${category.id}`}
-                            className="text-sm cursor-pointer"
-                          >
-                            {t(`categories.${category.name}`, category.name)}
-                          </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between text-left font-normal"
+                        >
+                          <span className="truncate">
+                            {selectedCategories.length === 0
+                              ? "Seleccionar categorías..."
+                              : selectedCategories.length === 1
+                              ? categories.find(c => c.id.toString() === selectedCategories[0])?.name || "Categoría"
+                              : `${selectedCategories.length} categorías seleccionadas`
+                            }
+                          </span>
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0" align="start">
+                        <div className="max-h-60 overflow-auto">
+                          {categories.map((category) => (
+                            <div
+                              key={category.id}
+                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                const categoryId = category.id.toString();
+                                if (selectedCategories.includes(categoryId)) {
+                                  setSelectedCategories(selectedCategories.filter(c => c !== categoryId));
+                                } else {
+                                  setSelectedCategories([...selectedCategories, categoryId]);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-center w-4 h-4">
+                                {selectedCategories.includes(category.id.toString()) && (
+                                  <Check className="h-3 w-3 text-blue-600" />
+                                )}
+                              </div>
+                              <span className="text-sm">
+                                {t(`categories.${category.name}`, category.name)}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   {/* Skills Filter */}
@@ -304,29 +328,52 @@ export default function HostSearch() {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
-                      {skills.map((skill) => (
-                        <div key={skill.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`skill-${skill.id}`}
-                            checked={selectedSkills.includes(skill.id.toString())}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedSkills([...selectedSkills, skill.id.toString()]);
-                              } else {
-                                setSelectedSkills(selectedSkills.filter(s => s !== skill.id.toString()));
-                              }
-                            }}
-                          />
-                          <label 
-                            htmlFor={`skill-${skill.id}`}
-                            className="text-sm cursor-pointer"
-                          >
-                            {skill.name}
-                          </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between text-left font-normal"
+                        >
+                          <span className="truncate">
+                            {selectedSkills.length === 0
+                              ? "Seleccionar habilidades..."
+                              : selectedSkills.length === 1
+                              ? skills.find(s => s.id.toString() === selectedSkills[0])?.name || "Habilidad"
+                              : `${selectedSkills.length} habilidades seleccionadas`
+                            }
+                          </span>
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0" align="start">
+                        <div className="max-h-60 overflow-auto">
+                          {skills.map((skill) => (
+                            <div
+                              key={skill.id}
+                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                const skillId = skill.id.toString();
+                                if (selectedSkills.includes(skillId)) {
+                                  setSelectedSkills(selectedSkills.filter(s => s !== skillId));
+                                } else {
+                                  setSelectedSkills([...selectedSkills, skillId]);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-center w-4 h-4">
+                                {selectedSkills.includes(skill.id.toString()) && (
+                                  <Check className="h-3 w-3 text-blue-600" />
+                                )}
+                              </div>
+                              <span className="text-sm">
+                                {skill.name}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   {/* Languages Filter */}
@@ -344,29 +391,52 @@ export default function HostSearch() {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
-                      {languages.map((language) => (
-                        <div key={language.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`language-${language.id}`}
-                            checked={selectedLanguages.includes(language.id.toString())}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedLanguages([...selectedLanguages, language.id.toString()]);
-                              } else {
-                                setSelectedLanguages(selectedLanguages.filter(l => l !== language.id.toString()));
-                              }
-                            }}
-                          />
-                          <label 
-                            htmlFor={`language-${language.id}`}
-                            className="text-sm cursor-pointer"
-                          >
-                            {language.name}
-                          </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between text-left font-normal"
+                        >
+                          <span className="truncate">
+                            {selectedLanguages.length === 0
+                              ? "Seleccionar idiomas..."
+                              : selectedLanguages.length === 1
+                              ? languages.find(l => l.id.toString() === selectedLanguages[0])?.name || "Idioma"
+                              : `${selectedLanguages.length} idiomas seleccionados`
+                            }
+                          </span>
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0" align="start">
+                        <div className="max-h-60 overflow-auto">
+                          {languages.map((language) => (
+                            <div
+                              key={language.id}
+                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                const languageId = language.id.toString();
+                                if (selectedLanguages.includes(languageId)) {
+                                  setSelectedLanguages(selectedLanguages.filter(l => l !== languageId));
+                                } else {
+                                  setSelectedLanguages([...selectedLanguages, languageId]);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-center w-4 h-4">
+                                {selectedLanguages.includes(language.id.toString()) && (
+                                  <Check className="h-3 w-3 text-blue-600" />
+                                )}
+                              </div>
+                              <span className="text-sm">
+                                {language.name}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   {/* Purpose Filter */}
