@@ -38,13 +38,27 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface SimpleProfileEditProps {
   trigger?: React.ReactNode;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function SimpleProfileEdit({ trigger }: SimpleProfileEditProps) {
+export function SimpleProfileEdit({ trigger, isOpen, onClose }: SimpleProfileEditProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+
+  // Handle external control
+  const modalOpen = isOpen !== undefined ? isOpen : open;
+  const handleOpenChange = (newOpen: boolean) => {
+    if (isOpen !== undefined) {
+      if (!newOpen && onClose) {
+        onClose();
+      }
+    } else {
+      setOpen(newOpen);
+    }
+  };
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -98,7 +112,7 @@ export function SimpleProfileEdit({ trigger }: SimpleProfileEditProps) {
         title: "✓ Perfil actualizado",
         description: "Tu información se ha guardado correctamente",
       });
-      setOpen(false);
+      handleOpenChange(false);
     },
     onError: (error) => {
       toast({
@@ -116,10 +130,15 @@ export function SimpleProfileEdit({ trigger }: SimpleProfileEditProps) {
   if (!user) return null;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || <Button>Editar Perfil</Button>}
-      </DialogTrigger>
+    <Dialog 
+      open={modalOpen}
+      onOpenChange={handleOpenChange}
+    >
+      {isOpen === undefined && (
+        <DialogTrigger asChild>
+          {trigger || <Button>Editar Perfil</Button>}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Editar Perfil</DialogTitle>
@@ -197,7 +216,7 @@ export function SimpleProfileEdit({ trigger }: SimpleProfileEditProps) {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setOpen(false)}
+                onClick={() => handleOpenChange(false)}
               >
                 Cancelar
               </Button>

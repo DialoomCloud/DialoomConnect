@@ -327,24 +327,10 @@ export default function Profile() {
       </div>
 
       {/* Modals */}
-      {showProfileModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Editar Perfil</h2>
-                <button 
-                  onClick={() => setShowProfileModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <SimpleProfileEdit />
-            </div>
-          </div>
-        </div>
-      )}
+      <SimpleProfileEdit 
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
       
       <MediaUploadModal
         isOpen={showUploadModal}
