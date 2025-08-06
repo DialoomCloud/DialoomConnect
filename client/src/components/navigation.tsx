@@ -3,7 +3,18 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./language-selector";
-import { Home, User as UserIcon, Shield, Users, LogOut, Calendar as CalendarIcon, Menu, X, Newspaper, Video } from "lucide-react";
+import {
+  Home,
+  User as UserIcon,
+  Shield,
+  Users,
+  LogOut,
+  Calendar as CalendarIcon,
+  Menu,
+  X,
+  Newspaper,
+  Video,
+} from "lucide-react";
 import type { User } from "@shared/schema";
 import { useState } from "react";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
@@ -11,7 +22,13 @@ import { signOut } from "@/lib/supabase";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 // Mobile logo will be loaded directly from public path
 
 export function Navigation() {
@@ -24,34 +41,37 @@ export function Navigation() {
 
   const switchRoleMutation = useMutation({
     mutationFn: async (role: string) => {
-      const res = await apiRequest('/api/auth/role', { method: 'PUT', body: { role } });
+      const res = await apiRequest("/api/auth/role", {
+        method: "PUT",
+        body: { role },
+      });
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: () => {
       toast({
-        title: 'Error',
-        description: 'No se pudo cambiar el rol',
-        variant: 'destructive'
+        title: "Error",
+        description: "No se pudo cambiar el rol",
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const handleLogout = async () => {
     try {
       await signOut();
-      
+
       // Clear all query cache
       queryClient.clear();
-      
+
       // Show success message
       toast({
         title: "Sesión cerrada",
         description: "Has cerrado sesión correctamente",
       });
-      
+
       // Navigate to home page
       navigate("/");
     } catch (error) {
@@ -68,9 +88,10 @@ export function Navigation() {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const roleOptions = [] as { value: string; label: string }[];
-  if (user?.isHost) roleOptions.push({ value: 'host', label: 'Host' });
-  if (user?.isAdmin) roleOptions.push({ value: 'admin', label: 'Admin' });
-  if (roleOptions.length === 0) roleOptions.push({ value: 'registered', label: 'Usuario' });
+  if (user?.isHost) roleOptions.push({ value: "host", label: "Host" });
+  if (user?.isAdmin) roleOptions.push({ value: "admin", label: "Admin" });
+  if (roleOptions.length === 0)
+    roleOptions.push({ value: "registered", label: "Usuario" });
 
   return (
     <nav className="bg-white shadow-sm border-b border-[hsl(220,13%,90%)] sticky top-0 z-50 animate-fade-in-up">
@@ -84,28 +105,34 @@ export function Navigation() {
                 src="/storage/Media/ic_app_logo-playstore.png"
                 alt="Dialoom"
                 className="h-12 w-auto object-contain md:hidden"
-                style={{ maxWidth: '48px' }}
+                style={{ maxWidth: "48px" }}
               />
               {/* Desktop Logo - full logo */}
               <img
                 src="/storage/Media/dialoomblue.png"
                 alt="Dialoom"
                 className="h-12 w-auto object-contain hidden md:block"
-                style={{ maxWidth: '200px' }}
+                style={{ maxWidth: "200px" }}
               />
             </Link>
           </div>
-            
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
             <Link href="/">
               <Button
-                variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
+                variant={
+                  isActive("/") || isActive("/home") ? "default" : "ghost"
+                }
                 size="sm"
-                className={isActive("/") || isActive("/home") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                className={
+                  isActive("/") || isActive("/home")
+                    ? "bg-[hsl(188,100%,38%)] animate-glow"
+                    : "hover-lift"
+                }
               >
                 <Home className="w-4 h-4 mr-2" />
-                {t('navigation.home')}
+                {t("navigation.home")}
               </Button>
             </Link>
 
@@ -113,21 +140,29 @@ export function Navigation() {
               <Button
                 variant={isActive("/demo") ? "default" : "ghost"}
                 size="sm"
-                className={isActive("/demo") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                className={
+                  isActive("/demo")
+                    ? "bg-[hsl(188,100%,38%)] animate-glow"
+                    : "hover-lift"
+                }
               >
                 <Video className="w-4 h-4 mr-2" />
-                {t('navigation.demo', 'Demo')}
+                {t("navigation.demo", "Demo")}
               </Button>
             </Link>
-          
+
             <Link href="/hosts">
               <Button
                 variant={isActive("/hosts") ? "default" : "ghost"}
                 size="sm"
-                className={isActive("/hosts") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                className={
+                  isActive("/hosts")
+                    ? "bg-[hsl(188,100%,38%)] animate-glow"
+                    : "hover-lift"
+                }
               >
                 <Users className="w-4 h-4 mr-2" />
-                {t('hosts.title')}
+                {t("hosts.title")}
               </Button>
             </Link>
 
@@ -135,22 +170,30 @@ export function Navigation() {
               <Button
                 variant={isActive("/news") ? "default" : "ghost"}
                 size="sm"
-                className={isActive("/news") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                className={
+                  isActive("/news")
+                    ? "bg-[hsl(188,100%,38%)] animate-glow"
+                    : "hover-lift"
+                }
               >
                 <Newspaper className="w-4 h-4 mr-2" />
-                {t('navigation.news', 'Noticias')}
+                {t("navigation.news", "Noticias")}
               </Button>
             </Link>
-            
+
             {user && (
               <Link href="/profile">
                 <Button
                   variant={isActive("/profile") ? "default" : "ghost"}
                   size="sm"
-                  className={isActive("/profile") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                  className={
+                    isActive("/profile")
+                      ? "bg-[hsl(188,100%,38%)] animate-glow"
+                      : "hover-lift"
+                  }
                 >
                   <UserIcon className="w-4 h-4 mr-2" />
-                  {t('navigation.profile')}
+                  {t("navigation.profile")}
                 </Button>
               </Link>
             )}
@@ -160,23 +203,31 @@ export function Navigation() {
                 <Button
                   variant={isActive("/networking") ? "default" : "ghost"}
                   size="sm"
-                  className={isActive("/networking") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                  className={
+                    isActive("/networking")
+                      ? "bg-[hsl(188,100%,38%)] animate-glow"
+                      : "hover-lift"
+                  }
                 >
                   <Users className="w-4 h-4 mr-2" />
-                  {t('networking.title', 'Networking')}
+                  {t("networking.title", "Networking")}
                 </Button>
               </Link>
             )}
-            
-            {user && (user.isAdmin || user.role === 'admin') && (
+
+            {user && (user.isAdmin || user.role === "admin") && (
               <Link href="/admin-dashboard">
                 <Button
                   variant={isActive("/admin-dashboard") ? "default" : "ghost"}
                   size="sm"
-                  className={isActive("/admin-dashboard") ? "bg-[hsl(188,100%,38%)] animate-glow" : "hover-lift"}
+                  className={
+                    isActive("/admin-dashboard")
+                      ? "bg-[hsl(188,100%,38%)] animate-glow"
+                      : "hover-lift"
+                  }
                 >
                   <Shield className="w-4 h-4 mr-2" />
-                  {t('navigation.admin')}
+                  {t("navigation.admin")}
                 </Button>
               </Link>
             )}
@@ -187,7 +238,10 @@ export function Navigation() {
             {user ? (
               <>
                 <Select
-                  value={user.role || (user.isHost ? 'host' : user.isAdmin ? 'admin' : 'guest')}
+                  value={
+                    user.role ||
+                    (user.isHost ? "host" : user.isAdmin ? "admin" : "guest")
+                  }
                   onValueChange={(value) => switchRoleMutation.mutate(value)}
                 >
                   <SelectTrigger className="w-28">
@@ -208,7 +262,7 @@ export function Navigation() {
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 hover-lift"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  {t('navigation.logout')}
+                  {t("navigation.logout")}
                 </Button>
               </>
             ) : (
@@ -218,7 +272,7 @@ export function Navigation() {
                   size="sm"
                   className="bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
                 >
-                  {t('navigation.login')}
+                  {t("navigation.login")}
                 </Button>
               </Link>
             )}
@@ -259,7 +313,7 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/demo") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Video className="w-4 h-4 mr-2" />
-                      {t('navigation.demo')}
+                      {t("navigation.demo")}
                     </Button>
                   </Link>
 
@@ -270,7 +324,7 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/hosts") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Users className="w-4 h-4 mr-2" />
-                      {t('hosts.title')}
+                      {t("hosts.title")}
                     </Button>
                   </Link>
 
@@ -281,7 +335,7 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/news") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Newspaper className="w-4 h-4 mr-2" />
-                      {t('navigation.howItWorks', 'Cómo Funciona')}
+                      {t("navigation.howItWorks", "Cómo Funciona")}
                     </Button>
                   </Link>
 
@@ -291,7 +345,7 @@ export function Navigation() {
                       size="sm"
                       className="w-full justify-start bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)] animate-glow"
                     >
-                      {t('navigation.getStarted', 'Comenzar Ahora')}
+                      {t("navigation.getStarted", "Comenzar Ahora")}
                     </Button>
                   </Link>
 
@@ -306,12 +360,14 @@ export function Navigation() {
                 <>
                   <Link href="/" onClick={closeMobileMenu}>
                     <Button
-                      variant={isActive("/") || isActive("/home") ? "default" : "ghost"}
+                      variant={
+                        isActive("/") || isActive("/home") ? "default" : "ghost"
+                      }
                       size="sm"
-                      className={`w-full justify-start ${(isActive("/") || isActive("/home")) ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                      className={`w-full justify-start ${isActive("/") || isActive("/home") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Home className="w-4 h-4 mr-2" />
-                      {t('navigation.home')}
+                      {t("navigation.home")}
                     </Button>
                   </Link>
 
@@ -322,7 +378,7 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/demo") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Video className="w-4 h-4 mr-2" />
-                      {t('navigation.demo')}
+                      {t("navigation.demo")}
                     </Button>
                   </Link>
 
@@ -333,7 +389,7 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/hosts") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Users className="w-4 h-4 mr-2" />
-                      {t('hosts.title')}
+                      {t("hosts.title")}
                     </Button>
                   </Link>
 
@@ -344,10 +400,10 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/news") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Newspaper className="w-4 h-4 mr-2" />
-                      {t('navigation.news', 'Noticias')}
+                      {t("navigation.news", "Noticias")}
                     </Button>
                   </Link>
-                  
+
                   <Link href="/profile" onClick={closeMobileMenu}>
                     <Button
                       variant={isActive("/profile") ? "default" : "ghost"}
@@ -355,7 +411,7 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <UserIcon className="w-4 h-4 mr-2" />
-                      {t('navigation.profile')}
+                      {t("navigation.profile")}
                     </Button>
                   </Link>
 
@@ -366,19 +422,21 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/networking") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Users className="w-4 h-4 mr-2" />
-                      {t('networking.title', 'Networking')}
+                      {t("networking.title", "Networking")}
                     </Button>
                   </Link>
-                  
-                  {(user.isAdmin || user.role === 'admin') && (
+
+                  {(user.isAdmin || user.role === "admin") && (
                     <Link href="/admin-dashboard" onClick={closeMobileMenu}>
                       <Button
-                        variant={isActive("/admin-dashboard") ? "default" : "ghost"}
+                        variant={
+                          isActive("/admin-dashboard") ? "default" : "ghost"
+                        }
                         size="sm"
                         className={`w-full justify-start ${isActive("/admin-dashboard") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                       >
                         <Shield className="w-4 h-4 mr-2" />
-                        {t('navigation.admin')}
+                        {t("navigation.admin")}
                       </Button>
                     </Link>
                   )}
@@ -386,8 +444,17 @@ export function Navigation() {
                   <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
                     <div className="mb-3 px-3">
                       <Select
-                        value={user.role || (user.isHost ? 'host' : user.isAdmin ? 'admin' : 'guest')}
-                        onValueChange={(value) => switchRoleMutation.mutate(value)}
+                        value={
+                          user.role ||
+                          (user.isHost
+                            ? "host"
+                            : user.isAdmin
+                              ? "admin"
+                              : "guest")
+                        }
+                        onValueChange={(value) =>
+                          switchRoleMutation.mutate(value)
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -408,7 +475,7 @@ export function Navigation() {
                       className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
-                      {t('navigation.logout')}
+                      {t("navigation.logout")}
                     </Button>
                   </div>
                 </>
