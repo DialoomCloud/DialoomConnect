@@ -50,7 +50,7 @@ export function useThemeConfig() {
 
   return {
     themeConfig: data,
-    logoUrl: data?.logo?.url || '/uploads/images/dialoomblue.png',
+    logoUrl: data?.logo?.url || '/storage/Media/dialoomblue.png',
     colors: data?.colors || {
       primary: '#008B9A',
       secondary: '#00B8CC',

@@ -81,7 +81,7 @@ export function Navigation() {
             <Link href="/" className="flex items-center">
               {/* Mobile Logo - only (d) symbol */}
               <img
-                src="/storage/Media/ic_app_logo_foreground.webp"
+                src="/storage/Media/ic_app_logo-playstore.png"
                 alt="Dialoom"
                 className="h-12 w-auto object-contain md:hidden"
                 style={{ maxWidth: '48px' }}
