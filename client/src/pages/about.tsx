@@ -132,7 +132,7 @@ export default function About() {
             <div className="flex items-center">
               <Link href="/">
                 <img 
-                  src="/uploads/images/dialoomblue.png"
+                  src="/storage/Media/dialoomblue.png"
                   alt="Dialoom" 
                   className="h-8 w-auto object-contain cursor-pointer"
                   style={{ maxWidth: '140px' }}
