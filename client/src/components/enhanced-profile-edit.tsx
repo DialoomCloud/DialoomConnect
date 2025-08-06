@@ -433,11 +433,14 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   // Video call topics update mutation
   const updateTopicsMutation = useMutation({
     mutationFn: async (topics: string[]) => {
+      console.log('🔄 [TOPICS] Sending topics to server:', topics);
       const response = await apiRequest("/api/profile/video-call-topics", {
         method: "PUT",
         body: { topics }
       });
-      return response.json();
+      const result = await response.json();
+      console.log('✅ [TOPICS] Server response:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });

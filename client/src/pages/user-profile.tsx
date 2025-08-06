@@ -408,10 +408,9 @@ export default function UserProfile() {
                   </div>
                 </div>
 
-                {/* Social Links */}
+                {/* Social Links - Solo iconos sin título */}
                 {socialProfiles && Array.isArray(socialProfiles) && socialProfiles.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Redes Sociales</h3>
                     <div className="flex gap-3">
                       {socialProfiles.map((profile: any) => {
                         if (!profile?.platform?.baseUrl || !profile?.username) {
@@ -420,14 +419,22 @@ export default function UserProfile() {
 
                         const getIcon = (platformName: string) => {
                           switch (platformName?.toLowerCase()) {
+                            case 'facebook': return <Facebook className="w-5 h-5" />;
+                            case 'twitter':
+                            case 'x (twitter)': return <Twitter className="w-5 h-5" />;
                             case 'instagram': return <Instagram className="w-5 h-5" />;
-                            case 'twitter': return <Twitter className="w-5 h-5" />;
+                            case 'youtube': return <Youtube className="w-5 h-5" />;
+                            case 'github': return <Github className="w-5 h-5" />;
                             case 'linkedin': return <Linkedin className="w-5 h-5" />;
                             default: return <Globe className="w-5 h-5" />;
                           }
                         };
 
-                        const platformUrl = profile.platform.baseUrl + profile.username;
+                        // Construir URL correcta
+                        let platformUrl = profile.username;
+                        if (!profile.username.startsWith('http')) {
+                          platformUrl = profile.platform.baseUrl + profile.username;
+                        }
 
                         return (
                           <a
@@ -435,8 +442,8 @@ export default function UserProfile() {
                             href={platformUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
-                            title={`${profile.platform.name || 'Social'}: ${profile.username}`}
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors shadow-md hover:shadow-lg"
+                            title={`${profile.platform.name || 'Social'}`}
                           >
                             {getIcon(profile.platform.name || '')}
                           </a>
