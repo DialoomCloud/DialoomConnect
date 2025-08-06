@@ -206,17 +206,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public route to get all hosts
   app.get('/api/hosts', async (req, res) => {
     try {
-      const { minPrice, maxPrice, category, skills, languages, purposes } = req.query;
+      const { minPrice, maxPrice, categories, skills, languages, purposes } = req.query;
       
-      console.log('Host search with filters:', { minPrice, maxPrice, category, skills, languages, purposes });
+      console.log('Host search with filters:', { minPrice, maxPrice, categories, skills, languages, purposes });
       
       // Get all hosts and filter by active status
       const allUsers = await storage.getAllUsers();
       let hosts = allUsers.filter(user => user.isHost && user.isActive);
       
       // Apply additional filters if provided
-      if (category && category !== 'all') {
-        hosts = hosts.filter(host => host.categoryId?.toString() === category);
+      
+      // Filter by categories if provided (multiple categories)
+      if (categories && typeof categories === 'string' && categories.length > 0) {
+        const categoriesArray = categories.split(',').map(c => c.trim());
+        hosts = hosts.filter(host => {
+          return host.categoryId && categoriesArray.includes(host.categoryId.toString());
+        });
+      }
+      
+      // Filter by skills if provided (multiple skills)
+      if (skills && typeof skills === 'string' && skills.length > 0) {
+        const skillsArray = skills.split(',').map(s => s.trim());
+        hosts = hosts.filter(host => {
+          // This would need to be implemented when we have user skills relation
+          // For now, we skip skills filtering until the relationship is properly set up
+          return true;
+        });
+      }
+      
+      // Filter by languages if provided (multiple languages)
+      if (languages && typeof languages === 'string' && languages.length > 0) {
+        const languagesArray = languages.split(',').map(l => l.trim());
+        hosts = hosts.filter(host => {
+          // This would need to be implemented when we have user languages relation
+          // For now, we skip languages filtering until the relationship is properly set up
+          return true;
+        });
       }
       
       // Filter by purposes if provided

@@ -30,7 +30,7 @@ export default function HostSearch() {
   const {
     minPrice,
     maxPrice,
-    category: selectedCategory,
+    categories: selectedCategories,
     skills: selectedSkills,
     languages: selectedLanguages,
     purposes: selectedPurposes,
@@ -38,7 +38,7 @@ export default function HostSearch() {
     setMinPrice,
     setMaxPrice,
     setPriceRange,
-    setCategory: setSelectedCategory,
+    setCategories: setSelectedCategories,
     setSkills: setSelectedSkills,
     setLanguages: setSelectedLanguages,
     setPurposes: setSelectedPurposes,
@@ -48,7 +48,7 @@ export default function HostSearch() {
 
   // Build query parameters for API call
   const queryParams = new URLSearchParams();
-  if (selectedCategory !== 'all') queryParams.set('category', selectedCategory);
+  if (selectedCategories.length > 0) queryParams.set('categories', selectedCategories.join(','));
   if (selectedSkills.length > 0) queryParams.set('skills', selectedSkills.join(','));
   if (selectedLanguages.length > 0) queryParams.set('languages', selectedLanguages.join(','));
   if (selectedPurposes.length > 0) queryParams.set('purposes', selectedPurposes.join(','));
@@ -59,7 +59,7 @@ export default function HostSearch() {
   const apiUrl = queryString ? `/api/hosts?${queryString}` : '/api/hosts';
 
   const { data: hosts, isLoading } = useQuery<UserType[]>({
-    queryKey: ["/api/hosts", selectedCategory, selectedSkills, selectedLanguages, selectedPurposes, minPrice, maxPrice],
+    queryKey: ["/api/hosts", selectedCategories, selectedSkills, selectedLanguages, selectedPurposes, minPrice, maxPrice],
     queryFn: () => fetch(apiUrl).then(res => res.json()),
   });
 
@@ -226,7 +226,7 @@ export default function HostSearch() {
         {/* Filters Section */}
         <div className="mb-8 sticky top-0 z-20 bg-[hsl(220,9%,98%)] sm:static">
           <div className="flex justify-end mb-4">
-            {(selectedCategory && selectedCategory !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0 || selectedPurposes.length > 0 || minPrice > 0 || maxPrice < 200) && (
+            {(selectedCategories.length > 0 || selectedSkills.length > 0 || selectedLanguages.length > 0 || selectedPurposes.length > 0 || minPrice > 0 || maxPrice < 200) && (
               <Button
                 variant="ghost"
                 onClick={clearFilters}
@@ -249,19 +249,29 @@ export default function HostSearch() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       {t('profile.category')}
                     </label>
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('common.select')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t('hosts.allCategories')}</SelectItem>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
+                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+                      {categories.map((category) => (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`category-${category.id}`}
+                            checked={selectedCategories.includes(category.id.toString())}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCategories([...selectedCategories, category.id.toString()]);
+                              } else {
+                                setSelectedCategories(selectedCategories.filter(c => c !== category.id.toString()));
+                              }
+                            }}
+                          />
+                          <label 
+                            htmlFor={`category-${category.id}`}
+                            className="text-sm cursor-pointer"
+                          >
                             {t(`categories.${category.name}`, category.name)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Skills Filter */}
@@ -269,38 +279,29 @@ export default function HostSearch() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       {t('profile.skills')}
                     </label>
-                    <Select value={selectedSkills[0] || ""} onValueChange={(value) => {
-                      if (value && !selectedSkills.includes(value)) {
-                        setSelectedSkills([...selectedSkills, value]);
-                      }
-                    }}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('common.select')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {skills.map((skill) => (
-                          <SelectItem key={skill.id} value={skill.id.toString()}>
+                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+                      {skills.map((skill) => (
+                        <div key={skill.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`skill-${skill.id}`}
+                            checked={selectedSkills.includes(skill.id.toString())}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedSkills([...selectedSkills, skill.id.toString()]);
+                              } else {
+                                setSelectedSkills(selectedSkills.filter(s => s !== skill.id.toString()));
+                              }
+                            }}
+                          />
+                          <label 
+                            htmlFor={`skill-${skill.id}`}
+                            className="text-sm cursor-pointer"
+                          >
                             {skill.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedSkills.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {selectedSkills.map((skillId) => {
-                          const skill = skills.find(s => s.id.toString() === skillId);
-                          return skill ? (
-                            <Badge key={skillId} variant="secondary" className="text-xs">
-                              {skill.name}
-                              <X 
-                                className="w-3 h-3 ml-1 cursor-pointer" 
-                                onClick={() => setSelectedSkills(selectedSkills.filter(s => s !== skillId))}
-                              />
-                            </Badge>
-                          ) : null;
-                        })}
-                      </div>
-                    )}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Languages Filter */}
@@ -308,38 +309,29 @@ export default function HostSearch() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       {t('profile.languages')}
                     </label>
-                    <Select value={selectedLanguages[0] || ""} onValueChange={(value) => {
-                      if (value && !selectedLanguages.includes(value)) {
-                        setSelectedLanguages([...selectedLanguages, value]);
-                      }
-                    }}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('common.select')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languages.map((language) => (
-                          <SelectItem key={language.id} value={language.id.toString()}>
+                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+                      {languages.map((language) => (
+                        <div key={language.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`language-${language.id}`}
+                            checked={selectedLanguages.includes(language.id.toString())}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedLanguages([...selectedLanguages, language.id.toString()]);
+                              } else {
+                                setSelectedLanguages(selectedLanguages.filter(l => l !== language.id.toString()));
+                              }
+                            }}
+                          />
+                          <label 
+                            htmlFor={`language-${language.id}`}
+                            className="text-sm cursor-pointer"
+                          >
                             {language.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedLanguages.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {selectedLanguages.map((langId) => {
-                          const language = languages.find(l => l.id.toString() === langId);
-                          return language ? (
-                            <Badge key={langId} variant="secondary" className="text-xs">
-                              {language.name}
-                              <X 
-                                className="w-3 h-3 ml-1 cursor-pointer" 
-                                onClick={() => setSelectedLanguages(selectedLanguages.filter(l => l !== langId))}
-                              />
-                            </Badge>
-                          ) : null;
-                        })}
-                      </div>
-                    )}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Purpose Filter */}
