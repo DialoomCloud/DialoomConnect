@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut } from "lucide-react";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut, Grid3X3, Plus, Minus } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
@@ -397,29 +397,29 @@ export default function HostSearch() {
           </div>
         ) : displayHosts && displayHosts.length > 0 ? (
           <>
-            {/* Zoom Controls */}
+            {/* Grid Controls */}
             <div className="flex justify-end mb-4">
-              <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setGridCols(Math.min(4, gridCols + 1))}
-                  disabled={gridCols >= 4}
-                  className="h-8 w-8 p-0"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </Button>
-                <span className="text-sm text-gray-600 min-w-[60px] text-center">
-                  {gridCols} cols
-                </span>
+              <div className="flex items-center gap-1 bg-white rounded-full shadow-sm border p-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setGridCols(Math.max(1, gridCols - 1))}
                   disabled={gridCols <= 1}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 transition-colors"
                 >
-                  <ZoomIn className="w-4 h-4" />
+                  <Minus className="w-4 h-4" />
+                </Button>
+                <div className="flex items-center justify-center w-10 h-8">
+                  <Grid3X3 className="w-4 h-4 text-gray-600" />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setGridCols(Math.min(4, gridCols + 1))}
+                  disabled={gridCols >= 4}
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
                 </Button>
               </div>
             </div>
@@ -428,7 +428,7 @@ export default function HostSearch() {
               gridCols === 1 ? 'grid-cols-1' :
               gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' :
               gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
-              'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
             }`}>
             {displayHosts.map((host, index) => (
               <Card

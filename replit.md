@@ -9,6 +9,12 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Host Card Enhancement** (January 8, 2025): Enhanced host search cards to display categories and video call topics
+  - Added Purpose/Categories display as blue badges in host cards
+  - Added Video Call Topics display as green badges (shows first 3 with overflow indicator)
+  - Redesigned grid controls with minimalist design using grid icon with +/- buttons
+  - Optimized 4-column layout for better full-width utilization
+  - Updated backend filtering to properly handle purpose arrays for multi-select functionality
 - **Purpose Filter Implementation** (January 8, 2025): Added new "Purpose" filter for host search functionality
   - Created exploreFilterStore with Zustand for centralized filter state management
   - Implemented PriceRangeSlider with react-range for dual-thumb price range selection
