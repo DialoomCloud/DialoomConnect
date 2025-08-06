@@ -9,6 +9,13 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Logo Loading Issue RESOLVED** (August 6, 2025): Fixed critical navigation logo display failure 
+  - Diagnosed issue: Object storage permissions failing, causing all logo requests to fail
+  - Solution: Copied logo files to uploads/Media/ directory with correct file permissions (755)
+  - Desktop logo: /storage/Media/dialoomblue.png (17566 bytes)
+  - Mobile logo: /storage/Media/ic_app_logo-playstore.png (52108 bytes)
+  - Server now serves logos from local filesystem fallback successfully
+  - Both logos now display correctly in navigation header
 - **Mobile Logo Fix** (January 8, 2025): Fixed mobile responsive logo display in navigation header
   - Moved logo file from project root to /uploads/Media/ directory for proper public access
   - Updated navigation component to use correct storage path: /storage/Media/ic_app_logo_foreground.webp

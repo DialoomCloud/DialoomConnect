@@ -85,7 +85,6 @@ export function Navigation() {
                 alt="Dialoom"
                 className="h-12 w-auto object-contain md:hidden"
                 style={{ maxWidth: '48px' }}
-                onError={() => console.error('Mobile logo failed to load')}
               />
               {/* Desktop Logo - full logo */}
               <img
@@ -93,7 +92,6 @@ export function Navigation() {
                 alt="Dialoom"
                 className="h-12 w-auto object-contain hidden md:block"
                 style={{ maxWidth: '200px' }}
-                onError={() => console.error('Desktop logo failed to load')}
               />
             </Link>
           </div>
