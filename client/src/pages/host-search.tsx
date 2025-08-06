@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, MapPin, CheckCircle, Sparkles, Brain, Filter, X } from "lucide-react";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
@@ -27,7 +27,6 @@ export default function HostSearch() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<number[]>([0, 200]);
-  const [showFilters, setShowFilters] = useState(false);
 
   const { data: hosts, isLoading } = useQuery<UserType[]>({
     queryKey: ["/api/hosts"],
@@ -183,17 +182,8 @@ export default function HostSearch() {
         </div>
 
         {/* Filters Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              {t('common.filter')}
-            </Button>
-            
+        <div className="mb-8 sticky top-0 z-20 bg-[hsl(220,9%,98%)] sm:static">
+          <div className="flex justify-end mb-4">
             {(selectedCategory && selectedCategory !== "all" || selectedSkills.length > 0 || selectedLanguages.length > 0) && (
               <Button
                 variant="ghost"
@@ -211,13 +201,12 @@ export default function HostSearch() {
             )}
           </div>
 
-          {showFilters && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-lg">{t('hosts.filters')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg">{t('hosts.filters')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Category Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -337,7 +326,6 @@ export default function HostSearch() {
                 </div>
               </CardContent>
             </Card>
-          )}
         </div>
 
         {isLoading || aiSearchMutation.isPending ? (
