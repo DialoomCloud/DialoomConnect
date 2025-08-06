@@ -6,12 +6,25 @@ import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "@/components/language-selector";
 import { NewsSection } from "@/components/news-section";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function NewLanding() {
   const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
   const handleLogin = async () => {
     try {
       // Clear any existing session first
@@ -35,10 +48,10 @@ export default function NewLanding() {
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
                 <img 
-                  src="/storage/Media/dialoomblue.png"
+                  src={isMobile ? "/storage/Media/ic_app_logo-playstore.png" : "/storage/Media/dialoomblue.png"}
                   alt="Dialoom" 
-                  className="h-10 sm:h-12 w-auto object-contain"
-                  style={{ maxWidth: '150px' }}
+                  className="h-10 sm:h-12 w-auto object-contain transition-all duration-300"
+                  style={{ maxWidth: isMobile ? '48px' : '150px' }}
                 />
               </div>
             </div>

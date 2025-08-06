@@ -9,6 +9,12 @@
 - **State Management**: TanStack Query for server state, Context API for global UI state
 
 ## Recent Changes (January 2025)
+- **Responsive Logo System COMPLETE** (August 6, 2025): Successfully implemented JavaScript-based responsive logo switching across all pages
+  - Fixed critical logo path inconsistencies in navigation.tsx, about.tsx, and new-landing.tsx  
+  - Replaced CSS-based responsive design with JavaScript useEffect for real-time screen size detection
+  - Mobile viewport (< 768px): Shows compact Play Store logo (ic_app_logo-playstore.png)
+  - Desktop viewport (≥ 768px): Shows full Dialoom blue logo (dialoomblue.png)
+  - Added smooth transitions and proper file fallbacks in /uploads/Media/ directory
 - **Logo Loading Issue RESOLVED** (August 6, 2025): Fixed critical navigation logo display failure 
   - Diagnosed issue: Object storage permissions failing, causing all logo requests to fail
   - Solution: Copied logo files to uploads/Media/ directory with correct file permissions (755)
