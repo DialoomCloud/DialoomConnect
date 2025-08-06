@@ -386,6 +386,26 @@
       "skills": "Suggested skills:"
     }
   },
+  "payment": {
+    "selectMethod": "Select payment method",
+    "securePayment": "Secure payment",
+    "stripeConnectEnabled": "Stripe Connect enabled",
+    "stripeConnectDesc": "Payments securely processed with Stripe technology",
+    "processingFee": "Processing fee",
+    "total": "Total",
+    "securityTitle": "100% secure payment",
+    "securityDesc": "Your data is protected with bank-level encryption",
+    "poweredBy": "Powered by",
+    "stripeSecure": "PCI DSS certified and SSL/TLS encryption",
+    "completePayment": "Complete payment",
+    "processing": "Processing...",
+    "pay": "Pay",
+    "success": "Payment successful!",
+    "successMessage": "Your booking has been confirmed",
+    "error": "Payment error",
+    "generalError": "An unexpected error occurred",
+    "preparing": "Preparing secure payment..."
+  },
   "howItWorks": {
     "badge": "Simple Process",
     "title": "How Dialoom Works",
@@ -493,6 +513,7 @@
     "myProfile": "My Profile",
     "content": "Content",
     "availability": "Availability",
+    "verification": "Verification",
     "monthlyEarnings": "Monthly Earnings",
     "upcomingCallsCount": "Upcoming Calls",
     "completed": "Completed",

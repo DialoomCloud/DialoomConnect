@@ -7,7 +7,8 @@
     "login": "Iniciar Sessió",
     "availability": "Disponibilitat",
     "howItWorks": "Com funciona",
-    "news": "Notícies"
+    "news": "Notícies",
+    "getStarted": "Comença ara"
   },
   "home": {
     "title": "El Teu Tauler Personal",
@@ -385,6 +386,26 @@
       "skills": "Habilitats suggerides:"
     }
   },
+  "payment": {
+    "selectMethod": "Selecciona mètode de pagament",
+    "securePayment": "Pagament segur",
+    "stripeConnectEnabled": "Stripe Connect habilitat",
+    "stripeConnectDesc": "Pagaments processats de manera segura amb tecnologia Stripe",
+    "processingFee": "Comissió",
+    "total": "Total",
+    "securityTitle": "Pagament 100% segur",
+    "securityDesc": "Les teves dades estan protegides amb xifratge de nivell bancari",
+    "poweredBy": "Processat per",
+    "stripeSecure": "Certificat PCI DSS i xifratge SSL/TLS",
+    "completePayment": "Completa el pagament",
+    "processing": "Processant...",
+    "pay": "Pagar",
+    "success": "Pagament exitós!",
+    "successMessage": "La teva reserva ha estat confirmada",
+    "error": "Error en el pagament",
+    "generalError": "S'ha produït un error inesperat",
+    "preparing": "Preparant pagament segur..."
+  },
   "howItWorks": {
     "badge": "Procés Simple",
     "title": "Com Funciona Dialoom",
@@ -492,6 +513,7 @@
     "myProfile": "El Meu Perfil",
     "content": "Contingut",
     "availability": "Disponibilitat",
+    "verification": "Verificació",
     "monthlyEarnings": "Ingressos del Mes",
     "upcomingCallsCount": "Properes Trucades",
     "completed": "Completades",
