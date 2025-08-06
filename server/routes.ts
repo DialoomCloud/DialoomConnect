@@ -487,6 +487,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test upload endpoint - no auth, just to test multer
+  app.post('/api/test-upload', uploadAdmin.single('image'), async (req: any, res) => {
+    console.log('[TEST UPLOAD] Request received');
+    console.log('File:', req.file);
+    console.log('Body:', req.body);
+    console.log('Headers:', req.headers);
+    
+    if (!req.file) {
+      return res.status(400).json({ 
+        message: "No file received",
+        body: req.body,
+        headers: req.headers
+      });
+    }
+    
+    res.json({ 
+      message: "File received successfully",
+      file: {
+        fieldname: req.file.fieldname,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      }
+    });
+  });
+
   // Admin profile image upload route (for admins uploading images for other users)
   app.post('/api/admin/upload/profile-image', 
     isAdminAuthenticated, 
