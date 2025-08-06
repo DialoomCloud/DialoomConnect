@@ -50,6 +50,7 @@ import {
   Facebook,
   Github,
   Youtube,
+  Globe,
   ExternalLink,
   Camera
 } from "lucide-react";
@@ -112,6 +113,7 @@ const socialIcons: Record<string, any> = {
   'Facebook': Facebook,
   'GitHub': Github,
   'YouTube': Youtube,
+  'Web': Globe,
 };
 
 interface EnhancedProfileEditProps {
@@ -159,7 +161,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   // Sync form with current user data only when dialog opens or user data changes
   useEffect(() => {
-    if (typedUser && open) {
+    if (typedUser) {
       console.log('🔄 [PROFILE SYNC] Syncing form with user data:', {
         address: typedUser.address,
         phone: typedUser.phone,
@@ -187,7 +189,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         phone: typedUser.phone || "",
       });
     }
-  }, [typedUser?.id, open]); // Only depend on user ID and open state to avoid infinite loops
+  }, [typedUser?.id]); // Only depend on user ID to avoid infinite loops
 
   // Data queries
   const { data: socialPlatforms = [] } = useQuery({
@@ -951,7 +953,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                   <Label>Categorías seleccionadas:</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedCategories.map(categoryId => {
-                      const category = categories.find((c: Category) => c.id === categoryId);
+                      const category = typedCategories.find((c: Category) => c.id === categoryId);
                       return category ? (
                         <Badge key={categoryId} variant="secondary">
                           {category.name}
@@ -1020,7 +1022,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                 <div className="space-y-2">
                   <Label>Perfiles añadidos:</Label>
                   {socialProfiles.map((profile, index) => {
-                    const platform = socialPlatforms.find((p: SocialPlatform) => p.id === profile.platformId);
+                    const platform = typedSocialPlatforms.find((p: SocialPlatform) => p.id === profile.platformId);
                     const IconComponent = socialIcons[platform?.name] || ExternalLink;
                     
                     return (
