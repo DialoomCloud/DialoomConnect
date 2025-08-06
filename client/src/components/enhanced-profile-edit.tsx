@@ -72,6 +72,7 @@ const profileSchema = z.object({
   primaryLanguageId: z.number().nullable().optional(),
   phone: z.string().nullable().optional(),
   purpose: z.array(z.string()).nullable().optional(),
+  videoCallTopics: z.array(z.string()).nullable().optional(),
 });
 
 const socialProfileSchema = z.object({
@@ -160,6 +161,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       primaryLanguageId: undefined,
       phone: "",
       purpose: [],
+      videoCallTopics: [],
     },
   });
 
@@ -199,6 +201,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         primaryLanguageId: typedUser.primaryLanguageId || undefined,
         phone: typedUser.phone || "",
         purpose: typedUser.purpose || [],
+        videoCallTopics: typedUser.videoCallTopics || [],
       });
     }
   }, [typedUser?.id]); // Only depend on user ID to avoid infinite loops
@@ -251,25 +254,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     }
   }, [typedUserCategories]);
   
-  // Update form values when user data changes
-  useEffect(() => {
-    if (typedUser) {
-      form.reset({
-        firstName: typedUser.firstName || "",
-        lastName: typedUser.lastName || "",
-        dateOfBirth: typedUser.dateOfBirth || "",
-        nationality: typedUser.nationality || "",
-        title: typedUser.title || "",
-        description: typedUser.description || "",
-        address: typedUser.address || "",
-        city: typedUser.city || "",
-        postalCode: typedUser.postalCode || "",
-        countryCode: typedUser.countryCode || "",
-        primaryLanguageId: typedUser.primaryLanguageId || null,
-        phone: typedUser.phone || "",
-      });
-    }
-  }, [typedUser, form]);
+  // This effect is already handled above at line 176
 
   useEffect(() => {
     if (typedUserSocialProfiles.length > 0) {
@@ -798,6 +783,42 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       </FormItem>
                     )}
                   />
+
+                  {/* Video Call Topics Field - only for hosts */}
+                  {typedUser?.isHost && (
+                    <FormField
+                      control={form.control}
+                      name="videoCallTopics"
+                      render={({ field }) => {
+                        const topicsText = field.value ? field.value.join('\n') : '';
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>Temas de Videollamadas</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                value={topicsText}
+                                onChange={(e) => {
+                                  const lines = e.target.value.split('\n').slice(0, 10); // Limit to 10 lines
+                                  const filteredLines = lines.filter(line => line.trim().length > 0);
+                                  field.onChange(filteredLines);
+                                }}
+                                rows={6}
+                                placeholder="Escribe hasta 10 temas que cubres en videollamadas (uno por línea):&#10;• Estrategia de Marketing Digital&#10;• Análisis de Redes Sociales&#10;• Optimización SEO&#10;• Publicidad Online&#10;• Growth Hacking"
+                                className="resize-none"
+                              />
+                            </FormControl>
+                            <div className="flex items-center justify-between">
+                              <FormMessage />
+                              <p className="text-sm text-muted-foreground">
+                                {field.value ? field.value.length : 0}/10 temas
+                              </p>
+                            </div>
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
