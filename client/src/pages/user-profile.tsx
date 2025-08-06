@@ -65,13 +65,13 @@ export default function UserProfile() {
   });
 
   // Fetch host available services
-  const { data: hostServices } = useQuery({
+  const { data: hostServices } = useQuery<any>({
     queryKey: [`/api/host/${userId}/services`],
     enabled: !!userId,
   });
 
   // Fetch user social profiles
-  const { data: socialProfiles } = useQuery({
+  const { data: socialProfiles = [] } = useQuery<any[]>({
     queryKey: [`/api/user/social-profiles/${userId}`],
     enabled: !!userId,
   });
@@ -222,13 +222,18 @@ export default function UserProfile() {
                 </div>
 
                 {/* Social Links */}
-                {socialProfiles && socialProfiles.length > 0 && (
+                {socialProfiles && Array.isArray(socialProfiles) && socialProfiles.length > 0 && (
                   <div>
                     <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Redes Sociales</h3>
                     <div className="flex gap-3">
                       {socialProfiles.map((profile: any) => {
+                        // Solo mostrar perfiles que tengan platform y username válidos
+                        if (!profile?.platform?.baseUrl || !profile?.username) {
+                          return null;
+                        }
+
                         const getIcon = (platformName: string) => {
-                          switch (platformName.toLowerCase()) {
+                          switch (platformName?.toLowerCase()) {
                             case 'instagram': return <Instagram className="w-5 h-5" />;
                             case 'twitter': return <Twitter className="w-5 h-5" />;
                             case 'linkedin': return <Linkedin className="w-5 h-5" />;
@@ -236,18 +241,21 @@ export default function UserProfile() {
                           }
                         };
 
+                        const platformUrl = profile.platform.baseUrl + profile.username;
+
                         return (
                           <a
                             key={profile.id}
-                            href={profile.platform.baseUrl + profile.username}
+                            href={platformUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
+                            title={`${profile.platform.name || 'Social'}: ${profile.username}`}
                           >
-                            {getIcon(profile.platform.name)}
+                            {getIcon(profile.platform.name || '')}
                           </a>
                         );
-                      })}
+                      }).filter(Boolean)}
                     </div>
                   </div>
                 )}
@@ -474,7 +482,7 @@ export default function UserProfile() {
           host={user}
           isOpen={showBookingFlow}
           onClose={() => setShowBookingFlow(false)}
-          hostServices={hostServices}
+          hostServices={hostServices || {}}
         />
       )}
     </div>
