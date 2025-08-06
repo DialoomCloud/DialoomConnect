@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
-import { CompleteProfileEdit } from "@/components/complete-profile-edit";
+import { EnhancedProfileEdit } from "@/components/enhanced-profile-edit";
 import { MediaUploadModal } from "@/components/media-upload-modal";
 import { MediaEditModal } from "@/components/media-edit-modal";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
@@ -327,10 +327,24 @@ export default function Profile() {
       </div>
 
       {/* Modals */}
-      <CompleteProfileEdit 
-        open={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-      />
+      {showProfileModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Editar Perfil</h2>
+                <button 
+                  onClick={() => setShowProfileModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <EnhancedProfileEdit onClose={() => setShowProfileModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
       
       <MediaUploadModal
         isOpen={showUploadModal}

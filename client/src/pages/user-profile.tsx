@@ -334,16 +334,16 @@ export default function UserProfile() {
                         </div>
                       </div>
                     ) : (
-                      <div className="justify-center lg:justify-start">
+                      <div className="flex flex-wrap gap-1 justify-center lg:justify-start">
                         {user?.videoCallTopics && user.videoCallTopics.length > 0 ? (
-                          <div className="space-y-1">
-                            {user.videoCallTopics.map((topic, index) => (
-                              <div key={index} className="flex items-center">
-                                <div className="w-1.5 h-1.5 bg-[hsl(188,100%,38%)] rounded-full mr-2"></div>
-                                <span className="text-xs text-[hsl(17,12%,20%)]">{topic}</span>
-                              </div>
-                            ))}
-                          </div>
+                          user.videoCallTopics.map((topic, index) => (
+                            <Badge 
+                              key={index} 
+                              className="bg-[hsl(188,100%,45%)] text-white hover:bg-[hsl(188,100%,40%)] text-xs"
+                            >
+                              {topic}
+                            </Badge>
+                          ))
                         ) : (
                           <p className="text-sm text-gray-500 italic">
                             {isOwnProfile ? "Haz clic en el botón de editar para agregar temas" : "No hay temas configurados"}
@@ -408,9 +408,10 @@ export default function UserProfile() {
                   </div>
                 </div>
 
-                {/* Social Links - Solo iconos sin título */}
+                {/* Social Links */}
                 {socialProfiles && Array.isArray(socialProfiles) && socialProfiles.length > 0 && (
                   <div>
+                    <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">Redes Sociales</h3>
                     <div className="flex gap-3">
                       {socialProfiles.map((profile: any) => {
                         if (!profile?.platform?.baseUrl || !profile?.username) {
@@ -419,22 +420,14 @@ export default function UserProfile() {
 
                         const getIcon = (platformName: string) => {
                           switch (platformName?.toLowerCase()) {
-                            case 'facebook': return <Facebook className="w-5 h-5" />;
-                            case 'twitter':
-                            case 'x (twitter)': return <Twitter className="w-5 h-5" />;
                             case 'instagram': return <Instagram className="w-5 h-5" />;
-                            case 'youtube': return <Youtube className="w-5 h-5" />;
-                            case 'github': return <Github className="w-5 h-5" />;
+                            case 'twitter': return <Twitter className="w-5 h-5" />;
                             case 'linkedin': return <Linkedin className="w-5 h-5" />;
                             default: return <Globe className="w-5 h-5" />;
                           }
                         };
 
-                        // Construir URL correcta
-                        let platformUrl = profile.username;
-                        if (!profile.username.startsWith('http')) {
-                          platformUrl = profile.platform.baseUrl + profile.username;
-                        }
+                        const platformUrl = profile.platform.baseUrl + profile.username;
 
                         return (
                           <a
@@ -442,8 +435,8 @@ export default function UserProfile() {
                             href={platformUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors shadow-md hover:shadow-lg"
-                            title={`${profile.platform.name || 'Social'}`}
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
+                            title={`${profile.platform.name || 'Social'}: ${profile.username}`}
                           >
                             {getIcon(profile.platform.name || '')}
                           </a>

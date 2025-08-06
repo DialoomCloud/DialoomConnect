@@ -514,47 +514,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Debug endpoint to test JSON parsing
-  app.post('/test-json', (req, res) => {
-    console.log('🔍 [TEST] Raw body:', req.body);
-    console.log('🔍 [TEST] Body type:', typeof req.body);
-    res.json({ received: req.body });
-  });
-
   // Update video call topics for hosts
   app.put('/api/profile/video-call-topics', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.userId;
+      const { topics } = req.body;
       
-      console.log('🔍 [TOPICS] Raw request body:', req.body);
-      console.log('🔍 [TOPICS] Body type:', typeof req.body);
-      console.log('🔍 [TOPICS] Request headers:', req.headers);
-      
-      // Handle double JSON encoding issue
-      let parsedBody = req.body;
-      if (typeof req.body === 'string') {
-        try {
-          parsedBody = JSON.parse(req.body);
-          console.log('🔄 [TOPICS] Parsed string body:', parsedBody);
-        } catch (e) {
-          console.log('❌ [TOPICS] Failed to parse string body:', e);
-          return res.status(400).json({ message: "Invalid JSON format" });
-        }
-      }
-      
-      const { topics } = parsedBody;
-      
-      console.log('🔍 [TOPICS] Extracted topics:', topics);
-      console.log('🔍 [TOPICS] Topics type:', typeof topics, 'isArray:', Array.isArray(topics));
+      console.log('Video call topics update request:', { userId, topics });
       
       // Validate that topics is an array of strings
-      if (!Array.isArray(topics)) {
-        console.log('❌ [TOPICS] Topics is not an array:', topics);
-        return res.status(400).json({ message: "Topics must be an array of strings" });
-      }
-      
-      if (!topics.every((topic) => typeof topic === 'string')) {
-        console.log('❌ [TOPICS] Not all topics are strings:', topics);
+      if (!Array.isArray(topics) || !topics.every((topic) => typeof topic === 'string')) {
         return res.status(400).json({ message: "Topics must be an array of strings" });
       }
       
@@ -564,20 +533,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .slice(0, 10)
         .map((topic) => topic.trim());
       
-      console.log('🔄 [TOPICS] Cleaned topics:', cleanedTopics);
-      
       const updatedUser = await storage.updateUserProfile(userId, { 
         videoCallTopics: cleanedTopics 
       });
       
-      console.log('✅ [TOPICS] Topics updated successfully:', { userId, topics: cleanedTopics });
+      console.log('Video call topics updated successfully:', { userId, topics: cleanedTopics });
       
       res.json({
         success: true,
         videoCallTopics: updatedUser.videoCallTopics || []
       });
     } catch (error) {
-      console.error("❌ [TOPICS] Error updating video call topics:", error);
+      console.error("Error updating video call topics:", error);
       res.status(500).json({ message: "Failed to update video call topics" });
     }
   });
