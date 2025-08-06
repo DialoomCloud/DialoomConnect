@@ -52,7 +52,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch complete user profile
+  // Fetch complete user profile including host configurations
   const { data: userProfile, isLoading } = useQuery<{
     user: any;
     skills: any[];
@@ -60,6 +60,10 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     categories: any[];
     mediaContent: any[];
     socialProfiles: any[];
+    hostAvailability?: any[];
+    hostPricing?: any[];
+    hostCategories?: any[];
+    verificationDocuments?: any[];
   }>({
     queryKey: [`/api/admin/users/${userId}/complete-profile`],
     queryFn: async () => {
@@ -102,6 +106,9 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
             platformId: sp.platformId,
             username: sp.username,
           })) || [],
+        // Host-specific configurations
+        hostAvailability: userProfile.hostAvailability || [],
+        hostPricing: userProfile.hostPricing || [],
       });
       
       // Set profile image preview if user has one
@@ -140,7 +147,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   });
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     // Basic info
     firstName: '',
     lastName: '',
@@ -166,6 +173,9 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     languageIds: [] as number[],
     categoryIds: [] as number[],
     socialProfiles: [] as { platformId: number; username: string }[],
+    // Host-specific configurations
+    hostAvailability: [] as any[],
+    hostPricing: [] as any[],
   });
 
 
@@ -292,6 +302,12 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
       }
     }
     
+    // Include host configuration data if user is a host
+    if (formData.isHost) {
+      cleanedData.hostAvailability = formData.hostAvailability;
+      cleanedData.hostPricing = formData.hostPricing;
+    }
+    
     updateUserMutation.mutate(cleanedData);
   };
 
@@ -402,7 +418,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
 
         <form onSubmit={handleSubmit}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Básico
@@ -419,9 +435,13 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                 <MessageSquare className="w-4 h-4" />
                 Multimedia
               </TabsTrigger>
+              <TabsTrigger value="host" className="flex items-center gap-2" disabled={!formData.isHost}>
+                <CreditCard className="w-4 h-4" />
+                Host
+              </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
-                Configuración
+                Config
               </TabsTrigger>
             </TabsList>
 
@@ -742,6 +762,175 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Host Configuration Tab */}
+            <TabsContent value="host" className="space-y-4">
+              {formData.isHost ? (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Configuración de Precios</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Free Consultation */}
+                      <div className="p-4 border rounded-lg bg-blue-50">
+                        <h4 className="font-medium mb-2">Consulta Gratuita</h4>
+                        <div className="flex items-center gap-4">
+                          <Label>Duración (minutos):</Label>
+                          <Input
+                            type="number"
+                            value={formData.hostPricing?.find((p: any) => p.duration === 0)?.duration || 0}
+                            disabled
+                            className="w-24"
+                          />
+                          <span className="text-green-600 font-medium">GRATIS</span>
+                        </div>
+                      </div>
+                      
+                      {/* Paid Sessions */}
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Sesiones de Pago</h4>
+                        {[30, 60, 90].map(duration => {
+                          const pricing = formData.hostPricing?.find((p: any) => p.duration === duration);
+                          return (
+                            <div key={duration} className="flex items-center gap-4 p-3 border rounded">
+                              <Label className="w-24">{duration} min:</Label>
+                              <Input
+                                type="number"
+                                placeholder="Precio en EUR"
+                                value={pricing?.price || ''}
+                                onChange={(e) => {
+                                  const newPricing = formData.hostPricing || [];
+                                  const index = newPricing.findIndex((p: any) => p.duration === duration);
+                                  if (index >= 0) {
+                                    newPricing[index] = { ...newPricing[index], price: e.target.value };
+                                  } else {
+                                    newPricing.push({ duration, price: e.target.value, currency: 'EUR' });
+                                  }
+                                  setFormData({ ...formData, hostPricing: newPricing });
+                                }}
+                                className="w-32"
+                              />
+                              <span>EUR</span>
+                              <div className="flex items-center gap-2 ml-auto">
+                                <Checkbox
+                                  checked={pricing?.includesScreenSharing || false}
+                                  onCheckedChange={(checked) => {
+                                    const newPricing = [...(formData.hostPricing || [])];
+                                    const index = newPricing.findIndex((p: any) => p.duration === duration);
+                                    if (index >= 0) {
+                                      newPricing[index] = { ...newPricing[index], includesScreenSharing: checked };
+                                      setFormData({ ...formData, hostPricing: newPricing });
+                                    }
+                                  }}
+                                />
+                                <Label className="text-sm">Compartir pantalla</Label>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Disponibilidad Horaria</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="text-sm text-gray-600 mb-4">
+                        Configura la disponibilidad semanal recurrente del host
+                      </div>
+                      {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((day, index) => {
+                        const availability = formData.hostAvailability?.filter((a: any) => a.dayOfWeek === index) || [];
+                        return (
+                          <div key={day} className="border rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <Label className="font-medium">{day}</Label>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const newAvailability = [...(formData.hostAvailability || [])];
+                                  newAvailability.push({
+                                    dayOfWeek: index,
+                                    startTime: '09:00',
+                                    endTime: '17:00',
+                                    isActive: true
+                                  });
+                                  setFormData({ ...formData, hostAvailability: newAvailability });
+                                }}
+                              >
+                                Agregar horario
+                              </Button>
+                            </div>
+                            {availability.map((slot: any, slotIndex: number) => (
+                              <div key={slotIndex} className="flex items-center gap-2 mt-2">
+                                <Input
+                                  type="time"
+                                  value={slot.startTime}
+                                  onChange={(e) => {
+                                    const newAvailability = [...formData.hostAvailability];
+                                    const actualIndex = newAvailability.findIndex(
+                                      (a: any) => a.dayOfWeek === index && a.startTime === slot.startTime
+                                    );
+                                    if (actualIndex >= 0) {
+                                      newAvailability[actualIndex] = { ...newAvailability[actualIndex], startTime: e.target.value };
+                                      setFormData({ ...formData, hostAvailability: newAvailability });
+                                    }
+                                  }}
+                                  className="w-32"
+                                />
+                                <span>-</span>
+                                <Input
+                                  type="time"
+                                  value={slot.endTime}
+                                  onChange={(e) => {
+                                    const newAvailability = [...formData.hostAvailability];
+                                    const actualIndex = newAvailability.findIndex(
+                                      (a: any) => a.dayOfWeek === index && a.startTime === slot.startTime
+                                    );
+                                    if (actualIndex >= 0) {
+                                      newAvailability[actualIndex] = { ...newAvailability[actualIndex], endTime: e.target.value };
+                                      setFormData({ ...formData, hostAvailability: newAvailability });
+                                    }
+                                  }}
+                                  className="w-32"
+                                />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    const newAvailability = formData.hostAvailability.filter(
+                                      (a: any) => !(a.dayOfWeek === index && a.startTime === slot.startTime)
+                                    );
+                                    setFormData({ ...formData, hostAvailability: newAvailability });
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <Card>
+                  <CardContent className="py-12">
+                    <div className="text-center text-gray-500">
+                      <Settings className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Este usuario no es un host</p>
+                      <p className="text-sm mt-2">Activa el rol de Host en la pestaña de Configuración para habilitar estas opciones.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Settings Tab */}

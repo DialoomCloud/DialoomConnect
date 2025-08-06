@@ -2560,13 +2560,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Usuario no encontrado' });
       }
       
-      // Get related data
-      const [skills, languages, categories, mediaContent, socialProfiles] = await Promise.all([
+      // Get all related data including host-specific configurations
+      const [
+        skills, 
+        languages, 
+        categories, 
+        mediaContent, 
+        socialProfiles,
+        hostAvailability,
+        hostPricing,
+        hostCategories,
+        verificationDocuments
+      ] = await Promise.all([
         storage.getUserSkills(targetUserId),
         storage.getUserLanguages(targetUserId),
         storage.getUserCategories(targetUserId),
         storage.getUserMediaContent(targetUserId),
-        storage.getUserSocialProfiles(targetUserId)
+        storage.getUserSocialProfiles(targetUserId),
+        // Host-specific data (will be empty arrays if not a host)
+        user.isHost ? storage.getHostAvailability(targetUserId) : [],
+        user.isHost ? storage.getHostPricing(targetUserId) : [],
+        user.isHost ? storage.getHostCategories(targetUserId) : [],
+        user.isHost ? storage.getHostVerificationDocuments(targetUserId) : []
       ]);
       
       res.json({
@@ -2575,7 +2590,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         languages,
         categories,
         mediaContent,
-        socialProfiles
+        socialProfiles,
+        // Include host-specific data
+        hostAvailability,
+        hostPricing,
+        hostCategories,
+        verificationDocuments
       });
     } catch (error) {
       console.error('Error fetching complete user profile:', error);
@@ -2671,11 +2691,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes - Update user profile (complete profile data)
+  // Admin routes - Update user profile (complete profile data including host configurations)
   app.put('/api/admin/users/:targetUserId/profile', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { targetUserId } = req.params;
-      const { skillIds, languageIds, categoryIds, socialProfiles, ...profileData } = req.body;
+      const { 
+        skillIds, 
+        languageIds, 
+        categoryIds, 
+        socialProfiles,
+        hostAvailability: hostAvailabilityData,
+        hostPricing: hostPricingData,
+        ...profileData 
+      } = req.body;
       
       console.log('Admin update request for user:', targetUserId);
       console.log('Received data:', {
@@ -2749,6 +2777,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Updating social profiles:', socialProfiles);
         await storage.updateUserSocialProfiles(targetUserId, socialProfiles);
         console.log('Social profiles updated successfully');
+      }
+      
+      // Update host-specific configurations if user is a host
+      const user = await storage.getUser(targetUserId);
+      if (user?.isHost) {
+        // Update host categories (synchronized with general categories)
+        if (Array.isArray(categoryIds)) {
+          console.log('Updating host categories:', categoryIds);
+          await storage.updateHostCategories(targetUserId, categoryIds);
+          console.log('Host categories updated successfully');
+        }
+        
+        // Update host availability if provided
+        if (hostAvailabilityData && Array.isArray(hostAvailabilityData)) {
+          console.log('Updating host availability:', hostAvailabilityData);
+          // Clear existing availability and add new ones
+          const existingAvailability = await storage.getHostAvailability(targetUserId);
+          for (const availability of existingAvailability) {
+            await storage.deleteHostAvailability(availability.id, targetUserId);
+          }
+          for (const availability of hostAvailabilityData) {
+            await storage.createHostAvailability({
+              ...availability,
+              userId: targetUserId
+            });
+          }
+          console.log('Host availability updated successfully');
+        }
+        
+        // Update host pricing if provided
+        if (hostPricingData && Array.isArray(hostPricingData)) {
+          console.log('Updating host pricing:', hostPricingData);
+          for (const pricing of hostPricingData) {
+            await storage.upsertHostPricing({
+              ...pricing,
+              userId: targetUserId
+            });
+          }
+          console.log('Host pricing updated successfully');
+        }
       }
       
       console.log('All admin updates completed successfully for user:', targetUserId);
