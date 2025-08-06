@@ -1,13 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
+import { useQuery } from "@tanstack/react-query";
 
 export default function TestUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [response, setResponse] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
   const { toast } = useToast();
+
+  // Check authentication status
+  const { data: user } = useQuery({
+    queryKey: ['/api/auth/user'],
+    retry: false,
+  });
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      console.log('Current session:', data.session);
+      console.log('User email:', data.session?.user?.email);
+      console.log('Is admin?:', ['marcgarcia10@gmail.com', 'nachosaladrigas@gmail.com'].includes(data.session?.user?.email || ''));
+    });
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -136,6 +154,18 @@ export default function TestUpload() {
           <CardTitle>Test File Upload</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Authentication Status */}
+          <div className="p-4 bg-gray-100 rounded">
+            <h3 className="font-bold mb-2">Authentication Status:</h3>
+            {session ? (
+              <div className="text-sm">
+                <p>✅ Logged in as: {session.user?.email}</p>
+                <p>Admin: {['marcgarcia10@gmail.com', 'nachosaladrigas@gmail.com'].includes(session.user?.email || '') ? '✅ Yes' : '❌ No'}</p>
+              </div>
+            ) : (
+              <p className="text-sm">❌ Not logged in - Admin endpoint will fail with 401</p>
+            )}
+          </div>
           <div>
             <input type="file" onChange={handleFileChange} accept="image/*" />
             {file && (
