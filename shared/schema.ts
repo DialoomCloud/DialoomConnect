@@ -189,7 +189,8 @@ export const userCategories = pgTable("user_categories", {
 // Email template types
 export const emailTemplateTypeEnum = pgEnum("email_template_type", [
   "user_registration",
-  "password_change", 
+  "password_reset",
+  "password_change",
   "account_deletion",
   "account_deactivation",
   "booking_created",

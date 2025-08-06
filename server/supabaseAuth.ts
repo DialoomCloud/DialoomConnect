@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Request, Response, NextFunction, RequestHandler, Express } from "express";
 import { storage } from "./storage";
+import { emailService } from "./email-service";
 
 // Initialize Supabase client with service role key for server-side operations
 const supabaseUrl = process.env.SUPABASE_URL || "";
@@ -200,6 +201,11 @@ export function setupAuthRoutes(app: Express) {
           provider: 'email',
           providerUserId: data.user.id,
         });
+
+        // Send welcome email
+        if (data.user.email) {
+          await emailService.sendRegistrationEmail(data.user.email, firstName || '', data.user.id);
+        }
       } catch (dbError) {
         console.error("Failed to create user in database:", dbError);
         // Continue anyway, user will be created on first authentication

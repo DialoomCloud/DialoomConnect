@@ -155,10 +155,8 @@ class EmailService {
       templateType: 'user_registration',
       userId,
       variables: {
-        user_name: userName,
-        user_email: userEmail,
-        platform_name: 'Dialoom',
-        login_url: `${process.env.APP_URL || 'https://dialoom.cloud'}/auth`,
+        firstName: userName,
+        dashboardUrl: `${process.env.APP_URL || 'https://dialoom.cloud'}/dashboard`,
       }
     });
   }
@@ -213,6 +211,30 @@ class EmailService {
         platform_name: 'Dialoom',
         deactivation_date: new Date().toLocaleDateString('es-ES'),
         reactivation_url: `${process.env.APP_URL || 'https://dialoom.cloud'}/auth`,
+      }
+    });
+  }
+
+  /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(userEmail: string, resetLink: string, userId?: string): Promise<boolean> {
+    return this.sendEmail({
+      recipientEmail: userEmail,
+      templateType: 'password_reset',
+      userId,
+      variables: {
+        reset_link: resetLink,
+      },
+      customTemplate: {
+        subject: 'Restablecer contraseña - Dialoom',
+        htmlContent: `
+          <p>Hola,</p>
+          <p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:</p>
+          <p><a href="${resetLink}">${resetLink}</a></p>
+          <p>Este enlace expirará en 1 hora.</p>
+        `,
+        textContent: `Hola,\nHas solicitado restablecer tu contraseña. Visita el siguiente enlace para continuar: ${resetLink}\nEste enlace expirará en 1 hora.`,
       }
     });
   }
