@@ -145,7 +145,7 @@ export default function Home() {
                 </p>
                 <div className="flex items-center">
                   <img 
-                    src="/storage/assets/image_1754500542851.png" 
+                    src="/storage/assets/marianne-foix.jpg" 
                     alt="Marianne Foix" 
                     className="w-8 h-8 rounded-full mr-3 object-cover"
                     onError={(e) => {
@@ -179,7 +179,7 @@ export default function Home() {
                 </p>
                 <div className="flex items-center">
                   <img 
-                    src="/storage/assets/image_1754504330742.png" 
+                    src="/storage/assets/joshua-artxiz.jpg" 
                     alt="Joshua Artxiz" 
                     className="w-8 h-8 rounded-full mr-3 object-cover"
                     onError={(e) => {
@@ -213,7 +213,7 @@ export default function Home() {
                 </p>
                 <div className="flex items-center">
                   <img 
-                    src="/storage/assets/image_1754504413509.png" 
+                    src="/storage/assets/laia-dolcet.jpg" 
                     alt="Laia Dolcet" 
                     className="w-8 h-8 rounded-full mr-3 object-cover"
                     onError={(e) => {
