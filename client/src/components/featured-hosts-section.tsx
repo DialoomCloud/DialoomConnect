@@ -52,19 +52,24 @@ export function FeaturedHostsSection() {
               <CardContent className="p-6">
                 <div className="text-center">
                   {/* Host Profile Image - Doubled size */}
-                  <div className="w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden border-4 border-[hsl(188,100%,95%)]">
-                    {(host as any).profileImagePath ? (
+                  <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden border-4 border-[hsl(188,100%,95%)]">
+                    {/* Always show initials as fallback */}
+                    <div className="w-full h-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center">
+                      <span className="text-white font-bold text-3xl">
+                        {(host as any).firstName?.[0] || 'U'}{(host as any).lastName?.[0] || 'S'}
+                      </span>
+                    </div>
+                    {/* Show image on top if available */}
+                    {(host as any).profileImageUrl && (
                       <img 
-                        src={`/storage/${(host as any).profileImagePath}`} 
+                        src={`/storage/${(host as any).profileImageUrl}`} 
                         alt={`${(host as any).firstName || ''} ${(host as any).lastName || ''}`}
-                        className="w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => {
+                          // Hide the image element to show initials fallback
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                       />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center">
-                        <span className="text-white font-bold text-3xl">
-                          {(host as any).firstName?.[0] || 'U'}{(host as any).lastName?.[0] || 'S'}
-                        </span>
-                      </div>
                     )}
                   </div>
 
