@@ -108,7 +108,7 @@ export function AdminUserManagement() {
           onClick={() => handleActivationToggle(user.id, true)}
           title="Clic para activar usuario"
         >
-          Usuario Inactivo
+          Desactivado
         </Badge>
       );
     } else {
@@ -119,7 +119,7 @@ export function AdminUserManagement() {
           onClick={() => handleActivationToggle(user.id, false)}
           title="Clic para desactivar usuario"
         >
-          Usuario Activo
+          Activo
         </Badge>
       );
     }
@@ -264,7 +264,9 @@ export function AdminUserManagement() {
                   <TableHead>Usuario</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Rol</TableHead>
-                  <TableHead>Comisión</TableHead>
+                  <TableHead>Verificado</TableHead>
+                  <TableHead>Recomendado</TableHead>
+                  <TableHead>Destacado</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Activo</TableHead>
                   <TableHead>Tomar Rol</TableHead>
@@ -325,12 +327,45 @@ export function AdminUserManagement() {
                     <TableCell>{getRoleBadges(user)}</TableCell>
                     <TableCell>
                       {user.isHost ? (
-                        <span className={user.commissionRate ? 'font-medium' : 'text-gray-500'}>
-                          {user.commissionRate 
-                            ? `${(parseFloat(user.commissionRate) * 100).toFixed(2)}%`
-                            : 'Global'
-                          }
-                        </span>
+                        <Checkbox
+                          checked={user.isVerified || false}
+                          onCheckedChange={(checked) => {
+                            updateUserMutation.mutate({
+                              userId: user.id,
+                              updates: { isVerified: checked }
+                            });
+                          }}
+                        />
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {user.isHost ? (
+                        <Checkbox
+                          checked={user.isRecommended || false}
+                          onCheckedChange={(checked) => {
+                            updateUserMutation.mutate({
+                              userId: user.id,
+                              updates: { isRecommended: checked }
+                            });
+                          }}
+                        />
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {user.isHost ? (
+                        <Checkbox
+                          checked={user.isFeatured || false}
+                          onCheckedChange={(checked) => {
+                            updateUserMutation.mutate({
+                              userId: user.id,
+                              updates: { isFeatured: checked }
+                            });
+                          }}
+                        />
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}

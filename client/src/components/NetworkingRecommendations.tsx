@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Star, MapPin, Briefcase, MessageCircle, Eye, X, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useVerificationSettings } from '@/hooks/useVerificationSettings';
 
 interface NetworkingRecommendation {
   id: string;
@@ -33,6 +34,7 @@ interface NetworkingRecommendation {
 export default function NetworkingRecommendations() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { data: verificationSettings } = useVerificationSettings();
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
   // Fetch networking recommendations
@@ -183,7 +185,7 @@ export default function NetworkingRecommendations() {
                     <div>
                       <h3 className="font-semibold text-[hsl(17,12%,6%)]">
                         {rec.recommendedUser.firstName} {rec.recommendedUser.lastName}
-                        {rec.recommendedUser.isVerified && (
+                        {rec.recommendedUser.isVerified && verificationSettings?.showVerified && (
                           <span className="ml-1 text-green-500">✓</span>
                         )}
                       </h3>

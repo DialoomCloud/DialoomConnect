@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
 
 export default function PaymentDemo() {
   const { t } = useTranslation();
+  const { data: verificationSettings } = useVerificationSettings();
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
   const [showStripeCheckout, setShowStripeCheckout] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
@@ -147,7 +149,7 @@ export default function PaymentDemo() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-lg">{demoHost.name}</h3>
-                  {demoHost.isVerified && (
+                  {demoHost.isVerified && verificationSettings?.showVerified && (
                     <CheckCircle className="w-5 h-5 text-green-500" />
                   )}
                 </div>

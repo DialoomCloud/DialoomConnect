@@ -30,6 +30,7 @@ import PaymentCheckout from "./payment-checkout";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { apiRequest } from "@/lib/queryClient";
 
 interface BookingFlowProps {
@@ -48,6 +49,7 @@ type BookingStep = 'host-intro' | 'select-date' | 'select-time' | 'select-servic
 
 export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: BookingFlowProps) {
   const { toast } = useToast();
+  const { data: verificationSettings } = useVerificationSettings();
   const [currentStep, setCurrentStep] = useState<BookingStep>('host-intro');
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>();
@@ -213,7 +215,7 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
               <div>
                 <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
                   {host.firstName} {host.lastName}
-                  {host.isVerified && (
+                  {host.isVerified && verificationSettings?.showVerified && (
                     <Badge className="bg-blue-500 text-white">
                       <CheckCircle2 className="w-3 h-3 mr-1" />
                       Verificado

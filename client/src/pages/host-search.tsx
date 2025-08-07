@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ type SearchResult = UserType & { relevance?: number };
 
 export default function HostSearch() {
   const { t } = useTranslation();
+  const { data: verificationSettings } = useVerificationSettings();
   const [, navigate] = useLocation();
   const [aiResults, setAiResults] = useState<SearchResult[]>([]);
   const [isAISearch, setIsAISearch] = useState(false);
@@ -577,10 +579,12 @@ export default function HostSearch() {
                         : host.email}
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        {t('home.verified')}
-                      </Badge>
+                      {host.isVerified && verificationSettings?.showVerified && (
+                        <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          {t('home.verified')}
+                        </Badge>
+                      )}
                       {isAISearch && (host as SearchResult).relevance && (host as SearchResult).relevance! > 0.7 && (
                         <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                           <Sparkles className="w-3 h-3 mr-1" />

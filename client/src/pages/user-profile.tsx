@@ -21,11 +21,13 @@ import { es } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
 import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
 import { trackUserAction } from "@/hooks/useOnboardingState";
+import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 
 export default function UserProfile() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: verificationSettings } = useVerificationSettings();
   const params = useParams();
   const userId = params.id;
   const [showViewerModal, setShowViewerModal] = useState(false);
@@ -229,7 +231,7 @@ export default function UserProfile() {
                       <UserIcon className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
                     </div>
                   )}
-                  {user.isVerified && (
+                  {user.isVerified && verificationSettings?.showVerified && (
                     <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
