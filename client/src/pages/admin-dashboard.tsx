@@ -30,7 +30,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AdminUserManagement } from "@/components/admin-user-management";
 import { AdminEmailManagement } from "@/components/admin-email-management";
 import AdminNewsManagement from "@/components/admin-news-management";
-import { AdminSettingsPanel } from "@/components/admin-settings-panel";
+
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -48,6 +48,8 @@ export default function AdminDashboard() {
       return response.json();
     },
     enabled: !!adminUser && !isLoading, // Only fetch when adminUser exists
+    staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   useEffect(() => {
@@ -1114,6 +1116,9 @@ function AdminSettings() {
       const response = await apiRequest("/api/admin/config");
       return response.json();
     },
+    enabled: !!adminUser && !isLoading, // Only fetch when adminUser exists
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   // Load verification settings
@@ -1122,6 +1127,9 @@ function AdminSettings() {
     showRecommended: boolean;
   }>({
     queryKey: ["/api/admin/verification-settings"],
+    enabled: !!adminUser && !isLoading, // Only fetch when adminUser exists
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   // Update state when configs load
