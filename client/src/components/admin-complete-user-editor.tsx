@@ -96,6 +96,8 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         isAdmin: user.isAdmin || false,
         isActive: user.isActive !== false,
         isVerified: user.isVerified || false,
+        isRecommended: user.isRecommended || false,
+        isFeatured: user.isFeatured || false,
         primaryLanguageId: user.primaryLanguageId,
         categoryId: user.categoryId,
         skillIds: userProfile.skills?.map((s: any) => s.skillId) || [],
@@ -166,6 +168,8 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     isAdmin: false,
     isActive: true,
     isVerified: false,
+    isRecommended: false,
+    isFeatured: false,
     // Profile specific
     primaryLanguageId: null,
     categoryId: null,
@@ -1103,6 +1107,26 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                       />
                       <Label htmlFor="isVerified">Usuario Verificado</Label>
                     </div>
+                    {formData.isHost && (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="isRecommended"
+                          checked={formData.isRecommended}
+                          onCheckedChange={(checked) => setFormData({ ...formData, isRecommended: Boolean(checked) })}
+                        />
+                        <Label htmlFor="isRecommended">Host Recomendado</Label>
+                      </div>
+                    )}
+                    {formData.isHost && (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="isFeatured"
+                          checked={formData.isFeatured}
+                          onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: Boolean(checked) })}
+                        />
+                        <Label htmlFor="isFeatured">Host Destacado</Label>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

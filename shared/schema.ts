@@ -126,6 +126,9 @@ export const users = pgTable("users", {
   videoCallTopics: jsonb("video_call_topics").$type<string[]>(),
   // Purpose/goal of the host's services - for filtering (multiple purposes stored as JSON array)
   purpose: jsonb("purpose").$type<string[]>(), // ["Meet & Greet", "Professionals", "Discover"]
+  // Individual host settings
+  isRecommended: boolean("is_recommended").default(false), // Individual recommendation status
+  isFeatured: boolean("is_featured").default(false), // Featured on homepage
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

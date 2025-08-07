@@ -130,7 +130,9 @@ export interface IStorage {
     isHost?: boolean,
     isAdmin?: boolean,
     isActive?: boolean,
-    isVerified?: boolean
+    isVerified?: boolean,
+    isRecommended?: boolean,
+    isFeatured?: boolean
   }): Promise<void>;
   getUserWithPrivateInfo(id: string, requesterId: string): Promise<User | undefined>;
   updateProfileImage(userId: string, imageUrl: string): Promise<User>;
@@ -203,6 +205,10 @@ export interface IStorage {
   getAdminConfig(key: string): Promise<AdminConfig | undefined>;
   getAllAdminConfig(): Promise<AdminConfig[]>;
   updateAdminConfig(key: string, value: string, updatedBy: string, description?: string): Promise<AdminConfig>;
+  
+  // Global host verification and recommendation settings
+  getGlobalVerificationSettings(): Promise<{ showVerified: boolean; showRecommended: boolean }>;
+  updateGlobalVerificationSettings(settings: { showVerified?: boolean; showRecommended?: boolean }, updatedBy: string): Promise<void>;
   
   // Admin audit log operations
   createAuditLog(log: InsertAdminAuditLog): Promise<AdminAuditLog>;
@@ -483,7 +489,9 @@ export class DatabaseStorage implements IStorage {
     isHost?: boolean, 
     isAdmin?: boolean, 
     isActive?: boolean, 
-    isVerified?: boolean 
+    isVerified?: boolean,
+    isRecommended?: boolean,
+    isFeatured?: boolean
   }): Promise<void> {
     const updateData: any = { updatedAt: new Date() };
     
@@ -496,6 +504,8 @@ export class DatabaseStorage implements IStorage {
     if (updates.isAdmin !== undefined) updateData.isAdmin = updates.isAdmin;
     if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
     if (updates.isVerified !== undefined) updateData.isVerified = updates.isVerified;
+    if (updates.isRecommended !== undefined) updateData.isRecommended = updates.isRecommended;
+    if (updates.isFeatured !== undefined) updateData.isFeatured = updates.isFeatured;
     
     await db.update(users).set(updateData).where(eq(users.id, userId));
   }
@@ -2011,6 +2021,49 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
+  // Global host verification and recommendation settings
+  async getGlobalVerificationSettings(): Promise<{ showVerified: boolean; showRecommended: boolean }> {
+    const [verifiedConfig, recommendedConfig] = await Promise.all([
+      this.getAdminConfig('show_verified_badge'),
+      this.getAdminConfig('show_recommended_badge')
+    ]);
+    
+    return {
+      showVerified: verifiedConfig ? JSON.parse(verifiedConfig.value) : true,
+      showRecommended: recommendedConfig ? JSON.parse(recommendedConfig.value) : true
+    };
+  }
+
+  async updateGlobalVerificationSettings(
+    settings: { showVerified?: boolean; showRecommended?: boolean }, 
+    updatedBy: string
+  ): Promise<void> {
+    const promises: Promise<any>[] = [];
+    
+    if (settings.showVerified !== undefined) {
+      promises.push(
+        this.updateAdminConfig(
+          'show_verified_badge', 
+          JSON.stringify(settings.showVerified), 
+          updatedBy, 
+          'Global setting to show/hide verified badges for all hosts'
+        )
+      );
+    }
+    
+    if (settings.showRecommended !== undefined) {
+      promises.push(
+        this.updateAdminConfig(
+          'show_recommended_badge', 
+          JSON.stringify(settings.showRecommended), 
+          updatedBy, 
+          'Global setting to show/hide recommended badges for all hosts'
+        )
+      );
+    }
+    
+    await Promise.all(promises);
+  }
 }
 
 export const storage = new DatabaseStorage();

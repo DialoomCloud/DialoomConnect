@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, Settings, Users } from "lucide-react";
+import { AdminSettingsPanel } from "@/components/admin-settings-panel";
 
 export default function AdminPage() {
   const { user, isLoading } = useAuth();
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
 
   if (isLoading) {
     return (
@@ -34,16 +38,53 @@ export default function AdminPage() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="animate-fade-in-up hover-lift">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="animate-fade-in-up hover-lift cursor-pointer" onClick={() => setShowSettingsPanel(true)}>
             <CardHeader>
-              <CardTitle>Estadísticas</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-[hsl(188,100%,38%)]" />
+                Configuración de Hosts
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Panel de administración en desarrollo...</p>
+              <p className="text-gray-600 mb-4">
+                Gestiona la configuración global de badges y el estado individual de hosts
+              </p>
+              <Button className="w-full">
+                Abrir Panel de Configuración
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in-up hover-lift">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-[hsl(188,100%,38%)]" />
+                Gestión de Usuarios
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">Panel de gestión de usuarios y hosts en desarrollo...</p>
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in-up hover-lift">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[hsl(188,100%,38%)]" />
+                Estadísticas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">Panel de estadísticas y analytics en desarrollo...</p>
             </CardContent>
           </Card>
         </div>
+
+        <AdminSettingsPanel 
+          open={showSettingsPanel}
+          onOpenChange={setShowSettingsPanel}
+        />
       </div>
     </div>
   );

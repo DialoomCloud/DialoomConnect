@@ -1601,6 +1601,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin - Get global verification settings
+  app.get('/api/admin/verification-settings', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const settings = await storage.getGlobalVerificationSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching verification settings:", error);
+      res.status(500).json({ message: "Failed to fetch verification settings" });
+    }
+  });
+
+  // Admin - Update global verification settings
+  app.put('/api/admin/verification-settings', isAdminAuthenticated, async (req: any, res) => {
+    try {
+      const adminId = req.userId;
+      const { showVerified, showRecommended } = req.body;
+      
+      await storage.updateGlobalVerificationSettings(
+        { showVerified, showRecommended }, 
+        adminId
+      );
+      
+      // Create audit log
+      await storage.createAuditLog({
+        adminId: adminId,
+        action: 'update_verification_settings',
+        targetTable: 'admin_config',
+        targetId: 'verification_settings',
+        oldValue: null,
+        newValue: { showVerified, showRecommended },
+        description: `Updated global verification settings: verified=${showVerified}, recommended=${showRecommended}`,
+      });
+      
+      res.json({ message: "Configuración de verificación actualizada exitosamente" });
+    } catch (error) {
+      console.error("Error updating verification settings:", error);
+      res.status(500).json({ message: "Failed to update verification settings" });
+    }
+  });
+
   app.put('/api/admin/config', isAdminAuthenticated, async (req: any, res) => {
     try {
       const adminId = req.userId;
@@ -2667,7 +2707,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes - Update user status (basic info)
+  // Admin routes - Update user status (including recommended and featured)
   app.put('/api/admin/users/:targetUserId', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { targetUserId } = req.params;
@@ -2680,8 +2720,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isHost, 
         isAdmin, 
         isActive, 
-        isVerified 
+        isVerified,
+        isRecommended,
+        isFeatured
       } = req.body;
+      const adminId = req.userId;
 
       await storage.updateUserStatus(targetUserId, {
         firstName,
@@ -2692,10 +2735,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isHost,
         isAdmin,
         isActive,
-        isVerified
+        isVerified,
+        isRecommended,
+        isFeatured
       });
+      
+      // Create audit log for host status changes
+      if (isRecommended !== undefined || isFeatured !== undefined) {
+        await storage.createAuditLog({
+          adminId: adminId,
+          action: 'update_host_status',
+          targetTable: 'users',
+          targetId: targetUserId,
+          oldValue: null,
+          newValue: { 
+            isRecommended, 
+            isFeatured 
+          },
+          description: `Updated host status: recommended=${isRecommended}, featured=${isFeatured}`,
+        });
+      }
 
-      res.json({ success: true });
+      res.json({ success: true, message: 'Usuario actualizado exitosamente' });
     } catch (error) {
       console.error('Error updating user:', error);
       res.status(500).json({ message: 'Error al actualizar usuario' });
