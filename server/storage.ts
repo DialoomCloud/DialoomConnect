@@ -70,6 +70,9 @@ import {
   type InsertUserNetworkingPreferences,
   type CreateNetworkingRecommendation,
   type UpdateNetworkingPreferences,
+  bookingSessions,
+  type BookingSession,
+  type InsertBookingSession,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, asc, sql, gte, lte, or } from "drizzle-orm";
@@ -311,6 +314,11 @@ export interface IStorage {
   requestHostStatus(userId: string): Promise<string>;
   activateHostAccount(userId: string, token: string): Promise<boolean>;
   generateHostActivationToken(userId: string): Promise<string>;
+
+  // Booking session operations (temporary storage for checkout)
+  createBookingSession(sessionData: InsertBookingSession): Promise<BookingSession>;
+  getBookingSession(sessionId: string): Promise<BookingSession | undefined>;
+  deleteBookingSession(sessionId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2063,6 +2071,37 @@ export class DatabaseStorage implements IStorage {
     }
     
     await Promise.all(promises);
+  }
+
+  // Booking session operations (temporary storage for checkout)
+  async createBookingSession(sessionData: InsertBookingSession): Promise<BookingSession> {
+    const [session] = await db
+      .insert(bookingSessions)
+      .values(sessionData)
+      .returning();
+    return session;
+  }
+
+  async getBookingSession(sessionId: string): Promise<BookingSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(bookingSessions)
+      .where(eq(bookingSessions.id, sessionId));
+    
+    // Check if session has expired
+    if (session && new Date() > session.expiresAt) {
+      await this.deleteBookingSession(sessionId);
+      return undefined;
+    }
+    
+    return session;
+  }
+
+  async deleteBookingSession(sessionId: string): Promise<boolean> {
+    const result = await db
+      .delete(bookingSessions)
+      .where(eq(bookingSessions.id, sessionId));
+    return result.changes > 0;
   }
 }
 

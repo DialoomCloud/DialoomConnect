@@ -853,3 +853,19 @@ export const updateNetworkingPreferencesSchema = createInsertSchema(userNetworki
 
 export type CreateNetworkingRecommendation = z.infer<typeof createNetworkingRecommendationSchema>;
 export type UpdateNetworkingPreferences = z.infer<typeof updateNetworkingPreferencesSchema>;
+
+// Booking session table for temporary data storage during checkout
+export const bookingSessions = pgTable("booking_sessions", {
+  id: varchar("id").primaryKey(),
+  hostId: varchar("host_id").notNull(),
+  hostName: varchar("host_name").notNull(),
+  selectedDate: varchar("selected_date").notNull(),
+  selectedTime: varchar("selected_time").notNull(),
+  selectedDuration: jsonb("selected_duration").notNull(),
+  selectedServices: jsonb("selected_services").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export type BookingSession = typeof bookingSessions.$inferSelect;
+export type InsertBookingSession = typeof bookingSessions.$inferInsert;

@@ -2421,47 +2421,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stripe payment routes
-  app.post('/api/stripe/create-payment-intent', isAuthenticated, async (req: any, res) => {
+  // Booking session routes for direct checkout flow
+  app.post('/api/booking-session', async (req, res) => {
     try {
-      const userId = req.userId;
-      const { bookingId, amount, serviceAddons = {} } = req.body;
+      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const sessionData = {
+        sessionId,
+        ...req.body,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes expiry
+      };
+      
+      // Store session data temporarily (in production, use Redis or database)
+      await storage.createBookingSession(sessionData);
+      
+      res.json({ sessionId, expiresAt: sessionData.expiresAt });
+    } catch (error) {
+      console.error('Error creating booking session:', error);
+      res.status(500).json({ message: 'Error al crear sesión de reserva' });
+    }
+  });
+
+  app.get('/api/booking-session/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const sessionData = await storage.getBookingSession(sessionId);
+      
+      if (!sessionData) {
+        return res.status(404).json({ message: 'Sesión de reserva no encontrada o expirada' });
+      }
+      
+      res.json(sessionData);
+    } catch (error) {
+      console.error('Error fetching booking session:', error);
+      res.status(500).json({ message: 'Error al obtener sesión de reserva' });
+    }
+  });
+
+  // Stripe payment routes
+  app.post('/api/stripe/create-payment-intent', async (req, res) => {
+    try {
+      const { bookingSessionId } = req.body;
+      
+      // Get booking session data
+      const sessionData = await storage.getBookingSession(bookingSessionId);
+      if (!sessionData) {
+        return res.status(404).json({ message: 'Sesión de reserva no encontrada o expirada' });
+      }
+      
+      // Calculate total amount
+      const servicePricing = await storage.getServicePricing();
+      let totalAmount = parseFloat(sessionData.selectedDuration.price);
+      
+      // Add service addon costs
+      if (sessionData.selectedServices.screenSharing) totalAmount += servicePricing.screenSharing;
+      if (sessionData.selectedServices.translation) totalAmount += servicePricing.translation;
+      if (sessionData.selectedServices.recording) totalAmount += servicePricing.recording;
+      if (sessionData.selectedServices.transcription) totalAmount += servicePricing.transcription;
 
       // Calculate commission and VAT
-      const calculations = await storage.calculateCommission(parseFloat(amount));
-      const servicePricing = await storage.getServicePricing();
-
-      // Calculate addon fees
-      let addonTotal = 0;
-      if (serviceAddons.screenSharing) addonTotal += servicePricing.screenSharing;
-      if (serviceAddons.translation) addonTotal += servicePricing.translation;
-      if (serviceAddons.recording) addonTotal += servicePricing.recording;
-      if (serviceAddons.transcription) addonTotal += servicePricing.transcription;
-
-      const totalAmount = parseFloat(amount) + addonTotal;
       const finalCalculations = await storage.calculateCommission(totalAmount);
 
-      // Get booking and user details
-      const booking = await storage.getBookingById(bookingId);
-      if (!booking) {
-        return res.status(404).json({ message: 'Reserva no encontrada' });
-      }
-
-      const user = await storage.getUser(userId);
-      const host = await storage.getUser(booking.hostId);
+      // Get host details
+      const host = await storage.getUser(sessionData.hostId);
       
-      let stripeCustomerId = user?.stripeCustomerId;
-
-      if (!stripeCustomerId && user?.email) {
-        const customer = await stripe.customers.create({
-          email: user.email,
-          name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-        });
-        stripeCustomerId = customer.id;
-        
-        // Update user with Stripe customer ID
-        await storage.updateUserProfile(userId, { stripeCustomerId });
-      }
+      let stripeCustomerId: string | undefined;
 
       // Create payment intent with Stripe Connect if host has account
       let paymentIntentParams: any = {
@@ -2469,9 +2493,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currency: 'eur',
         customer: stripeCustomerId,
         metadata: {
-          bookingId,
-          userId,
-          hostId: booking.hostId,
+          bookingSessionId,
+          hostId: sessionData.hostId,
           hostAmount: finalCalculations.hostAmount.toString(),
           commissionAmount: finalCalculations.commission.toString(),
           vatAmount: finalCalculations.vat.toString(),
@@ -2488,23 +2511,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
-
-      // Store payment in database
-      await storage.createStripePayment({
-        bookingId,
-        stripePaymentIntentId: paymentIntent.id,
-        stripeCustomerId,
-        amount: totalAmount.toString(),
-        hostAmount: finalCalculations.hostAmount.toString(),
-        commissionAmount: finalCalculations.commission.toString(),
-        vatAmount: finalCalculations.vat.toString(),
-        currency: 'EUR',
-        status: 'pending',
-        screenSharingFee: serviceAddons.screenSharing ? servicePricing.screenSharing.toString() : '0',
-        translationFee: serviceAddons.translation ? servicePricing.translation.toString() : '0', 
-        recordingFee: serviceAddons.recording ? servicePricing.recording.toString() : '0',
-        transcriptionFee: serviceAddons.transcription ? servicePricing.transcription.toString() : '0',
-      });
 
       res.json({
         clientSecret: paymentIntent.client_secret,

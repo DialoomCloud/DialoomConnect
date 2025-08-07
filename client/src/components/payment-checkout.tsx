@@ -68,8 +68,8 @@ const CheckoutForm = ({ bookingDetails, onSuccess, onCancel }: CheckoutFormProps
         amount: calculateTotal(),
         serviceAddons: bookingDetails.serviceAddons,
       });
-
-      const { clientSecret } = response;
+      const data = await response.json();
+      const { clientSecret } = data;
 
       // Get card element
       const cardElement = elements.getElement(CardElement);
