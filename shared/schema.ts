@@ -100,7 +100,7 @@ export const users = pgTable("users", {
   isHost: boolean("is_host").default(false),
   username: varchar("username"), // For admin login
   passwordHash: varchar("password_hash"), // Encrypted password for admin
-  role: varchar("role").default("guest"), // guest, host, admin
+  role: varchar("role").default("registered"), // registered, host, admin
   // Stripe integration
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeAccountId: varchar("stripe_account_id"), // For Stripe Connect (hosts)
