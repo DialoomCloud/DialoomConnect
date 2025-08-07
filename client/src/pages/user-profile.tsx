@@ -49,6 +49,11 @@ export default function UserProfile() {
     enabled: !!userId,
   });
 
+  // Scroll to top when component mounts or userId changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [userId]);
+
   // Track profile view on successful data load
   useEffect(() => {
     if (user && !userLoading) {
