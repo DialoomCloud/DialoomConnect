@@ -8,6 +8,8 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **Profile Edit Bug Fix**: Resolved blank page issue when editing profiles by adding proper error handling, user validation, and diagnostic logging in EnhancedProfileEdit component
 - **File Upload Limits Updated**: Increased photo upload limits from 5MB/10MB to 15MB across all components (host-verification, media-upload, profile-edit, enhanced-profile-edit) and server configuration
 - **Smart Image Compression**: Implemented iterative WebP compression system that automatically reduces image quality until files are under 1.5MB while maintaining visual quality, eliminating the need to store original large files
+- **Homepage Testimonials Enhancement**: Updated testimonials section with real client names (Marianne Foix, Joshua Artxiz, Laia Dolcet) and professional profile images with robust fallback system
+- **Admin Panel Timestamp Fix**: Resolved "value.toISOString is not a function" error when editing admin users by adding proper date validation and timestamp handling for host availability and pricing data
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)

@@ -2815,10 +2815,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.deleteHostAvailability(availability.id, targetUserId);
           }
           for (const availability of hostAvailabilityData) {
-            await storage.createHostAvailability({
+            // Clean and validate availability data - ensure proper date handling
+            const cleanedAvailability: any = {
               ...availability,
               userId: targetUserId
-            });
+            };
+            
+            // Handle timestamp fields properly - convert strings to Date objects if needed
+            if (cleanedAvailability.createdAt && typeof cleanedAvailability.createdAt === 'string') {
+              cleanedAvailability.createdAt = new Date(cleanedAvailability.createdAt);
+            }
+            if (cleanedAvailability.updatedAt && typeof cleanedAvailability.updatedAt === 'string') {
+              cleanedAvailability.updatedAt = new Date(cleanedAvailability.updatedAt);
+            }
+            
+            // Remove createdAt and updatedAt if they exist, let the database handle them
+            delete cleanedAvailability.createdAt;
+            delete cleanedAvailability.updatedAt;
+            
+            await storage.createHostAvailability(cleanedAvailability);
           }
           console.log('Host availability updated successfully');
         }
@@ -2827,10 +2842,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (hostPricingData && Array.isArray(hostPricingData)) {
           console.log('Updating host pricing:', hostPricingData);
           for (const pricing of hostPricingData) {
-            await storage.upsertHostPricing({
+            // Clean and validate pricing data - ensure proper date handling
+            const cleanedPricing: any = {
               ...pricing,
               userId: targetUserId
-            });
+            };
+            
+            // Handle timestamp fields properly - convert strings to Date objects if needed
+            if (cleanedPricing.createdAt && typeof cleanedPricing.createdAt === 'string') {
+              cleanedPricing.createdAt = new Date(cleanedPricing.createdAt);
+            }
+            if (cleanedPricing.updatedAt && typeof cleanedPricing.updatedAt === 'string') {
+              cleanedPricing.updatedAt = new Date(cleanedPricing.updatedAt);
+            }
+            
+            // For upsert operations, let the storage layer handle timestamps
+            if (!cleanedPricing.id) {
+              delete cleanedPricing.createdAt;
+              delete cleanedPricing.updatedAt;
+            }
+            
+            await storage.upsertHostPricing(cleanedPricing);
           }
           console.log('Host pricing updated successfully');
         }
