@@ -11,6 +11,8 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **Homepage Testimonials Enhancement**: Updated testimonials section with real client names (Marianne Foix, Joshua Artxiz, Laia Dolcet) and professional profile images with robust fallback system
 - **Admin Panel Timestamp Fix**: Resolved "value.toISOString is not a function" error when editing admin users by adding proper date validation and timestamp handling for host availability and pricing data
 - **Admin Panel Pricing Tab Enhancement**: Renamed "Host" tab to "Tarifas" and enhanced pricing display to show ALL host pricing configurations including custom durations (e.g., 120 minutes), with ability to add, edit, and delete custom tariffs
+- **Video Call Topics Redesign**: Replaced textarea system with individual input fields featuring add/remove buttons, limited to 10 topics maximum, with full database synchronization and admin panel integration
+- **Video Compression System**: Implemented comprehensive automatic video compression using FFmpeg for uploads up to 100MB. Features smart quality adjustment, format conversion to MP4, resolution optimization (max 1920x1080), and automatic cleanup of original files. Applied across all video upload sections including media uploads and news articles.
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)
@@ -32,6 +34,7 @@ The system employs a client-server architecture.
     - **Host Service Configuration**: Allows hosts to enable/disable additional services like screen sharing, translation, recording, and transcription.
     - **Free Consultation**: Configurable free consultation duration.
     - **Image Optimization**: Increased limits and improved compression for uploaded images.
+    - **Video Compression**: Automatic video compression using FFmpeg for files up to 100MB, with smart quality adjustment, format standardization to MP4, and resolution optimization while maintaining visual quality.
     - **Admin Panel**: Enhanced with analytics, session management, multimedia management, theme editor, and robust role assignment and impersonation features.
 - **System Design Choices**:
     - **Authentication**: All user authentication is handled via Supabase Auth.

@@ -180,8 +180,9 @@ class ReplitObjectStorage {
         );
         filename = `image-${timestamp}.webp`;
       } else if (mediaType === 'video') {
-        // Keep original video file
-        filename = `video-${timestamp}.${ext}`;
+        // Video files are processed by compression service before reaching here
+        // The filename extension should be mp4 for compressed videos
+        filename = `video-${timestamp}.mp4`;
       }
 
       const objectPath = this.getUserPath(userId, 'public', filename);

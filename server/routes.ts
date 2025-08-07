@@ -842,19 +842,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Media content routes
-  // Upload video file
+  // Upload video file with compression
   app.post("/api/upload/video", isAuthenticated, upload.single('video'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No se proporcionó ningún archivo" });
       }
 
+      // Check file size limit (100MB)
+      if (req.file.size > 100 * 1024 * 1024) {
+        return res.status(400).json({ 
+          message: "El archivo es demasiado grande. El tamaño máximo permitido es 100MB" 
+        });
+      }
+
       const userId = req.userId;
+      const { VideoCompressionService } = await import('./video-compression');
       
-      // Upload to Replit Object Storage
+      console.log(`Processing video upload: ${req.file.originalname} (${(req.file.size / 1024 / 1024).toFixed(2)}MB)`);
+      
+      let finalBuffer = req.file.buffer;
+      let finalMimeType = req.file.mimetype;
+      let compressionInfo = '';
+      
+      // Check if it's a video file and compress if needed
+      if (VideoCompressionService.isVideoFile(req.file.originalname)) {
+        console.log('Detected video file, starting compression...');
+        
+        const compressionResult = await VideoCompressionService.compressVideo(
+          req.file.buffer,
+          req.file.originalname,
+          {
+            maxSizeMB: 25, // Target 25MB for good balance of quality/size
+            quality: 'medium',
+            format: 'mp4',
+            maxWidth: 1920,
+            maxHeight: 1080
+          }
+        );
+        
+        if (compressionResult.success && compressionResult.compressedBuffer) {
+          finalBuffer = compressionResult.compressedBuffer;
+          finalMimeType = 'video/mp4';
+          
+          const originalSizeMB = (compressionResult.originalSize / 1024 / 1024).toFixed(2);
+          const compressedSizeMB = ((compressionResult.compressedSize || 0) / 1024 / 1024).toFixed(2);
+          const ratio = compressionResult.compressionRatio || 1;
+          
+          compressionInfo = ` (Original: ${originalSizeMB}MB → Comprimido: ${compressedSizeMB}MB, Ratio: ${ratio.toFixed(1)}x)`;
+          
+          console.log(`Video compression completed successfully${compressionInfo}`);
+        } else {
+          console.warn(`Video compression failed: ${compressionResult.error}. Using original file.`);
+        }
+      }
+      
+      // Upload processed video to Replit Object Storage
       const storagePath = await replitStorage.uploadMediaFile(
         userId,
-        req.file.buffer,
+        finalBuffer,
         req.file.originalname,
         'video'
       );
@@ -866,15 +912,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: req.body.title || req.file.originalname,
         description: req.body.description || "",
         fileName: req.file.originalname,
-        fileSize: req.file.size.toString(),
-        mimeType: req.file.mimetype,
+        fileSize: finalBuffer.length.toString(),
+        mimeType: finalMimeType,
       };
 
       const mediaContent = await storage.createMediaContent(mediaData);
 
       res.json({ 
-        message: "Video subido exitosamente",
-        media: mediaContent 
+        message: `Video subido exitosamente${compressionInfo}`,
+        media: mediaContent,
+        compressionApplied: VideoCompressionService.isVideoFile(req.file.originalname)
       });
     } catch (error) {
       console.error("Error uploading video:", error);
@@ -3694,7 +3741,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload video for news articles
+  // Upload video for news articles with compression
   app.post('/api/admin/news/upload-video', isAdminAuthenticated, upload.single('video'), async (req: any, res) => {
     try {
       if (!req.file) {
@@ -3708,15 +3755,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = req.user as any;
       const userId = user.claims.sub;
+      const { VideoCompressionService } = await import('./video-compression');
+      
+      console.log(`Processing news video upload: ${req.file.originalname} (${(req.file.size / 1024 / 1024).toFixed(2)}MB)`);
+      
+      let finalBuffer = req.file.buffer;
+      let compressionInfo = '';
+      
+      // Check if it's a video file and compress if needed
+      if (VideoCompressionService.isVideoFile(req.file.originalname)) {
+        console.log('Detected video file for news, starting compression...');
+        
+        const compressionResult = await VideoCompressionService.compressVideo(
+          req.file.buffer,
+          req.file.originalname,
+          {
+            maxSizeMB: 20, // Smaller target for news videos
+            quality: 'high', // Better quality for news content
+            format: 'mp4',
+            maxWidth: 1920,
+            maxHeight: 1080
+          }
+        );
+        
+        if (compressionResult.success && compressionResult.compressedBuffer) {
+          finalBuffer = compressionResult.compressedBuffer;
+          
+          const originalSizeMB = (compressionResult.originalSize / 1024 / 1024).toFixed(2);
+          const compressedSizeMB = ((compressionResult.compressedSize || 0) / 1024 / 1024).toFixed(2);
+          const ratio = compressionResult.compressionRatio || 1;
+          
+          compressionInfo = ` (Original: ${originalSizeMB}MB → Compressed: ${compressedSizeMB}MB, Ratio: ${ratio.toFixed(1)}x)`;
+          
+          console.log(`News video compression completed successfully${compressionInfo}`);
+        } else {
+          console.warn(`Video compression failed: ${compressionResult.error}. Using original file.`);
+        }
+      }
       const timestamp = Date.now();
       const filename = `news-video-${timestamp}-${req.file.originalname}`;
 
       // Save video to Object Storage in Media folder
       const videoPath = `Media/videos/${filename}`;
       
-      // Upload to Object Storage
+      // Upload to Object Storage (using the processed/compressed buffer)
       try {
-        const result = await replitStorage._client.uploadFromBytes(videoPath, req.file.buffer);
+        const result = await replitStorage._client.uploadFromBytes(videoPath, finalBuffer);
         if (result.error) {
           console.error(`Object Storage upload failed: ${result.error.message}`);
           return res.status(500).json({ message: "Failed to upload video to storage" });
@@ -3730,11 +3814,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Also save to local filesystem as backup
       const localPath = `uploads/${videoPath}`;
       await fs.mkdir(path.dirname(localPath), { recursive: true });
-      await fs.writeFile(localPath, req.file.buffer);
+      await fs.writeFile(localPath, finalBuffer);
       console.log(`News video also saved locally: ${localPath}`);
 
       const videoUrl = `/storage/${videoPath}`;
-      res.json({ videoUrl });
+      res.json({ 
+        videoUrl,
+        compressionApplied: VideoCompressionService.isVideoFile(req.file.originalname),
+        message: `Video uploaded successfully${compressionInfo}`
+      });
     } catch (error) {
       console.error("Error uploading news video:", error);
       res.status(500).json({ message: "Failed to upload video" });

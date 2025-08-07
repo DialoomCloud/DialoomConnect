@@ -187,10 +187,10 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
       return;
     }
 
-    if (selectedVideoFile.size > 15 * 1024 * 1024) {
+    if (selectedVideoFile.size > 100 * 1024 * 1024) {
       toast({
         title: "Error",
-        description: "El archivo excede el límite de 15MB",
+        description: "El archivo excede el límite de 100MB",
         variant: "destructive",
       });
       return;
@@ -287,7 +287,7 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
               </TabsTrigger>
               <TabsTrigger value="video" className="flex items-center space-x-2">
                 <Video className="w-4 h-4" />
-                <span>Video MP4</span>
+                <span>Video</span>
               </TabsTrigger>
               <TabsTrigger value="image" className="flex items-center space-x-2">
                 <Image className="w-4 h-4" />
@@ -351,11 +351,11 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
           <TabsContent value="video" className="space-y-4">
             <form onSubmit={handleVideoUpload} className="space-y-4">
               <div>
-                <Label htmlFor="video-file">Archivo de Video (MP4, máx. 15MB) *</Label>
+                <Label htmlFor="video-file">Archivo de Video (Todos los formatos, máx. 100MB) *</Label>
                 <Input
                   id="video-file"
                   type="file"
-                  accept="video/mp4"
+                  accept="video/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setSelectedVideoFile(file);
@@ -364,9 +364,14 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
                   required
                 />
                 {selectedVideoFile && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    Archivo seleccionado: {selectedVideoFile.name} ({formatFileSize(selectedVideoFile.size)})
-                  </p>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-600">
+                      Archivo seleccionado: {selectedVideoFile.name} ({formatFileSize(selectedVideoFile.size)})
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      💡 Los videos se comprimen automáticamente para optimizar calidad y tamaño
+                    </p>
+                  </div>
                 )}
               </div>
               
