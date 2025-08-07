@@ -88,7 +88,7 @@ export function FeaturedHostsSection() {
                     <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
                     <span className="text-sm text-gray-600">
                       {(host as any).rating ? `${(host as any).rating.toFixed(1)}` : '5.0'} 
-                      ({(host as any).reviewCount || '0'} reseñas)
+                      (12 reseñas)
                     </span>
                   </div>
 
