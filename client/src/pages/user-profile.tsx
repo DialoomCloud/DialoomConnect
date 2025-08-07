@@ -591,14 +591,50 @@ export default function UserProfile() {
                   </div>
                 ))}
                 {/* Calendar days */}
-                {Array.from({ length: 21 }, (_, i) => (
-                  <div 
-                    key={i} 
-                    className="aspect-square flex items-center justify-center text-xs hover:bg-[hsl(188,100%,95%)] rounded cursor-pointer"
-                  >
-                    {i % 7 === 0 || i % 7 === 6 ? '' : Math.floor(i / 7) + 1}
-                  </div>
-                ))}
+                {(() => {
+                  const today = new Date();
+                  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                  const startOfWeek = new Date(startOfMonth);
+                  startOfWeek.setDate(startOfMonth.getDate() - startOfMonth.getDay() + 1); // Start from Monday
+                  
+                  const days = [];
+                  for (let i = 0; i < 21; i++) {
+                    const date = new Date(startOfWeek);
+                    date.setDate(startOfWeek.getDate() + i);
+                    days.push(date);
+                  }
+                  
+                  return days.map((date, i) => {
+                    const isCurrentMonth = date.getMonth() === today.getMonth();
+                    const dayOfWeek = date.getDay();
+                    const dateStr = format(date, "yyyy-MM-dd");
+                    
+                    // Check if this date has availability
+                    const hasAvailability = availability?.some(
+                      slot => {
+                        if (slot.date) {
+                          return format(new Date(slot.date), "yyyy-MM-dd") === dateStr;
+                        }
+                        return slot.dayOfWeek === dayOfWeek;
+                      }
+                    );
+                    
+                    return (
+                      <div 
+                        key={i} 
+                        className={`aspect-square flex items-center justify-center text-xs rounded cursor-pointer ${
+                          isCurrentMonth 
+                            ? hasAvailability 
+                              ? 'bg-[hsl(188,100%,95%)] text-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,90%)]' 
+                              : 'hover:bg-gray-100 text-gray-900'
+                            : 'text-gray-400 hover:bg-gray-50'
+                        }`}
+                      >
+                        {date.getDate()}
+                      </div>
+                    );
+                  });
+                })()}
               </div>
 
               {/* Time Slots */}
