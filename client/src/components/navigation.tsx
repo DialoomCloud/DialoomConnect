@@ -141,6 +141,8 @@ export function Navigation() {
               </Button>
             </Link>
 
+{/* Demo temporalmente desactivado */}
+            {/*
             <Link href="/demo">
               <Button
                 variant={isActive("/demo") ? "default" : "ghost"}
@@ -155,6 +157,7 @@ export function Navigation() {
                 {t("navigation.demo", "Demo")}
               </Button>
             </Link>
+            */}
 
             <Link href="/hosts">
               <Button
@@ -318,6 +321,8 @@ export function Navigation() {
               {!user ? (
                 // Menu for non-authenticated users: Demo, Hosts, Cómo Funciona, Comenzar Ahora, Idioma
                 <>
+                  {/* Demo temporalmente desactivado */}
+                  {/*
                   <Link href="/demo" onClick={closeMobileMenu}>
                     <Button
                       variant={isActive("/demo") ? "default" : "ghost"}
@@ -328,6 +333,7 @@ export function Navigation() {
                       {t("navigation.demo")}
                     </Button>
                   </Link>
+                  */}
 
                   <Link href="/hosts" onClick={closeMobileMenu}>
                     <Button
@@ -383,6 +389,8 @@ export function Navigation() {
                     </Button>
                   </Link>
 
+                  {/* Demo temporalmente desactivado */}
+                  {/*
                   <Link href="/demo" onClick={closeMobileMenu}>
                     <Button
                       variant={isActive("/demo") ? "default" : "ghost"}
@@ -393,6 +401,7 @@ export function Navigation() {
                       {t("navigation.demo")}
                     </Button>
                   </Link>
+                  */}
 
                   <Link href="/hosts" onClick={closeMobileMenu}>
                     <Button
