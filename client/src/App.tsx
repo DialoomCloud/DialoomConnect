@@ -48,7 +48,7 @@ function Router() {
       <div className="flex-1">
         <Switch>
           {/* Public routes available to everyone */}
-          <Route path="/" component={Landing} />
+          <Route path="/" component={Home} />
           <Route path="/demo" component={Demo} />
           <Route path="/hosts" component={HostSearch} />
           <Route path="/user/:id" component={UserProfile} />
@@ -68,6 +68,7 @@ function Router() {
           <Route path="/test-upload" component={TestUpload} />
           
           {/* Routes that require authentication */}
+          <Route path="/landing" component={Landing} />
           <Route path="/home">
             <ProtectedRoute>
               <Home />
