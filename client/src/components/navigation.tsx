@@ -101,11 +101,12 @@ export function Navigation() {
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  const roleOptions = [] as { value: string; label: string }[];
+  const roleOptions = [
+    { value: "registered", label: "Usuario" }
+  ] as { value: string; label: string }[];
+  
   if (user?.isHost) roleOptions.push({ value: "host", label: "Host" });
   if (user?.isAdmin) roleOptions.push({ value: "admin", label: "Admin" });
-  if (roleOptions.length === 0)
-    roleOptions.push({ value: "registered", label: "Usuario" });
 
   return (
     <nav className="bg-white shadow-sm border-b border-[hsl(220,13%,90%)] sticky top-0 z-50 animate-fade-in-up">
@@ -384,7 +385,7 @@ export function Navigation() {
                     </div>
                   </div>
                 </>
-              ) : user && user.role === "host" ? (
+              ) : user && (user.role === "host" || (user.isHost && !user.role)) ? (
                 // Host mode mobile navigation: Profile, Hosts, Networking (Dashboard removed as it overlaps with Profile functionality)
                 <>
                   <Link href="/profile" onClick={closeMobileMenu}>
@@ -431,7 +432,7 @@ export function Navigation() {
                     </Button>
                   </Link>
                 </>
-              ) : user && user.role === "admin" ? (
+              ) : user && (user.role === "admin" || (user.isAdmin && !user.role)) ? (
                 // Admin mode mobile navigation
                 <>
                   <Link href="/admin-dashboard" onClick={closeMobileMenu}>
