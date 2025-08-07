@@ -78,9 +78,6 @@ export default function HowItWorks() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <Badge className="mb-4 bg-[hsl(188,100%,95%)] text-[hsl(188,100%,38%)] border-[hsl(188,100%,85%)]">
-            ✨ {t('howItWorks.badge', 'Proceso Simple')}
-          </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-[hsl(17,12%,6%)] mb-6">
             {t('howItWorks.title', 'Cómo Funciona Dialoom')}
           </h1>
