@@ -1,68 +1,18 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
 import { FeaturedHostsSection } from "@/components/featured-hosts-section";
 import { NewsSection } from "@/components/news-section";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { OnboardingTutorial, useOnboarding } from "@/components/onboarding-tutorial";
-
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { apiRequest } from "@/lib/queryClient";
-import { Link, useLocation } from "wouter";
-import { User as UserIcon, Phone, MapPin, Mail, Edit, Plus, CheckCircle, Trash2, Search, Users, Calendar, Video, Settings, Newspaper, Clock, Eye, Star } from "lucide-react";
-import type { User, MediaContent, NewsArticle } from "@shared/schema";
+import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "wouter";
+import { Search, Users, Calendar, Video, CheckCircle, Clock, Star } from "lucide-react";
 
 export default function Home() {
-  const { toast } = useToast();
-  const { t } = useTranslation();
-  const { user: authUser, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { adminUser, isLoading: adminLoading } = useAdminAuth();
-  const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const { showOnboarding, handleClose, handleComplete } = useOnboarding();
-
-  // Debug authentication state
-  console.log("Home: Auth state", { isAuthenticated, authLoading, adminUser, adminLoading });
-
-  // Fetch user profile
-  const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
-    queryKey: ["/api/auth/user"],
-    enabled: isAuthenticated,
-  });
-
-  // Handle user error - only show error, don't redirect
-  if (userError && isUnauthorizedError(userError as Error)) {
-    console.log("User not authenticated, showing limited content");
-  }
-
-  if (authLoading || adminLoading) {
-    return (
-      <div className="min-h-screen bg-[hsl(220,9%,98%)] flex items-center justify-center">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[hsl(188,100%,38%)]"></div>
-          <div className="absolute inset-0 animate-glow rounded-full"></div>
-        </div>
-      </div>
-    );
-  }
+  console.log("Home: Public page loading");
 
   // Public home page content (shown to all users)
   return (
     <div className="min-h-screen bg-gradient-to-br from-[hsl(220,9%,98%)] to-[hsl(220,20%,95%)]">
       <Navigation />
-      
-      {/* Onboarding Tutorial */}
-      <OnboardingTutorial 
-        isOpen={showOnboarding}
-        onClose={handleClose}
-        onComplete={handleComplete}
-      />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
