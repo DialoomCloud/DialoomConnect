@@ -116,7 +116,7 @@ export function DateTimeSelector({ isOpen, onClose, availability, onConfirm }: D
               disabled={disabledDays}
               locale={es}
               className="rounded-md border"
-              fromDate={startOfMonth(new Date())}
+              fromDate={new Date()}
               toDate={addDays(new Date(), 90)}
               showOutsideDays={false}
               weekStartsOn={1}
