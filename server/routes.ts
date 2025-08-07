@@ -4940,5 +4940,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contact form endpoint
+  app.post('/api/contact', async (req, res) => {
+    try {
+      const { name, email, subject, message } = req.body;
+      
+      if (!name || !email || !subject || !message) {
+        return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+      }
+
+      // Log the contact request for admin review
+      console.log('Contact form submission:', { 
+        name, 
+        email, 
+        subject, 
+        message,
+        timestamp: new Date().toISOString() 
+      });
+      
+      // Send confirmation email to user if Resend is configured
+      if (process.env.RESEND_API_KEY) {
+        try {
+          const { Resend } = await import('resend');
+          const resend = new Resend(process.env.RESEND_API_KEY);
+          
+          await resend.emails.send({
+            from: 'Dialoom <noreply@dialoom.cloud>',
+            to: [email],
+            subject: 'Hemos recibido tu mensaje - Dialoom Support',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #188db8;">¡Gracias por contactarnos!</h2>
+                <p>Hola ${name},</p>
+                <p>Hemos recibido tu mensaje correctamente. Nuestro equipo de soporte te responderá lo antes posible.</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                  <h3 style="margin: 0 0 10px 0; color: #333;">Resumen de tu consulta:</h3>
+                  <p style="margin: 5px 0;"><strong>Asunto:</strong> ${subject}</p>
+                  <p style="margin: 5px 0;"><strong>Mensaje:</strong></p>
+                  <p style="margin: 5px 0; padding: 10px; background: white; border-radius: 3px;">${message}</p>
+                </div>
+                <p>Tiempo estimado de respuesta: 24-48 horas</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #666; font-size: 14px;">
+                  Equipo de Soporte de Dialoom<br>
+                  <a href="https://dialoom.cloud" style="color: #188db8;">dialoom.cloud</a>
+                </p>
+              </div>
+            `,
+          });
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          // Don't fail the request if email fails
+        }
+      }
+      
+      res.json({ message: 'Mensaje enviado correctamente. Te responderemos pronto.' });
+    } catch (error) {
+      console.error('Error processing contact form:', error);
+      res.status(500).json({ message: 'Error al procesar el mensaje' });
+    }
+  });
+
   return httpServer;
 }

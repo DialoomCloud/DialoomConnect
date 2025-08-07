@@ -15,6 +15,7 @@ import {
   X,
   Newspaper,
   Video,
+  HelpCircle,
 } from "lucide-react";
 import type { User } from "@shared/schema";
 import { useThemeConfig } from "@/hooks/useThemeConfig";
@@ -167,6 +168,21 @@ export function Navigation() {
               >
                 <Newspaper className="w-4 h-4 mr-2" />
                 {t('navigation.news', 'News')}
+              </Button>
+            </Link>
+
+            <Link href="/help">
+              <Button
+                variant={isActive("/help") ? "default" : "ghost"}
+                size="sm"
+                className={
+                  isActive("/help")
+                    ? "bg-[hsl(188,100%,38%)] animate-glow"
+                    : "hover-lift"
+                }
+              >
+                <HelpCircle className="w-4 h-4 mr-2" />
+                {t('navigation.help', 'Help')}
               </Button>
             </Link>
 
@@ -353,7 +369,18 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/news") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <Newspaper className="w-4 h-4 mr-2" />
-                      {t("navigation.howItWorks", "Cómo Funciona")}
+                      {t("navigation.news", "News")}
+                    </Button>
+                  </Link>
+
+                  <Link href="/help" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/help") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/help") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      {t("navigation.help", "Help")}
                     </Button>
                   </Link>
 
@@ -419,6 +446,17 @@ export function Navigation() {
                       Networking
                     </Button>
                   </Link>
+
+                  <Link href="/help" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/help") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/help") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      {t("navigation.help", "Help")}
+                    </Button>
+                  </Link>
                 </>
               ) : user && user.role === "admin" ? (
                 // Admin mode mobile navigation
@@ -431,6 +469,17 @@ export function Navigation() {
                     >
                       <Shield className="w-4 h-4 mr-2" />
                       {t("navigation.admin")}
+                    </Button>
+                  </Link>
+
+                  <Link href="/help" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/help") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/help") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      {t("navigation.help", "Help")}
                     </Button>
                   </Link>
                 </>
@@ -497,6 +546,17 @@ export function Navigation() {
                       </Button>
                     </Link>
                   )}
+
+                  <Link href="/help" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/help") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/help") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      {t("navigation.help", "Help")}
+                    </Button>
+                  </Link>
                 </>
               )}
 
