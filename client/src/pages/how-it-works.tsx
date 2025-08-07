@@ -22,33 +22,21 @@ export default function HowItWorks() {
 
   const steps = [
     {
-      icon: UserPlus,
-      title: t('howItWorks.steps.register.title', 'Regístrate'),
-      description: t('howItWorks.steps.register.description', 'Crea tu cuenta gratuita en Dialoom y completa tu perfil profesional'),
-      color: 'bg-blue-100 text-blue-600'
-    },
-    {
       icon: Search,
-      title: t('howItWorks.steps.search.title', 'Busca Expertos'),
-      description: t('howItWorks.steps.search.description', 'Utiliza nuestra IA para encontrar el experto perfecto según tus necesidades'),
+      title: 'Search Host',
+      description: 'Utiliza nuestra IA para encontrar el experto perfecto según tus necesidades',
       color: 'bg-green-100 text-green-600'
     },
     {
       icon: Calendar,
-      title: t('howItWorks.steps.schedule.title', 'Programa tu Sesión'),
-      description: t('howItWorks.steps.schedule.description', 'Selecciona fecha, hora y duración que mejor se adapte a tu horario'),
+      title: 'Schedule Session',
+      description: 'Selecciona fecha, hora y duración que mejor se adapte a tu horario',
       color: 'bg-purple-100 text-purple-600'
     },
     {
-      icon: CreditCard,
-      title: t('howItWorks.steps.pay.title', 'Pago Seguro'),
-      description: t('howItWorks.steps.pay.description', 'Realiza el pago de forma segura con Stripe. Solo pagas cuando la sesión se completa'),
-      color: 'bg-orange-100 text-orange-600'
-    },
-    {
       icon: Video,
-      title: t('howItWorks.steps.connect.title', 'Conéctate'),
-      description: t('howItWorks.steps.connect.description', 'Únete a la videollamada HD con herramientas avanzadas de comunicación'),
+      title: 'Videocall',
+      description: 'Únete a la videollamada HD con herramientas avanzadas de comunicación',
       color: 'bg-red-100 text-red-600'
     }
   ];
@@ -89,10 +77,10 @@ export default function HowItWorks() {
         {/* Steps Section */}
         <div className="mb-20">
           <h2 className="text-3xl font-bold text-center text-[hsl(17,12%,6%)] mb-12">
-            {t('howItWorks.stepsTitle', 'En 5 Pasos Simples')}
+            En 3 Pasos Simples
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step, index) => (
               <div key={index} className="relative">
                 <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-all duration-300 h-full">
