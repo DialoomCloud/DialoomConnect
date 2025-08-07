@@ -288,9 +288,9 @@ export function AdminUserManagement() {
                           {user.profileImageUrl ? (
                             <>
                               <img 
-                                src={user.profileImageUrl.startsWith('/storage/') 
+                                src={user.profileImageUrl.startsWith('http') || user.profileImageUrl.startsWith('/') 
                                   ? user.profileImageUrl 
-                                  : `/storage/${user.profileImageUrl}`
+                                  : `/uploads/${user.profileImageUrl}`
                                 } 
                                 alt={`${user.firstName} ${user.lastName}`}
                                 className="w-8 h-8 rounded-full object-cover"
