@@ -102,7 +102,7 @@ export const isAuthenticated: RequestHandler = async (req: any, res: Response, n
 };
 
 // Admin check middleware
-const ADMIN_EMAILS = ['marcgarcia10@gmail.com', 'nachosaladrigas@gmail.com'];
+const ADMIN_EMAILS = ['marc10garciabcn@gmail.com', 'nachosaladrigas@gmail.com'];
 
 export const isAdmin = (req: any): boolean => {
   const user = req.user;

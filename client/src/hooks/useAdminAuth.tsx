@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-const ADMIN_USERNAMES = ['dialoomroot', 'marcgarcia10', 'nachosaladrigas'];
+const ADMIN_USERNAMES = ['dialoomroot', 'marc10garciabcn', 'nachosaladrigas'];
 
 export function useAdminAuth() {
   const { data: user, isLoading } = useQuery({
