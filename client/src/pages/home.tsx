@@ -129,30 +129,110 @@ export default function Home() {
         {/* Ratings Section */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-center text-[hsl(17,12%,6%)] mb-8">
-            Lo que dicen nuestros usuarios
+            Lo que dicen nuestros clientes
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="w-4 h-4 text-yellow-500 fill-current" />
-                    ))}
+            {/* Testimonio 1 - Marianne Foix */}
+            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="w-4 h-4 text-yellow-500 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-600 text-sm mb-4">
+                  "Excelente plataforma para conectar con expertos. La calidad de las sesiones es increíble."
+                </p>
+                <div className="flex items-center">
+                  <img 
+                    src="/storage/assets/image_1754500542851.png" 
+                    alt="Marianne Foix" 
+                    className="w-8 h-8 rounded-full mr-3 object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const placeholder = target.nextElementSibling as HTMLElement;
+                      if (placeholder) placeholder.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-8 h-8 bg-gray-200 rounded-full mr-3 items-center justify-center text-xs font-medium text-gray-600 hidden">
+                    MF
                   </div>
-                  <p className="text-gray-600 text-sm mb-4">
-                    "Excelente plataforma para conectar con expertos. La calidad de las sesiones es increíble."
-                  </p>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
-                    <div>
-                      <p className="font-medium text-[hsl(17,12%,6%)] text-sm">Usuario {i}</p>
-                      <p className="text-gray-500 text-xs">Cliente verificado</p>
-                    </div>
+                  <div>
+                    <p className="font-medium text-[hsl(17,12%,6%)] text-sm">Marianne Foix</p>
+                    <p className="text-gray-500 text-xs">Cliente verificado</p>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonio 2 - Joshua Artxiz */}
+            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="w-4 h-4 text-yellow-500 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-600 text-sm mb-4">
+                  "Una experiencia fantástica. Los profesionales son muy competentes y el servicio es de primera clase."
+                </p>
+                <div className="flex items-center">
+                  <img 
+                    src="/storage/assets/image_1754504330742.png" 
+                    alt="Joshua Artxiz" 
+                    className="w-8 h-8 rounded-full mr-3 object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const placeholder = target.nextElementSibling as HTMLElement;
+                      if (placeholder) placeholder.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-8 h-8 bg-gray-200 rounded-full mr-3 items-center justify-center text-xs font-medium text-gray-600 hidden">
+                    JA
+                  </div>
+                  <div>
+                    <p className="font-medium text-[hsl(17,12%,6%)] text-sm">Joshua Artxiz</p>
+                    <p className="text-gray-500 text-xs">Cliente verificado</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonio 3 - Laia Dolcet */}
+            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="w-4 h-4 text-yellow-500 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-600 text-sm mb-4">
+                  "Recomiendo totalmente Dialoom. He encontrado exactamente lo que buscaba y más."
+                </p>
+                <div className="flex items-center">
+                  <img 
+                    src="/storage/assets/image_1754504413509.png" 
+                    alt="Laia Dolcet" 
+                    className="w-8 h-8 rounded-full mr-3 object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const placeholder = target.nextElementSibling as HTMLElement;
+                      if (placeholder) placeholder.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-8 h-8 bg-gray-200 rounded-full mr-3 items-center justify-center text-xs font-medium text-gray-600 hidden">
+                    LD
+                  </div>
+                  <div>
+                    <p className="font-medium text-[hsl(17,12%,6%)] text-sm">Laia Dolcet</p>
+                    <p className="text-gray-500 text-xs">Cliente verificado</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
