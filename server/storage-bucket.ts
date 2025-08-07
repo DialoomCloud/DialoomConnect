@@ -2,6 +2,50 @@ import fs from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
 
+/**
+ * Compress image to target size using iterative quality reduction
+ */
+async function compressImageToTargetSize(
+  inputBuffer: Buffer,
+  maxSizeBytes: number = 1.5 * 1024 * 1024, // 1.5MB default
+  maxWidth: number = 1200,
+  maxHeight: number = 1200,
+  fitMode: 'cover' | 'inside' = 'inside'
+): Promise<Buffer> {
+  let quality = 95;
+  let processedBuffer: Buffer;
+  
+  // Start with high quality and reduce until we meet the size requirement
+  do {
+    processedBuffer = await sharp(inputBuffer)
+      .resize(maxWidth, maxHeight, { 
+        fit: fitMode, 
+        position: 'center',
+        withoutEnlargement: true 
+      })
+      .webp({ quality })
+      .toBuffer();
+    
+    console.log(`Storage bucket compressed image: quality=${quality}, size=${(processedBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+    
+    // If size is acceptable, return the result
+    if (processedBuffer.length <= maxSizeBytes) {
+      break;
+    }
+    
+    // Reduce quality for next iteration
+    quality -= 5;
+    
+    // Don't go below quality 30 to maintain visual quality
+    if (quality < 30) {
+      console.warn(`Storage bucket: Could not compress image below ${(processedBuffer.length / 1024 / 1024).toFixed(2)}MB with quality 30`);
+      break;
+    }
+  } while (processedBuffer.length > maxSizeBytes && quality >= 30);
+  
+  return processedBuffer;
+}
+
 export class StorageBucket {
   private basePath = 'uploads/users';
 
@@ -36,11 +80,19 @@ export class StorageBucket {
     const filePath = path.join(publicPath, fileName);
 
     try {
-      // Process image with Sharp - resize and convert to WebP with higher quality
-      await sharp(imageBuffer)
-        .resize(400, 400, { fit: 'cover', position: 'center' })
-        .webp({ quality: 92 })
-        .toFile(filePath);
+      console.log(`Storage bucket processing profile image: ${originalName}, original size: ${(imageBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+      
+      // Process and compress profile image to max 1.5MB
+      const processedBuffer = await compressImageToTargetSize(
+        imageBuffer,
+        1.5 * 1024 * 1024, // 1.5MB max
+        400, // profile image size
+        400,
+        'cover' // cover for profile photos
+      );
+      
+      // Write the compressed buffer to file
+      await fs.writeFile(filePath, processedBuffer);
 
       // Return relative path for database storage
       return `uploads/users/${userId}/public/${fileName}`;
@@ -83,11 +135,19 @@ export class StorageBucket {
     const filePath = path.join(publicPath, fileName);
 
     try {
-      // Process and compress image with higher quality
-      await sharp(imageBuffer)
-        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 90 })
-        .toFile(filePath);
+      console.log(`Storage bucket processing public image: ${originalName}, original size: ${(imageBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+      
+      // Process and compress image to max 1.5MB
+      const processedBuffer = await compressImageToTargetSize(
+        imageBuffer,
+        1.5 * 1024 * 1024, // 1.5MB max
+        1200, // larger for media images
+        1200,
+        'inside' // preserve aspect ratio
+      );
+      
+      // Write the compressed buffer to file
+      await fs.writeFile(filePath, processedBuffer);
 
       return `uploads/users/${userId}/public/${fileName}`;
     } catch (error) {

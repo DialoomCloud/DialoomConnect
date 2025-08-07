@@ -1,6 +1,50 @@
 import { Client } from '@replit/object-storage';
 import sharp from 'sharp';
 
+/**
+ * Compress image to target size using iterative quality reduction
+ */
+async function compressImageToTargetSize(
+  inputBuffer: Buffer,
+  maxSizeBytes: number = 1.5 * 1024 * 1024, // 1.5MB default
+  maxWidth: number = 1200,
+  maxHeight: number = 1200,
+  fitMode: 'cover' | 'inside' = 'inside'
+): Promise<Buffer> {
+  let quality = 95;
+  let processedBuffer: Buffer;
+  
+  // Start with high quality and reduce until we meet the size requirement
+  do {
+    processedBuffer = await sharp(inputBuffer)
+      .resize(maxWidth, maxHeight, { 
+        fit: fitMode, 
+        position: 'center',
+        withoutEnlargement: true 
+      })
+      .webp({ quality })
+      .toBuffer();
+    
+    console.log(`Compressed image: quality=${quality}, size=${(processedBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+    
+    // If size is acceptable, return the result
+    if (processedBuffer.length <= maxSizeBytes) {
+      break;
+    }
+    
+    // Reduce quality for next iteration
+    quality -= 5;
+    
+    // Don't go below quality 30 to maintain visual quality
+    if (quality < 30) {
+      console.warn(`Could not compress image below ${(processedBuffer.length / 1024 / 1024).toFixed(2)}MB with quality 30`);
+      break;
+    }
+  } while (processedBuffer.length > maxSizeBytes && quality >= 30);
+  
+  return processedBuffer;
+}
+
 class ReplitObjectStorage {
   public _client: Client;
 
@@ -69,11 +113,16 @@ class ReplitObjectStorage {
    */
   async uploadProfileImage(userId: string, fileBuffer: Buffer, originalName: string): Promise<string> {
     try {
-      // Process image with Sharp - higher quality for profile images
-      const processedBuffer = await sharp(fileBuffer)
-        .resize(300, 300, { fit: 'cover', position: 'center' })
-        .webp({ quality: 92 })
-        .toBuffer();
+      console.log(`Processing profile image: ${originalName}, original size: ${(fileBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+      
+      // Process and compress profile image to max 1.5MB
+      const processedBuffer = await compressImageToTargetSize(
+        fileBuffer,
+        1.5 * 1024 * 1024, // 1.5MB max
+        400, // smaller for profile images
+        400,
+        'cover' // cover for profile photos
+      );
 
       const timestamp = Date.now();
       const filename = `profile-${timestamp}.webp`;
@@ -119,11 +168,16 @@ class ReplitObjectStorage {
       const ext = originalName.split('.').pop()?.toLowerCase();
 
       if (mediaType === 'image') {
-        // Process image with higher quality
-        processedBuffer = await sharp(fileBuffer)
-          .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-          .webp({ quality: 90 })
-          .toBuffer();
+        console.log(`Processing media image: ${originalName}, original size: ${(fileBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+        
+        // Process and compress image to max 1.5MB
+        processedBuffer = await compressImageToTargetSize(
+          fileBuffer,
+          1.5 * 1024 * 1024, // 1.5MB max
+          1200, // larger for media images
+          1200,
+          'inside' // preserve aspect ratio
+        );
         filename = `image-${timestamp}.webp`;
       } else if (mediaType === 'video') {
         // Keep original video file
