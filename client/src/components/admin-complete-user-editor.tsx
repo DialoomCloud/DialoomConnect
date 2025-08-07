@@ -260,7 +260,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         
         // Log FormData contents
         console.log('FormData contents:');
-        for (let [key, value] of imageFormData.entries()) {
+        for (const [key, value] of Array.from(imageFormData.entries())) {
           console.log(`- ${key}:`, value);
         }
         
@@ -361,37 +361,37 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   };
 
   const toggleSkill = (skillId: number) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       skillIds: prev.skillIds.includes(skillId)
-        ? prev.skillIds.filter(id => id !== skillId)
+        ? prev.skillIds.filter((id: number) => id !== skillId)
         : [...prev.skillIds, skillId]
     }));
   };
 
   const toggleLanguage = (languageId: number) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       languageIds: prev.languageIds.includes(languageId)
-        ? prev.languageIds.filter(id => id !== languageId)
+        ? prev.languageIds.filter((id: number) => id !== languageId)
         : [...prev.languageIds, languageId]
     }));
   };
 
   const toggleCategory = (categoryId: number) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       categoryIds: prev.categoryIds.includes(categoryId)
-        ? prev.categoryIds.filter(id => id !== categoryId)
+        ? prev.categoryIds.filter((id: number) => id !== categoryId)
         : [...prev.categoryIds, categoryId]
     }));
   };
 
   const updateSocialProfile = (platformId: number, username: string) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
-      socialProfiles: prev.socialProfiles.some(sp => sp.platformId === platformId)
-        ? prev.socialProfiles.map(sp => 
+      socialProfiles: prev.socialProfiles.some((sp: any) => sp.platformId === platformId)
+        ? prev.socialProfiles.map((sp: any) => 
             sp.platformId === platformId ? { ...sp, username } : sp
           )
         : [...prev.socialProfiles, { platformId, username }]
@@ -691,7 +691,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                 <CardContent className="space-y-4">
                   {socialPlatforms.map((platform: any) => {
                     const existingProfile = formData.socialProfiles.find(
-                      sp => sp.platformId === platform.id
+                      (sp: any) => sp.platformId === platform.id
                     );
                     return (
                       <div key={platform.id} className="flex items-center space-x-4">
