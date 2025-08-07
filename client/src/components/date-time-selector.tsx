@@ -118,6 +118,10 @@ export function DateTimeSelector({ isOpen, onClose, availability, onConfirm }: D
               className="rounded-md border"
               fromDate={new Date()}
               toDate={addDays(new Date(), 90)}
+              showOutsideDays={true}
+              weekStartsOn={1}
+              showWeekNumber={false}
+              fixedWeeks={false}
             />
           </div>
 
