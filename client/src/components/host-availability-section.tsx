@@ -159,6 +159,19 @@ export function HostAvailabilitySection() {
   };
 
   const handlePricingToggle = (duration: number, isActive: boolean, currentPrice?: number) => {
+    // Count currently active pricing options (excluding the one being toggled)
+    const currentActivePricing = pricing.filter(p => p.isActive && p.duration !== duration);
+    
+    // If trying to activate and would exceed 5 total active pricing options
+    if (isActive && currentActivePricing.length >= 5) {
+      toast({
+        title: "Máximo de tarifas alcanzado",
+        description: "Solo puedes tener máximo 5 tarifas activas al mismo tiempo. Desactiva alguna tarifa para activar esta.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     updatePricingMutation.mutate({
       duration,
       price: currentPrice || 0,
@@ -172,6 +185,17 @@ export function HostAvailabilitySection() {
       toast({
         title: "Error",
         description: "Por favor, ingresa valores válidos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if adding custom pricing would exceed 5 active options
+    const currentActivePricing = pricing.filter(p => p.isActive);
+    if (currentActivePricing.length >= 5) {
+      toast({
+        title: "Máximo de tarifas alcanzado",
+        description: "Solo puedes tener máximo 5 tarifas activas al mismo tiempo. Desactiva alguna tarifa para añadir esta personalizada.",
         variant: "destructive",
       });
       return;
@@ -204,9 +228,14 @@ export function HostAvailabilitySection() {
       {/* Pricing Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5" />
-            {t('pricing.title')}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              {t('pricing.title')}
+            </div>
+            <div className="text-sm font-normal text-gray-600">
+              Tarifas activas: {pricing.filter(p => p.isActive).length}/5
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

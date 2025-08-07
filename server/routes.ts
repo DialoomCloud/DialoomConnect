@@ -2183,7 +2183,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if it's a single pricing update or bulk update
       if (Array.isArray(body)) {
-        // Bulk update - clear existing and create new
+        // Bulk update - check 5-tariff limit
+        const activeTariffs = body.filter(p => p.isActive);
+        if (activeTariffs.length > 5) {
+          return res.status(400).json({ 
+            error: "Máximo de tarifas alcanzado",
+            message: "Solo se pueden tener máximo 5 tarifas activas." 
+          });
+        }
+
+        // Clear existing and create new
         const existing = await storage.getHostPricing(userId);
         for (const price of existing) {
           await storage.deleteHostPricing(price.id, userId);
@@ -2211,6 +2220,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           includesRecording,
           includesTranscription
         } = body;
+
+        // Check 5-tariff limit when activating a tariff
+        if (isActive) {
+          const existingPricing = await storage.getHostPricing(userId);
+          const currentActivePricing = existingPricing.filter(p => p.isActive && p.duration !== duration);
+          
+          if (currentActivePricing.length >= 5) {
+            return res.status(400).json({ 
+              error: "Máximo de tarifas alcanzado",
+              message: "Solo se pueden tener máximo 5 tarifas activas." 
+            });
+          }
+        }
 
         const pricingData = {
           userId,

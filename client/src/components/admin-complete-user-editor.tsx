@@ -776,7 +776,12 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                 <>
                   <Card>
                     <CardHeader>
-                      <CardTitle>Configuración de Precios</CardTitle>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>Configuración de Precios</span>
+                        <div className="text-sm font-normal text-gray-600">
+                          Tarifas activas: {formData.hostPricing?.filter((p: any) => p.isActive).length || 0}/5
+                        </div>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {/* Free Consultation */}
@@ -831,7 +836,43 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                           const pricing = formData.hostPricing?.find((p: any) => p.duration === duration);
                           return (
                             <div key={`standard-${duration}`} className="flex items-center gap-4 p-3 border rounded bg-gray-50">
-                              <Label className="w-24 font-medium">{duration} min:</Label>
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={pricing?.isActive !== false}
+                                  onCheckedChange={(checked) => {
+                                    // Check 5-tariff limit
+                                    const currentActivePricing = formData.hostPricing?.filter((p: any) => p.isActive && p.duration !== duration) || [];
+                                    if (checked && currentActivePricing.length >= 5) {
+                                      toast({
+                                        title: "Máximo de tarifas alcanzado",
+                                        description: "Solo se pueden tener máximo 5 tarifas activas.",
+                                        variant: "destructive",
+                                      });
+                                      return;
+                                    }
+
+                                    const newPricing = formData.hostPricing || [];
+                                    const index = newPricing.findIndex((p: any) => p.duration === duration);
+                                    if (index >= 0) {
+                                      newPricing[index] = { ...newPricing[index], isActive: checked };
+                                    } else {
+                                      newPricing.push({ 
+                                        duration, 
+                                        price: '', 
+                                        currency: 'EUR',
+                                        isCustom: false,
+                                        isActive: checked,
+                                        includesScreenSharing: false,
+                                        includesTranslation: false,
+                                        includesRecording: false,
+                                        includesTranscription: false
+                                      });
+                                    }
+                                    setFormData({ ...formData, hostPricing: newPricing });
+                                  }}
+                                />
+                                <Label className="w-20 font-medium">{duration} min:</Label>
+                              </div>
                               <Input
                                 type="number"
                                 placeholder="Precio en EUR"
@@ -847,6 +888,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                                       price: e.target.value, 
                                       currency: 'EUR',
                                       isCustom: false,
+                                      isActive: true,
                                       includesScreenSharing: false,
                                       includesTranslation: false,
                                       includesRecording: false,
@@ -856,6 +898,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                                   setFormData({ ...formData, hostPricing: newPricing });
                                 }}
                                 className="w-32"
+                                disabled={pricing?.isActive === false}
                               />
                               <span>EUR</span>
                               <div className="flex items-center gap-2 ml-auto">
@@ -879,6 +922,30 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                         {/* Show ALL custom pricing configurations */}
                         {formData.hostPricing?.filter((p: any) => ![0, 30, 60, 90].includes(p.duration)).map((pricing: any, index: number) => (
                           <div key={`custom-${pricing.duration}-${index}`} className="flex items-center gap-4 p-3 border rounded bg-blue-50">
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={pricing?.isActive !== false}
+                                onCheckedChange={(checked) => {
+                                  // Check 5-tariff limit
+                                  const currentActivePricing = formData.hostPricing?.filter((p: any) => p.isActive && p.duration !== pricing.duration) || [];
+                                  if (checked && currentActivePricing.length >= 5) {
+                                    toast({
+                                      title: "Máximo de tarifas alcanzado",
+                                      description: "Solo se pueden tener máximo 5 tarifas activas.",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+
+                                  const newPricing = [...formData.hostPricing];
+                                  const actualIndex = newPricing.findIndex(p => p.id === pricing.id || (p.duration === pricing.duration && p.price === pricing.price));
+                                  if (actualIndex >= 0) {
+                                    newPricing[actualIndex] = { ...newPricing[actualIndex], isActive: checked };
+                                    setFormData({ ...formData, hostPricing: newPricing });
+                                  }
+                                }}
+                              />
+                            </div>
                             <div className="flex items-center gap-2 w-24">
                               <Input
                                 type="number"
@@ -893,6 +960,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                                 }}
                                 className="w-16 text-sm"
                                 min="1"
+                                disabled={pricing?.isActive === false}
                               />
                               <span className="text-sm font-medium">min:</span>
                             </div>
@@ -909,6 +977,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                                 }
                               }}
                               className="w-32"
+                              disabled={pricing?.isActive === false}
                             />
                             <span>EUR</span>
                             <Badge variant="secondary" className="text-xs">Personalizada</Badge>
