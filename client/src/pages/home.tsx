@@ -173,7 +173,7 @@ export default function Home() {
             <Link href="/login">
               <Button 
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-[hsl(188,100%,38%)] px-8 py-3 font-semibold text-lg transition-all duration-300"
+                className="border-white text-[hsl(188,100%,38%)] bg-white hover:bg-gray-100 hover:text-[hsl(188,100%,32%)] px-8 py-3 font-semibold text-lg transition-all duration-300"
               >
                 Iniciar Sesión
               </Button>

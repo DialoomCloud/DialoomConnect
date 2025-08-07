@@ -51,8 +51,8 @@ export function FeaturedHostsSection() {
             <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
               <CardContent className="p-6">
                 <div className="text-center">
-                  {/* Host Profile Image */}
-                  <div className="w-16 h-16 rounded-full mx-auto mb-4 overflow-hidden border-4 border-[hsl(188,100%,95%)]">
+                  {/* Host Profile Image - Doubled size */}
+                  <div className="w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden border-4 border-[hsl(188,100%,95%)]">
                     {(host as any).profileImagePath ? (
                       <img 
                         src={`/storage/${(host as any).profileImagePath}`} 
@@ -61,7 +61,7 @@ export function FeaturedHostsSection() {
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
+                        <span className="text-white font-bold text-3xl">
                           {(host as any).firstName?.[0] || 'U'}{(host as any).lastName?.[0] || 'S'}
                         </span>
                       </div>
@@ -73,9 +73,9 @@ export function FeaturedHostsSection() {
                     {(host as any).firstName || 'Experto'} {(host as any).lastName || 'Profesional'}
                   </h3>
 
-                  {/* Host Title */}
-                  <p className="text-[hsl(188,100%,38%)] font-medium text-sm mb-2">
-                    {(host as any).title || 'Experto Profesional'}
+                  {/* Host Title - Uppercase and larger */}
+                  <p className="text-[hsl(188,100%,38%)] font-bold text-lg mb-2 uppercase">
+                    {(host as any).title || 'EXPERTO PROFESIONAL'}
                   </p>
 
                   {/* Rating */}
