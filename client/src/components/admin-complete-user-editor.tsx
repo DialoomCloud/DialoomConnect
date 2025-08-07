@@ -23,7 +23,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, User, Settings, Briefcase, Globe, MessageSquare, CreditCard, Upload, Play, Image, Youtube, Trash2, Camera, UserCircle } from 'lucide-react';
+import { Loader2, User, Settings, Briefcase, Globe, MessageSquare, CreditCard, Upload, Play, Image, Youtube, Trash2, Camera, UserCircle, Plus, X } from 'lucide-react';
 import { MediaEmbed } from '@/components/media-embed';
 import { MediaUploadModal } from '@/components/media-upload-modal';
 import { MediaEditModal } from '@/components/media-edit-modal';
@@ -109,6 +109,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         // Host-specific configurations
         hostAvailability: userProfile.hostAvailability || [],
         hostPricing: userProfile.hostPricing || [],
+        videoCallTopics: user.videoCallTopics || [],
       });
       
       // Set profile image preview if user has one
@@ -176,6 +177,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     // Host-specific configurations
     hostAvailability: [] as any[],
     hostPricing: [] as any[],
+    videoCallTopics: [] as string[],
   });
 
 

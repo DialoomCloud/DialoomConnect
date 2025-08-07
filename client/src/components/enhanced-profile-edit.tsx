@@ -813,28 +813,71 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                       control={form.control}
                       name="videoCallTopics"
                       render={({ field }) => {
-                        const topicsText = field.value ? field.value.join('\n') : '';
+                        const topics = field.value || [];
+                        
+                        const addTopic = () => {
+                          if (topics.length < 10) {
+                            field.onChange([...topics, '']);
+                          }
+                        };
+                        
+                        const removeTopic = (index: number) => {
+                          const newTopics = topics.filter((_: any, i: number) => i !== index);
+                          field.onChange(newTopics);
+                        };
+                        
+                        const updateTopic = (index: number, value: string) => {
+                          const newTopics = [...topics];
+                          newTopics[index] = value;
+                          field.onChange(newTopics);
+                        };
+                        
+                        // Show one empty field if no topics exist
+                        const displayTopics = topics.length === 0 ? [''] : topics;
                         
                         return (
                           <FormItem>
-                            <FormLabel>{t('userProfile.videoCallTopics')}</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                value={topicsText}
-                                onChange={(e) => {
-                                  const lines = e.target.value.split('\n').slice(0, 10); // Limit to 10 lines
-                                  const filteredLines = lines.filter(line => line.trim().length > 0);
-                                  field.onChange(filteredLines);
-                                }}
-                                rows={6}
-                                placeholder={t('userProfile.videoCallTopicsPlaceholder') + ':&#10;• Estrategia de Marketing Digital&#10;• Análisis de Redes Sociales&#10;• Optimización SEO&#10;• Publicidad Online&#10;• Growth Hacking'}
-                                className="resize-none"
-                              />
-                            </FormControl>
+                            <div className="flex items-center justify-between">
+                              <FormLabel>{t('userProfile.videoCallTopics')}</FormLabel>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={addTopic}
+                                disabled={topics.length >= 10}
+                                className="flex items-center gap-1"
+                              >
+                                <Plus className="w-4 h-4" />
+                                Agregar tema
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              {displayTopics.map((topic: string, index: number) => (
+                                <div key={index} className="flex items-center gap-2">
+                                  <Input
+                                    value={topic}
+                                    onChange={(e) => updateTopic(index, e.target.value)}
+                                    placeholder={`Tema ${index + 1} (ej: Estrategia de Marketing Digital)`}
+                                    className="flex-1"
+                                  />
+                                  {topics.length > 0 && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeTopic(index)}
+                                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                             <div className="flex items-center justify-between">
                               <FormMessage />
                               <p className="text-sm text-muted-foreground">
-                                {field.value ? field.value.length : 0}/10 {t('userProfile.videoCallTopicsCounter')}
+                                {topics.filter((t: string) => t.trim().length > 0).length}/10 {t('userProfile.videoCallTopicsCounter')}
                               </p>
                             </div>
                           </FormItem>
