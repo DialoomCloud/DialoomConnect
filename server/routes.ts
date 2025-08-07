@@ -218,6 +218,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public route to get featured hosts
+  app.get('/api/hosts/featured', async (req, res) => {
+    try {
+      // Get all hosts and filter for active ones
+      const allUsers = await storage.getAllUsers();
+      const hosts = allUsers.filter(user => user.isHost && user.isActive);
+      
+      // Take first 6 hosts as featured
+      const featuredHosts = hosts.slice(0, 6);
+      
+      res.json(featuredHosts);
+    } catch (error) {
+      console.error('Error fetching featured hosts:', error);
+      res.status(500).json({ message: 'Error al obtener expertos destacados' });
+    }
+  });
+
   // Public route to get all hosts
   app.get('/api/hosts', async (req, res) => {
     try {

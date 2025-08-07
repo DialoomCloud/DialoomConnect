@@ -4,6 +4,8 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
+import { FeaturedHostsSection } from "@/components/featured-hosts-section";
+import { NewsSection } from "@/components/news-section";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,16 +68,16 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold text-[hsl(17,12%,6%)] mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-[hsl(17,12%,6%)] mb-4">
               Conecta con Expertos
             </h1>
-            <h2 className="text-xl text-gray-600 mb-8">
+            <h2 className="text-xl md:text-2xl text-gray-600 mb-8">
               La plataforma que te conecta con profesionales a través de videollamadas personalizadas
             </h2>
             
             {/* Main CTA */}
             <Link href="/hosts">
-              <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] px-8 py-3 text-lg mb-12">
+              <Button className="bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] px-8 py-3 text-lg mb-12 hover:shadow-lg transition-all duration-300">
                 Buscar Expertos
               </Button>
             </Link>
@@ -83,37 +85,7 @@ export default function Home() {
         </div>
 
         {/* Featured Hosts Section */}
-        <div className="mb-16">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-[hsl(17,12%,6%)]">
-              Expertos Destacados
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-full flex items-center justify-center mx-auto mb-4">
-                      <UserIcon className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="font-bold text-[hsl(17,12%,6%)] mb-1">
-                      Experto {i}
-                    </h3>
-                    <p className="text-[hsl(188,100%,38%)] font-medium text-sm mb-2">
-                      Marketing Digital
-                    </p>
-                    <div className="flex items-center justify-center mb-2">
-                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                      <span className="text-sm text-gray-600">5.0 (10 reseñas)</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <FeaturedHostsSection />
 
         {/* How it Works Section */}
         <div className="mb-16">
@@ -121,37 +93,37 @@ export default function Home() {
             ¿Cómo funciona?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(188,100%,85%)] transition-colors">
                 <Search className="w-8 h-8 text-[hsl(188,100%,38%)]" />
               </div>
               <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">
                 Busca Expertos
               </h3>
               <p className="text-gray-600 text-sm">
-                Encuentra profesionales en tu área de interés
+                Encuentra profesionales en tu área de interés utilizando nuestros filtros avanzados
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(188,100%,85%)] transition-colors">
                 <Calendar className="w-8 h-8 text-[hsl(188,100%,38%)]" />
               </div>
               <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">
                 Reserva tu Sesión
               </h3>
               <p className="text-gray-600 text-sm">
-                Elige el horario que mejor te convenga
+                Elige el horario que mejor te convenga y confirma tu cita
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(188,100%,85%)] transition-colors">
                 <Video className="w-8 h-8 text-[hsl(188,100%,38%)]" />
               </div>
               <h3 className="text-lg font-bold text-[hsl(17,12%,6%)] mb-3">
                 Conecta y Aprende
               </h3>
               <p className="text-gray-600 text-sm">
-                Disfruta de tu videollamada personalizada
+                Disfruta de tu videollamada personalizada con tecnología de alta calidad
               </p>
             </div>
           </div>
@@ -163,7 +135,7 @@ export default function Home() {
             ¿Por qué elegir Dialoom?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg p-6 text-center shadow-lg">
+            <div className="bg-white rounded-lg p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="w-12 h-12 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-6 h-6 text-[hsl(188,100%,38%)]" />
               </div>
@@ -171,11 +143,11 @@ export default function Home() {
                 Expertos Verificados
               </h3>
               <p className="text-gray-600 text-sm">
-                Profesionales con experiencia comprobada
+                Profesionales con experiencia comprobada y perfiles validados
               </p>
             </div>
             
-            <div className="bg-white rounded-lg p-6 text-center shadow-lg">
+            <div className="bg-white rounded-lg p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="w-12 h-12 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="w-6 h-6 text-[hsl(188,100%,38%)]" />
               </div>
@@ -183,11 +155,11 @@ export default function Home() {
                 Horarios Flexibles
               </h3>
               <p className="text-gray-600 text-sm">
-                Reserva cuando mejor te convenga
+                Reserva cuando mejor te convenga, 24/7 disponibilidad
               </p>
             </div>
             
-            <div className="bg-white rounded-lg p-6 text-center shadow-lg">
+            <div className="bg-white rounded-lg p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="w-12 h-12 bg-[hsl(188,100%,95%)] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Video className="w-6 h-6 text-[hsl(188,100%,38%)]" />
               </div>
@@ -195,38 +167,14 @@ export default function Home() {
                 Tecnología Avanzada
               </h3>
               <p className="text-gray-600 text-sm">
-                Videollamadas de alta calidad
+                Videollamadas de alta calidad con funciones premium
               </p>
             </div>
           </div>
         </div>
 
         {/* Latest News Section */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-center text-[hsl(17,12%,6%)] mb-8">
-            Últimas Noticias
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="aspect-video bg-gray-200 rounded mb-4"></div>
-                  <h3 className="font-bold text-[hsl(17,12%,6%)] mb-2">
-                    Noticia {i}
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Descubre las últimas novedades y actualizaciones de nuestra plataforma
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="text-center">
-            <Button variant="outline" className="border-[hsl(188,100%,38%)] text-[hsl(188,100%,38%)]">
-              Ver más noticias
-            </Button>
-          </div>
-        </div>
+        <NewsSection />
 
         {/* Ratings Section */}
         <div className="mb-16">
@@ -259,26 +207,27 @@ export default function Home() {
         </div>
 
         {/* Final CTA Section */}
-        <div className="text-center bg-gradient-to-r from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-2xl p-8 text-white">
-          <h2 className="text-2xl font-bold mb-4">
+        <div className="text-center bg-gradient-to-r from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-2xl p-8 md:p-12 text-white shadow-2xl">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
             ¿Listo para empezar a explorar?
           </h2>
-          <p className="text-lg mb-6 opacity-90">
-            Únete a miles de usuarios que ya han encontrado su mentor ideal
+          <p className="text-lg md:text-xl mb-6 opacity-90 max-w-2xl mx-auto">
+            Únete a miles de usuarios que ya han encontrado su mentor ideal en Dialoom
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/hosts">
-              <Button className="bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 px-6 py-2 font-semibold">
+              <Button className="bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 px-8 py-3 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300">
                 Buscar Expertos
               </Button>
             </Link>
-            <Button 
-              onClick={() => window.location.href = "/login"}
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-[hsl(188,100%,38%)] px-6 py-2 font-semibold"
-            >
-              Iniciar Sesión
-            </Button>
+            <Link href="/login">
+              <Button 
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-[hsl(188,100%,38%)] px-8 py-3 font-semibold text-lg transition-all duration-300"
+              >
+                Iniciar Sesión
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
