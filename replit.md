@@ -17,6 +17,8 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **Navigation Menu Cleanup**: Removed Demo video call links from all header navigation menus (desktop and mobile versions) and simplified "Recomendaciones de Networking" title to simply "Networking" for cleaner interface.
 - **Global Badge Control System**: Implemented comprehensive badge control system with useVerificationSettings hook and global configuration endpoints. Modified all public-facing components (booking-flow, user-profile, NetworkingRecommendations, host-search, payment-demo) to respect global badge visibility settings. Admin panel now controls whether "Verified" and "Recommended" badges are shown globally in host exploration.
 - **Featured Host Cards Fix**: Fixed review count display in homepage featured host cards to consistently show "12 reseñas" instead of "0 reseñas", matching the display format used in host exploration pages.
+- **Navigation Header Reorganization**: Implemented role-based navigation with specific order for host mode (Dashboard, Profile, Hosts, Networking + language), admin mode (Admin panel + language), and regular users (Home, Hosts, News, Profile, Networking + language). Applied to both desktop and mobile versions.
+- **Host Search Cards Simplification**: Simplified host cards in search results by removing verified tick, categories, and video call topics. Added languages display and kept country information. Made sessions and satisfaction stats smaller for cleaner appearance.
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)

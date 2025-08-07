@@ -579,12 +579,6 @@ export default function HostSearch() {
                         : host.email}
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      {host.isVerified && verificationSettings?.showVerified && (
-                        <Badge className="bg-[hsl(188,80%,95%)] text-[hsl(188,80%,42%)] hover:bg-[hsl(188,80%,90%)]">
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          {t('home.verified')}
-                        </Badge>
-                      )}
                       {isAISearch && (host as SearchResult).relevance && (host as SearchResult).relevance! > 0.7 && (
                         <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                           <Sparkles className="w-3 h-3 mr-1" />
@@ -595,6 +589,7 @@ export default function HostSearch() {
                   </div>
 
                   <div className="space-y-3">
+                    {/* Country */}
                     {host.countryCode && (
                       <div className="flex items-center text-gray-600 text-sm">
                         <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
@@ -602,66 +597,27 @@ export default function HostSearch() {
                       </div>
                     )}
 
-                    {/* Purpose/Categories */}
-                    {host.purpose && Array.isArray(host.purpose) && host.purpose.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center text-gray-700 text-sm font-medium">
-                          <span>Categorías:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {host.purpose.map((purpose: string, index: number) => (
-                            <Badge 
-                              key={index} 
-                              variant="outline" 
-                              className="text-xs bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
-                            >
-                              {purpose}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Video Call Topics */}
-                    {host.videoCallTopics && Array.isArray(host.videoCallTopics) && host.videoCallTopics.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center text-gray-700 text-sm font-medium">
-                          <span>{t('userProfile.videoCallTopics')}:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {host.videoCallTopics.slice(0, 3).map((topic: string, index: number) => (
-                            <Badge 
-                              key={index} 
-                              variant="outline" 
-                              className="text-xs bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-                            >
-                              {topic}
-                            </Badge>
-                          ))}
-                          {host.videoCallTopics.length > 3 && (
-                            <Badge 
-                              variant="outline" 
-                              className="text-xs bg-gray-50 text-gray-600 border-gray-200"
-                            >
-                              +{host.videoCallTopics.length - 3} más
-                            </Badge>
-                          )}
-                        </div>
+                    {/* Languages */}
+                    {host.primaryLanguageId && (
+                      <div className="flex items-center text-gray-600 text-sm">
+                        <svg className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                        <span>{languages.find((l: any) => l.id === host.primaryLanguageId)?.name || 'Idioma no especificado'}</span>
                       </div>
                     )}
                     
-                    {/* Quick Stats */}
+                    {/* Quick Stats - Smaller */}
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-2 text-white text-center">
-                        <div className="text-lg font-bold">150+</div>
+                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-1.5 text-white text-center">
+                        <div className="text-sm font-bold">150+</div>
                         <div className="text-xs opacity-90">Sesiones</div>
                       </div>
-                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-2 text-white text-center">
-                        <div className="text-lg font-bold">98%</div>
+                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-1.5 text-white text-center">
+                        <div className="text-sm font-bold">98%</div>
                         <div className="text-xs opacity-90">Satisfacción</div>
                       </div>
                     </div>
-
 
                   </div>
                 </CardContent>
