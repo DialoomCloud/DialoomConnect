@@ -246,7 +246,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allUsers = await storage.getAllUsers();
       let hosts = allUsers.filter(user => user.isHost && user.isActive);
       
-      // Apply additional filters if provided
+      // Apply price filtering if provided
+      if ((minPrice && Number(minPrice) > 0) || (maxPrice && Number(maxPrice) < 200)) {
+        const minPriceNum = Number(minPrice) || 0;
+        const maxPriceNum = Number(maxPrice) || 200;
+        
+        // Get pricing for all hosts and filter
+        const hostsWithPricing = await Promise.all(
+          hosts.map(async (host) => {
+            const pricing = await storage.getHostPricing(host.id);
+            const validPricing = pricing.filter(p => p.isActive);
+            
+            if (validPricing.length === 0) {
+              return null; // No pricing available
+            }
+            
+            // Check if any pricing falls within the range
+            const hasMatchingPrice = validPricing.some(p => {
+              const price = Number(p.price);
+              return price >= minPriceNum && price <= maxPriceNum;
+            });
+            
+            return hasMatchingPrice ? host : null;
+          })
+        );
+        
+        hosts = hostsWithPricing.filter(host => host !== null);
+      }
       
       // Filter by categories if provided (multiple categories)
       if (categories && typeof categories === 'string' && categories.length > 0) {
@@ -284,9 +310,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             purposesArray.some(p => host.purpose.includes(p));
         });
       }
-      
-      // Note: Price filtering would be implemented once we have pricing data
-      // For now, we ignore minPrice/maxPrice parameters
       
       res.json(hosts);
     } catch (error) {
