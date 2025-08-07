@@ -10,10 +10,12 @@ import { useTranslation } from "react-i18next";
 export function LanguageSelector() {
   const { i18n } = useTranslation();
 
+  const { t } = useTranslation();
+  
   const languages = [
-    { code: 'es', label: 'Español', short: 'ESP' },
-    { code: 'en', label: 'English', short: 'ENG' },
-    { code: 'ca', label: 'Català', short: 'CAT' }
+    { code: 'es', label: t('language.spanish'), short: 'ESP' },
+    { code: 'en', label: t('language.english'), short: 'ENG' },
+    { code: 'ca', label: t('language.catalan'), short: 'CAT' }
   ];
 
   const currentLang = languages.find(lang => lang.code === i18n.language) || languages[0];

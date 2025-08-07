@@ -75,18 +75,10 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[hsl(17,12%,6%)]">
-            {i18n.language === 'es' 
-              ? 'Panel de Administración'
-              : i18n.language === 'ca'
-              ? 'Panell d\'Administració'
-              : 'Admin Dashboard'}
+            {t('admin.title')}
           </h1>
           <p className="text-gray-600 mt-2">
-            {i18n.language === 'es' 
-              ? 'Gestiona todos los aspectos de Dialoom'
-              : i18n.language === 'ca'
-              ? 'Gestiona tots els aspectes de Dialoom'
-              : 'Manage all aspects of Dialoom'}
+            {t('admin.subtitle')}
           </p>
         </div>
 
@@ -96,7 +88,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="overview">
               <BarChart3 className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'General' : 'Overview'}
+                {t('adminTabs.overview')}
               </span>
             </TabsTrigger>
             <TabsTrigger value="hosts">
@@ -106,37 +98,37 @@ export default function AdminDashboard() {
             <TabsTrigger value="sessions">
               <Calendar className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'Sesiones' : 'Sessions'}
+                {t('adminTabs.sessions')}
               </span>
             </TabsTrigger>
             <TabsTrigger value="invoices">
               <FileText className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'Facturas' : 'Invoices'}
+                {t('adminTabs.invoices')}
               </span>
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'Ajustes' : 'Settings'}
+                {t('adminTabs.settings')}
               </span>
             </TabsTrigger>
             <TabsTrigger value="news">
               <Newspaper className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'Noticias' : 'News'}
+                {t('adminTabs.news')}
               </span>
             </TabsTrigger>
             <TabsTrigger value="theme">
               <Palette className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'Tema' : 'Theme'}
+                {t('adminTabs.theme')}
               </span>
             </TabsTrigger>
             <TabsTrigger value="emails">
               <Mail className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">
-                {i18n.language === 'es' ? 'Emails' : 'Emails'}
+                {t('adminTabs.emails')}
               </span>
             </TabsTrigger>
           </TabsList>
@@ -189,7 +181,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Total Hosts' : 'Total Hosts'}
+                {t('admin.overview.totalHosts')}
               </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -204,7 +196,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Videollamadas' : 'Video Calls'}
+                {t('admin.overview.videoCalls')}
               </CardTitle>
               <Video className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -219,7 +211,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Ingresos del Mes' : 'Monthly Revenue'}
+                {t('admin.overview.monthlyRevenue')}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -234,7 +226,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {i18n.language === 'es' ? 'Tiempo Promedio' : 'Avg Time'}
+                {t('admin.overview.avgTime')}
               </CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -279,13 +271,13 @@ function AdminOverview() {
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
-              {i18n.language === 'es' ? 'Nuevos Registros' : 'New Registrations'}
+              {t('admin.overview.newRegistrations')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics?.newRegistrations?.week || 0}</div>
             <p className="text-xs text-gray-500 mt-1">
-              {i18n.language === 'es' ? 'Esta semana' : 'This week'}
+              {t('adminTabs.thisWeek')}
               <span className={`ml-2 ${(analytics?.newRegistrations?.growth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {(analytics?.newRegistrations?.growth || 0) >= 0 ? '+' : ''}{analytics?.newRegistrations?.growth || 0}%
               </span>
@@ -296,15 +288,15 @@ function AdminOverview() {
         <Card className="border-l-4 border-l-green-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
-              {i18n.language === 'es' ? 'Sesiones Reservadas' : 'Sessions Booked'}
+              {t('admin.overview.sessionsBooked')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics?.sessionsBooked?.month || 0}</div>
             <p className="text-xs text-gray-500 mt-1">
-              {i18n.language === 'es' ? 'Este mes' : 'This month'}
+              {t('adminTabs.thisMonth')}
               <span className="ml-2 text-green-600">
-                {analytics?.sessionsBooked?.completionRate || 0}% {i18n.language === 'es' ? 'completadas' : 'completed'}
+                {analytics?.sessionsBooked?.completionRate || 0}% {t('adminTabs.completed')}
               </span>
             </p>
           </CardContent>
@@ -313,13 +305,13 @@ function AdminOverview() {
         <Card className="border-l-4 border-l-yellow-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
-              {i18n.language === 'es' ? 'Tasa de Cancelación' : 'Cancellation Rate'}
+              {t('admin.overview.cancellationRate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics?.cancellationRate || 0}%</div>
             <p className="text-xs text-gray-500 mt-1">
-              {i18n.language === 'es' ? 'Últimos 30 días' : 'Last 30 days'}
+              {t('adminTabs.last30Days')}
             </p>
           </CardContent>
         </Card>
@@ -327,13 +319,13 @@ function AdminOverview() {
         <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
-              {i18n.language === 'es' ? 'Retención de Usuarios' : 'User Retention'}
+              {t('admin.overview.userRetention')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics?.retentionRate || 0}%</div>
             <p className="text-xs text-gray-500 mt-1">
-              {i18n.language === 'es' ? 'Usuarios que repiten' : 'Returning users'}
+              {t('adminTabs.returningUsers')}
             </p>
           </CardContent>
         </Card>
@@ -344,32 +336,32 @@ function AdminOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {i18n.language === 'es' ? 'Análisis Financiero' : 'Financial Analytics'}
+              {t('admin.overview.financialAnalytics')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">
-                  {i18n.language === 'es' ? 'Total Facturado' : 'Total Billed'}
+                  {t('adminTabs.totalBilled')}
                 </span>
                 <span className="font-bold text-lg">€{analytics?.revenue?.total || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">
-                  {i18n.language === 'es' ? 'Comisiones Dialoom' : 'Dialoom Commissions'}
+                  {t('adminTabs.dialoomCommissions')}
                 </span>
                 <span className="font-semibold text-green-600">€{analytics?.revenue?.commissions || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">
-                  {i18n.language === 'es' ? 'Pagos a Hosts' : 'Host Payments'}
+                  {t('adminTabs.hostPayments')}
                 </span>
                 <span className="font-semibold">€{analytics?.revenue?.hostPayments || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">
-                  {i18n.language === 'es' ? 'Pagos Pendientes' : 'Pending Payments'}
+                  {t('adminTabs.pendingPayments')}
                 </span>
                 <span className="font-semibold text-orange-600">€{analytics?.revenue?.pendingPayments || 0}</span>
               </div>
@@ -377,7 +369,7 @@ function AdminOverview() {
             <div className="border-t pt-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">
-                  {i18n.language === 'es' ? 'Ticket Promedio' : 'Average Ticket'}
+                  {t('adminTabs.averageTicket')}
                 </span>
                 <span className="font-bold">€{analytics?.revenue?.averageTicket || 0}</span>
               </div>
@@ -389,7 +381,7 @@ function AdminOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {i18n.language === 'es' ? 'Hosts Más Solicitados' : 'Top Performing Hosts'}
+              {t('adminTabs.topPerformingHosts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -408,13 +400,13 @@ function AdminOverview() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-sm">{host.sessions} {i18n.language === 'es' ? 'sesiones' : 'sessions'}</p>
+                    <p className="font-semibold text-sm">{host.sessions} {t('adminTabs.sessions')}</p>
                     <p className="text-xs text-gray-500">€{host.revenue}</p>
                   </div>
                 </div>
               )) || (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  {i18n.language === 'es' ? 'No hay datos disponibles' : 'No data available'}
+                  {t('adminTabs.noDataAvailable')}
                 </p>
               )}
             </div>
@@ -428,10 +420,10 @@ function AdminOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {i18n.language === 'es' ? 'Crecimiento de Usuarios' : 'User Growth'}
+              {t('adminTabs.userGrowth')}
             </CardTitle>
             <CardDescription>
-              {i18n.language === 'es' ? 'Últimos 6 meses' : 'Last 6 months'}
+              {t('adminTabs.last6Months')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -457,10 +449,10 @@ function AdminOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {i18n.language === 'es' ? 'Tendencia de Ingresos' : 'Revenue Trend'}
+              {t('adminTabs.revenueTrend')}
             </CardTitle>
             <CardDescription>
-              {i18n.language === 'es' ? 'Por semana' : 'Weekly'}
+              {t('adminTabs.weekly')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -485,10 +477,10 @@ function AdminOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {i18n.language === 'es' ? 'Sesiones por Categoría' : 'Sessions by Category'}
+              {t('adminTabs.sessionsByCategory')}
             </CardTitle>
             <CardDescription>
-              {i18n.language === 'es' ? 'Este mes' : 'This month'}
+              {t('adminTabs.thisMonth')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -508,10 +500,10 @@ function AdminOverview() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {i18n.language === 'es' ? 'Actividad Reciente' : 'Recent Activity'}
+              {t('adminTabs.recentActivity')}
             </CardTitle>
             <CardDescription>
-              {i18n.language === 'es' ? 'Últimas acciones en la plataforma' : 'Latest platform activities'}
+              {t('adminTabs.recentActivityDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -529,7 +521,7 @@ function AdminOverview() {
                 </div>
               )) || (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  {i18n.language === 'es' ? 'No hay actividad reciente' : 'No recent activity'}
+                  {t('adminTabs.noRecentActivity')}
                 </p>
               )}
             </div>
@@ -558,25 +550,21 @@ function HostsManagement() {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>
-                {i18n.language === 'es' ? 'Gestión de Hosts' : 'Hosts Management'}
+                {t('adminTabs.hostsManagement')}
               </CardTitle>
               <CardDescription>
-                {i18n.language === 'es' 
-                  ? 'Administra todos los hosts de la plataforma'
-                  : 'Manage all platform hosts'}
+                {t('adminTabs.totalHostsAndStatus')}
               </CardDescription>
             </div>
             <Button>
               <Users className="w-4 h-4 mr-2" />
-              {i18n.language === 'es' ? 'Nuevo Host' : 'New Host'}
+              {t('adminTabs.newHost')}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="text-sm text-gray-500">
-            {i18n.language === 'es' 
-              ? 'Lista de hosts y herramientas de gestión'
-              : 'Host list and management tools'}
+            {t('adminTabs.addFirstHost')}
           </div>
         </CardContent>
       </Card>
@@ -622,7 +610,7 @@ function InvoicesManagement() {
         <Card className="bg-gradient-to-br from-green-50 to-green-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-green-800">
-              {i18n.language === 'es' ? 'Ingresos Totales' : 'Total Revenue'}
+              {t('adminTabs.totalRevenue')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -631,8 +619,8 @@ function InvoicesManagement() {
             </div>
             <p className="text-xs text-green-700 mt-1">
               {selectedPeriod === 'month' 
-                ? (i18n.language === 'es' ? 'Este mes' : 'This month')
-                : (i18n.language === 'es' ? 'Este año' : 'This year')}
+                ? t('adminTabs.thisMonthOption')
+                : t('adminTabs.thisYearOption')}
             </p>
           </CardContent>
         </Card>
@@ -640,7 +628,7 @@ function InvoicesManagement() {
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-blue-800">
-              {i18n.language === 'es' ? 'Comisiones Generadas' : 'Commissions Earned'}
+              {t('adminTabs.commissionsEarned')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -648,7 +636,7 @@ function InvoicesManagement() {
               €{financialData?.commissionsEarned || 0}
             </div>
             <p className="text-xs text-blue-700 mt-1">
-              {financialData?.commissionRate || 0}% {i18n.language === 'es' ? 'promedio' : 'average'}
+              {financialData?.commissionRate || 0}% {t('adminTabs.average')}
             </p>
           </CardContent>
         </Card>
@@ -656,7 +644,7 @@ function InvoicesManagement() {
         <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-yellow-800">
-              {i18n.language === 'es' ? 'Pagos Pendientes' : 'Pending Payouts'}
+              {t('adminTabs.pendingPayouts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -664,7 +652,7 @@ function InvoicesManagement() {
               €{financialData?.pendingPayouts || 0}
             </div>
             <p className="text-xs text-yellow-700 mt-1">
-              {financialData?.pendingCount || 0} {i18n.language === 'es' ? 'hosts' : 'hosts'}
+              {financialData?.pendingCount || 0} {t('adminTabs.hosts')}
             </p>
           </CardContent>
         </Card>
@@ -672,7 +660,7 @@ function InvoicesManagement() {
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-purple-800">
-              {i18n.language === 'es' ? 'Pagos Procesados' : 'Processed Payouts'}
+              {t('adminTabs.processedPayouts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -680,7 +668,7 @@ function InvoicesManagement() {
               €{financialData?.processedPayouts || 0}
             </div>
             <p className="text-xs text-purple-700 mt-1">
-              {financialData?.processedCount || 0} {i18n.language === 'es' ? 'completados' : 'completed'}
+              {financialData?.processedCount || 0} {t('adminTabs.completedLower')}
             </p>
           </CardContent>
         </Card>
@@ -690,30 +678,30 @@ function InvoicesManagement() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>{i18n.language === 'es' ? 'Transacciones' : 'Transactions'}</CardTitle>
+            <CardTitle>{t('adminTabs.transactions')}</CardTitle>
             <div className="flex gap-2">
               <select 
                 className="px-3 py-1 text-sm border rounded-md"
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
               >
-                <option value="month">{i18n.language === 'es' ? 'Este mes' : 'This month'}</option>
-                <option value="quarter">{i18n.language === 'es' ? 'Trimestre' : 'Quarter'}</option>
-                <option value="year">{i18n.language === 'es' ? 'Este año' : 'This year'}</option>
+                <option value="month">{t('adminTabs.thisMonthOption')}</option>
+                <option value="quarter">{t('adminTabs.quarter')}</option>
+                <option value="year">{t('adminTabs.thisYearOption')}</option>
               </select>
               <select 
                 className="px-3 py-1 text-sm border rounded-md"
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
-                <option value="all">{i18n.language === 'es' ? 'Todas' : 'All'}</option>
-                <option value="completed">{i18n.language === 'es' ? 'Completadas' : 'Completed'}</option>
-                <option value="pending">{i18n.language === 'es' ? 'Pendientes' : 'Pending'}</option>
-                <option value="refunded">{i18n.language === 'es' ? 'Reembolsadas' : 'Refunded'}</option>
+                <option value="all">{t('adminTabs.all')}</option>
+                <option value="completed">{t('adminTabs.completedOption')}</option>
+                <option value="pending">{t('adminTabs.pending')}</option>
+                <option value="refunded">{t('adminTabs.refunded')}</option>
               </select>
               <Button size="sm" variant="outline">
                 <FileText className="w-4 h-4 mr-2" />
-                {i18n.language === 'es' ? 'Exportar' : 'Export'}
+                {t('adminTabs.export')}
               </Button>
             </div>
           </div>
@@ -1217,16 +1205,14 @@ function AdminSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/verification-settings"] });
       toast({
-        title: i18n.language === 'es' ? "Configuración de badges actualizada" : "Badge settings updated",
-        description: i18n.language === 'es' 
-          ? "Los ajustes de verificación se han guardado correctamente"
-          : "Verification settings have been saved successfully",
+        title: t('admin.badges.settingsUpdated'),
+        description: t('admin.badges.settingsUpdatedDesc'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: i18n.language === 'es' ? "Error" : "Error",
-        description: error?.message || (i18n.language === 'es' ? "No se pudo actualizar la configuración de badges" : "Could not update badge settings"),
+        title: t('common.error'),
+        description: error?.message || t('admin.badges.updateError'),
         variant: "destructive",
       });
     },
@@ -1243,12 +1229,10 @@ function AdminSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />
-            {i18n.language === 'es' ? 'Control de Badges' : 'Badge Control'}
+            {t('admin.badges.title')}
           </CardTitle>
           <CardDescription>
-            {i18n.language === 'es' 
-              ? 'Controla la visibilidad global de los badges de verificación y recomendación'
-              : 'Control global visibility of verification and recommendation badges'}
+            {t('admin.badges.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1265,12 +1249,10 @@ function AdminSettings() {
                   </div>
                   <div>
                     <h3 className="font-medium">
-                      {i18n.language === 'es' ? 'Badge de Verificado' : 'Verified Badge'}
+                      {t('admin.badges.verifiedBadge')}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {i18n.language === 'es' 
-                        ? 'Mostrar el badge de verificado en la exploración de hosts'
-                        : 'Show verified badge in host exploration'}
+                      {t('admin.badges.verifiedDescription')}
                     </p>
                   </div>
                 </div>
@@ -1295,12 +1277,10 @@ function AdminSettings() {
                   </div>
                   <div>
                     <h3 className="font-medium">
-                      {i18n.language === 'es' ? 'Badge de Recomendado' : 'Recommended Badge'}
+                      {t('admin.badges.recommendedBadge')}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {i18n.language === 'es' 
-                        ? 'Mostrar el badge de recomendado en la exploración de hosts'
-                        : 'Show recommended badge in host exploration'}
+                      {t('admin.badges.recommendedDescription')}
                     </p>
                   </div>
                 </div>

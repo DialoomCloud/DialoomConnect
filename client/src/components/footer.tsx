@@ -118,11 +118,7 @@ export function Footer() {
             </span>
             
             <span className="text-xs">
-              {i18n.language === 'es' 
-                ? 'Cumplimos con RGPD'
-                : i18n.language === 'ca'
-                ? 'Complim amb RGPD'
-                : 'GDPR Compliant'}
+              {t('footer.gdprCompliance')}
             </span>
           </div>
         </div>
