@@ -79,9 +79,9 @@ export function FeaturedHostsSection() {
                     {(host as any).firstName || 'Experto'} {(host as any).lastName || 'Profesional'}
                   </h3>
 
-                  {/* Host Title - Uppercase and larger */}
-                  <p className="text-[hsl(188,100%,38%)] font-bold text-lg mb-2 uppercase">
-                    {(host as any).title || 'EXPERTO PROFESIONAL'}
+                  {/* Host Title - Elegant lowercase styling */}
+                  <p className="text-[hsl(188,100%,38%)] font-semibold text-lg mb-2 capitalize">
+                    {((host as any).title || 'Experto Profesional').toLowerCase()}
                   </p>
 
                   {/* Rating */}
