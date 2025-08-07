@@ -225,6 +225,7 @@ export function AdminSettingsPanel({ open, onOpenChange }: AdminSettingsPanelPro
                             <tr className="bg-gray-50">
                               <th className="border border-gray-300 px-4 py-2 text-left">Host</th>
                               <th className="border border-gray-300 px-4 py-2 text-center">Email</th>
+                              <th className="border border-gray-300 px-4 py-2 text-center">Estado</th>
                               <th className="border border-gray-300 px-4 py-2 text-center">Verificado</th>
                               <th className="border border-gray-300 px-4 py-2 text-center">Recomendado</th>
                               <th className="border border-gray-300 px-4 py-2 text-center">Destacado</th>
@@ -260,6 +261,20 @@ export function AdminSettingsPanel({ open, onOpenChange }: AdminSettingsPanelPro
                                 </td>
                                 <td className="border border-gray-300 px-4 py-2 text-center text-sm">
                                   {user.email}
+                                </td>
+                                <td className="border border-gray-300 px-4 py-2 text-center">
+                                  <div className="flex items-center justify-center">
+                                    <Checkbox
+                                      checked={user.isActive !== false}
+                                      onCheckedChange={(checked) => 
+                                        handleUserStatusChange(user.id, 'isActive', Boolean(checked))
+                                      }
+                                      disabled={updateUserMutation.isPending}
+                                    />
+                                    <span className="ml-2 text-xs">
+                                      {user.isActive !== false ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                  </div>
                                 </td>
                                 <td className="border border-gray-300 px-4 py-2 text-center">
                                   <Checkbox
