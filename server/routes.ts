@@ -106,15 +106,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded files with GDPR compliance
   app.use('/uploads', (req, res, next) => {
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     
     // Add privacy headers for GDPR compliance
-    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.header('Pragma', 'no-cache');
-    res.header('Expires', '0');
+    res.header('Cache-Control', 'private, max-age=3600');
     
     next();
   });
-  app.use('/uploads', express.static('uploads'));
+  app.use('/uploads', express.static('uploads', {
+    setHeaders: (res, path) => {
+      res.setHeader('Content-Type', 'image/webp');
+    }
+  }));
 
   // Serve files from Replit Object Storage with fallback to local files
   app.get('/storage/*', async (req, res) => {
