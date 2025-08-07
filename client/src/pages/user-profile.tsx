@@ -392,20 +392,15 @@ export default function UserProfile() {
                         <>
                           {user.description.length > 150 ? (
                             <>
-                              <span>{user.description.substring(0, 150)}...</span>
+                              <span>
+                                {showFullDescription ? user.description : `${user.description.substring(0, 150)}...`}
+                              </span>
                               <button 
                                 className="ml-2 text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] font-medium text-sm"
                                 onClick={() => setShowFullDescription(!showFullDescription)}
                               >
-                                {showFullDescription ? 'menos' : 'more'}
+                                {showFullDescription ? 'menos' : 'más'}
                               </button>
-                              {showFullDescription && (
-                                <div className="mt-2 p-3 bg-white rounded border border-[hsl(220,13%,90%)]">
-                                  <p className="text-[hsl(17,12%,20%)] leading-relaxed text-sm">
-                                    {user.description}
-                                  </p>
-                                </div>
-                              )}
                             </>
                           ) : (
                             user.description
