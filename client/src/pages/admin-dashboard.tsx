@@ -21,13 +21,16 @@ import {
   Mail,
   Calendar,
   Filter,
-  AlertCircle
+  AlertCircle,
+  Award,
+  Star
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AdminUserManagement } from "@/components/admin-user-management";
 import { AdminEmailManagement } from "@/components/admin-email-management";
 import AdminNewsManagement from "@/components/admin-news-management";
+import { AdminSettingsPanel } from "@/components/admin-settings-panel";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -1125,6 +1128,14 @@ function AdminSettings() {
     },
   });
 
+  // Load verification settings
+  const { data: verificationSettings, isLoading: settingsLoading } = useQuery<{
+    showVerified: boolean;
+    showRecommended: boolean;
+  }>({
+    queryKey: ["/api/admin/verification-settings"],
+  });
+
   // Update state when configs load
   useEffect(() => {
     if (configs && Array.isArray(configs)) {
@@ -1194,8 +1205,123 @@ function AdminSettings() {
     },
   });
 
+  // Update verification settings mutation
+  const updateVerificationMutation = useMutation({
+    mutationFn: async (settings: { showVerified?: boolean; showRecommended?: boolean }) => {
+      const response = await apiRequest('/api/admin/verification-settings', {
+        method: "PUT",
+        body: settings
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/verification-settings"] });
+      toast({
+        title: i18n.language === 'es' ? "Configuración de badges actualizada" : "Badge settings updated",
+        description: i18n.language === 'es' 
+          ? "Los ajustes de verificación se han guardado correctamente"
+          : "Verification settings have been saved successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: i18n.language === 'es' ? "Error" : "Error",
+        description: error?.message || (i18n.language === 'es' ? "No se pudo actualizar la configuración de badges" : "Could not update badge settings"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleVerificationChange = (setting: 'showVerified' | 'showRecommended', value: boolean) => {
+    updateVerificationMutation.mutate({ [setting]: value });
+  };
+
   return (
     <div className="space-y-4">
+      {/* Badge Visibility Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            {i18n.language === 'es' ? 'Control de Badges' : 'Badge Control'}
+          </CardTitle>
+          <CardDescription>
+            {i18n.language === 'es' 
+              ? 'Controla la visibilidad global de los badges de verificación y recomendación'
+              : 'Control global visibility of verification and recommendation badges'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {settingsLoading ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(188,100%,38%)] mx-auto"></div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Award className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">
+                      {i18n.language === 'es' ? 'Badge de Verificado' : 'Verified Badge'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {i18n.language === 'es' 
+                        ? 'Mostrar el badge de verificado en la exploración de hosts'
+                        : 'Show verified badge in host exploration'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={verificationSettings?.showVerified || false}
+                      onChange={(e) => handleVerificationChange('showVerified', e.target.checked)}
+                      disabled={updateVerificationMutation.isPending}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                    <Star className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">
+                      {i18n.language === 'es' ? 'Badge de Recomendado' : 'Recommended Badge'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {i18n.language === 'es' 
+                        ? 'Mostrar el badge de recomendado en la exploración de hosts'
+                        : 'Show recommended badge in host exploration'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={verificationSettings?.showRecommended || false}
+                      onChange={(e) => handleVerificationChange('showRecommended', e.target.checked)}
+                      disabled={updateVerificationMutation.isPending}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>
