@@ -23,6 +23,25 @@ import { AvailabilityTooltip } from "@/components/availability-tooltip";
 
 type SearchResult = UserType & { relevance?: number };
 
+// Function to detect browser language
+const detectBrowserLanguage = () => {
+  const browserLang = navigator.language || navigator.languages?.[0] || 'en';
+  const langCode = browserLang.split('-')[0].toLowerCase();
+  
+  // Map common language codes to our system
+  const languageMap: { [key: string]: string } = {
+    'es': 'Spanish',
+    'en': 'English', 
+    'ca': 'Catalan',
+    'fr': 'French',
+    'de': 'German',
+    'it': 'Italian',
+    'pt': 'Portuguese'
+  };
+  
+  return languageMap[langCode] || 'English';
+};
+
 export default function HostSearch() {
   const { t } = useTranslation();
   const { data: verificationSettings } = useVerificationSettings();
@@ -85,6 +104,20 @@ export default function HostSearch() {
   const { data: languages = [] } = useQuery<Language[]>({
     queryKey: ["/api/languages"],
   });
+
+  // Auto-detect browser language on first load
+  useEffect(() => {
+    if (languages && languages.length > 0 && selectedLanguages.length === 0) {
+      const detectedLanguage = detectBrowserLanguage();
+      const matchedLanguage = languages.find(lang => 
+        lang.name?.toLowerCase() === detectedLanguage.toLowerCase()
+      );
+      
+      if (matchedLanguage) {
+        setSelectedLanguages([matchedLanguage.id.toString()]);
+      }
+    }
+  }, [languages, selectedLanguages, setSelectedLanguages]);
 
   const { data: countries = [] } = useQuery<Country[]>({
     queryKey: ["/api/countries"],
@@ -253,6 +286,69 @@ export default function HostSearch() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {/* Languages Filter - First Priority */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        {t('profile.languages')} 🌐
+                      </label>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Selecciona idiomas para encontrar hosts que pueden comunicarse contigo. Se detecta automáticamente tu idioma del navegador.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between text-left font-normal"
+                        >
+                          <span className="truncate">
+                            {selectedLanguages.length === 0
+                              ? "Seleccionar idiomas..."
+                              : selectedLanguages.length === 1
+                              ? languages.find(l => l.id.toString() === selectedLanguages[0])?.name || "Idioma"
+                              : `${selectedLanguages.length} idiomas seleccionados`
+                            }
+                          </span>
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0" align="start">
+                        <div className="max-h-60 overflow-auto">
+                          {languages.map((language) => (
+                            <div
+                              key={language.id}
+                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                const languageId = language.id.toString();
+                                if (selectedLanguages.includes(languageId)) {
+                                  setSelectedLanguages(selectedLanguages.filter(l => l !== languageId));
+                                } else {
+                                  setSelectedLanguages([...selectedLanguages, languageId]);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-center w-4 h-4">
+                                {selectedLanguages.includes(language.id.toString()) && (
+                                  <Check className="h-3 w-3 text-blue-600" />
+                                )}
+                              </div>
+                              <span className="text-sm">
+                                {language.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
                   {/* Category Filter */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -379,70 +475,7 @@ export default function HostSearch() {
                     </Popover>
                   </div>
 
-                  {/* Languages Filter */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {t('profile.languages')}
-                      </label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Selecciona idiomas para encontrar hosts que pueden comunicarse en esos idiomas</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className="w-full justify-between text-left font-normal"
-                        >
-                          <span className="truncate">
-                            {selectedLanguages.length === 0
-                              ? "Seleccionar idiomas..."
-                              : selectedLanguages.length === 1
-                              ? languages.find(l => l.id.toString() === selectedLanguages[0])?.name || "Idioma"
-                              : `${selectedLanguages.length} idiomas seleccionados`
-                            }
-                          </span>
-                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[300px] p-0" align="start">
-                        <div className="max-h-60 overflow-auto">
-                          {languages.map((language) => (
-                            <div
-                              key={language.id}
-                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                              onClick={() => {
-                                const languageId = language.id.toString();
-                                if (selectedLanguages.includes(languageId)) {
-                                  setSelectedLanguages(selectedLanguages.filter(l => l !== languageId));
-                                } else {
-                                  setSelectedLanguages([...selectedLanguages, languageId]);
-                                }
-                              }}
-                            >
-                              <div className="flex items-center justify-center w-4 h-4">
-                                {selectedLanguages.includes(language.id.toString()) && (
-                                  <Check className="h-3 w-3 text-blue-600" />
-                                )}
-                              </div>
-                              <span className="text-sm">
-                                {language.name}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {/* Purpose Filter */}
+                  {/* Purpose Filter - Now with dropdown format */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <label className="block text-sm font-medium text-gray-700">
@@ -457,29 +490,51 @@ export default function HostSearch() {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                    <div className="space-y-2">
-                      {PURPOSES.map((purpose) => (
-                        <div key={purpose} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`purpose-${purpose}`}
-                            checked={selectedPurposes.includes(purpose)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedPurposes([...selectedPurposes, purpose]);
-                              } else {
-                                setSelectedPurposes(selectedPurposes.filter(p => p !== purpose));
-                              }
-                            }}
-                          />
-                          <label 
-                            htmlFor={`purpose-${purpose}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          >
-                            {purpose}
-                          </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between text-left font-normal"
+                        >
+                          <span className="truncate">
+                            {selectedPurposes.length === 0
+                              ? "Seleccionar propósito..."
+                              : selectedPurposes.length === 1
+                              ? selectedPurposes[0]
+                              : `${selectedPurposes.length} propósitos seleccionados`
+                            }
+                          </span>
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0" align="start">
+                        <div className="max-h-60 overflow-auto">
+                          {PURPOSES.map((purpose) => (
+                            <div
+                              key={purpose}
+                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                if (selectedPurposes.includes(purpose)) {
+                                  setSelectedPurposes(selectedPurposes.filter(p => p !== purpose));
+                                } else {
+                                  setSelectedPurposes([...selectedPurposes, purpose]);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-center w-4 h-4">
+                                {selectedPurposes.includes(purpose) && (
+                                  <Check className="h-3 w-3 text-blue-600" />
+                                )}
+                              </div>
+                              <span className="text-sm">
+                                {purpose}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   {/* Price Range Filter */}
