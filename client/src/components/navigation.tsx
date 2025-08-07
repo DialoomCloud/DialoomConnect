@@ -124,120 +124,172 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
-            <Link href="/">
-              <Button
-                variant={
-                  isActive("/") || isActive("/home") ? "default" : "ghost"
-                }
-                size="sm"
-                className={
-                  isActive("/") || isActive("/home")
-                    ? "bg-[hsl(188,100%,38%)] animate-glow"
-                    : "hover-lift"
-                }
-              >
-                <Home className="w-4 h-4 mr-2" />
-                {t("navigation.home")}
-              </Button>
-            </Link>
+            {/* Show different navigation based on user role */}
+            {user && user.role === "host" ? (
+              // Host mode navigation: Dashboard, Profile, Hosts, Networking
+              <>
+                <Link href="/host-dashboard">
+                  <Button
+                    variant={isActive("/host-dashboard") ? "default" : "ghost"}
+                    size="sm"
+                    className={
+                      isActive("/host-dashboard")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
 
-{/* Demo temporalmente desactivado */}
-            {/*
-            <Link href="/demo">
-              <Button
-                variant={isActive("/demo") ? "default" : "ghost"}
-                size="sm"
-                className={
-                  isActive("/demo")
-                    ? "bg-[hsl(188,100%,38%)] animate-glow"
-                    : "hover-lift"
-                }
-              >
-                <Video className="w-4 h-4 mr-2" />
-                {t("navigation.demo", "Demo")}
-              </Button>
-            </Link>
-            */}
+                <Link href="/profile">
+                  <Button
+                    variant={isActive("/profile") ? "default" : "ghost"}
+                    size="sm"
+                    className={
+                      isActive("/profile")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <UserIcon className="w-4 h-4 mr-2" />
+                    Profile
+                  </Button>
+                </Link>
 
-            <Link href="/hosts">
-              <Button
-                variant={isActive("/hosts") ? "default" : "ghost"}
-                size="sm"
-                className={
-                  isActive("/hosts")
-                    ? "bg-[hsl(188,100%,38%)] animate-glow"
-                    : "hover-lift"
-                }
-              >
-                <Users className="w-4 h-4 mr-2" />
-                {t("hosts.title")}
-              </Button>
-            </Link>
+                <Link href="/hosts">
+                  <Button
+                    variant={isActive("/hosts") ? "default" : "ghost"}
+                    size="sm"
+                    className={
+                      isActive("/hosts")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Hosts
+                  </Button>
+                </Link>
 
-            <Link href="/news">
-              <Button
-                variant={isActive("/news") ? "default" : "ghost"}
-                size="sm"
-                className={
-                  isActive("/news")
-                    ? "bg-[hsl(188,100%,38%)] animate-glow"
-                    : "hover-lift"
-                }
-              >
-                <Newspaper className="w-4 h-4 mr-2" />
-                {t("navigation.news", "Noticias")}
-              </Button>
-            </Link>
+                <Link href="/networking">
+                  <Button
+                    variant={isActive("/networking") ? "default" : "ghost"}
+                    size="sm"
+                    className={
+                      isActive("/networking")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Networking
+                  </Button>
+                </Link>
+              </>
+            ) : user && user.role === "admin" ? (
+              // Admin mode navigation
+              <>
+                <Link href="/admin-dashboard">
+                  <Button
+                    variant={isActive("/admin-dashboard") ? "default" : "ghost"}
+                    size="sm"
+                    className={
+                      isActive("/admin-dashboard")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    {t("navigation.admin")}
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              // Default navigation for guests and regular users
+              <>
+                <Link href="/">
+                  <Button
+                    variant={
+                      isActive("/") || isActive("/home") ? "default" : "ghost"
+                    }
+                    size="sm"
+                    className={
+                      isActive("/") || isActive("/home")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <Home className="w-4 h-4 mr-2" />
+                    {t("navigation.home")}
+                  </Button>
+                </Link>
 
-            {user && (
-              <Link href="/profile">
-                <Button
-                  variant={isActive("/profile") ? "default" : "ghost"}
-                  size="sm"
-                  className={
-                    isActive("/profile")
-                      ? "bg-[hsl(188,100%,38%)] animate-glow"
-                      : "hover-lift"
-                  }
-                >
-                  <UserIcon className="w-4 h-4 mr-2" />
-                  {t("navigation.profile")}
-                </Button>
-              </Link>
-            )}
+                <Link href="/hosts">
+                  <Button
+                    variant={isActive("/hosts") ? "default" : "ghost"}
+                    size="sm"
+                    className={
+                      isActive("/hosts")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    {t("hosts.title")}
+                  </Button>
+                </Link>
 
-            {user && (
-              <Link href="/networking">
-                <Button
-                  variant={isActive("/networking") ? "default" : "ghost"}
-                  size="sm"
-                  className={
-                    isActive("/networking")
-                      ? "bg-[hsl(188,100%,38%)] animate-glow"
-                      : "hover-lift"
-                  }
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  {t("networking.title", "Networking")}
-                </Button>
-              </Link>
-            )}
+                <Link href="/news">
+                  <Button
+                    variant={isActive("/news") ? "default" : "ghost"}
+                    size="sm"
+                    className={
+                      isActive("/news")
+                        ? "bg-[hsl(188,100%,38%)] animate-glow"
+                        : "hover-lift"
+                    }
+                  >
+                    <Newspaper className="w-4 h-4 mr-2" />
+                    {t("navigation.news", "Noticias")}
+                  </Button>
+                </Link>
 
-            {user && (user.isAdmin || user.role === "admin") && (
-              <Link href="/admin-dashboard">
-                <Button
-                  variant={isActive("/admin-dashboard") ? "default" : "ghost"}
-                  size="sm"
-                  className={
-                    isActive("/admin-dashboard")
-                      ? "bg-[hsl(188,100%,38%)] animate-glow"
-                      : "hover-lift"
-                  }
-                >
-                  <Shield className="w-4 h-4 mr-2" />
-                  {t("navigation.admin")}
-                </Button>
-              </Link>
+                {user && (
+                  <Link href="/profile">
+                    <Button
+                      variant={isActive("/profile") ? "default" : "ghost"}
+                      size="sm"
+                      className={
+                        isActive("/profile")
+                          ? "bg-[hsl(188,100%,38%)] animate-glow"
+                          : "hover-lift"
+                      }
+                    >
+                      <UserIcon className="w-4 h-4 mr-2" />
+                      {t("navigation.profile")}
+                    </Button>
+                  </Link>
+                )}
+
+                {user && (
+                  <Link href="/networking">
+                    <Button
+                      variant={isActive("/networking") ? "default" : "ghost"}
+                      size="sm"
+                      className={
+                        isActive("/networking")
+                          ? "bg-[hsl(188,100%,38%)] animate-glow"
+                          : "hover-lift"
+                      }
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      {t("networking.title", "Networking")}
+                    </Button>
+                  </Link>
+                )}
+              </>
             )}
           </div>
 
@@ -373,8 +425,69 @@ export function Navigation() {
                     </div>
                   </div>
                 </>
+              ) : user && user.role === "host" ? (
+                // Host mode mobile navigation: Dashboard, Profile, Hosts, Networking
+                <>
+                  <Link href="/host-dashboard" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/host-dashboard") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/host-dashboard") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <CalendarIcon className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+
+                  <Link href="/profile" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/profile") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <UserIcon className="w-4 h-4 mr-2" />
+                      Profile
+                    </Button>
+                  </Link>
+
+                  <Link href="/hosts" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/hosts") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/hosts") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Hosts
+                    </Button>
+                  </Link>
+
+                  <Link href="/networking" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/networking") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/networking") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Networking
+                    </Button>
+                  </Link>
+                </>
+              ) : user && user.role === "admin" ? (
+                // Admin mode mobile navigation
+                <>
+                  <Link href="/admin-dashboard" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/admin-dashboard") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/admin-dashboard") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      {t("navigation.admin")}
+                    </Button>
+                  </Link>
+                </>
               ) : (
-                // Menu for authenticated users
+                // Default mobile navigation for regular users
                 <>
                   <Link href="/" onClick={closeMobileMenu}>
                     <Button
@@ -388,20 +501,6 @@ export function Navigation() {
                       {t("navigation.home")}
                     </Button>
                   </Link>
-
-                  {/* Demo temporalmente desactivado */}
-                  {/*
-                  <Link href="/demo" onClick={closeMobileMenu}>
-                    <Button
-                      variant={isActive("/demo") ? "default" : "ghost"}
-                      size="sm"
-                      className={`w-full justify-start ${isActive("/demo") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                    >
-                      <Video className="w-4 h-4 mr-2" />
-                      {t("navigation.demo")}
-                    </Button>
-                  </Link>
-                  */}
 
                   <Link href="/hosts" onClick={closeMobileMenu}>
                     <Button
@@ -425,44 +524,37 @@ export function Navigation() {
                     </Button>
                   </Link>
 
-                  <Link href="/profile" onClick={closeMobileMenu}>
-                    <Button
-                      variant={isActive("/profile") ? "default" : "ghost"}
-                      size="sm"
-                      className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                    >
-                      <UserIcon className="w-4 h-4 mr-2" />
-                      {t("navigation.profile")}
-                    </Button>
-                  </Link>
-
-                  <Link href="/networking" onClick={closeMobileMenu}>
-                    <Button
-                      variant={isActive("/networking") ? "default" : "ghost"}
-                      size="sm"
-                      className={`w-full justify-start ${isActive("/networking") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      {t("networking.title", "Networking")}
-                    </Button>
-                  </Link>
-
-                  {(user.isAdmin || user.role === "admin") && (
-                    <Link href="/admin-dashboard" onClick={closeMobileMenu}>
+                  {user && (
+                    <Link href="/profile" onClick={closeMobileMenu}>
                       <Button
-                        variant={
-                          isActive("/admin-dashboard") ? "default" : "ghost"
-                        }
+                        variant={isActive("/profile") ? "default" : "ghost"}
                         size="sm"
-                        className={`w-full justify-start ${isActive("/admin-dashboard") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                        className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                       >
-                        <Shield className="w-4 h-4 mr-2" />
-                        {t("navigation.admin")}
+                        <UserIcon className="w-4 h-4 mr-2" />
+                        {t("navigation.profile")}
                       </Button>
                     </Link>
                   )}
 
-                  <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
+                  {user && (
+                    <Link href="/networking" onClick={closeMobileMenu}>
+                      <Button
+                        variant={isActive("/networking") ? "default" : "ghost"}
+                        size="sm"
+                        className={`w-full justify-start ${isActive("/networking") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        {t("networking.title", "Networking")}
+                      </Button>
+                    </Link>
+                  )}
+                </>
+              )}
+
+              {/* Role selector and logout for authenticated users */}
+              {user && (
+                <div className="border-t border-[hsl(220,13%,90%)] pt-4 mt-4">
                     <div className="mb-3 px-3">
                       <Select
                         value={
@@ -499,7 +591,6 @@ export function Navigation() {
                       {t("navigation.logout")}
                     </Button>
                   </div>
-                </>
               )}
             </div>
           </div>
