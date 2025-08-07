@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock } from "lucide-react";
-import { format, addDays, startOfDay, isAfter, isSameDay } from "date-fns";
+import { format, addDays, startOfDay, isAfter, isSameDay, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import type { HostAvailability } from "@shared/schema";
 
@@ -116,12 +116,13 @@ export function DateTimeSelector({ isOpen, onClose, availability, onConfirm }: D
               disabled={disabledDays}
               locale={es}
               className="rounded-md border"
-              fromDate={new Date()}
+              fromDate={startOfMonth(new Date())}
               toDate={addDays(new Date(), 90)}
-              showOutsideDays={true}
+              showOutsideDays={false}
               weekStartsOn={1}
               showWeekNumber={false}
               fixedWeeks={false}
+              ISOWeek={false}
             />
           </div>
 
