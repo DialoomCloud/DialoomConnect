@@ -53,7 +53,8 @@ import {
   Youtube,
   Globe,
   ExternalLink,
-  Camera
+  Camera,
+  X
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { PURPOSES } from "@/stores/exploreFilterStore";
