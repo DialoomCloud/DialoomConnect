@@ -10,6 +10,7 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **Smart Image Compression**: Implemented iterative WebP compression system that automatically reduces image quality until files are under 1.5MB while maintaining visual quality, eliminating the need to store original large files
 - **Homepage Testimonials Enhancement**: Updated testimonials section with real client names (Marianne Foix, Joshua Artxiz, Laia Dolcet) and professional profile images with robust fallback system
 - **Admin Panel Timestamp Fix**: Resolved "value.toISOString is not a function" error when editing admin users by adding proper date validation and timestamp handling for host availability and pricing data
+- **Admin Panel Pricing Tab Enhancement**: Renamed "Host" tab to "Tarifas" and enhanced pricing display to show ALL host pricing configurations including custom durations (e.g., 120 minutes), with ability to add, edit, and delete custom tariffs
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)

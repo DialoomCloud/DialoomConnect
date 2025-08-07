@@ -437,7 +437,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
               </TabsTrigger>
               <TabsTrigger value="host" className="flex items-center gap-2" disabled={!formData.isHost}>
                 <CreditCard className="w-4 h-4" />
-                Host
+                Tarifas
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -788,14 +788,44 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                         </div>
                       </div>
                       
-                      {/* Paid Sessions */}
+                      {/* Paid Sessions - Show ALL pricing configurations */}
                       <div className="space-y-2">
-                        <h4 className="font-medium">Sesiones de Pago</h4>
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">Sesiones de Pago</h4>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const newPricing = [...(formData.hostPricing || [])];
+                              // Find a duration that doesn't exist yet
+                              const existingDurations = newPricing.map(p => p.duration);
+                              const commonDurations = [30, 60, 90, 120, 150, 180];
+                              const nextDuration = commonDurations.find(d => !existingDurations.includes(d)) || 60;
+                              
+                              newPricing.push({ 
+                                duration: nextDuration, 
+                                price: '', 
+                                currency: 'EUR',
+                                isCustom: true,
+                                includesScreenSharing: false,
+                                includesTranslation: false,
+                                includesRecording: false,
+                                includesTranscription: false
+                              });
+                              setFormData({ ...formData, hostPricing: newPricing });
+                            }}
+                          >
+                            Agregar Tarifa
+                          </Button>
+                        </div>
+                        
+                        {/* Show standard durations first (30, 60, 90) */}
                         {[30, 60, 90].map(duration => {
                           const pricing = formData.hostPricing?.find((p: any) => p.duration === duration);
                           return (
-                            <div key={duration} className="flex items-center gap-4 p-3 border rounded">
-                              <Label className="w-24">{duration} min:</Label>
+                            <div key={`standard-${duration}`} className="flex items-center gap-4 p-3 border rounded bg-gray-50">
+                              <Label className="w-24 font-medium">{duration} min:</Label>
                               <Input
                                 type="number"
                                 placeholder="Precio en EUR"
@@ -806,7 +836,16 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                                   if (index >= 0) {
                                     newPricing[index] = { ...newPricing[index], price: e.target.value };
                                   } else {
-                                    newPricing.push({ duration, price: e.target.value, currency: 'EUR' });
+                                    newPricing.push({ 
+                                      duration, 
+                                      price: e.target.value, 
+                                      currency: 'EUR',
+                                      isCustom: false,
+                                      includesScreenSharing: false,
+                                      includesTranslation: false,
+                                      includesRecording: false,
+                                      includesTranscription: false
+                                    });
                                   }
                                   setFormData({ ...formData, hostPricing: newPricing });
                                 }}
@@ -830,6 +869,73 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                             </div>
                           );
                         })}
+                        
+                        {/* Show ALL custom pricing configurations */}
+                        {formData.hostPricing?.filter((p: any) => ![0, 30, 60, 90].includes(p.duration)).map((pricing: any, index: number) => (
+                          <div key={`custom-${pricing.duration}-${index}`} className="flex items-center gap-4 p-3 border rounded bg-blue-50">
+                            <div className="flex items-center gap-2 w-24">
+                              <Input
+                                type="number"
+                                value={pricing.duration}
+                                onChange={(e) => {
+                                  const newPricing = [...formData.hostPricing];
+                                  const actualIndex = newPricing.findIndex(p => p.id === pricing.id || (p.duration === pricing.duration && p.price === pricing.price));
+                                  if (actualIndex >= 0) {
+                                    newPricing[actualIndex] = { ...newPricing[actualIndex], duration: parseInt(e.target.value) || 0 };
+                                    setFormData({ ...formData, hostPricing: newPricing });
+                                  }
+                                }}
+                                className="w-16 text-sm"
+                                min="1"
+                              />
+                              <span className="text-sm font-medium">min:</span>
+                            </div>
+                            <Input
+                              type="number"
+                              placeholder="Precio en EUR"
+                              value={pricing.price || ''}
+                              onChange={(e) => {
+                                const newPricing = [...formData.hostPricing];
+                                const actualIndex = newPricing.findIndex(p => p.id === pricing.id || (p.duration === pricing.duration && p.price === pricing.price));
+                                if (actualIndex >= 0) {
+                                  newPricing[actualIndex] = { ...newPricing[actualIndex], price: e.target.value };
+                                  setFormData({ ...formData, hostPricing: newPricing });
+                                }
+                              }}
+                              className="w-32"
+                            />
+                            <span>EUR</span>
+                            <Badge variant="secondary" className="text-xs">Personalizada</Badge>
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={pricing?.includesScreenSharing || false}
+                                onCheckedChange={(checked) => {
+                                  const newPricing = [...formData.hostPricing];
+                                  const actualIndex = newPricing.findIndex(p => p.id === pricing.id || (p.duration === pricing.duration && p.price === pricing.price));
+                                  if (actualIndex >= 0) {
+                                    newPricing[actualIndex] = { ...newPricing[actualIndex], includesScreenSharing: checked };
+                                    setFormData({ ...formData, hostPricing: newPricing });
+                                  }
+                                }}
+                              />
+                              <Label className="text-sm">Pantalla</Label>
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const newPricing = formData.hostPricing.filter(
+                                  (p: any) => !(p.id === pricing.id || (p.duration === pricing.duration && p.price === pricing.price))
+                                );
+                                setFormData({ ...formData, hostPricing: newPricing });
+                              }}
+                              className="ml-auto"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
