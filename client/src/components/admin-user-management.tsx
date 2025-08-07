@@ -105,32 +105,21 @@ export function AdminUserManagement() {
         <Badge 
           variant="outline" 
           className="text-red-600 cursor-pointer hover:bg-red-50 transition-colors" 
-          onClick={() => handleVerificationToggle(user.id, true)}
+          onClick={() => handleActivationToggle(user.id, true)}
           title="Clic para activar usuario"
         >
-          Inactivo
-        </Badge>
-      );
-    } else if (user.isVerified) {
-      return (
-        <Badge 
-          variant="outline" 
-          className="text-green-600 cursor-pointer hover:bg-green-50 transition-colors" 
-          onClick={() => handleVerificationToggle(user.id, false)}
-          title="Clic para desverificar usuario"
-        >
-          Verificado
+          Usuario Inactivo
         </Badge>
       );
     } else {
       return (
         <Badge 
           variant="outline" 
-          className="cursor-pointer hover:bg-gray-50 transition-colors" 
-          onClick={() => handleVerificationToggle(user.id, true)}
-          title="Clic para verificar usuario"
+          className="text-green-600 cursor-pointer hover:bg-green-50 transition-colors" 
+          onClick={() => handleActivationToggle(user.id, false)}
+          title="Clic para desactivar usuario"
         >
-          No verificado
+          Usuario Activo
         </Badge>
       );
     }
@@ -175,18 +164,18 @@ export function AdminUserManagement() {
     }
   };
 
-  // Verification toggle functionality
-  const handleVerificationToggle = async (userId: string, verified: boolean) => {
+  // User activation toggle functionality
+  const handleActivationToggle = async (userId: string, active: boolean) => {
     try {
       await apiRequest(`/api/admin/users/${userId}`, {
         method: 'PUT',
-        body: { isVerified: verified, isActive: verified }
+        body: { isActive: active }
       });
       
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       
       toast({
-        title: verified ? "Usuario verificado" : "Usuario desverificado",
+        title: active ? "Usuario activado" : "Usuario desactivado",
         description: "El estado se ha actualizado correctamente",
       });
     } catch (error: any) {
