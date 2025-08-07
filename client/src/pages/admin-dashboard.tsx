@@ -35,7 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function AdminDashboard() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("overview");
   const { adminUser, isLoading } = useAdminAuth();
   const [, setLocation] = useLocation();
