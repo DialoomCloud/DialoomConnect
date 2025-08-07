@@ -35,7 +35,7 @@ const DOCUMENT_TYPES = [
   { value: 'other', label: 'Otro (especificar)' }
 ];
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 
 export function HostVerificationForm({ userId, userStatus }: { userId: string; userStatus?: string }) {
   const { toast } = useToast();
@@ -141,7 +141,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
     if (file.size > MAX_FILE_SIZE) {
       toast({
         title: "Archivo muy grande",
-        description: "El archivo debe ser menor a 10MB",
+        description: "El archivo debe ser menor a 15MB",
         variant: "destructive"
       });
       return;
@@ -344,7 +344,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="file-upload">Archivo (PDF, JPG, PNG o WEBP - máx 10MB)</Label>
+            <Label htmlFor="file-upload">Archivo (PDF, JPG, PNG o WEBP - máx 15MB)</Label>
             <Input
               id="file-upload"
               type="file"

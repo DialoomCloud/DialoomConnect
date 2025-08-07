@@ -518,10 +518,10 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         });
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > 15 * 1024 * 1024) {
         toast({
           title: "Error",
-          description: "La imagen debe ser menor a 5MB.",
+          description: "La imagen debe ser menor a 15MB.",
           variant: "destructive",
         });
         return;

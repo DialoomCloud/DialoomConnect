@@ -33,7 +33,7 @@ import { eq } from "drizzle-orm";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: 15 * 1024 * 1024, // 15MB limit
   },
   fileFilter: (req, file, cb) => {
     console.log('[Multer] Processing file:', {
@@ -65,7 +65,7 @@ const upload = multer({
 const uploadAdmin = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: 15 * 1024 * 1024, // 15MB limit
   }
 });
 
@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (err instanceof multer.MulterError) {
       // Handle multer-specific errors
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ message: 'Archivo demasiado grande. Límite de 50MB.' });
+        return res.status(400).json({ message: 'Archivo demasiado grande. Límite de 15MB.' });
       }
       return res.status(400).json({ message: `Error de carga: ${err.message}` });
     } else if (err) {

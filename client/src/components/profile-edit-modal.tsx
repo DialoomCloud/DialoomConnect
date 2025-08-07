@@ -194,11 +194,11 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
         return;
       }
       
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size (max 15MB)
+      if (file.size > 15 * 1024 * 1024) {
         toast({
           title: "Error", 
-          description: "La imagen debe ser menor a 5MB.",
+          description: "La imagen debe ser menor a 15MB.",
           variant: "destructive",
         });
         return;

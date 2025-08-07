@@ -187,10 +187,10 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
       return;
     }
 
-    if (selectedVideoFile.size > 50 * 1024 * 1024) {
+    if (selectedVideoFile.size > 15 * 1024 * 1024) {
       toast({
         title: "Error",
-        description: "El archivo excede el límite de 50MB",
+        description: "El archivo excede el límite de 15MB",
         variant: "destructive",
       });
       return;
@@ -216,10 +216,10 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
       return;
     }
 
-    if (selectedImageFile.size > 5 * 1024 * 1024) {
+    if (selectedImageFile.size > 15 * 1024 * 1024) {
       toast({
         title: "Error",
-        description: "El archivo excede el límite de 5MB",
+        description: "El archivo excede el límite de 15MB",
         variant: "destructive",
       });
       return;
@@ -351,7 +351,7 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
           <TabsContent value="video" className="space-y-4">
             <form onSubmit={handleVideoUpload} className="space-y-4">
               <div>
-                <Label htmlFor="video-file">Archivo de Video (MP4, máx. 50MB) *</Label>
+                <Label htmlFor="video-file">Archivo de Video (MP4, máx. 15MB) *</Label>
                 <Input
                   id="video-file"
                   type="file"
@@ -410,7 +410,7 @@ export function MediaUploadModal({ isOpen, onClose, replaceContent }: MediaUploa
           <TabsContent value="image" className="space-y-4">
             <form onSubmit={handleImageUpload} className="space-y-4">
               <div>
-                <Label htmlFor="image-file">Archivo de Imagen (JPG, PNG, WebP, máx. 5MB) *</Label>
+                <Label htmlFor="image-file">Archivo de Imagen (JPG, PNG, WebP, máx. 15MB) *</Label>
                 <Input
                   id="image-file"
                   type="file"
