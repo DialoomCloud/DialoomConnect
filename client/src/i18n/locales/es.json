@@ -749,7 +749,7 @@
     }
   },
   "networking": {
-    "title": "Recomendaciones de Networking",
+    "title": "Networking",
     "description": "Sugerencias inteligentes para conexiones profesionales significativas",
     "loading": "Cargando recomendaciones...",
     "refresh": "Actualizar",

@@ -14,6 +14,7 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **Video Call Topics Redesign**: Replaced textarea system with individual input fields featuring add/remove buttons, limited to 10 topics maximum, with full database synchronization and admin panel integration
 - **Video Compression System**: Implemented comprehensive automatic video compression using FFmpeg for uploads up to 100MB. Features smart quality adjustment, format conversion to MP4, resolution optimization (max 1920x1080), and automatic cleanup of original files. Applied across all video upload sections including media uploads and news articles.
 - **Admin Badge Control System**: Implemented comprehensive badge management system with global and individual controls. Added isRecommended and isFeatured fields to users table. Created AdminSettingsPanel with two-tab interface: Settings tab for global badge visibility controls (Verified/Recommended), and Hosts tab for individual host management with Estado (Active/Inactive), Verificado, Recomendado, and Destacado columns. Global and individual systems work independently for maximum flexibility.
+- **Navigation Menu Cleanup**: Removed Demo video call links from all header navigation menus (desktop and mobile versions) and simplified "Recomendaciones de Networking" title to simply "Networking" for cleaner interface.
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)
