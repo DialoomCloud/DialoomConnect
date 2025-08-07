@@ -218,23 +218,7 @@ export function Navigation() {
                   </Button>
                 </Link>
 
-                {/* Role-specific dashboards */}
-                {user.isHost && user.role === 'host' && (
-                  <Link href="/dashboard">
-                    <Button
-                      variant={isActive("/dashboard") ? "default" : "ghost"}
-                      size="sm"
-                      className={
-                        isActive("/dashboard")
-                          ? "bg-[hsl(188,100%,38%)] animate-glow"
-                          : "hover-lift"
-                      }
-                    >
-                      <CalendarIcon className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                )}
+                {/* Role-specific dashboards - Dashboard removed for hosts as it overlaps with Profile editor functionality */}
 
                 {/* Admin Panel - only show if user is admin */}
                 {user.isAdmin && (
@@ -401,19 +385,8 @@ export function Navigation() {
                   </div>
                 </>
               ) : user && user.role === "host" ? (
-                // Host mode mobile navigation: Dashboard, Profile, Hosts, Networking
+                // Host mode mobile navigation: Profile, Hosts, Networking (Dashboard removed as it overlaps with Profile functionality)
                 <>
-                  <Link href="/host-dashboard" onClick={closeMobileMenu}>
-                    <Button
-                      variant={isActive("/host-dashboard") ? "default" : "ghost"}
-                      size="sm"
-                      className={`w-full justify-start ${isActive("/host-dashboard") ? "bg-[hsl(188,100%,38%)]" : ""}`}
-                    >
-                      <CalendarIcon className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
-
                   <Link href="/profile" onClick={closeMobileMenu}>
                     <Button
                       variant={isActive("/profile") ? "default" : "ghost"}

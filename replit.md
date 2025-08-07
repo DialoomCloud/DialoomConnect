@@ -24,6 +24,7 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **How-It-Works Page Simplification**: Simplified the how-it-works page to show only 3 essential steps: Search Host → Schedule Session → Videocall, removing registration and payment steps for cleaner user flow.
 - **Registered User Role Implementation**: Added "Registered" as the new default user role replacing "guest". Updated user schema and navigation system to support this new role structure.
 - **Universal Navigation System**: Implemented universal navigation accessible to all internet users, allowing anyone to contract hosts regardless of their role (host/admin/both). Navigation now shows Home, Hosts, News for all users, with Profile and Networking for authenticated users, plus role-specific Dashboard/Admin panels when applicable.
+- **Dashboard Menu Removal for Hosts**: Removed Dashboard menu access for users with host role activated to prevent functional overlap with the profile editor. The Dashboard page remains available but is not accessible through navigation menus (both desktop and mobile) to avoid redundancy and confusion.
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)
