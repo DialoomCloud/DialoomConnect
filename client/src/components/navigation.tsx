@@ -218,14 +218,14 @@ export function Navigation() {
                   </Button>
                 </Link>
 
-                {/* Host Dashboard - only show if user is a host */}
-                {user.isHost && (
-                  <Link href="/host-dashboard">
+                {/* Role-specific dashboards */}
+                {user.isHost && user.role === 'host' && (
+                  <Link href="/dashboard">
                     <Button
-                      variant={isActive("/host-dashboard") ? "default" : "ghost"}
+                      variant={isActive("/dashboard") ? "default" : "ghost"}
                       size="sm"
                       className={
-                        isActive("/host-dashboard")
+                        isActive("/dashboard")
                           ? "bg-[hsl(188,100%,38%)] animate-glow"
                           : "hover-lift"
                       }

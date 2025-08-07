@@ -29,6 +29,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AdminUserManagement } from "@/components/admin-user-management";
 import { AdminEmailManagement } from "@/components/admin-email-management";
+import { AdminThemeEditor } from "@/components/admin-theme-editor";
+import { AdminSettingsPanel } from "@/components/admin-settings-panel";
 import AdminNewsManagement from "@/components/admin-news-management";
 
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +41,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const { adminUser, isLoading } = useAdminAuth();
   const [, setLocation] = useLocation();
+  const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
 
   // Fetch admin statistics - must be called before conditional returns
   const { data: stats } = useQuery({
@@ -283,7 +286,15 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Panel de configuración en desarrollo...</p>
+                <div className="space-y-4">
+                  <Button onClick={() => setSettingsPanelOpen(true)}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Abrir Panel de Configuración
+                  </Button>
+                  <p className="text-sm text-gray-600">
+                    Gestiona badges, configuraciones globales y usuarios desde el panel de configuración.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -295,17 +306,7 @@ export default function AdminDashboard() {
 
           {/* Theme Tab */}
           <TabsContent value="theme">
-            <Card>
-              <CardHeader>
-                <CardTitle>Editor de Temas</CardTitle>
-                <CardDescription>
-                  Personaliza la apariencia de la plataforma
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Editor de temas en desarrollo...</p>
-              </CardContent>
-            </Card>
+            <AdminThemeEditor />
           </TabsContent>
 
           {/* Emails Tab */}
@@ -313,6 +314,12 @@ export default function AdminDashboard() {
             <AdminEmailManagement />
           </TabsContent>
         </Tabs>
+
+        {/* Admin Settings Panel */}
+        <AdminSettingsPanel 
+          open={settingsPanelOpen} 
+          onOpenChange={setSettingsPanelOpen} 
+        />
       </div>
     </div>
   );
