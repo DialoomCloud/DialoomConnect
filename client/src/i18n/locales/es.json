@@ -255,7 +255,15 @@
     "specificDates": "Fechas Específicas",
     "addTimeSlot": "Agregar Franja Horaria a",
     "selectDate": "Selecciona una fecha",
-    "addSlot": "Agregar Franja Horaria"
+    "addSlot": "Agregar Franja Horaria",
+    "label": "Disponibilidad",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja",
+    "statusInfo": "Estado de disponibilidad",
+    "highDesc": "Más de 20 slots disponibles",
+    "mediumDesc": "10-20 slots disponibles",
+    "lowDesc": "Menos de 5 slots disponibles"
   },
   "pricing": {
     "title": "Precios de Sesiones",

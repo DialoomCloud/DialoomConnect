@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Star, MapPin } from "lucide-react";
 import { Link } from "wouter";
 import type { User } from "@shared/schema";
+import { AvailabilityTooltip } from "@/components/availability-tooltip";
 
 export function FeaturedHostsSection() {
   // Fetch featured hosts from the API
@@ -94,11 +95,16 @@ export function FeaturedHostsSection() {
 
                   {/* Location */}
                   {(host as any).city && (
-                    <div className="flex items-center justify-center text-sm text-gray-500">
+                    <div className="flex items-center justify-center text-sm text-gray-500 mb-2">
                       <MapPin className="w-3 h-3 mr-1" />
                       <span>{(host as any).city}</span>
                     </div>
                   )}
+
+                  {/* Availability Status */}
+                  <div className="flex justify-center">
+                    <AvailabilityTooltip status="Alta" className="text-xs" />
+                  </div>
                 </div>
               </CardContent>
             </Card>

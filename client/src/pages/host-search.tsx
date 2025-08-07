@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
+import { AvailabilityTooltip } from "@/components/availability-tooltip";
 
 type SearchResult = UserType & { relevance?: number };
 
@@ -608,7 +609,7 @@ export default function HostSearch() {
                     )}
                     
                     {/* Quick Stats - Smaller */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-1.5 text-white text-center">
                         <div className="text-sm font-bold">150+</div>
                         <div className="text-xs opacity-90">Sesiones</div>
@@ -617,6 +618,11 @@ export default function HostSearch() {
                         <div className="text-sm font-bold">98%</div>
                         <div className="text-xs opacity-90">Satisfacción</div>
                       </div>
+                    </div>
+
+                    {/* Availability Status */}
+                    <div className="flex justify-center">
+                      <AvailabilityTooltip status="Media" className="text-xs" />
                     </div>
 
                   </div>

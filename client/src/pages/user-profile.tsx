@@ -22,6 +22,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
 import { trackUserAction } from "@/hooks/useOnboardingState";
 import { useVerificationSettings } from "@/hooks/useVerificationSettings";
+import { AvailabilityTooltip } from "@/components/availability-tooltip";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -276,11 +277,7 @@ export default function UserProfile() {
 
                   {/* Availability Status with Color Indicator */}
                   <div className="flex justify-center lg:justify-start mb-3">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      <span className="font-medium">Disponibilidad:</span>
-                      <span className="ml-1 font-bold">Alta</span>
-                    </div>
+                    <AvailabilityTooltip status="Alta" />
                   </div>
 
                   {/* Topics during videocall */}

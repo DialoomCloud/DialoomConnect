@@ -254,7 +254,15 @@
     "specificDates": "Dates Específiques",
     "addTimeSlot": "Afegir Franja Horària a",
     "selectDate": "Selecciona una data",
-    "addSlot": "Afegir Franja Horària"
+    "addSlot": "Afegir Franja Horària",
+    "label": "Disponibilitat",
+    "high": "Alta",
+    "medium": "Mitjana",
+    "low": "Baixa",
+    "statusInfo": "Estat de disponibilitat",
+    "highDesc": "Més de 20 espais disponibles",
+    "mediumDesc": "10-20 espais disponibles",
+    "lowDesc": "Menys de 5 espais disponibles"
   },
   "pricing": {
     "title": "Preus de Sessions",
