@@ -2606,6 +2606,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       switch (event.type) {
+        case 'account.updated': {
+          const account = event.data.object as Stripe.Account;
+          if (account.charges_enabled && account.payouts_enabled) {
+            try {
+              const [updated] = await db
+                .update(users)
+                .set({ hostVerificationStatus: 'APPROVED', updatedAt: new Date() })
+                .where(eq(users.stripeAccountId, account.id))
+                .returning();
+              if (!updated) {
+                console.error(`No user found for Stripe account ${account.id}`);
+              }
+            } catch (err) {
+              console.error('Failed to update host verification status:', err);
+            }
+          }
+          break;
+        }
         case 'payment_intent.succeeded':
           const paymentIntent = event.data.object;
           await storage.updateStripePaymentStatus(paymentIntent.id, 'succeeded');
@@ -2677,10 +2695,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error('Error processing webhook:', error);
-      return res.status(500).json({ error: 'Webhook processing failed' });
     }
 
-    res.json({ received: true });
+    res.status(200).json({ received: true });
   });
 
   // Resend webhook endpoint
