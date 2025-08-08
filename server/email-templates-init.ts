@@ -1,6 +1,4 @@
-import { storage } from "./storage";
-
-const DEFAULT_EMAIL_TEMPLATES = [
+export const DEFAULT_EMAIL_TEMPLATES = [
   {
     type: 'user_registration',
     name: 'Registro de Usuario',
@@ -238,14 +236,15 @@ const DEFAULT_EMAIL_TEMPLATES = [
 ];
 
 export async function initializeEmailTemplates() {
+  const { storage } = await import('./storage');
   try {
     console.log('Inicializando plantillas de email...');
-    
+
     for (const template of DEFAULT_EMAIL_TEMPLATES) {
       // Check if template already exists
       const templates = await storage.getAllEmailTemplates();
       const exists = templates.some((t: any) => t.type === template.type);
-      
+
       if (!exists) {
         await storage.createEmailTemplate(template);
         console.log(`Plantilla '${template.type}' creada.`);
@@ -253,7 +252,7 @@ export async function initializeEmailTemplates() {
         console.log(`Plantilla '${template.type}' ya existe.`);
       }
     }
-    
+
     console.log('Inicialización de plantillas de email completada.');
   } catch (error) {
     console.error('Error inicializando plantillas de email:', error);
