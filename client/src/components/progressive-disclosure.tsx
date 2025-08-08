@@ -18,20 +18,31 @@ interface ProgressiveDisclosureProps {
   onComplete?: () => void;
 }
 
+// Cooldown to avoid showing the same tip repeatedly (5 minutes)
+const STEP_COOLDOWN_MS = 5 * 60 * 1000;
+
 export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosureProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    // Load completed steps from localStorage
+    // Load completed steps with timestamps from localStorage
     try {
-      const completed = JSON.parse(localStorage.getItem('dialoom_progressive_steps') || '[]');
-      setCompletedSteps(completed);
-      console.log('Progressive Disclosure: Loaded completed steps:', completed);
+      const stored = JSON.parse(localStorage.getItem('dialoom_progressive_steps') || '{}');
+      const now = Date.now();
+      const valid: Record<string, number> = {};
+      Object.entries(stored).forEach(([id, ts]) => {
+        if (typeof ts === 'number' && now - ts < STEP_COOLDOWN_MS) {
+          valid[id] = ts;
+        }
+      });
+      setCompletedSteps(valid);
+      localStorage.setItem('dialoom_progressive_steps', JSON.stringify(valid));
+      console.log('Progressive Disclosure: Loaded completed steps:', valid);
     } catch (error) {
       console.warn('Progressive Disclosure: Error loading completed steps:', error);
-      setCompletedSteps([]);
+      setCompletedSteps({});
     }
   }, []);
 
@@ -43,9 +54,10 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
 
     const step = steps[currentStep];
     
-    // Skip if already completed
-    if (completedSteps.includes(step.id)) {
-      console.log('Progressive Disclosure: Skipping completed step:', step.id);
+    // Skip if already shown recently
+    const lastShown = completedSteps[step.id];
+    if (lastShown && Date.now() - lastShown < STEP_COOLDOWN_MS) {
+      console.log('Progressive Disclosure: Skipping recently shown step:', step.id);
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -70,6 +82,14 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
 
     const showStep = () => {
       setTimeout(() => {
+        const now = Date.now();
+        const updated = { ...completedSteps, [step.id]: now };
+        setCompletedSteps(updated);
+        try {
+          localStorage.setItem('dialoom_progressive_steps', JSON.stringify(updated));
+        } catch (error) {
+          console.warn('Progressive Disclosure: Error saving step timestamp:', error);
+        }
         setIsVisible(true);
       }, step.delay || 0);
     };
@@ -78,17 +98,6 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
   }, [currentStep, steps, completedSteps]);
 
   const handleStepComplete = () => {
-    const step = steps[currentStep];
-    const updated = [...completedSteps, step.id];
-    setCompletedSteps(updated);
-    
-    try {
-      localStorage.setItem('dialoom_progressive_steps', JSON.stringify(updated));
-      console.log('Progressive Disclosure: Completed step saved:', step.id, updated);
-    } catch (error) {
-      console.warn('Progressive Disclosure: Error saving completed step:', error);
-    }
-    
     setIsVisible(false);
     setTimeout(() => {
       setCurrentStep(currentStep + 1);
@@ -96,18 +105,6 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
   };
 
   const handleDismiss = () => {
-    // When dismissing, also mark as completed to avoid showing again
-    const step = steps[currentStep];
-    const updated = [...completedSteps, step.id];
-    setCompletedSteps(updated);
-    
-    try {
-      localStorage.setItem('dialoom_progressive_steps', JSON.stringify(updated));
-      console.log('Progressive Disclosure: Dismissed step saved:', step.id, updated);
-    } catch (error) {
-      console.warn('Progressive Disclosure: Error saving dismissed step:', error);
-    }
-    
     setIsVisible(false);
     setCurrentStep(currentStep + 1);
   };
@@ -230,9 +227,9 @@ export const resetProgressiveDisclosure = () => {
 // Utility function to get all completed steps
 export const getCompletedSteps = () => {
   try {
-    return JSON.parse(localStorage.getItem('dialoom_progressive_steps') || '[]');
+    return JSON.parse(localStorage.getItem('dialoom_progressive_steps') || '{}');
   } catch (error) {
     console.warn('Progressive Disclosure: Error getting completed steps:', error);
-    return [];
+    return {};
   }
 };
