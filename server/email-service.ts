@@ -1,14 +1,22 @@
 import { Resend } from 'resend';
 import { storage } from './storage';
-import { 
-  EmailTemplate, 
-  EmailNotification, 
+import {
+  EmailTemplate,
+  EmailNotification,
   InsertEmailNotification,
   emailTemplateTypeEnum
 } from '@shared/schema';
 
-// Use the Resend API key provided by the user
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_J1kjyvgF_EvCgVLwrMXx364p3m2ryg6QX';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
+
+if (!RESEND_API_KEY) {
+  throw new Error('RESEND_API_KEY environment variable is required');
+}
+
+if (!RESEND_FROM_EMAIL) {
+  throw new Error('RESEND_FROM_EMAIL environment variable is required');
+}
 
 const resend = new Resend(RESEND_API_KEY);
 
@@ -91,7 +99,7 @@ class EmailService {
 
       // Send email via Resend
       const emailResult = await resend.emails.send({
-        from: 'Dialoom <api@dialoom.com>',
+        from: RESEND_FROM_EMAIL,
         to: params.recipientEmail,
         subject,
         html: htmlContent,
