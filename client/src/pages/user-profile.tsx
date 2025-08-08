@@ -51,21 +51,21 @@ export default function UserProfile() {
   // Reviews modal state
   const [showReviewsModal, setShowReviewsModal] = useState(false);
 
-  // Intelligent translation for description
-  const { 
-    translatedDescription, 
-    isTranslating, 
-    wasTranslated 
-  } = useIntelligentTranslation({
-    description: user?.description || '',
-    hostId: userId || '',
-    enabled: !!user?.description && !!userId
-  });
-
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
     queryKey: [`/api/users/${userId}`],
     enabled: !!userId,
+  });
+
+  // Intelligent translation for description
+  const {
+    translatedDescription,
+    isTranslating,
+    wasTranslated
+  } = useIntelligentTranslation({
+    description: user?.description || '',
+    hostId: userId || '',
+    enabled: !!user?.description && !!userId
   });
 
   // Scroll to top when component mounts or userId changes
