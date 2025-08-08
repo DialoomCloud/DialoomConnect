@@ -35,13 +35,18 @@ import {
   Plus,
   CheckCircle2,
   CreditCard,
-  Shield
+  Shield,
+  Languages
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 // Import additional types and utilities
 import type { Booking, Invoice, MediaContent, User, HostPricing } from "@shared/schema";
+
+interface BookingWithLanguage extends Booking {
+  callLanguage?: string;
+}
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
@@ -337,7 +342,7 @@ export default function Dashboard() {
   const currentUser = user || (isAdmin ? { id: 'admin-view', name: 'Admin View', isAdmin: true } : null);
 
   // Fetch bookings - disabled for admin view
-  const { data: bookings = [], isLoading: bookingsLoading } = useQuery<Booking[]>({
+  const { data: bookings = [], isLoading: bookingsLoading } = useQuery<BookingWithLanguage[]>({
     queryKey: ["/api/bookings"],
     enabled: !!user && !isAdmin,
   });
@@ -622,6 +627,12 @@ export default function Dashboard() {
                             </span>
                             <Clock className="w-4 h-4 text-gray-500 ml-4" />
                             <span>{booking.startTime} - {booking.duration} min</span>
+                            {booking.callLanguage && (
+                              <>
+                                <Languages className="w-4 h-4 text-gray-500 ml-4" />
+                                <span>{booking.callLanguage}</span>
+                              </>
+                            )}
                           </div>
                           <p className="text-sm text-gray-600">Invitado: Usuario #{booking.guestId}</p>
                         </div>
@@ -660,7 +671,13 @@ export default function Dashboard() {
                               <span className="font-medium">
                                 {format(new Date(booking.scheduledDate), "d 'de' MMMM 'de' yyyy", { locale: es })}
                               </span>
-                              <Badge 
+                              {booking.callLanguage && (
+                                <>
+                                  <Languages className="w-4 h-4 text-gray-500 ml-4" />
+                                  <span>{booking.callLanguage}</span>
+                                </>
+                              )}
+                              <Badge
                                 variant={booking.status === "completed" ? "default" : "secondary"}
                                 className="ml-2"
                               >

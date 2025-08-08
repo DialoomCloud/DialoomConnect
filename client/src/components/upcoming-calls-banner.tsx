@@ -2,13 +2,17 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Video, User, Timer, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Video, User, Timer, AlertCircle, Languages } from "lucide-react";
 import { format, differenceInMilliseconds, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import type { Booking } from "@shared/schema";
 
+interface BookingWithLanguage extends Booking {
+  callLanguage?: string;
+}
+
 interface UpcomingCallsBannerProps {
-  bookings: Booking[];
+  bookings: BookingWithLanguage[];
   userId?: string;
 }
 
@@ -134,11 +138,17 @@ export function UpcomingCallsBanner({ bookings, userId }: UpcomingCallsBannerPro
                     {nextBooking.startTime} - {nextBooking.duration} min
                   </span>
                 </div>
+                {nextBooking.callLanguage && (
+                  <div className="flex items-center gap-2">
+                    <Languages className="w-4 h-4 text-gray-500" />
+                    <span className="font-medium">{nextBooking.callLanguage}</span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-gray-500" />
                 <span className="text-sm text-gray-600">
-                  {nextBooking.hostId === userId 
+                  {nextBooking.hostId === userId
                     ? `Invitado: Usuario #${nextBooking.guestId}`
                     : `Mentor: ${nextBooking.hostName}`
                   }
