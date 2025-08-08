@@ -409,6 +409,11 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* Upcoming Calls Banner */}
+        {!isAdmin && (
+          <UpcomingCallsBanner bookings={bookings} userId={user?.id} />
+        )}
+
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift">
@@ -484,12 +489,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         )}
-
-        {/* Upcoming Calls Banner */}
-        {!isAdmin && (
-          <UpcomingCallsBanner bookings={bookings} userId={user?.id} />
-        )}
-
         {/* Complete Host Management Dashboard */}
         <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg">
           <CardHeader>
