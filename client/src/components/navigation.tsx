@@ -200,7 +200,7 @@ export function Navigation() {
                     }
                   >
                     <UserIcon className="w-4 h-4 mr-2" />
-                    {t('navigation.profile', 'Profile')}
+                    {user.role === "host" || (user.isHost && !user.role) ? "Dashboard" : t('navigation.profile', 'Profile')}
                   </Button>
                 </Link>
 
@@ -395,7 +395,7 @@ export function Navigation() {
                       className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                     >
                       <UserIcon className="w-4 h-4 mr-2" />
-                      Profile
+                      Dashboard
                     </Button>
                   </Link>
 
