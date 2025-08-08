@@ -1591,6 +1591,7 @@ export class DatabaseStorage implements IStorage {
           id: socialPlatforms.id,
           name: socialPlatforms.name,
           baseUrl: socialPlatforms.baseUrl,
+          iconUrl: socialPlatforms.iconUrl,
         }
       })
       .from(userSocialProfiles)

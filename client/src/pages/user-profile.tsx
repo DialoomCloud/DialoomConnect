@@ -465,8 +465,18 @@ export default function UserProfile() {
                         return null;
                       }
 
-                      const getIcon = (platformName: string) => {
-                        switch (platformName?.toLowerCase()) {
+                      const getIcon = (profile: any) => {
+                        if (profile?.platform?.iconUrl) {
+                          return (
+                            <img
+                              src={profile.platform.iconUrl}
+                              alt={profile.platform.name || ''}
+                              className="w-5 h-5"
+                            />
+                          );
+                        }
+
+                        switch (profile.platform?.name?.toLowerCase()) {
                           case 'instagram': return <SiInstagram className="w-5 h-5" />;
                           case 'twitter': return <SiX className="w-5 h-5" />;
                           case 'linkedin': return <SiLinkedin className="w-5 h-5" />;
@@ -492,7 +502,7 @@ export default function UserProfile() {
                           className="flex items-center justify-center w-10 h-10 rounded-full bg-[hsl(188,100%,38%)] text-white hover:bg-[hsl(188,100%,32%)] transition-colors"
                           title={`${profile.platform.name || 'Social'}: ${profile.username}`}
                         >
-                          {getIcon(profile.platform.name || '')}
+                          {getIcon(profile)}
                         </a>
                       );
                     }).filter(Boolean)}
