@@ -14,6 +14,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { supabase } from "@/lib/supabase";
 import { Camera, User as UserIcon, Upload } from "lucide-react";
 import type { User, Country, Language, Skill, Category } from "@shared/schema";
+import { useTranslation } from "react-i18next";
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface ProfileEditModalProps {
 export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   
   const [formData, setFormData] = useState({
     firstName: user.firstName || "",
@@ -429,20 +431,20 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Idioma Principal
-              </Label>
-              <Select 
-                value={formData.primaryLanguageId?.toString() || ""} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, primaryLanguageId: value ? parseInt(value) : null }))}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Selecciona tu idioma principal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map((language) => (
-                    <SelectItem key={language.id} value={language.id.toString()}>
-                      {language.name}
+                <Label className="text-sm font-medium text-gray-700">
+                  {t('language.label')}
+                </Label>
+                <Select
+                  value={formData.primaryLanguageId?.toString() || ""}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, primaryLanguageId: value ? parseInt(value) : null }))}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder={t('language.select')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languages.map((language) => (
+                      <SelectItem key={language.id} value={language.id.toString()}>
+                        {language.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -451,9 +453,9 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
 
             {/* Secondary Languages */}
             <div className="md:col-span-2">
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Idiomas Secundarios
-              </Label>
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                  {t('userProfile.languages')}
+                </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border rounded-md p-2">
                 {languages
                   .filter(lang => lang.id !== formData.primaryLanguageId)

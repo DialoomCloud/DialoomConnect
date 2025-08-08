@@ -1,6 +1,4 @@
 {
-  "id": "05abe723-4fdd-442a-8d0c-b8c4170119c4",
-  "prevId": "cbd50a91-57f0-46d2-b93a-2cdce8316676",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -326,12 +324,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "call_language": {
-          "name": "call_language",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -373,19 +365,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "bookings_call_language_languages_id_fk": {
-          "name": "bookings_call_language_languages_id_fk",
-          "tableFrom": "bookings",
-          "tableTo": "languages",
-          "columnsFrom": [
-            "call_language"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -3071,4 +3050,3 @@
     "schemas": {},
     "tables": {}
   }
-}

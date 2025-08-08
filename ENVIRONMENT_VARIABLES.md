@@ -72,6 +72,7 @@ RESEND_FROM_EMAIL=noreply@tudominio.com
 ```bash
 PORT=3000
 NODE_ENV=development
+SUPPORT_TEAM_EMAIL=support@dialoom.cloud # Enviar copia de mensajes de contacto a este correo (opcional)
 ```
 
 ## 📋 Plantilla para .env (Desarrollo Local)

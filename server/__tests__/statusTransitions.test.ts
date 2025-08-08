@@ -27,7 +27,7 @@ describe('Host verification status transitions', () => {
   it('rejects host verification', async () => {
     mockSet.mockClear();
     await storage.rejectHostVerification('user2', 'admin1', 'bad docs');
-    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({ hostVerificationStatus: 'rejected' }));
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({ hostVerificationStatus: 'REJECTED' }));
     expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({ verificationStatus: 'rejected' }));
   });
 });

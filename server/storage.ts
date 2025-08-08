@@ -271,7 +271,7 @@ export interface IStorage {
   
   // User social profiles operations  
   getUserSocialProfiles(userId: string): Promise<any[]>;
-  updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string}[]): Promise<void>;
+  updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string, profileData?: any}[]): Promise<void>;
   
   // User categories operations
   getUserCategories(userId: string): Promise<any[]>;
@@ -1584,6 +1584,7 @@ export class DatabaseStorage implements IStorage {
         platformId: userSocialProfiles.platformId,
         username: userSocialProfiles.username,
         url: userSocialProfiles.url,
+        profileData: userSocialProfiles.profileData,
         isVisible: userSocialProfiles.isVisible,
         createdAt: userSocialProfiles.createdAt,
         updatedAt: userSocialProfiles.updatedAt,
@@ -1591,6 +1592,7 @@ export class DatabaseStorage implements IStorage {
           id: socialPlatforms.id,
           name: socialPlatforms.name,
           baseUrl: socialPlatforms.baseUrl,
+          iconUrl: socialPlatforms.iconUrl,
         }
       })
       .from(userSocialProfiles)
@@ -1600,7 +1602,7 @@ export class DatabaseStorage implements IStorage {
     return profiles;
   }
 
-  async updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string}[]): Promise<void> {
+  async updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string, profileData?: any}[]): Promise<void> {
     // Delete existing social profiles
     await db.delete(userSocialProfiles).where(eq(userSocialProfiles.userId, userId));
     
@@ -1612,6 +1614,7 @@ export class DatabaseStorage implements IStorage {
           platformId: profile.platformId,
           username: profile.username,
           url: `https://example.com/${profile.username}`, // This should be constructed based on platform
+          profileData: profile.profileData,
           isVisible: true
         }))
       );
@@ -2035,10 +2038,10 @@ export class DatabaseStorage implements IStorage {
       this.getAdminConfig('show_verified_badge'),
       this.getAdminConfig('show_recommended_badge')
     ]);
-    
+
     return {
-      showVerified: verifiedConfig ? JSON.parse(verifiedConfig.value) : true,
-      showRecommended: recommendedConfig ? JSON.parse(recommendedConfig.value) : true
+      showVerified: verifiedConfig ? JSON.parse(verifiedConfig.value) : false,
+      showRecommended: recommendedConfig ? JSON.parse(recommendedConfig.value) : false
     };
   }
 

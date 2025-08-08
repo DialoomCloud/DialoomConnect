@@ -19,8 +19,6 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1755000000000,
-      "tag": "0002_add_call_language_to_bookings",
       "breakpoints": true
     }
   ]
