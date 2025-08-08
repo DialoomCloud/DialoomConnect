@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
+import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -70,7 +71,8 @@ export function BookingFlowDirect({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  
+  const { data: verificationSettings } = useVerificationSettings();
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<PricingOption | null>(null);
@@ -141,7 +143,7 @@ export function BookingFlowDirect({
               alt={`${hostDetails.firstName} ${hostDetails.lastName}`}
               className="w-20 h-20 rounded-full object-cover"
             />
-            {hostDetails.isVerified && (
+            {verificationSettings?.showVerified && hostDetails.isVerified && (
               <Badge className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs px-1 py-0.5">
                 ✓
               </Badge>
