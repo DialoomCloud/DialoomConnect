@@ -2035,10 +2035,10 @@ export class DatabaseStorage implements IStorage {
       this.getAdminConfig('show_verified_badge'),
       this.getAdminConfig('show_recommended_badge')
     ]);
-    
+
     return {
-      showVerified: verifiedConfig ? JSON.parse(verifiedConfig.value) : true,
-      showRecommended: recommendedConfig ? JSON.parse(recommendedConfig.value) : true
+      showVerified: verifiedConfig ? JSON.parse(verifiedConfig.value) : false,
+      showRecommended: recommendedConfig ? JSON.parse(recommendedConfig.value) : false
     };
   }
 
