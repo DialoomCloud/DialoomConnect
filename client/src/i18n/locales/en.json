@@ -363,8 +363,10 @@
     "gdprCompliance": "GDPR Compliant"
   },
   "language": {
+    "label": "Language",
+    "select": "Select language",
     "spanish": "Español",
-    "english": "English", 
+    "english": "English",
     "catalan": "Català"
   },
   "adminTabs": {

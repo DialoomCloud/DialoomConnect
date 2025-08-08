@@ -8,9 +8,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 export function LanguageSelector() {
-  const { i18n } = useTranslation();
-
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   
   const languages = [
     { code: 'es', label: t('language.spanish'), short: 'ESP' },
@@ -27,10 +25,12 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
           className="font-medium text-gray-600 hover:text-primary px-2 sm:px-3"
+          aria-label={t('language.label')}
+          title={t('language.select')}
         >
           {currentLang.short}
         </Button>

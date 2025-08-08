@@ -371,8 +371,10 @@
     "gdprCompliance": "Complim amb RGPD"
   },
   "language": {
+    "label": "Idioma",
+    "select": "Selecciona idioma",
     "spanish": "Español",
-    "english": "English", 
+    "english": "English",
     "catalan": "Català"
   },
   "adminTabs": {
