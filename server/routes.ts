@@ -69,6 +69,14 @@ const uploadAdmin = multer({
   }
 });
 
+// Multer config for host verification documents
+const uploadDocument = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  }
+});
+
 // Helper for password hashing
 import bcrypt from "bcryptjs";
 
@@ -89,13 +97,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (err instanceof multer.MulterError) {
       // Handle multer-specific errors
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ message: 'Archivo demasiado grande. Límite de 15MB.' });
+        const limitMB = err.limit ? Math.round(err.limit / (1024 * 1024)) : 0;
+        return res.status(400).json({ message: `Archivo demasiado grande. Límite de ${limitMB}MB.` });
       }
       return res.status(400).json({ message: `Error de carga: ${err.message}` });
     } else if (err) {
       // Handle other errors (including multer fileFilter errors)
       console.error('Upload error:', err);
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: err.message || 'Error al procesar la solicitud',
         error: process.env.NODE_ENV === 'development' ? err.toString() : undefined
       });
@@ -4362,23 +4371,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload host verification document
-  app.post('/api/host/upload-document', isAuthenticated, upload.single('document'), async (req: any, res) => {
+  app.post('/api/host/upload-document', isAuthenticated, uploadDocument.single('document'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No se proporcionó documento" });
       }
-      
+
       const userId = req.userId;
       const { documentType, documentTypeLabel } = req.body;
-      
+
       if (!documentType) {
         return res.status(400).json({ message: "Tipo de documento requerido" });
       }
-      
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+
+      if (req.file.size > MAX_FILE_SIZE) {
+        return res.status(400).json({ message: "Archivo demasiado grande. Límite de 5MB." });
+      }
+
       if (!allowedTypes.includes(req.file.mimetype)) {
-        return res.status(400).json({ message: "Tipo de archivo no permitido. Solo PDF, JPG, PNG o WEBP" });
+        return res.status(400).json({ message: "Tipo de archivo no permitido. Solo PDF, JPG o PNG" });
       }
       
       // Generate unique filename
