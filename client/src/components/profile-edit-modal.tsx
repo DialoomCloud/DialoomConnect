@@ -34,18 +34,18 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
     city: user.city || "",
     postalCode: user.postalCode || "",
     countryCode: user.countryCode || "",
-    primaryLanguageId: user.primaryLanguageId || null,
     categoryId: user.categoryId || null,
     description: user.description || "",
   });
 
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
+  const [primaryLanguageId, setPrimaryLanguageId] = useState<number | null>(null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
 
   // Fetch user's current languages and skills
-  const { data: userLanguages = [] } = useQuery<{ languageId: number }[]>({
+  const { data: userLanguages = [] } = useQuery<{ languageId: number; isPrimary: boolean }[]>({
     queryKey: ['/api/user/languages', user.id],
     enabled: isOpen,
   });
@@ -59,6 +59,8 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
   React.useEffect(() => {
     if (userLanguages.length > 0) {
       setSelectedLanguages(userLanguages.map(ul => ul.languageId));
+      const primary = userLanguages.find(ul => ul.isPrimary);
+      setPrimaryLanguageId(primary ? primary.languageId : null);
     }
   }, [userLanguages]);
 
@@ -133,7 +135,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: typeof formData & { skillIds: number[], languageIds: number[] }) => {
+    mutationFn: async (data: typeof formData & { skillIds: number[]; languages: { languageId: number; isPrimary: boolean }[] }) => {
       const response = await apiRequest("/api/profile", {
         method: "PUT",
         body: data,
@@ -170,10 +172,11 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const languagePayload = selectedLanguages.map(id => ({ languageId: id, isPrimary: id === primaryLanguageId }));
     updateProfileMutation.mutate({
       ...formData,
       skillIds: selectedSkills,
-      languageIds: selectedLanguages,
+      languages: languagePayload,
     });
   };
 
@@ -433,8 +436,14 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
                 Idioma Principal
               </Label>
               <Select 
-                value={formData.primaryLanguageId?.toString() || ""} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, primaryLanguageId: value ? parseInt(value) : null }))}
+                value={primaryLanguageId?.toString() || ""}
+                onValueChange={(value) => {
+                  const id = value ? parseInt(value) : null;
+                  setPrimaryLanguageId(id);
+                  if (id !== null && !selectedLanguages.includes(id)) {
+                    setSelectedLanguages(prev => [...prev, id]);
+                  }
+                }}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Selecciona tu idioma principal" />
@@ -456,7 +465,7 @@ export function ProfileEditModal({ isOpen, onClose, user }: ProfileEditModalProp
               </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border rounded-md p-2">
                 {languages
-                  .filter(lang => lang.id !== formData.primaryLanguageId)
+                  .filter(lang => lang.id !== primaryLanguageId)
                   .map((language) => (
                   <div key={language.id} className="flex items-center space-x-2">
                     <Checkbox

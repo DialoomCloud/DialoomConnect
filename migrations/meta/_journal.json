@@ -15,6 +15,13 @@
       "when": 1754677994376,
       "tag": "0001_host_verification_status_enum",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754890000000,
+      "tag": "0002_user_languages_primary",
+      "breakpoints": true
     }
   ]
 }

@@ -93,8 +93,6 @@ export const users = pgTable("users", {
   nationality: varchar("nationality", { length: 2 }).references(() => countries.code),
   title: varchar("title"),
   description: text("description"),
-  // Language preferences
-  primaryLanguageId: integer("primary_language_id").references(() => languages.id),
   // Category selection
   categoryId: integer("category_id").references(() => categories.id),
   // Admin and authentication fields
@@ -151,6 +149,7 @@ export const userLanguages = pgTable("user_languages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   languageId: integer("language_id").notNull().references(() => languages.id),
+  isPrimary: boolean("is_primary").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -276,10 +275,6 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.countryCode],
     references: [countries.code],
   }),
-  primaryLanguage: one(languages, {
-    fields: [users.primaryLanguageId],
-    references: [languages.id],
-  }),
   category: one(categories, {
     fields: [users.categoryId],
     references: [categories.id],
@@ -403,7 +398,6 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   address: z.string().nullable().optional(),
   city: z.string().nullable().optional(),
   postalCode: z.string().nullable().optional(),
-  primaryLanguageId: z.number().nullable().optional(),
   phone: z.string().nullable().optional(),
   // Admin/Role fields for admin panel updates
   isAdmin: z.boolean().optional(),

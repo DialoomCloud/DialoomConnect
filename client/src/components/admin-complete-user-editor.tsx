@@ -98,7 +98,6 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         isVerified: user.isVerified || false,
         isRecommended: user.isRecommended || false,
         isFeatured: user.isFeatured || false,
-        primaryLanguageId: user.primaryLanguageId,
         categoryId: user.categoryId,
         skillIds: userProfile.skills?.map((s: any) => s.skillId) || [],
         languageIds: userProfile.languages?.map((l: any) => l.languageId) || [],
@@ -120,6 +119,8 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
           ? user.profileImageUrl 
           : `/storage/${user.profileImageUrl}`);
       }
+      const primary = userProfile.languages?.find((l: any) => l.isPrimary);
+      setPrimaryLanguageId(primary ? primary.languageId : null);
     }
   }, [userProfile]);
 
@@ -171,7 +172,6 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     isRecommended: false,
     isFeatured: false,
     // Profile specific
-    primaryLanguageId: null,
     categoryId: null,
     // Arrays
     skillIds: [] as number[],
@@ -183,6 +183,8 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
     hostPricing: [] as any[],
     videoCallTopics: [] as string[],
   });
+
+  const [primaryLanguageId, setPrimaryLanguageId] = useState<number | null>(null);
 
 
   // Update mutation
@@ -233,7 +235,7 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
       // Handle foreign key fields that need null instead of empty strings
       if (key === 'countryCode' || key === 'nationality') {
         cleanedData[key] = value === '' || value === undefined ? null : value;
-      } else if (key === 'primaryLanguageId' || key === 'categoryId') {
+      } else if (key === 'categoryId') {
         // Ensure these are numbers or null
         cleanedData[key] = value === '' || value === undefined || value === null ? null : parseInt(value, 10);
       } else if (typeof value === 'string' && value === '') {
@@ -243,6 +245,10 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
         cleanedData[key] = value;
       }
     });
+
+    const languagesPayload = formData.languageIds.map((id: number) => ({ languageId: id, isPrimary: id === primaryLanguageId }));
+    cleanedData.languages = languagesPayload;
+    delete cleanedData.languageIds;
     
     // Handle profile image upload if a new file was selected
     if (profileImageFile) {
@@ -370,12 +376,16 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
   };
 
   const toggleLanguage = (languageId: number) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      languageIds: prev.languageIds.includes(languageId)
+    setFormData((prev: any) => {
+      const exists = prev.languageIds.includes(languageId);
+      const newIds = exists
         ? prev.languageIds.filter((id: number) => id !== languageId)
-        : [...prev.languageIds, languageId]
-    }));
+        : [...prev.languageIds, languageId];
+      if (exists && languageId === primaryLanguageId) {
+        setPrimaryLanguageId(null);
+      }
+      return { ...prev, languageIds: newIds };
+    });
   };
 
   const toggleCategory = (categoryId: number) => {
@@ -664,19 +674,45 @@ export function AdminCompleteUserEditor({ userId, open, onOpenChange }: AdminCom
                   <CardTitle>Idiomas</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <div className="mb-2">
+                    <Label>Idioma Principal</Label>
+                    <Select
+                      value={primaryLanguageId?.toString() || ""}
+                      onValueChange={(val) => {
+                        const id = val ? parseInt(val) : null;
+                        setPrimaryLanguageId(id);
+                        if (id !== null && !formData.languageIds.includes(id)) {
+                          setFormData((prev: any) => ({ ...prev, languageIds: [...prev.languageIds, id] }));
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Selecciona un idioma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allLanguages.map((language: any) => (
+                          <SelectItem key={language.id} value={language.id.toString()}>
+                            {language.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {allLanguages.map((language: any) => (
-                      <div key={language.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`language-${language.id}`}
-                          checked={formData.languageIds.includes(language.id)}
-                          onCheckedChange={() => toggleLanguage(language.id)}
-                        />
-                        <Label htmlFor={`language-${language.id}`}>
-                          {language.name} ({language.nativeName})
-                        </Label>
-                      </div>
-                    ))}
+                    {allLanguages
+                      .filter((language: any) => language.id !== primaryLanguageId)
+                      .map((language: any) => (
+                        <div key={language.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`language-${language.id}`}
+                            checked={formData.languageIds.includes(language.id)}
+                            onCheckedChange={() => toggleLanguage(language.id)}
+                          />
+                          <Label htmlFor={`language-${language.id}`}>
+                            {language.name} ({language.nativeName})
+                          </Label>
+                        </div>
+                      ))}
                   </div>
                 </CardContent>
               </Card>
