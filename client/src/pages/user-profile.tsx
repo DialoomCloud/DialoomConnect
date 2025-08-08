@@ -461,7 +461,7 @@ export default function UserProfile() {
                 {socialProfiles && Array.isArray(socialProfiles) && socialProfiles.length > 0 && (
                   <div className="flex gap-3">
                     {socialProfiles.map((profile: any) => {
-                      if (!profile?.platform?.baseUrl || !profile?.username) {
+                      if (!profile?.username) {
                         return null;
                       }
 
@@ -479,9 +479,10 @@ export default function UserProfile() {
                         }
                       };
 
-                      const platformUrl = profile.username.startsWith('http') 
-                        ? profile.username 
-                        : profile.platform.baseUrl + profile.username;
+                      const platformUrl = profile.url
+                        || (profile.username.startsWith('http')
+                          ? profile.username
+                          : (profile.platform?.baseUrl || '') + profile.username);
 
                       return (
                         <a
