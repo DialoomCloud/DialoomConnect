@@ -221,8 +221,8 @@ export function Navigation() {
 
                 {/* Role-specific dashboards - Dashboard removed for hosts as it overlaps with Profile editor functionality */}
 
-                {/* Admin Panel - only show if user is admin */}
-                {user.isAdmin && (
+                {/* Admin Panel - only show if user is admin AND not in admin or registered role */}
+                {user.isAdmin && user.role !== "admin" && user.role !== "registered" && (
                   <Link href="/admin-dashboard">
                     <Button
                       variant={isActive("/admin-dashboard") ? "default" : "ghost"}
@@ -432,8 +432,8 @@ export function Navigation() {
                     </Button>
                   </Link>
                 </>
-              ) : user && (user.role === "admin" || (user.isAdmin && !user.role)) ? (
-                // Admin mode mobile navigation
+              ) : user && user.role === "admin" ? (
+                // Admin mode mobile navigation - only when explicitly in admin role
                 <>
                   <Link href="/admin-dashboard" onClick={closeMobileMenu}>
                     <Button
