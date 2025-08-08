@@ -1,30 +1,23 @@
-import express, { type Request, Response, NextFunction } from "express";
+import "dotenv/config";
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { errorHandler } from "./error-handler";
+
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN;
 
 const app = express();
 
-// Conditional middleware - skip JSON parsing for multipart routes
-app.use((req, res, next) => {
-  // Skip body parsing for file upload routes
-  if (req.path.includes('/upload') || 
-      (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data'))) {
-    console.log('[Middleware] Skipping body parser for:', req.path);
-    next();
-  } else {
-    express.json()(req, res, next);
-  }
-});
+app.use(helmet());
+app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+app.use(compression());
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: false }));
 
-app.use((req, res, next) => {
-  // Skip URL encoding for file upload routes
-  if (req.path.includes('/upload') || 
-      (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data'))) {
-    next();
-  } else {
-    express.urlencoded({ extended: false })(req, res, next);
-  }
-});
+app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -59,13 +52,7 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
+  app.use(errorHandler);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
