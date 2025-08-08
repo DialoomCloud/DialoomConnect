@@ -16,7 +16,7 @@ import { generateAgoraToken } from "./agora-token";
 import { emailService } from "./email-service";
 import { initializeEmailTemplates } from "./email-templates-init";
 import { aiSearchService } from "./ai-search";
-import { translateArticle, detectLanguage } from "./translation-service";
+import { translateArticle, detectLanguage, translateHostDescription } from "./translation-service";
 import { 
   createEmailTemplateSchema, 
   updateEmailTemplateSchema,
@@ -1975,6 +1975,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: error.message || 'Error al mejorar la descripción con IA',
         error: error.toString()
+      });
+    }
+  });
+
+  // Intelligent translation endpoint for host descriptions
+  app.post('/api/ai/translate-description', async (req, res) => {
+    try {
+      const { description, hostId } = req.body;
+      
+      if (!description || !hostId) {
+        return res.status(400).json({ message: "Description and hostId are required" });
+      }
+
+      // Get the host's complete profile including language information
+      const hostUser = await storage.getUser(hostId);
+      if (!hostUser) {
+        return res.status(404).json({ message: "Host not found" });
+      }
+
+      // Get the host's additional languages
+      const userLanguages = await storage.getUserLanguages(hostId);
+      const hostLanguageIds = userLanguages.map(ul => ul.languageId);
+      
+      // Add primary language to the list if it exists
+      if (hostUser.primaryLanguageId) {
+        hostLanguageIds.unshift(hostUser.primaryLanguageId);
+      }
+
+      console.log(`Translating description for host ${hostId}:`, {
+        primaryLanguageId: hostUser.primaryLanguageId,
+        additionalLanguages: hostLanguageIds,
+        descriptionLength: description.length
+      });
+
+      // Use the intelligent translation function
+      const translatedDescription = await translateHostDescription(
+        description,
+        hostUser.primaryLanguageId || 37, // Default to Spanish if no primary language
+        hostLanguageIds
+      );
+
+      res.json({ 
+        translatedDescription,
+        wasTranslated: translatedDescription !== description 
+      });
+
+    } catch (error) {
+      console.error('Error in intelligent translation:', error);
+      res.status(500).json({ 
+        message: 'Error translating description',
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   });

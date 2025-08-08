@@ -24,6 +24,7 @@ import { trackUserAction } from "@/hooks/useOnboardingState";
 import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { AvailabilityTooltip } from "@/components/availability-tooltip";
 import { ReviewsModal } from "@/components/reviews-modal";
+import { useIntelligentTranslation } from "@/hooks/useIntelligentTranslation";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -49,6 +50,17 @@ export default function UserProfile() {
 
   // Reviews modal state
   const [showReviewsModal, setShowReviewsModal] = useState(false);
+
+  // Intelligent translation for description
+  const { 
+    translatedDescription, 
+    isTranslating, 
+    wasTranslated 
+  } = useIntelligentTranslation({
+    description: user?.description || '',
+    hostId: userId || '',
+    enabled: !!user?.description && !!userId
+  });
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -391,31 +403,45 @@ export default function UserProfile() {
               <div className="space-y-4">
                 {/* Professional Description with More Button */}
                 <div>
-                  <h2 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-4">Descripción</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-[hsl(17,12%,6%)]">Descripción</h2>
+                    {wasTranslated && (
+                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+                        Traducido automáticamente
+                      </Badge>
+                    )}
+                  </div>
                   <div className="bg-[hsl(220,9%,98%)] rounded-lg p-4 border border-[hsl(220,13%,90%)]">
-                    <p className="text-[hsl(17,12%,20%)] leading-relaxed text-sm">
-                      {user.description ? (
-                        <>
-                          {user.description.length > 150 ? (
-                            <>
-                              <span>
-                                {showFullDescription ? user.description : `${user.description.substring(0, 150)}...`}
-                              </span>
-                              <button 
-                                className="ml-2 text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] font-medium text-sm"
-                                onClick={() => setShowFullDescription(!showFullDescription)}
-                              >
-                                {showFullDescription ? 'menos' : 'más'}
-                              </button>
-                            </>
-                          ) : (
-                            user.description
-                          )}
-                        </>
-                      ) : (
-                        "Información no disponible"
-                      )}
-                    </p>
+                    {isTranslating ? (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-[hsl(188,100%,38%)] border-t-transparent"></div>
+                        <span className="ml-2 text-sm text-[hsl(17,12%,40%)]">Optimizando descripción...</span>
+                      </div>
+                    ) : (
+                      <p className="text-[hsl(17,12%,20%)] leading-relaxed text-sm">
+                        {translatedDescription ? (
+                          <>
+                            {translatedDescription.length > 150 ? (
+                              <>
+                                <span>
+                                  {showFullDescription ? translatedDescription : `${translatedDescription.substring(0, 150)}...`}
+                                </span>
+                                <button 
+                                  className="ml-2 text-[hsl(188,100%,38%)] hover:text-[hsl(188,100%,32%)] font-medium text-sm"
+                                  onClick={() => setShowFullDescription(!showFullDescription)}
+                                >
+                                  {showFullDescription ? 'menos' : 'más'}
+                                </button>
+                              </>
+                            ) : (
+                              translatedDescription
+                            )}
+                          </>
+                        ) : (
+                          "Información no disponible"
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
 

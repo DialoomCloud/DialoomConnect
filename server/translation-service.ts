@@ -134,3 +134,99 @@ export async function detectLanguage(text: string): Promise<string> {
     return 'es'; // Default to Spanish
   }
 }
+
+// Function to intelligently translate host descriptions based on their spoken languages
+export async function translateHostDescription(
+  description: string,
+  hostPrimaryLanguageId: number,
+  hostLanguageIds: number[] = []
+): Promise<string> {
+  if (!description || description.trim().length === 0) {
+    return description;
+  }
+
+  try {
+    // Map language IDs to language codes (this should match your database)
+    const languageIdToCode: { [key: number]: string } = {
+      37: 'es', // Spanish
+      38: 'en', // English
+      39: 'ca', // Catalan
+      // Add more mappings as needed
+    };
+
+    // Get the primary language code
+    const primaryLanguageCode = languageIdToCode[hostPrimaryLanguageId];
+    if (!primaryLanguageCode) {
+      console.warn(`Unknown primary language ID: ${hostPrimaryLanguageId}`);
+      return description;
+    }
+
+    // Detect the current language of the description
+    const detectedLanguage = await detectLanguage(description);
+    
+    // If the description is already in the host's primary language, return as-is
+    if (detectedLanguage === primaryLanguageCode) {
+      return description;
+    }
+
+    // Check if the host speaks the detected language
+    const hostLanguageCodes = hostLanguageIds.map(id => languageIdToCode[id]).filter(Boolean);
+    const hostSpeaksDetectedLanguage = hostLanguageCodes.includes(detectedLanguage);
+
+    // If the host speaks the detected language, don't translate
+    if (hostSpeaksDetectedLanguage) {
+      return description;
+    }
+
+    // The host doesn't speak the language of their description, so translate it
+    console.log(`Translating host description from ${detectedLanguage} to ${primaryLanguageCode}`);
+    
+    const languageNames: { [key: string]: string } = {
+      'es': 'Spanish',
+      'en': 'English', 
+      'ca': 'Catalan'
+    };
+
+    const prompt = `
+You are a professional translator specializing in host profiles for a professional networking platform.
+
+Translate the following host description from ${languageNames[detectedLanguage]} to ${languageNames[primaryLanguageCode]}.
+
+Important instructions:
+1. Maintain the professional and personal tone
+2. Keep the same level of detail and enthusiasm
+3. Preserve any technical terms or industry-specific language appropriately
+4. Make it sound natural in the target language
+5. Keep the same paragraph structure and formatting
+
+Host description to translate:
+${description}
+
+Please respond with only the translated text, no additional explanation or formatting.
+`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional translator. Provide only the translated text without any additional formatting or explanation."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.3, // Lower temperature for consistent translations
+      max_tokens: 1000,
+    });
+
+    const translatedDescription = response.choices[0].message.content?.trim();
+    return translatedDescription || description;
+
+  } catch (error) {
+    console.error('Error translating host description:', error);
+    // Return original description if translation fails
+    return description;
+  }
+}
