@@ -23,7 +23,7 @@ export function useIntelligentTranslation({
   const [error, setError] = useState<string | null>(null);
 
   const translateDescription = useCallback(async () => {
-    if (!description || !hostId || !enabled || description.trim().length === 0) {
+    if (!description || !hostId || !enabled || description.trim().length < 5) {
       setTranslatedDescription(description || '');
       setWasTranslated(false);
       return;
@@ -33,14 +33,24 @@ export function useIntelligentTranslation({
     setError(null);
 
     try {
-      const response = await apiRequest('POST', '/api/ai/translate-description', {
-        description,
-        hostId
+      const response = await fetch('/api/ai/translate-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description,
+          hostId
+        })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data: TranslationResponse = await response.json();
-      setTranslatedDescription(data.translatedDescription);
-      setWasTranslated(data.wasTranslated);
+      setTranslatedDescription(data.translatedDescription || description);
+      setWasTranslated(data.wasTranslated || false);
     } catch (err) {
       console.error('Error translating description:', err);
       setError(err instanceof Error ? err.message : 'Translation error');
@@ -53,13 +63,17 @@ export function useIntelligentTranslation({
   }, [description, hostId, enabled]);
 
   useEffect(() => {
-    if (description && hostId && enabled) {
-      translateDescription();
+    if (description && hostId && enabled && description.trim().length >= 5) {
+      // Add a small delay to prevent rapid successive calls
+      const timer = setTimeout(() => {
+        translateDescription();
+      }, 300);
+      return () => clearTimeout(timer);
     } else {
       setTranslatedDescription(description || '');
       setWasTranslated(false);
     }
-  }, [translateDescription, description, hostId, enabled]);
+  }, [description, hostId, enabled]);
 
   return {
     translatedDescription: translatedDescription || description || '',
