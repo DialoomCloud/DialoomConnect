@@ -46,7 +46,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
 import { SessionRatingModal } from "@/components/session-rating-modal";
-import { HostVerificationForm } from "@/components/host-verification-form";
+import { HostVerificationWizard } from "@/components/host-verification/host-verification-wizard";
 import { UpcomingCallsBanner } from "@/components/upcoming-calls-banner";
 
 // Profile Management Component
@@ -735,7 +735,7 @@ export default function Dashboard() {
 
               {/* Host Verification Tab */}
               <TabsContent value="verification" className="mt-6">
-                <HostVerificationForm userId={user?.id} userStatus={user?.hostVerificationStatus} />
+                <HostVerificationWizard />
               </TabsContent>
             </Tabs>
           </CardContent>
