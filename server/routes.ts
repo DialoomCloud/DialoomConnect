@@ -5055,31 +5055,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/contact', async (req, res) => {
     try {
       const { name, email, subject, message } = req.body;
-      
+
       if (!name || !email || !subject || !message) {
         return res.status(400).json({ message: 'Todos los campos son obligatorios' });
       }
 
       // Log the contact request for admin review
-      console.log('Contact form submission:', { 
-        name, 
-        email, 
-        subject, 
+      console.log('Contact form submission:', {
+        name,
+        email,
+        subject,
         message,
-        timestamp: new Date().toISOString() 
+        timestamp: new Date().toISOString()
       });
-      
-      // Send confirmation email to user if Resend is configured
-      if (process.env.RESEND_API_KEY) {
-        try {
-          const { Resend } = await import('resend');
-          const resend = new Resend(process.env.RESEND_API_KEY);
-          
-          await resend.emails.send({
-            from: 'Dialoom <noreply@dialoom.cloud>',
-            to: [email],
-            subject: 'Hemos recibido tu mensaje - Dialoom Support',
-            html: `
+
+      // Send confirmation email to user
+      const userEmailSent = await emailService.sendEmail({
+        recipientEmail: email,
+        templateType: 'contact_confirmation',
+        customTemplate: {
+          subject: 'Hemos recibido tu mensaje - Dialoom Support',
+          htmlContent: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #188db8;">¡Gracias por contactarnos!</h2>
                 <p>Hola ${name},</p>
@@ -5098,16 +5094,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 </p>
               </div>
             `,
-          });
-        } catch (emailError) {
-          console.error('Error sending confirmation email:', emailError);
-          // Don't fail the request if email fails
+        }
+      });
+      if (!userEmailSent) {
+        console.error('Failed to send confirmation email', { name, email, subject });
+      }
+
+      // Optionally send copy to support team
+      const supportEmail = process.env.SUPPORT_TEAM_EMAIL;
+      if (supportEmail) {
+        const supportEmailSent = await emailService.sendEmail({
+          recipientEmail: supportEmail,
+          templateType: 'contact_notification',
+          customTemplate: {
+            subject: `Nuevo mensaje de contacto: ${subject}`,
+            htmlContent: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #188db8;">Nuevo mensaje de contacto</h2>
+                <p><strong>Nombre:</strong> ${name}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Asunto:</strong> ${subject}</p>
+                <p><strong>Mensaje:</strong></p>
+                <p style="padding: 10px; background: #f8f9fa; border-radius: 3px;">${message}</p>
+                <p style="margin-top:20px; color:#666; font-size:14px;">Enviado el ${new Date().toISOString()}</p>
+              </div>
+            `,
+          }
+        });
+        if (!supportEmailSent) {
+          console.error('Failed to send support copy', { supportEmail, name, email, subject });
         }
       }
-      
+
       res.json({ message: 'Mensaje enviado correctamente. Te responderemos pronto.' });
     } catch (error) {
-      console.error('Error processing contact form:', error);
+      console.error('Error processing contact form:', { error, body: req.body });
       res.status(500).json({ message: 'Error al procesar el mensaje' });
     }
   });
