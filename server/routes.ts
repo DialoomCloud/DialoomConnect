@@ -2249,16 +2249,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           includesTranscription
         } = body;
 
-        // Check 5-tariff limit when activating a tariff
+        // Check 5-tariff limit when activating a NEW tariff (not when updating services for existing ones)
         if (isActive) {
           const existingPricing = await storage.getHostPricing(userId);
-          const currentActivePricing = existingPricing.filter(p => p.isActive && p.duration !== duration);
+          const existingTariffForDuration = existingPricing.find(p => p.duration === duration);
           
-          if (currentActivePricing.length >= 5) {
-            return res.status(400).json({ 
-              error: "Máximo de tarifas alcanzado",
-              message: "Solo se pueden tener máximo 5 tarifas activas." 
-            });
+          // Only check the limit if we're creating a completely new tariff
+          if (!existingTariffForDuration) {
+            const currentActivePricing = existingPricing.filter(p => p.isActive);
+            
+            if (currentActivePricing.length >= 5) {
+              return res.status(400).json({ 
+                error: "Máximo de tarifas alcanzado",
+                message: "Solo se pueden tener máximo 5 tarifas activas." 
+              });
+            }
           }
         }
 

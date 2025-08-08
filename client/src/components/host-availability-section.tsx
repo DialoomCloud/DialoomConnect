@@ -134,14 +134,15 @@ export function HostAvailabilitySection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/host/pricing"] });
       toast({
-        title: t('pricing.updateSuccess'),
-        description: t('pricing.updateSuccessDesc'),
+        title: "Pricing Updated",
+        description: "Your pricing has been updated successfully",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Pricing update error:', error);
       toast({
-        title: t('common.error'),
-        description: t('pricing.updateError'),
+        title: "Update Error",
+        description: error?.response?.data?.message || error?.message || "Could not update pricing",
         variant: "destructive",
       });
     },
