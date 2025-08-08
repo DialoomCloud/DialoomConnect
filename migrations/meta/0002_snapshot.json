@@ -1,6 +1,4 @@
 {
-  "id": "05abe723-4fdd-442a-8d0c-b8c4170119c4",
-  "prevId": "cbd50a91-57f0-46d2-b93a-2cdce8316676",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2225,13 +2223,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "is_primary": {
-          "name": "is_primary",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -3040,4 +3031,3 @@
     "schemas": {},
     "tables": {}
   }
-}

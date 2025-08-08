@@ -181,6 +181,7 @@ export const userSocialProfiles = pgTable("user_social_profiles", {
   platformId: integer("platform_id").notNull().references(() => socialPlatforms.id),
   username: varchar("username", { length: 100 }).notNull(),
   url: varchar("url", { length: 500 }),
+  profileData: jsonb("profile_data"),
   isVisible: boolean("is_visible").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -473,6 +474,7 @@ export const bookings = pgTable("bookings", {
   agoraChannelName: varchar("agora_channel_name"),
   agoraToken: text("agora_token"),
   notes: text("notes"),
+  callLanguage: integer("call_language").references(() => languages.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

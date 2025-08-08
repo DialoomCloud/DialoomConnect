@@ -19,8 +19,6 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1754890000000,
-      "tag": "0002_user_languages_primary",
       "breakpoints": true
     }
   ]

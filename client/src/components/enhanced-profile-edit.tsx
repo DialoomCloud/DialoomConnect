@@ -426,7 +426,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
 
   // Social profiles update mutation
   const updateSocialProfilesMutation = useMutation({
-    mutationFn: async (profiles: {platformId: number, username: string}[]) => {
+    mutationFn: async (profiles: {platformId: number, username: string, profileData?: any}[]) => {
       const response = await apiRequest(`/api/users/${typedUser?.id}/social-profiles`, { 
         method: "PUT",
         body: { profiles }

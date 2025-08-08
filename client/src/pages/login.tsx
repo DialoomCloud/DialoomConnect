@@ -17,6 +17,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/dashboard';
+
   // Sign In form state
   const [signInEmail, setSignInEmail] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
@@ -49,7 +51,7 @@ export default function LoginPage() {
           
           // Wait a moment for the auth state to propagate
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate(redirectTo);
           }, 100);
         }
       } catch (err) {
@@ -58,7 +60,7 @@ export default function LoginPage() {
     };
 
     handleOAuthCallback();
-  }, [navigate, toast]);
+  }, [navigate, toast, redirectTo]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,8 +90,8 @@ export default function LoginPage() {
         description: "Has iniciado sesión correctamente",
       });
 
-      // Redirect to dashboard to ensure auth state is loaded
-      navigate('/dashboard');
+      // Redirect to target page to ensure auth state is loaded
+      navigate(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
@@ -120,23 +122,29 @@ export default function LoginPage() {
         throw new Error(data.message || 'Error al crear cuenta');
       }
 
-      toast({
-        title: "¡Cuenta creada!",
-        description: "Tu cuenta ha sido creada exitosamente. Por favor inicia sesión.",
+      // Auto sign in after successful signup
+      const signInResponse = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signUpEmail, password: signUpPassword }),
       });
 
-      // Switch to sign in tab
-      const signInTab = document.querySelector('[data-state="inactive"][value="signin"]') as HTMLElement;
-      if (signInTab) signInTab.click();
+      const signInData = await signInResponse.json();
 
-      // Pre-fill sign in email
-      setSignInEmail(signUpEmail);
-      
-      // Clear sign up form
-      setSignUpEmail('');
-      setSignUpPassword('');
-      setSignUpFirstName('');
-      setSignUpLastName('');
+      if (!signInResponse.ok) {
+        throw new Error(signInData.message || 'Error al iniciar sesión');
+      }
+
+      if (signInData.session) {
+        await supabase.auth.setSession(signInData.session);
+      }
+
+      toast({
+        title: "¡Bienvenido!",
+        description: "Tu cuenta ha sido creada e iniciada sesión correctamente",
+      });
+
+      navigate(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear cuenta');
     } finally {
