@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileCheck, X, Loader2, CheckCircle, AlertCircle, Clock } from "lucide-react";
@@ -44,6 +45,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
   const [documentType, setDocumentType] = useState('');
   const [customDocumentType, setCustomDocumentType] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [hasConsented, setHasConsented] = useState(false);
 
   // Request host verification
   const requestVerification = useMutation({
@@ -102,6 +104,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
       setSelectedFile(null);
       setDocumentType('');
       setCustomDocumentType('');
+      setHasConsented(false);
     },
     onError: (error: Error) => {
       toast({
@@ -161,7 +164,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
   };
 
   const handleUpload = () => {
-    if (!selectedFile || !documentType) return;
+    if (!selectedFile || !documentType || !hasConsented) return;
 
     const formData = new FormData();
     formData.append('document', selectedFile);
@@ -362,10 +365,33 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
             </Alert>
           )}
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col items-start space-y-4">
+          <div className="flex items-start space-x-2">
+            <Checkbox
+              id="data-consent"
+              checked={hasConsented}
+              onCheckedChange={(checked) => setHasConsented(checked === true)}
+              aria-describedby="privacy-policy-info"
+            />
+            <Label htmlFor="data-consent" className="text-sm leading-none">
+              Consiento el tratamiento de mis datos personales.
+            </Label>
+          </div>
+          <p id="privacy-policy-info" className="text-xs text-muted-foreground">
+            Más información en nuestra{' '}
+            <a
+              href="/legal/privacy"
+              className="underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              política de privacidad
+            </a>
+            .
+          </p>
           <Button
             onClick={handleUpload}
-            disabled={!selectedFile || !documentType || isUploading || (documentType === 'other' && !customDocumentType)}
+            disabled={!selectedFile || !documentType || isUploading || (documentType === 'other' && !customDocumentType) || !hasConsented}
           >
             {isUploading ? (
               <>
