@@ -126,6 +126,32 @@ export default function HostSearch() {
     queryKey: ["/api/countries"],
   });
 
+  // Fetch additional languages for all hosts
+  const { data: hostLanguages = {} } = useQuery({
+    queryKey: ["/api/hosts/languages", hosts?.map(h => h.id)],
+    queryFn: async () => {
+      if (!hosts || hosts.length === 0) return {};
+      
+      const languageData: Record<string, any[]> = {};
+      await Promise.all(
+        hosts.map(async (host) => {
+          try {
+            const response = await fetch(`/api/user/languages/${host.id}`);
+            if (response.ok) {
+              const userLanguages = await response.json();
+              languageData[host.id] = userLanguages;
+            }
+          } catch (error) {
+            console.error(`Error fetching languages for host ${host.id}:`, error);
+            languageData[host.id] = [];
+          }
+        })
+      );
+      return languageData;
+    },
+    enabled: !!hosts && hosts.length > 0,
+  });
+
   // AI Search mutation
   const aiSearchMutation = useMutation({
     mutationFn: async (query: string) => {
@@ -657,12 +683,34 @@ export default function HostSearch() {
                     )}
 
                     {/* Languages */}
-                    {host.primaryLanguageId && (
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <svg className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {(host.primaryLanguageId || (hostLanguages[host.id] && hostLanguages[host.id].length > 0)) && (
+                      <div className="flex items-start text-gray-600 text-sm">
+                        <svg className="w-4 h-4 mr-2 mt-0.5 text-[hsl(188,100%,38%)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                         </svg>
-                        <span>{languages.find((l: any) => l.id === host.primaryLanguageId)?.name || 'Idioma no especificado'}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {/* Primary Language */}
+                          {host.primaryLanguageId && (
+                            <span className="bg-[hsl(188,100%,95%)] text-[hsl(188,100%,35%)] px-2 py-0.5 rounded-full text-xs font-medium">
+                              {languages.find((l: any) => l.id === host.primaryLanguageId)?.name || 'Idioma principal'}
+                            </span>
+                          )}
+                          {/* Additional Languages */}
+                          {hostLanguages[host.id]?.filter((lang: any) => lang.languageId !== host.primaryLanguageId).slice(0, 2).map((userLang: any) => {
+                            const language = languages.find((l: any) => l.id === userLang.languageId);
+                            return language ? (
+                              <span key={userLang.languageId} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+                                {language.name}
+                              </span>
+                            ) : null;
+                          })}
+                          {/* Show "+" if there are more languages */}
+                          {hostLanguages[host.id]?.filter((lang: any) => lang.languageId !== host.primaryLanguageId).length > 2 && (
+                            <span className="text-gray-500 text-xs mt-0.5">
+                              +{hostLanguages[host.id].filter((lang: any) => lang.languageId !== host.primaryLanguageId).length - 2}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                     
