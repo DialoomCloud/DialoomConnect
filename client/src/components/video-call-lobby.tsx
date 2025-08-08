@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mic, MicOff, Video, VideoOff, Settings, Loader2 } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Settings, Loader2, Languages } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface VideoCallLobbyProps {
@@ -13,6 +13,7 @@ interface VideoCallLobbyProps {
     date: string;
     time: string;
     duration: number;
+    callLanguage?: string;
   };
 }
 
@@ -122,6 +123,12 @@ export function VideoCallLobby({ onJoinCall, onCancel, hostName, sessionDetails 
           <p className="text-sm text-gray-600">
             {sessionDetails.date} a las {sessionDetails.time} • {sessionDetails.duration} minutos
           </p>
+          {sessionDetails.callLanguage && (
+            <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+              <Languages className="w-4 h-4" />
+              {sessionDetails.callLanguage}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">

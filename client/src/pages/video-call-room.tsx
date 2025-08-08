@@ -120,7 +120,8 @@ export default function VideoCallRoom() {
           sessionDetails={{
             date: new Date(callData.scheduledDate).toLocaleDateString('es-ES'),
             time: callData.startTime,
-            duration: callData.duration
+            duration: callData.duration,
+            callLanguage: callData.callLanguage
           }}
         />
         
@@ -148,6 +149,7 @@ export default function VideoCallRoom() {
         token={callData.token}
         userId={user && typeof user === 'object' && 'id' in user ? String(user.id) : ""}
         onEndCall={handleEndCall}
+        callLanguage={callData.callLanguage}
       />
       
       {/* Rating Modal */}
