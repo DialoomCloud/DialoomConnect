@@ -91,20 +91,41 @@ export function BookingFlowDirect({
       .map(slot => slot.time);
   };
 
+  // Create payment intent mutation
+  const createPaymentIntentMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      await apiRequest('POST', '/api/stripe/create-payment-intent', {
+        bookingSessionId: sessionId,
+      });
+    },
+    onSuccess: (_data, sessionId) => {
+      setLocation(`/checkout/${sessionId}`);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo iniciar el pago. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Create booking session mutation
   const createBookingSessionMutation = useMutation({
     mutationFn: async (bookingData: any) => {
       const response = await apiRequest('POST', '/api/booking-session', bookingData);
       return response.json();
     },
-    onError: () => {
       toast({
         title: "Error",
-        description: "Error al crear la sesión de reserva. Inténtalo de nuevo.",
+        description: error.message || "Error al crear la sesión de reserva. Inténtalo de nuevo.",
         variant: "destructive",
       });
     },
   });
+
+  const isProcessing =
+    createBookingSessionMutation.isPending || createPaymentIntentMutation.isPending;
 
   const handleBooking = () => {
     if (!selectedDate || !selectedTime || !selectedDuration) {
@@ -348,10 +369,14 @@ export function BookingFlowDirect({
       <div className="flex justify-center">
         <Button
           onClick={handleBooking}
-          disabled={!selectedDate || !selectedTime || !selectedDuration || createBookingSessionMutation.isPending}
+          disabled={!selectedDate || !selectedTime || !selectedDuration || isProcessing}
           className="px-8 py-3 text-lg"
         >
-          {createBookingSessionMutation.isPending ? "Procesando..." : "Reservar sesión"}
+          {createBookingSessionMutation.isPending
+            ? "Creando sesión..."
+            : createPaymentIntentMutation.isPending
+              ? "Preparando pago..."
+              : "Reservar sesión"}
         </Button>
       </div>
     </div>
