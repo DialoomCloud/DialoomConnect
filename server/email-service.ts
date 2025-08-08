@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-import { storage } from './storage';
 import {
   EmailTemplate,
   EmailNotification,
@@ -29,16 +28,17 @@ export interface SendEmailParams {
   };
 }
 
+export function renderTemplate(content: string, variables: EmailVariables): string {
+  const template = Handlebars.compile(content);
+  return template(variables);
+}
+
 class EmailService {
   /**
    * Send an email using a template or custom content
    */
   async sendEmail(params: SendEmailParams): Promise<boolean> {
     try {
-      if (!resend || !RESEND_FROM_EMAIL) {
-        console.warn('Resend email service is not configured. Skipping email send.');
-        return false;
-      }
       let template: EmailTemplate | null = null;
       let subject: string;
       let htmlContent: string;
@@ -75,10 +75,10 @@ class EmailService {
       };
 
       // Replace variables in content
-      subject = this.replaceVariables(subject, themeVariables);
-      htmlContent = this.replaceVariables(htmlContent, themeVariables);
+      subject = renderTemplate(subject, themeVariables);
+      htmlContent = renderTemplate(htmlContent, themeVariables);
       if (textContent) {
-        textContent = this.replaceVariables(textContent, themeVariables);
+        textContent = renderTemplate(textContent, themeVariables);
       }
 
       // Log the email notification
@@ -138,20 +138,6 @@ class EmailService {
   }
 
   /**
-   * Replace variables in template content
-   */
-  private replaceVariables(content: string, variables: EmailVariables): string {
-    let result = content;
-    
-    Object.entries(variables).forEach(([key, value]) => {
-      const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
-      result = result.replace(regex, String(value));
-    });
-    
-    return result;
-  }
-
-  /**
    * Send user registration welcome email
    */
   async sendRegistrationEmail(userEmail: string, userName: string, userId?: string): Promise<boolean> {
@@ -175,11 +161,11 @@ class EmailService {
       templateType: 'password_change',
       userId,
       variables: {
-        user_name: userName,
-        user_email: userEmail,
-        platform_name: 'Dialoom',
-        change_date: new Date().toLocaleDateString('es-ES'),
-        support_email: 'support@dialoom.cloud',
+        userName,
+        userEmail,
+        platformName: 'Dialoom',
+        changeDate: new Date().toLocaleDateString('es-ES'),
+        supportEmail: 'support@dialoom.cloud',
       }
     });
   }
@@ -193,11 +179,11 @@ class EmailService {
       templateType: 'account_deletion',
       userId,
       variables: {
-        user_name: userName,
-        user_email: userEmail,
-        platform_name: 'Dialoom',
-        deletion_date: new Date().toLocaleDateString('es-ES'),
-        support_email: 'support@dialoom.cloud',
+        userName,
+        userEmail,
+        platformName: 'Dialoom',
+        deletionDate: new Date().toLocaleDateString('es-ES'),
+        supportEmail: 'support@dialoom.cloud',
       }
     });
   }
@@ -211,11 +197,11 @@ class EmailService {
       templateType: 'account_deactivation',
       userId,
       variables: {
-        user_name: userName,
-        user_email: userEmail,
-        platform_name: 'Dialoom',
-        deactivation_date: new Date().toLocaleDateString('es-ES'),
-        reactivation_url: `${process.env.APP_URL || 'https://dialoom.cloud'}/auth`,
+        userName,
+        userEmail,
+        platformName: 'Dialoom',
+        deactivationDate: new Date().toLocaleDateString('es-ES'),
+        reactivationUrl: `${process.env.APP_URL || 'https://dialoom.cloud'}/auth`,
       }
     });
   }
@@ -229,7 +215,7 @@ class EmailService {
       templateType: 'password_reset',
       userId,
       variables: {
-        reset_link: resetLink,
+        resetLink,
       },
       customTemplate: {
         subject: 'Restablecer contraseña - Dialoom',
@@ -248,12 +234,11 @@ class EmailService {
    * Send booking created email (to the person who made the booking)
    */
   async sendBookingCreatedEmail(
-    userEmail: string, 
-    userName: string, 
-    hostName: string, 
-    bookingDate: string,
-    bookingTime: string,
-    meetingUrl?: string,
+    userEmail: string,
+    guestName: string,
+    hostName: string,
+    date: string,
+    time: string,
     userId?: string
   ): Promise<boolean> {
     return this.sendEmail({
@@ -261,12 +246,11 @@ class EmailService {
       templateType: 'booking_created',
       userId,
       variables: {
-        user_name: userName,
-        host_name: hostName,
-        booking_date: bookingDate,
-        booking_time: bookingTime,
-        meeting_url: meetingUrl || 'Se proporcionará antes de la llamada',
-        platform_name: 'Dialoom',
+        guestName,
+        hostName,
+        date,
+        time,
+        dashboardUrl: `${process.env.APP_URL || 'https://dialoom.cloud'}/dashboard`,
       }
     });
   }
@@ -275,13 +259,13 @@ class EmailService {
    * Send booking received email (to the host who received the booking)
    */
   async sendBookingReceivedEmail(
-    hostEmail: string, 
-    hostName: string, 
-    clientName: string, 
-    clientEmail: string,
-    bookingDate: string,
-    bookingTime: string,
-    amount: number,
+    hostEmail: string,
+    hostName: string,
+    guestName: string,
+    guestEmail: string,
+    date: string,
+    time: string,
+    price: number,
     hostId?: string
   ): Promise<boolean> {
     return this.sendEmail({
@@ -289,14 +273,13 @@ class EmailService {
       templateType: 'booking_received',
       userId: hostId,
       variables: {
-        host_name: hostName,
-        client_name: clientName,
-        client_email: clientEmail,
-        booking_date: bookingDate,
-        booking_time: bookingTime,
-        amount: `€${amount}`,
-        platform_name: 'Dialoom',
-        dashboard_url: `${process.env.APP_URL || 'https://dialoom.cloud'}/dashboard`,
+        hostName,
+        guestName,
+        guestEmail,
+        date,
+        time,
+        price: `€${price}`,
+        dashboardUrl: `${process.env.APP_URL || 'https://dialoom.cloud'}/dashboard`,
       }
     });
   }
@@ -306,11 +289,11 @@ class EmailService {
    */
   async sendUserMessageEmail(
     recipientEmail: string,
-    recipientName: string,
+    hostName: string,
     senderName: string,
     senderEmail: string,
     subject: string,
-    messageContent: string,
+    message: string,
     recipientId?: string
   ): Promise<boolean> {
     return this.sendEmail({
@@ -318,13 +301,12 @@ class EmailService {
       templateType: 'user_message',
       userId: recipientId,
       variables: {
-        recipient_name: recipientName,
-        sender_name: senderName,
-        sender_email: senderEmail,
-        message_subject: subject,
-        message_content: messageContent,
-        platform_name: 'Dialoom',
-        profile_url: `${process.env.APP_URL || 'https://dialoom.cloud'}/profile`,
+        hostName,
+        senderName,
+        senderEmail,
+        subject,
+        message,
+        dashboardUrl: `${process.env.APP_URL || 'https://dialoom.cloud'}/dashboard`,
       }
     });
   }

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -71,8 +70,6 @@ export function BookingFlowDirect({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const { isAuthenticated } = useAuth();
-  
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<PricingOption | null>(null);
@@ -91,20 +88,41 @@ export function BookingFlowDirect({
       .map(slot => slot.time);
   };
 
+  // Create payment intent mutation
+  const createPaymentIntentMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      await apiRequest('POST', '/api/stripe/create-payment-intent', {
+        bookingSessionId: sessionId,
+      });
+    },
+    onSuccess: (_data, sessionId) => {
+      setLocation(`/checkout/${sessionId}`);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo iniciar el pago. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Create booking session mutation
   const createBookingSessionMutation = useMutation({
     mutationFn: async (bookingData: any) => {
       const response = await apiRequest('POST', '/api/booking-session', bookingData);
       return response.json();
     },
-    onError: () => {
       toast({
         title: "Error",
-        description: "Error al crear la sesión de reserva. Inténtalo de nuevo.",
+        description: error.message || "Error al crear la sesión de reserva. Inténtalo de nuevo.",
         variant: "destructive",
       });
     },
   });
+
+  const isProcessing =
+    createBookingSessionMutation.isPending || createPaymentIntentMutation.isPending;
 
   const handleBooking = () => {
     if (!selectedDate || !selectedTime || !selectedDuration) {
@@ -148,7 +166,7 @@ export function BookingFlowDirect({
               alt={`${hostDetails.firstName} ${hostDetails.lastName}`}
               className="w-20 h-20 rounded-full object-cover"
             />
-            {hostDetails.isVerified && (
+            {verificationSettings?.showVerified && hostDetails.isVerified && (
               <Badge className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs px-1 py-0.5">
                 ✓
               </Badge>
@@ -348,10 +366,14 @@ export function BookingFlowDirect({
       <div className="flex justify-center">
         <Button
           onClick={handleBooking}
-          disabled={!selectedDate || !selectedTime || !selectedDuration || createBookingSessionMutation.isPending}
+          disabled={!selectedDate || !selectedTime || !selectedDuration || isProcessing}
           className="px-8 py-3 text-lg"
         >
-          {createBookingSessionMutation.isPending ? "Procesando..." : "Reservar sesión"}
+          {createBookingSessionMutation.isPending
+            ? "Creando sesión..."
+            : createPaymentIntentMutation.isPending
+              ? "Preparando pago..."
+              : "Reservar sesión"}
         </Button>
       </div>
     </div>

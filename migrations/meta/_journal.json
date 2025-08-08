@@ -19,8 +19,6 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1754681512000,
-      "tag": "0002_add_profile_data_to_user_social_profiles",
       "breakpoints": true
     }
   ]
