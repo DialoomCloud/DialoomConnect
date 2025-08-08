@@ -25,8 +25,14 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
 
   useEffect(() => {
     // Load completed steps from localStorage
-    const completed = JSON.parse(localStorage.getItem('dialoom_progressive_steps') || '[]');
-    setCompletedSteps(completed);
+    try {
+      const completed = JSON.parse(localStorage.getItem('dialoom_progressive_steps') || '[]');
+      setCompletedSteps(completed);
+      console.log('Progressive Disclosure: Loaded completed steps:', completed);
+    } catch (error) {
+      console.warn('Progressive Disclosure: Error loading completed steps:', error);
+      setCompletedSteps([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -39,6 +45,7 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
     
     // Skip if already completed
     if (completedSteps.includes(step.id)) {
+      console.log('Progressive Disclosure: Skipping completed step:', step.id);
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -74,7 +81,13 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
     const step = steps[currentStep];
     const updated = [...completedSteps, step.id];
     setCompletedSteps(updated);
-    localStorage.setItem('dialoom_progressive_steps', JSON.stringify(updated));
+    
+    try {
+      localStorage.setItem('dialoom_progressive_steps', JSON.stringify(updated));
+      console.log('Progressive Disclosure: Completed step saved:', step.id, updated);
+    } catch (error) {
+      console.warn('Progressive Disclosure: Error saving completed step:', error);
+    }
     
     setIsVisible(false);
     setTimeout(() => {
@@ -83,6 +96,18 @@ export function ProgressiveDisclosure({ steps, onComplete }: ProgressiveDisclosu
   };
 
   const handleDismiss = () => {
+    // When dismissing, also mark as completed to avoid showing again
+    const step = steps[currentStep];
+    const updated = [...completedSteps, step.id];
+    setCompletedSteps(updated);
+    
+    try {
+      localStorage.setItem('dialoom_progressive_steps', JSON.stringify(updated));
+      console.log('Progressive Disclosure: Dismissed step saved:', step.id, updated);
+    } catch (error) {
+      console.warn('Progressive Disclosure: Error saving dismissed step:', error);
+    }
+    
     setIsVisible(false);
     setCurrentStep(currentStep + 1);
   };
@@ -152,7 +177,7 @@ export const ONBOARDING_SEQUENCES = {
   hostSearch: [
     {
       id: 'welcome_search',
-      trigger: 'selector:[href="/hosts"]',
+      trigger: 'immediate',
       title: '¡Excelente elección!',
       description: 'Aquí encontrarás a todos nuestros expertos verificados. Usa los filtros para encontrar exactamente lo que necesitas.',
       action: 'Explorar'
@@ -188,4 +213,26 @@ export const ONBOARDING_SEQUENCES = {
       delay: 3000
     }
   ]
+};
+
+// Utility function to reset all completed steps (useful for development/testing)
+export const resetProgressiveDisclosure = () => {
+  try {
+    localStorage.removeItem('dialoom_progressive_steps');
+    console.log('Progressive Disclosure: All completed steps reset');
+    return true;
+  } catch (error) {
+    console.warn('Progressive Disclosure: Error resetting steps:', error);
+    return false;
+  }
+};
+
+// Utility function to get all completed steps
+export const getCompletedSteps = () => {
+  try {
+    return JSON.parse(localStorage.getItem('dialoom_progressive_steps') || '[]');
+  } catch (error) {
+    console.warn('Progressive Disclosure: Error getting completed steps:', error);
+    return [];
+  }
 };
