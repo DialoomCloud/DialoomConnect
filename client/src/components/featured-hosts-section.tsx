@@ -6,6 +6,103 @@ import { Link } from "wouter";
 import type { User } from "@shared/schema";
 import { AvailabilityTooltip } from "@/components/availability-tooltip";
 import { ReviewsModal } from "@/components/reviews-modal";
+import { useIntelligentTranslation } from "@/hooks/useIntelligentTranslation";
+
+// Component for individual host card with translation
+function FeaturedHostCard({ host, onReviewsClick }: { host: User; onReviewsClick: (host: User, e: React.MouseEvent) => void }) {
+  // Intelligent translation for host title
+  const { 
+    translatedDescription: translatedTitle, 
+    isTranslating, 
+    wasTranslated 
+  } = useIntelligentTranslation({
+    description: (host as any).title || 'Experto Profesional',
+    hostId: host.id || '',
+    enabled: !!((host as any).title) && !!(host.id)
+  });
+
+  return (
+    <Link href={`/host/${host.id}`}>
+      <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
+        <CardContent className="p-6">
+          <div className="text-center">
+            {/* Host Profile Image - Doubled size */}
+            <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden border-4 border-[hsl(188,100%,95%)]">
+              {/* Always show initials as fallback */}
+              <div className="w-full h-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center">
+                <span className="text-white font-bold text-3xl">
+                  {(host as any).firstName?.[0] || 'U'}{(host as any).lastName?.[0] || 'S'}
+                </span>
+              </div>
+              {/* Show image on top if available */}
+              {(host as any).profileImageUrl && (
+                <img 
+                  src={`/storage/${(host as any).profileImageUrl}`} 
+                  alt={`${(host as any).firstName || ''} ${(host as any).lastName || ''}`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e) => {
+                    // Hide the image element to show initials fallback
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Host Name */}
+            <h3 className="font-bold text-[hsl(17,12%,6%)] mb-1">
+              {(host as any).firstName || 'Experto'} {(host as any).lastName || 'Profesional'}
+            </h3>
+
+            {/* Host Title - Elegant lowercase styling with translation */}
+            <p className="text-[hsl(188,100%,38%)] font-semibold text-lg mb-2 capitalize relative">
+              {isTranslating ? (
+                <span className="animate-pulse">
+                  {((host as any).title || 'Experto Profesional').toLowerCase()}
+                </span>
+              ) : (
+                <span>
+                  {translatedTitle.toLowerCase()}
+                  {wasTranslated && (
+                    <span className="ml-1 text-xs text-[hsl(188,100%,32%)] opacity-60" title="Traducido automáticamente">
+                      ✨
+                    </span>
+                  )}
+                </span>
+              )}
+            </p>
+
+            {/* Rating - Clickable */}
+            <div className="flex items-center justify-center mb-2">
+              <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
+              <span className="text-sm text-gray-600">
+                {(host as any).rating ? `${(host as any).rating.toFixed(1)}` : '5.0'} 
+                <button 
+                  onClick={(e) => onReviewsClick(host, e)}
+                  className="hover:text-[hsl(188,100%,38%)] hover:underline transition-colors cursor-pointer ml-1"
+                >
+                  (12 reseñas)
+                </button>
+              </span>
+            </div>
+
+            {/* Location */}
+            {(host as any).city && (
+              <div className="flex items-center justify-center text-sm text-gray-500 mb-2">
+                <MapPin className="w-3 h-3 mr-1" />
+                <span>{(host as any).city}</span>
+              </div>
+            )}
+
+            {/* Availability Status */}
+            <div className="flex justify-center">
+              <AvailabilityTooltip status="Alta" className="text-xs" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
 export function FeaturedHostsSection() {
   const [selectedHost, setSelectedHost] = useState<User | null>(null);
@@ -60,72 +157,11 @@ export function FeaturedHostsSection() {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {featuredHosts.slice(0, 3).map((host: User) => (
-          <Link key={host.id} href={`/host/${host.id}`}>
-            <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  {/* Host Profile Image - Doubled size */}
-                  <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden border-4 border-[hsl(188,100%,95%)]">
-                    {/* Always show initials as fallback */}
-                    <div className="w-full h-full bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] flex items-center justify-center">
-                      <span className="text-white font-bold text-3xl">
-                        {(host as any).firstName?.[0] || 'U'}{(host as any).lastName?.[0] || 'S'}
-                      </span>
-                    </div>
-                    {/* Show image on top if available */}
-                    {(host as any).profileImageUrl && (
-                      <img 
-                        src={`/storage/${(host as any).profileImageUrl}`} 
-                        alt={`${(host as any).firstName || ''} ${(host as any).lastName || ''}`}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onError={(e) => {
-                          // Hide the image element to show initials fallback
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  {/* Host Name */}
-                  <h3 className="font-bold text-[hsl(17,12%,6%)] mb-1">
-                    {(host as any).firstName || 'Experto'} {(host as any).lastName || 'Profesional'}
-                  </h3>
-
-                  {/* Host Title - Elegant lowercase styling */}
-                  <p className="text-[hsl(188,100%,38%)] font-semibold text-lg mb-2 capitalize">
-                    {((host as any).title || 'Experto Profesional').toLowerCase()}
-                  </p>
-
-                  {/* Rating - Clickable */}
-                  <div className="flex items-center justify-center mb-2">
-                    <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
-                    <span className="text-sm text-gray-600">
-                      {(host as any).rating ? `${(host as any).rating.toFixed(1)}` : '5.0'} 
-                      <button 
-                        onClick={(e) => handleReviewsClick(host, e)}
-                        className="hover:text-[hsl(188,100%,38%)] hover:underline transition-colors cursor-pointer ml-1"
-                      >
-                        (12 reseñas)
-                      </button>
-                    </span>
-                  </div>
-
-                  {/* Location */}
-                  {(host as any).city && (
-                    <div className="flex items-center justify-center text-sm text-gray-500 mb-2">
-                      <MapPin className="w-3 h-3 mr-1" />
-                      <span>{(host as any).city}</span>
-                    </div>
-                  )}
-
-                  {/* Availability Status */}
-                  <div className="flex justify-center">
-                    <AvailabilityTooltip status="Alta" className="text-xs" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+          <FeaturedHostCard 
+            key={host.id} 
+            host={host} 
+            onReviewsClick={handleReviewsClick}
+          />
         ))}
       </div>
 

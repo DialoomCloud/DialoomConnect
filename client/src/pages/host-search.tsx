@@ -21,8 +21,182 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
 import { AvailabilityTooltip } from "@/components/availability-tooltip";
 import { ReviewsModal } from "@/components/reviews-modal";
+import { useIntelligentTranslation } from "@/hooks/useIntelligentTranslation";
 
 type SearchResult = UserType & { relevance?: number };
+
+// Individual host card component with translation
+function HostCard({ 
+  host, 
+  index, 
+  navigate, 
+  countries, 
+  languages, 
+  hostLanguages, 
+  isAISearch, 
+  setSelectedHost, 
+  setShowReviewsModal,
+  verificationSettings,
+  t 
+}: { 
+  host: UserType; 
+  index: number; 
+  navigate: (path: string) => void; 
+  countries: Country[]; 
+  languages: Language[]; 
+  hostLanguages: any; 
+  isAISearch: boolean; 
+  setSelectedHost: (host: UserType) => void; 
+  setShowReviewsModal: (show: boolean) => void;
+  verificationSettings: any;
+  t: any;
+}) {
+  // Intelligent translation for host title
+  const { 
+    translatedDescription: translatedTitle, 
+    isTranslating, 
+    wasTranslated 
+  } = useIntelligentTranslation({
+    description: host.title || '',
+    hostId: host.id || '',
+    enabled: !!(host.title) && !!(host.id)
+  });
+
+  return (
+    <Card
+      key={host.id}
+      className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up cursor-pointer"
+      style={{ animationDelay: `${index * 0.1}s` }}
+      onClick={() => navigate(`/host/${host.id}`)}
+    >
+      <CardContent className="p-6">
+        <div className="text-center mb-4">
+          <div className="w-48 h-48 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)] animate-glow">
+            {host.profileImageUrl ? (
+              <img
+                src={host.profileImageUrl.startsWith('http') || host.profileImageUrl.startsWith('/') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`}
+                alt="Profile"
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-24 h-24 text-gray-400" />
+            )}
+          </div>
+          {host.title && (
+            <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1 relative">
+              {isTranslating ? (
+                <span className="animate-pulse">
+                  {host.title}
+                </span>
+              ) : (
+                <span>
+                  {translatedTitle}
+                  {wasTranslated && (
+                    <span className="ml-1 text-xs text-[hsl(188,100%,32%)] opacity-60" title="Traducido automáticamente">
+                      ✨
+                    </span>
+                  )}
+                </span>
+              )}
+            </h3>
+          )}
+          <p className="text-gray-600 mb-3">
+            {host.firstName && host.lastName
+              ? `${host.firstName} ${host.lastName}`
+              : host.email}
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {isAISearch && (host as SearchResult).relevance && (host as SearchResult).relevance! > 0.7 && (
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                <Sparkles className="w-3 h-3 mr-1" />
+                {Math.round((host as SearchResult).relevance! * 100)}{t('hosts.relevant')}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Country */}
+          {host.countryCode && (
+            <div className="flex items-center text-gray-600 text-sm">
+              <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
+              <span>{countries.find((c: Country) => c.code === host.countryCode)?.name || host.countryCode}</span>
+            </div>
+          )}
+
+          {/* Languages */}
+          {(host.primaryLanguageId || (hostLanguages[host.id] && hostLanguages[host.id].length > 0)) && (
+            <div className="flex items-start text-gray-600 text-sm">
+              <svg className="w-4 h-4 mr-2 mt-0.5 text-[hsl(188,100%,38%)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 716.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+              </svg>
+              <div className="flex flex-wrap gap-1">
+                {/* Primary Language */}
+                {host.primaryLanguageId && (
+                  <span className="bg-[hsl(188,100%,95%)] text-[hsl(188,100%,35%)] px-2 py-0.5 rounded-full text-xs font-medium">
+                    {languages.find((l: any) => l.id === host.primaryLanguageId)?.name || 'Idioma principal'}
+                  </span>
+                )}
+                {/* Additional Languages */}
+                {hostLanguages[host.id]?.filter((lang: any) => lang.languageId !== host.primaryLanguageId).slice(0, 2).map((userLang: any) => {
+                  const language = languages.find((l: any) => l.id === userLang.languageId);
+                  return language ? (
+                    <span key={userLang.languageId} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+                      {language.name}
+                    </span>
+                  ) : null;
+                })}
+                {/* Show "+" if there are more languages */}
+                {hostLanguages[host.id]?.filter((lang: any) => lang.languageId !== host.primaryLanguageId).length > 2 && (
+                  <span className="text-gray-500 text-xs mt-0.5">
+                    +{hostLanguages[host.id].filter((lang: any) => lang.languageId !== host.primaryLanguageId).length - 2}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {/* Quick Stats - Smaller */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-1.5 text-white text-center">
+              <div className="text-sm font-bold">150+</div>
+              <div className="text-xs opacity-90">Sesiones</div>
+            </div>
+            <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-1.5 text-white text-center">
+              <div className="text-sm font-bold">98%</div>
+              <div className="text-xs opacity-90">Satisfacción</div>
+            </div>
+          </div>
+
+          {/* Rating and Reviews */}
+          <div className="flex items-center justify-center mb-2">
+            <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
+            <span className="text-sm text-gray-600">
+              5.0 
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedHost(host);
+                  setShowReviewsModal(true);
+                }}
+                className="hover:text-[hsl(188,100%,38%)] hover:underline transition-colors cursor-pointer ml-1"
+              >
+                (12 reseñas)
+              </button>
+            </span>
+          </div>
+
+          {/* Availability Status */}
+          <div className="flex justify-center">
+            <AvailabilityTooltip status="Media" className="text-xs" />
+          </div>
+
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 // Function to detect browser language
 const detectBrowserLanguage = () => {
@@ -636,123 +810,20 @@ export default function HostSearch() {
               'grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
             }`}>
             {displayHosts.map((host, index) => (
-              <Card
+              <HostCard
                 key={host.id}
-                className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover-lift animate-fade-in-up cursor-pointer"
-                style={{ animationDelay: `${index * 0.1}s` }}
-                onClick={() => navigate(`/host/${host.id}`)}
-              >
-                <CardContent className="p-6">
-                  <div className="text-center mb-4">
-                    <div className="w-48 h-48 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center border-4 border-[hsl(188,100%,95%)] animate-glow">
-                      {host.profileImageUrl ? (
-                        <img
-                          src={host.profileImageUrl.startsWith('http') || host.profileImageUrl.startsWith('/') ? host.profileImageUrl : `/storage/${host.profileImageUrl}`}
-                          alt="Profile"
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-24 h-24 text-gray-400" />
-                      )}
-                    </div>
-                    {host.title && (
-                      <h3 className="text-xl font-bold text-[hsl(17,12%,6%)] mb-1">{host.title}</h3>
-                    )}
-                    <p className="text-gray-600 mb-3">
-                      {host.firstName && host.lastName
-                        ? `${host.firstName} ${host.lastName}`
-                        : host.email}
-                    </p>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {isAISearch && (host as SearchResult).relevance && (host as SearchResult).relevance! > 0.7 && (
-                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          {Math.round((host as SearchResult).relevance! * 100)}{t('hosts.relevant')}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* Country */}
-                    {host.countryCode && (
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <MapPin className="w-4 h-4 mr-2 text-[hsl(188,100%,38%)]" />
-                        <span>{countries.find((c: Country) => c.code === host.countryCode)?.name || host.countryCode}</span>
-                      </div>
-                    )}
-
-                    {/* Languages */}
-                    {(host.primaryLanguageId || (hostLanguages[host.id] && hostLanguages[host.id].length > 0)) && (
-                      <div className="flex items-start text-gray-600 text-sm">
-                        <svg className="w-4 h-4 mr-2 mt-0.5 text-[hsl(188,100%,38%)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                        </svg>
-                        <div className="flex flex-wrap gap-1">
-                          {/* Primary Language */}
-                          {host.primaryLanguageId && (
-                            <span className="bg-[hsl(188,100%,95%)] text-[hsl(188,100%,35%)] px-2 py-0.5 rounded-full text-xs font-medium">
-                              {languages.find((l: any) => l.id === host.primaryLanguageId)?.name || 'Idioma principal'}
-                            </span>
-                          )}
-                          {/* Additional Languages */}
-                          {hostLanguages[host.id]?.filter((lang: any) => lang.languageId !== host.primaryLanguageId).slice(0, 2).map((userLang: any) => {
-                            const language = languages.find((l: any) => l.id === userLang.languageId);
-                            return language ? (
-                              <span key={userLang.languageId} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
-                                {language.name}
-                              </span>
-                            ) : null;
-                          })}
-                          {/* Show "+" if there are more languages */}
-                          {hostLanguages[host.id]?.filter((lang: any) => lang.languageId !== host.primaryLanguageId).length > 2 && (
-                            <span className="text-gray-500 text-xs mt-0.5">
-                              +{hostLanguages[host.id].filter((lang: any) => lang.languageId !== host.primaryLanguageId).length - 2}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Quick Stats - Smaller */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-1.5 text-white text-center">
-                        <div className="text-sm font-bold">150+</div>
-                        <div className="text-xs opacity-90">Sesiones</div>
-                      </div>
-                      <div className="bg-gradient-to-br from-[hsl(188,100%,45%)] to-[hsl(188,100%,35%)] rounded-md p-1.5 text-white text-center">
-                        <div className="text-sm font-bold">98%</div>
-                        <div className="text-xs opacity-90">Satisfacción</div>
-                      </div>
-                    </div>
-
-                    {/* Rating and Reviews */}
-                    <div className="flex items-center justify-center mb-2">
-                      <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
-                      <span className="text-sm text-gray-600">
-                        5.0 
-                        <button 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSelectedHost(host);
-                            setShowReviewsModal(true);
-                          }}
-                          className="hover:text-[hsl(188,100%,38%)] hover:underline transition-colors cursor-pointer ml-1"
-                        >
-                          (12 reseñas)
-                        </button>
-                      </span>
-                    </div>
-
-                    {/* Availability Status */}
-                    <div className="flex justify-center">
-                      <AvailabilityTooltip status="Media" className="text-xs" />
-                    </div>
-
-                  </div>
-                </CardContent>
-              </Card>
+                host={host}
+                index={index}
+                navigate={navigate}
+                countries={countries}
+                languages={languages}
+                hostLanguages={hostLanguages}
+                isAISearch={isAISearch}
+                setSelectedHost={setSelectedHost}
+                setShowReviewsModal={setShowReviewsModal}
+                verificationSettings={verificationSettings}
+                t={t}
+              />
             ))}
           </div>
           </>

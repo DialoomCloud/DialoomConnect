@@ -33,12 +33,9 @@ export function useIntelligentTranslation({
     setError(null);
 
     try {
-      const response = await apiRequest('/api/ai/translate-description', {
-        method: 'POST',
-        body: JSON.stringify({
-          description,
-          hostId
-        })
+      const response = await apiRequest('POST', '/api/ai/translate-description', {
+        description,
+        hostId
       });
 
       const data: TranslationResponse = await response.json();
