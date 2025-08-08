@@ -5,7 +5,7 @@ import cors from "cors";
 import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { errorHandler } from "./error-handler";
+import { errorHandler } from "./middleware/errorHandler";
 
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN;
 
