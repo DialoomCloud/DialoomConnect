@@ -26,6 +26,7 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **Universal Navigation System**: Implemented universal navigation accessible to all internet users, allowing anyone to contract hosts regardless of their role (host/admin/both). Navigation now shows Home, Hosts, News for all users, with Profile and Networking for authenticated users, plus role-specific Dashboard/Admin panels when applicable.
 - **Dashboard Menu Removal for Hosts**: Removed Dashboard menu access for users with host role activated to prevent functional overlap with the profile editor. The Dashboard page remains available but is not accessible through navigation menus (both desktop and mobile) to avoid redundancy and confusion.
 - **Video Call Topics Character Limit Expansion**: Increased maximum character limit for video call topics from 50 to 200 characters, allowing hosts to create more descriptive and detailed topic descriptions. Updated placeholder text to provide better guidance with examples.
+- **Prominent Upcoming Calls Banner**: Created a prominent UpcomingCallsBanner component for the dashboard that displays at the top with real-time countdown timer functionality for next video calls. Features urgency-based styling (very urgent/urgent/soon/normal) with appropriate colors and animations, responsive design, and large "Join Call" button for intuitive access to video sessions. Only shows when there are upcoming calls in the next 7 days.
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)

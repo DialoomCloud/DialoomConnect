@@ -47,6 +47,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
 import { SessionRatingModal } from "@/components/session-rating-modal";
 import { HostVerificationForm } from "@/components/host-verification-form";
+import { UpcomingCallsBanner } from "@/components/upcoming-calls-banner";
 
 // Profile Management Component
 function ProfileManagement({ userId }: { userId?: string }) {
@@ -482,6 +483,11 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Upcoming Calls Banner */}
+        {!isAdmin && (
+          <UpcomingCallsBanner bookings={bookings} userId={user?.id} />
         )}
 
         {/* Complete Host Management Dashboard */}
