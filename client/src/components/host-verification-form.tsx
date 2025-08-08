@@ -69,7 +69,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
   // Get verification documents
   const { data: documents = [], isLoading } = useQuery<VerificationDocument[]>({
     queryKey: ['/api/host/verification-documents'],
-    enabled: !!userId && userStatus !== 'none'
+    enabled: !!userId
   });
 
   // Upload document
@@ -201,66 +201,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
     }
   };
 
-  if (!userStatus || userStatus === 'none') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Verificación de Host</CardTitle>
-          <CardDescription>
-            Conviértete en un host verificado para ofrecer tus servicios profesionales
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <AlertDescription>
-              Para comenzar a ofrecer tus servicios como host profesional, necesitas verificar tu identidad.
-              Este proceso garantiza la seguridad y confianza en nuestra plataforma.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-        <CardFooter>
-          <Button 
-            onClick={() => requestVerification.mutate()}
-            disabled={requestVerification.isPending}
-          >
-            {requestVerification.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Iniciando...
-              </>
-            ) : (
-              "Iniciar Verificación"
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-
-  if (userStatus === 'registered') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Activación Pendiente</CardTitle>
-          <CardDescription>
-            Tu solicitud de host ha sido registrada
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Hemos enviado un correo de activación a tu dirección de email.
-              Por favor, revisa tu correo y haz clic en el enlace de activación para continuar.
-              Si no lo encuentras, revisa tu carpeta de spam.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (userStatus === 'verified') {
+  if (userStatus === 'APPROVED') {
     return (
       <Card>
         <CardHeader>
@@ -282,7 +223,7 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
     );
   }
 
-  if (userStatus === 'rejected') {
+  if (userStatus === 'REJECTED') {
     return (
       <Card>
         <CardHeader>
@@ -304,9 +245,41 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
     );
   }
 
-  // Active status - can upload documents
+  // Pending status - request and upload documents
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Verificación de Host</CardTitle>
+          <CardDescription>
+            Conviértete en un host verificado para ofrecer tus servicios profesionales
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertDescription>
+              Para comenzar a ofrecer tus servicios como host profesional, necesitas verificar tu identidad.
+              Este proceso garantiza la seguridad y confianza en nuestra plataforma.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+        <CardFooter>
+          <Button
+            onClick={() => requestVerification.mutate()}
+            disabled={requestVerification.isPending}
+          >
+            {requestVerification.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Iniciando...
+              </>
+            ) : (
+              "Iniciar Verificación"
+            )}
+          </Button>
+        </CardFooter>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Verificación de Documentos</CardTitle>

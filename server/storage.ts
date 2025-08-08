@@ -1672,7 +1672,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select()
       .from(users)
       .where(and(
-        eq(users.hostVerificationStatus, 'registered'),
+        eq(users.hostVerificationStatus, 'PENDING'),
         eq(users.isActive, true)
       ));
   }
@@ -1685,7 +1685,7 @@ export class DatabaseStorage implements IStorage {
       .set({
         isHost: true,
         role: 'host',
-        hostVerificationStatus: 'verified',
+        hostVerificationStatus: 'APPROVED',
         hostVerificationDate: new Date(),
         updatedAt: new Date()
       })
@@ -1708,7 +1708,7 @@ export class DatabaseStorage implements IStorage {
     // Update user status
     await db.update(users)
       .set({
-        hostVerificationStatus: 'rejected',
+        hostVerificationStatus: 'REJECTED',
         hostRejectionReason: reason,
         updatedAt: new Date()
       })
@@ -1735,7 +1735,7 @@ export class DatabaseStorage implements IStorage {
     
     await db.update(users)
       .set({
-        hostVerificationStatus: 'registered',
+        hostVerificationStatus: 'PENDING',
         hostActivationToken: token,
         hostActivationTokenExpiry: expiry,
         hostRequestedAt: new Date(),
@@ -1760,7 +1760,7 @@ export class DatabaseStorage implements IStorage {
     
     await db.update(users)
       .set({
-        hostVerificationStatus: 'active',
+        hostVerificationStatus: 'PENDING',
         hostActivationToken: null,
         hostActivationTokenExpiry: null,
         isActive: true,

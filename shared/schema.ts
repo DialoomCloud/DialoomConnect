@@ -72,6 +72,8 @@ export const categories = pgTable("categories", {
 // OAuth provider enum
 export const oauthProviderEnum = pgEnum('oauth_provider', ['google', 'linkedin_oidc', 'apple', 'email']);
 
+export const hostVerificationStatusEnum = pgEnum('host_verification_status', ['PENDING', 'APPROVED', 'REJECTED']);
+
 // User storage table.
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
@@ -116,7 +118,7 @@ export const users = pgTable("users", {
   // Custom commission rate for hosts (overrides global rate)
   commissionRate: decimal("commission_rate", { precision: 5, scale: 4 }), // e.g., 0.2100 for 21%
   // Host verification fields
-  hostVerificationStatus: varchar("host_verification_status").default('none'), // 'none', 'registered', 'active', 'verified', 'rejected'
+  hostVerificationStatus: hostVerificationStatusEnum("host_verification_status").default('PENDING'), // 'PENDING', 'APPROVED', 'REJECTED'
   hostVerificationDate: timestamp("host_verification_date"),
   hostActivationToken: varchar("host_activation_token"),
   hostActivationTokenExpiry: timestamp("host_activation_token_expiry"),

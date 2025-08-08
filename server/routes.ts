@@ -4328,9 +4328,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error sending activation email:", emailError);
       }
       
-      res.json({ 
+      res.json({
         message: "Solicitud de verificación iniciada. Por favor, revisa tu correo para activar tu cuenta.",
-        status: 'registered'
+        status: 'PENDING'
       });
     } catch (error) {
       console.error("Error requesting host verification:", error);
@@ -4354,7 +4354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Token inválido o expirado" });
       }
       
-      res.json({ message: "Cuenta de host activada exitosamente", status: 'active' });
+      res.json({ message: "Cuenta de host activada exitosamente", status: 'PENDING' });
     } catch (error) {
       console.error("Error activating host account:", error);
       res.status(500).json({ message: "Error al activar cuenta de host" });
