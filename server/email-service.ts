@@ -9,15 +9,8 @@ import {
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 
-if (!RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY environment variable is required');
-}
-
-if (!RESEND_FROM_EMAIL) {
-  throw new Error('RESEND_FROM_EMAIL environment variable is required');
-}
-
-const resend = new Resend(RESEND_API_KEY);
+// Only initialize Resend when the required environment variables are present
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export interface EmailVariables {
   [key: string]: string | number | boolean;
@@ -46,7 +39,6 @@ class EmailService {
    */
   async sendEmail(params: SendEmailParams): Promise<boolean> {
     try {
-      const { storage } = await import('./storage');
       let template: EmailTemplate | null = null;
       let subject: string;
       let htmlContent: string;

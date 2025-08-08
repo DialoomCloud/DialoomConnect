@@ -61,6 +61,8 @@ RESEND_API_KEY=re_[obtener de resend.com]
 RESEND_FROM_EMAIL=noreply@tudominio.com
 ```
 
+> Si no se configuran estas variables, el servicio de correo se desactivará, pero la aplicación continuará funcionando.
+
 **Pasos para obtener estos valores:**
 1. Crear cuenta en https://resend.com/
 2. Verificar tu dominio
@@ -100,6 +102,7 @@ AGORA_APP_CERTIFICATE=tu_app_certificate_aqui
 OPENAI_API_KEY=sk-...
 
 # Resend
+# (Opcional) Requerido solo si se desea habilitar el envío de correos
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=noreply@tudominio.com
 
