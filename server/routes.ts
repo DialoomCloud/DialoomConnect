@@ -2354,6 +2354,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const guestId = req.userId;
       const { hostId, scheduledDate, startTime, duration, price, services, notes } = req.body;
+      // Ensure host is verified before allowing bookings
+      const host = await storage.getUser(hostId);
+      if (!host || host.hostVerificationStatus !== 'verified') {
+        return res.status(403).json({ message: 'Host verification required' });
+      }
 
       // Create booking
       const booking = await storage.createBooking({
@@ -2368,8 +2373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         services: services ? JSON.stringify(services) : null,
       });
 
-      // Get host and guest details
-      const host = await storage.getUser(hostId);
+      // Get guest details
       const guest = await storage.getUser(guestId);
 
       if (host?.email && guest) {
