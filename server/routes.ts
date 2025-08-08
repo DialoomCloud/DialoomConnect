@@ -7,7 +7,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { promises as fs } from "fs";
-import { insertMediaContentSchema, updateUserProfileSchema } from "@shared/schema";
+import { insertMediaContentSchema, updateUserProfileSchema, type InsertBooking } from "@shared/schema";
 import { z } from "zod";
 import { storageBucket } from "./storage-bucket";
 import { replitStorage, ReplitObjectStorage } from "./object-storage";
@@ -309,11 +309,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter by languages if provided (multiple languages)
       if (languages && typeof languages === 'string' && languages.length > 0) {
         const languagesArray = languages.split(',').map(l => l.trim());
-        hosts = hosts.filter(host => {
-          // This would need to be implemented when we have user languages relation
-          // For now, we skip languages filtering until the relationship is properly set up
-          return true;
-        });
+        const filteredHosts: any[] = [];
+        for (const host of hosts) {
+          const userLangs = await storage.getUserLanguages(host.id);
+          const langIds = userLangs.map(ul => ul.languageId.toString());
+          const matches = languagesArray.every(lang => langIds.includes(lang));
+          if (matches) {
+            filteredHosts.push(host);
+          }
+        }
+        hosts = filteredHosts;
       }
       
       // Filter by purposes if provided
@@ -641,13 +646,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.userId;
-      const { skillIds, languageIds, ...profileData } = req.body;
+      const { skillIds, languages, ...profileData } = req.body;
       
       console.log('Profile update request:', {
         userId,
         profileData,
         skillIds,
-        languageIds,
+        languages,
       });
       
       const validatedData = updateUserProfileSchema.parse(profileData);
@@ -661,9 +666,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('[INFO] Skipping Supabase metadata sync to preserve database as single source of truth');
 
       // Update user languages if provided
-      if (Array.isArray(languageIds)) {
-        console.log('Updating user languages:', languageIds);
-        await storage.updateUserLanguages(userId, languageIds);
+      if (Array.isArray(languages)) {
+        console.log('Updating user languages:', languages);
+        await storage.updateUserLanguages(userId, languages);
         console.log('User languages updated successfully');
       }
 
@@ -731,7 +736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "No autorizado para actualizar este perfil" });
       }
       
-      const { skillIds, languageIds, ...profileData } = req.body;
+      const { skillIds, languages, ...profileData } = req.body;
       
       console.log('🔍 [SERVER] User profile update request:', {
         userId: authenticatedUserId,
@@ -745,7 +750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateOfBirth: profileData.dateOfBirth,
         fullProfileData: profileData,
         skillIds,
-        languageIds,
+        languages,
       });
       
       // Clean and prepare data before validation
@@ -756,9 +761,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Convert empty strings to null for foreign key fields
         if (key === 'nationality' || key === 'countryCode') {
           cleanedData[key] = value === '' ? null : value;
-        } else if (key === 'primaryLanguageId') {
-          // Ensure primaryLanguageId is a number or null
-          cleanedData[key] = value === '' || value === null ? null : parseInt(value, 10);
         } else if (typeof value === 'string' && value === '') {
           // Convert other empty strings to null
           cleanedData[key] = null;
@@ -777,17 +779,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: validatedData.description,
         nationality: validatedData.nationality,
         countryCode: validatedData.countryCode,
-        primaryLanguageId: validatedData.primaryLanguageId,
         dateOfBirth: validatedData.dateOfBirth,
         fullValidatedData: validatedData
-      });
-      console.log('🔍 [PROBLEMATIC FIELDS SERVER] Specific check:', {
-        'nationality value': validatedData.nationality,
-        'nationality type': typeof validatedData.nationality,
-        'countryCode value': validatedData.countryCode,
-        'countryCode type': typeof validatedData.countryCode,
-        'primaryLanguageId value': validatedData.primaryLanguageId,
-        'primaryLanguageId type': typeof validatedData.primaryLanguageId
       });
       
       const updatedUser = await storage.updateUserProfile(authenticatedUserId, validatedData);
@@ -798,9 +791,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('[INFO] Skipping Supabase metadata sync to preserve database as single source of truth');
 
       // Update user languages if provided
-      if (Array.isArray(languageIds)) {
-        console.log('Updating user languages:', languageIds);
-        await storage.updateUserLanguages(authenticatedUserId, languageIds);
+      if (Array.isArray(languages)) {
+        console.log('Updating user languages:', languages);
+        await storage.updateUserLanguages(authenticatedUserId, languages);
         console.log('User languages updated successfully');
       }
 
@@ -1902,29 +1895,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user's social profiles to extract LinkedIn data if available
       const userSocialProfiles = await storage.getUserSocialProfiles(userId);
       console.log('User social profiles:', userSocialProfiles);
-      
-      let linkedinData = '';
-      
-      if (linkedinUrl) {
-        linkedinData = linkedinUrl;
-      } else {
-        // Find LinkedIn profile from user's social profiles
-        const linkedinProfile = userSocialProfiles.find(profile => profile.platformId === 1); // LinkedIn platform ID
-        if (linkedinProfile) {
-          linkedinData = `https://linkedin.com/in/${linkedinProfile.username}`;
+
+      // Try to extract detailed LinkedIn info from stored profile data
+      let linkedinText = '';
+      const linkedinProfile = userSocialProfiles.find(profile => profile.platformId === 1); // LinkedIn platform ID
+
+      if (linkedinProfile?.profileData) {
+        try {
+          const data = linkedinProfile.profileData;
+          const parts = [] as string[];
+          if (data.headline) parts.push(`Titular: ${data.headline}`);
+          if (data.summary) parts.push(`Resumen: ${data.summary}`);
+          if (Array.isArray(data.experience) && data.experience.length) {
+            const expText = data.experience.map((e: string) => `- ${e}`).join('\n');
+            parts.push(`Experiencia:\n${expText}`);
+          }
+          linkedinText = parts.join('\n');
+        } catch (err) {
+          console.error('Error parsing LinkedIn profile data:', err);
         }
+      } else if (linkedinUrl) {
+        linkedinText = linkedinUrl;
+      } else if (linkedinProfile) {
+        linkedinText = `https://linkedin.com/in/${linkedinProfile.username}`;
       }
-      
-      console.log('Using LinkedIn data:', linkedinData);
+
+      console.log('Using LinkedIn data:', linkedinText);
 
       const enhancementPrompt = `
         Como experto en redacción profesional y marketing personal, mejora esta descripción profesional para que sea más atractiva, clara y persuasiva para potenciales clientes.
-        
+
         Descripción actual: "${description}"
-        ${linkedinData ? `
-        El usuario ha indicado que tiene un perfil en LinkedIn en: ${linkedinData}
+        ${linkedinText ? (linkedinText.startsWith('http') ? `
+        El usuario ha indicado que tiene un perfil en LinkedIn en: ${linkedinText}
         Nota: Aunque no puedo acceder directamente al contenido del perfil de LinkedIn, debes basarte en la descripción proporcionada y mejorarla asumiendo que el profesional tiene experiencia relevante que respalda sus afirmaciones.
-        ` : ''}
+        ` : `
+        Información del perfil de LinkedIn del usuario:
+        ${linkedinText}
+        `) : ''}
         
         Directrices:
         - Mantén un tono HUMILDE y PROFESIONAL, evitando superlativos o afirmaciones grandilocuentes
@@ -2003,17 +2011,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Host not found" });
       }
 
-      // Get the host's additional languages
+      // Get the host's languages
       const userLanguages = await storage.getUserLanguages(hostId);
       const hostLanguageIds = userLanguages.map(ul => ul.languageId);
-      
-      // Add primary language to the list if it exists
-      if (hostUser.primaryLanguageId) {
-        hostLanguageIds.unshift(hostUser.primaryLanguageId);
-      }
+      const primaryLang = userLanguages.find(ul => ul.isPrimary)?.languageId || 37;
 
       console.log(`Translating description for host ${hostId}:`, {
-        primaryLanguageId: hostUser.primaryLanguageId,
+        primaryLanguageId: primaryLang,
         additionalLanguages: hostLanguageIds,
         descriptionLength: description.length
       });
@@ -2021,7 +2025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use the intelligent translation function
       const translatedDescription = await translateHostDescription(
         description,
-        hostUser.primaryLanguageId || 37, // Default to Spanish if no primary language
+        primaryLang,
         hostLanguageIds
       );
 
@@ -2353,7 +2357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/bookings', isAuthenticated, async (req: any, res) => {
     try {
       const guestId = req.userId;
-      const { hostId, scheduledDate, startTime, duration, price, services, notes } = req.body;
+      const { hostId, scheduledDate, startTime, duration, price, notes, callLanguage } = req.body;
       // Ensure host is verified before allowing bookings
       const host = await storage.getUser(hostId);
       if (!host || host.hostVerificationStatus !== 'verified') {
@@ -2361,7 +2365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create booking
-      const booking = await storage.createBooking({
+      const bookingData: InsertBooking = {
         hostId,
         guestId,
         scheduledDate,
@@ -2370,8 +2374,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price,
         status: 'pending',
         notes,
-        services: services ? JSON.stringify(services) : null,
-      });
+        callLanguage,
+      };
+
+      const booking = await storage.createBooking(bookingData);
 
       // Get guest details
       const guest = await storage.getUser(guestId);
@@ -2962,21 +2968,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/users/:targetUserId/profile', isAdminAuthenticated, async (req: any, res) => {
     try {
       const { targetUserId } = req.params;
-      const { 
-        skillIds, 
-        languageIds, 
-        categoryIds, 
+      const {
+        skillIds,
+        languages,
+        categoryIds,
         socialProfiles,
         hostAvailability: hostAvailabilityData,
         hostPricing: hostPricingData,
-        ...profileData 
+        ...profileData
       } = req.body;
       
       console.log('Admin update request for user:', targetUserId);
       console.log('Received data:', {
         profileData,
         skillIds,
-        languageIds,
+        languages,
         categoryIds,
         socialProfiles
       });
@@ -2989,12 +2995,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const value = profileData[key];
         
         // Convert empty strings to null for foreign key fields
-        if (key === 'nationality' || key === 'countryCode' || key === 'primaryLanguageId') {
+        if (key === 'nationality' || key === 'countryCode') {
           if (value === '' || value === null) {
             cleanedProfileData[key] = null;
-          } else if (key === 'primaryLanguageId' && value !== undefined) {
-            // Ensure primaryLanguageId is a number or null
-            cleanedProfileData[key] = value ? parseInt(value, 10) : null;
           } else {
             cleanedProfileData[key] = value;
           }
@@ -3026,9 +3029,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update languages if provided
-      if (Array.isArray(languageIds)) {
-        console.log('Updating languages:', languageIds);
-        await storage.updateUserLanguages(targetUserId, languageIds);
+      if (Array.isArray(languages)) {
+        console.log('Updating languages:', languages);
+        await storage.updateUserLanguages(targetUserId, languages);
         console.log('Languages updated successfully');
       }
       
@@ -4352,8 +4355,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send activation email
       try {
-        const sendEmail = await import('./send-email');
-        await sendEmail.sendHostActivationEmail(user.email, user.firstName, token, userId);
+        const { emailService } = await import('./email-service');
+        await emailService.sendHostActivationEmail(user.email, user.firstName, token, userId);
       } catch (emailError) {
         console.error("Error sending activation email:", emailError);
       }
@@ -4589,8 +4592,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       if (user && user.email) {
         try {
-          const sendEmail = await import('./send-email');
-          await sendEmail.sendHostApprovalEmail(user.email, user.firstName);
+          const { emailService } = await import('./email-service');
+          await emailService.sendHostApprovalEmail(user.email, user.firstName);
         } catch (emailError) {
           console.error("Error sending approval email:", emailError);
         }
@@ -5040,31 +5043,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/contact', async (req, res) => {
     try {
       const { name, email, subject, message } = req.body;
-      
+
       if (!name || !email || !subject || !message) {
         return res.status(400).json({ message: 'Todos los campos son obligatorios' });
       }
 
       // Log the contact request for admin review
-      console.log('Contact form submission:', { 
-        name, 
-        email, 
-        subject, 
+      console.log('Contact form submission:', {
+        name,
+        email,
+        subject,
         message,
-        timestamp: new Date().toISOString() 
+        timestamp: new Date().toISOString()
       });
-      
-      // Send confirmation email to user if Resend is configured
-      if (process.env.RESEND_API_KEY) {
-        try {
-          const { Resend } = await import('resend');
-          const resend = new Resend(process.env.RESEND_API_KEY);
-          
-          await resend.emails.send({
-            from: 'Dialoom <noreply@dialoom.cloud>',
-            to: [email],
-            subject: 'Hemos recibido tu mensaje - Dialoom Support',
-            html: `
+
+      // Send confirmation email to user
+      const userEmailSent = await emailService.sendEmail({
+        recipientEmail: email,
+        templateType: 'contact_confirmation',
+        customTemplate: {
+          subject: 'Hemos recibido tu mensaje - Dialoom Support',
+          htmlContent: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #188db8;">¡Gracias por contactarnos!</h2>
                 <p>Hola ${name},</p>
@@ -5083,16 +5082,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 </p>
               </div>
             `,
-          });
-        } catch (emailError) {
-          console.error('Error sending confirmation email:', emailError);
-          // Don't fail the request if email fails
+        }
+      });
+      if (!userEmailSent) {
+        console.error('Failed to send confirmation email', { name, email, subject });
+      }
+
+      // Optionally send copy to support team
+      const supportEmail = process.env.SUPPORT_TEAM_EMAIL;
+      if (supportEmail) {
+        const supportEmailSent = await emailService.sendEmail({
+          recipientEmail: supportEmail,
+          templateType: 'contact_notification',
+          customTemplate: {
+            subject: `Nuevo mensaje de contacto: ${subject}`,
+            htmlContent: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #188db8;">Nuevo mensaje de contacto</h2>
+                <p><strong>Nombre:</strong> ${name}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Asunto:</strong> ${subject}</p>
+                <p><strong>Mensaje:</strong></p>
+                <p style="padding: 10px; background: #f8f9fa; border-radius: 3px;">${message}</p>
+                <p style="margin-top:20px; color:#666; font-size:14px;">Enviado el ${new Date().toISOString()}</p>
+              </div>
+            `,
+          }
+        });
+        if (!supportEmailSent) {
+          console.error('Failed to send support copy', { supportEmail, name, email, subject });
         }
       }
-      
+
       res.json({ message: 'Mensaje enviado correctamente. Te responderemos pronto.' });
     } catch (error) {
-      console.error('Error processing contact form:', error);
+      console.error('Error processing contact form:', { error, body: req.body });
       res.status(500).json({ message: 'Error al procesar el mensaje' });
     }
   });

@@ -1,18 +1,3 @@
-import { useState, useEffect } from 'react';
-import { useLocation, useRoute } from 'wouter';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { useQuery } from '@tanstack/react-query';
-import { Clock, Calendar, User, DollarSign, Check, ArrowLeft } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { useTranslation } from 'react-i18next';
-import { useBookingSessionStore } from '@/stores/bookingSessionStore';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -40,21 +25,24 @@ const CheckoutForm = ({ bookingData }: { bookingData: BookingData }) => {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isProcessing, setIsProcessing] = useState(false);
-  const { t } = useTranslation();
 
   // Fetch service prices
   const { data: servicePricing } = useQuery({
-    queryKey: ['/api/config/service-prices'],
+    queryKey: ["/api/config/service-prices"],
   });
 
   const calculateTotal = () => {
     if (!servicePricing || !bookingData) return 0;
-    
+
     let total = parseFloat(bookingData.selectedDuration.price || 0);
-    if (bookingData.selectedServices?.screenSharing) total += (servicePricing.screenSharing || 0);
-    if (bookingData.selectedServices?.translation) total += (servicePricing.translation || 0);
-    if (bookingData.selectedServices?.recording) total += (servicePricing.recording || 0);
-    if (bookingData.selectedServices?.transcription) total += (servicePricing.transcription || 0);
+    if (bookingData.selectedServices?.screenSharing)
+      total += servicePricing.screenSharing || 0;
+    if (bookingData.selectedServices?.translation)
+      total += servicePricing.translation || 0;
+    if (bookingData.selectedServices?.recording)
+      total += servicePricing.recording || 0;
+    if (bookingData.selectedServices?.transcription)
+      total += servicePricing.transcription || 0;
     return total;
   };
 
@@ -76,7 +64,7 @@ const CheckoutForm = ({ bookingData }: { bookingData: BookingData }) => {
       });
 
       if (error) {
-        console.error('Payment failed:', error);
+        console.error("Payment failed:", error);
         toast({
           title: "Error en el pago",
           description: error.message || "No se pudo procesar el pago",
@@ -84,7 +72,7 @@ const CheckoutForm = ({ bookingData }: { bookingData: BookingData }) => {
         });
       }
     } catch (error: any) {
-      console.error('Payment error:', error);
+      console.error("Payment error:", error);
       toast({
         title: "Error",
         description: "No se pudo procesar el pago",
@@ -98,15 +86,14 @@ const CheckoutForm = ({ bookingData }: { bookingData: BookingData }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement />
-      
+
       <div className="flex gap-3">
         <Button
           type="button"
           variant="outline"
-          onClick={() => setLocation('/hosts')}
-          className="flex-1"
+          onClick={() => setLocation("/hosts")}
+          className="flex-1 text-[hsl(188,100%,38%)] border-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,95%)]"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
           Cancelar
         </Button>
         <Button
@@ -114,7 +101,7 @@ const CheckoutForm = ({ bookingData }: { bookingData: BookingData }) => {
           disabled={!stripe || !elements || isProcessing}
           className="flex-1 bg-[hsl(188,100%,38%)] hover:bg-[hsl(188,100%,32%)]"
         >
-          {isProcessing ? 'Procesando...' : `Pagar €${calculateTotal()}`}
+          {isProcessing ? "Procesando..." : `Pagar €${calculateTotal()}`}
         </Button>
       </div>
     </form>
@@ -122,16 +109,14 @@ const CheckoutForm = ({ bookingData }: { bookingData: BookingData }) => {
 };
 
 export default function Checkout() {
-  const [, params] = useRoute('/checkout/:sessionId');
+  const [, params] = useRoute("/checkout/:sessionId");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [clientSecret, setClientSecret] = useState('');
+  const [clientSecret, setClientSecret] = useState("");
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const { session, clearSession } = useBookingSessionStore();
 
   // Get booking session data
-  const { data: sessionData, isLoading, error } = useQuery({
-    queryKey: ['/api/booking-session', params?.sessionId],
     enabled: !!params?.sessionId,
     retry: false,
   });
@@ -142,45 +127,30 @@ export default function Checkout() {
       if (!sessionData) return;
 
       try {
-        const response = await apiRequest('POST', '/api/stripe/create-payment-intent', {
-          bookingSessionId: params?.sessionId,
-        });
+        const response = await apiRequest(
+          "POST",
+          "/api/stripe/create-payment-intent",
+          {
+            bookingSessionId: params?.sessionId,
+          },
+        );
         const data = await response.json();
-        
+
         setClientSecret(data.clientSecret);
         setBookingData(sessionData);
       } catch (error) {
-        console.error('Error creating payment intent:', error);
+        console.error("Error creating payment intent:", error);
         toast({
           title: "Error",
           description: "No se pudo inicializar el pago",
           variant: "destructive",
         });
-        setLocation('/hosts');
+        setLocation("/hosts");
       }
     };
 
     createPaymentIntent();
   }, [sessionData, params?.sessionId]);
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <p className="text-lg">La sesión de reserva ha expirado o no existe.</p>
-          <Button
-            onClick={() => {
-              const hostId = session?.bookingData.hostId;
-              clearSession();
-              setLocation(hostId ? `/host/${hostId}` : '/hosts');
-            }}
-          >
-            Reiniciar reserva
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading || !clientSecret || !bookingData) {
     return (
@@ -193,17 +163,17 @@ export default function Checkout() {
   const options = {
     clientSecret,
     appearance: {
-      theme: 'stripe' as const,
+      theme: "stripe" as const,
       variables: {
-        colorPrimary: 'hsl(188, 100%, 38%)',
-        colorBackground: '#ffffff',
-        colorText: '#1f2937',
-        colorDanger: '#ef4444',
-        fontFamily: 'system-ui, sans-serif',
-        spacingUnit: '4px',
-        borderRadius: '8px',
-      }
-    }
+        colorPrimary: "hsl(188, 100%, 38%)",
+        colorBackground: "#ffffff",
+        colorText: "#1f2937",
+        colorDanger: "#ef4444",
+        fontFamily: "system-ui, sans-serif",
+        spacingUnit: "4px",
+        borderRadius: "8px",
+      },
+    },
   };
 
   return (
@@ -213,55 +183,49 @@ export default function Checkout() {
           {/* Booking Summary */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center text-[hsl(17,12%,6%)]">
-                <Calendar className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
+              <CardTitle className="text-[hsl(188,100%,38%)]">
                 Resumen de la Reserva
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <User className="w-4 h-4 text-gray-500" />
-                <span className="font-medium">{bookingData.hostName}</span>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span>{format(new Date(bookingData.selectedDate), 'dd MMMM yyyy', { locale: es })}</span>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span>{bookingData.selectedTime} ({bookingData.selectedDuration.duration} min)</span>
-              </div>
+              <p className="font-medium">{bookingData.hostName}</p>
+              <p>
+                {format(new Date(bookingData.selectedDate), "dd MMMM yyyy", {
+                  locale: es,
+                })}
+              </p>
+              <p>
+                {bookingData.selectedTime} (
+                {bookingData.selectedDuration.duration} min)
+              </p>
 
               <Separator />
-              
+
               {/* Services Summary */}
               <div className="space-y-2">
-                <h4 className="font-medium text-sm text-gray-600">Servicios adicionales:</h4>
+                <h4 className="font-medium text-sm text-[hsl(188,100%,38%)]">
+                  Servicios adicionales:
+                </h4>
                 {bookingData.selectedServices.screenSharing && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span>Compartir pantalla</span>
-                  </div>
+                  <p className="text-sm">Compartir pantalla</p>
                 )}
                 {bookingData.selectedServices.recording && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span>Grabación</span>
-                  </div>
+                  <p className="text-sm">Grabación</p>
                 )}
-                {!bookingData.selectedServices.screenSharing && !bookingData.selectedServices.recording && (
-                  <p className="text-sm text-gray-500">Ninguno seleccionado</p>
-                )}
+                {!bookingData.selectedServices.screenSharing &&
+                  !bookingData.selectedServices.recording && (
+                    <p className="text-sm">Ninguno seleccionado</p>
+                  )}
               </div>
 
               <Separator />
-              
+
               {/* Price Breakdown */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Sesión ({bookingData.selectedDuration.duration} min)</span>
+                  <span>
+                    Sesión ({bookingData.selectedDuration.duration} min)
+                  </span>
                   <span>€{bookingData.selectedDuration.price}</span>
                 </div>
                 {/* Add service prices here if needed */}
@@ -277,8 +241,7 @@ export default function Checkout() {
           {/* Payment Form */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center text-[hsl(17,12%,6%)]">
-                <DollarSign className="w-5 h-5 mr-2 text-[hsl(188,100%,38%)]" />
+              <CardTitle className="text-[hsl(188,100%,38%)]">
                 Información de Pago
               </CardTitle>
             </CardHeader>

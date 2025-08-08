@@ -118,7 +118,7 @@ export interface IStorage {
   // User relations operations
   getUserLanguages(userId: string): Promise<UserLanguage[]>;
   getUserSkills(userId: string): Promise<UserSkill[]>;
-  updateUserLanguages(userId: string, languageIds: number[]): Promise<void>;
+  updateUserLanguages(userId: string, languages: { languageId: number; isPrimary?: boolean }[]): Promise<void>;
   updateUserSkills(userId: string, skillIds: number[]): Promise<void>;
   
   // Additional user operations
@@ -174,9 +174,9 @@ export interface IStorage {
   // Host categories operations
   getHostCategories(userId: string): Promise<any[]>;
   updateHostCategories(userId: string, categoryIds: number[]): Promise<void>;
-  
+
   // Booking operations
-  createBooking(booking: any): Promise<any>;
+  createBooking(booking: InsertBooking): Promise<Booking>;
   getBookingById(id: string): Promise<any | undefined>;
   getBooking(id: string): Promise<Booking | undefined>; // Alias for getBookingById
   getHostBookings(hostId: string): Promise<any[]>;
@@ -271,7 +271,7 @@ export interface IStorage {
   
   // User social profiles operations  
   getUserSocialProfiles(userId: string): Promise<any[]>;
-  updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string}[]): Promise<void>;
+  updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string, profileData?: any}[]): Promise<void>;
   
   // User categories operations
   getUserCategories(userId: string): Promise<any[]>;
@@ -279,7 +279,7 @@ export interface IStorage {
   
   // User profile operations (for admin complete editing)
   updateUserSkills(userId: string, skillIds: number[]): Promise<void>;
-  updateUserLanguages(userId: string, languageIds: number[]): Promise<void>;
+  updateUserLanguages(userId: string, languages: { languageId: number; isPrimary?: boolean }[]): Promise<void>;
   
   // Networking recommendation operations
   getUserNetworkingPreferences(userId: string): Promise<UserNetworkingPreferences | null>;
@@ -355,8 +355,7 @@ export class DatabaseStorage implements IStorage {
         title: user.title,
         description: user.description,
         nationality: user.nationality,
-        countryCode: user.countryCode,
-        primaryLanguageId: user.primaryLanguageId
+        countryCode: user.countryCode
       });
       // Return complete profile without censoring personal information  
       return {
@@ -580,7 +579,6 @@ export class DatabaseStorage implements IStorage {
     if (profile.address !== undefined) updateData.address = profile.address === '' ? null : profile.address;
     if (profile.city !== undefined) updateData.city = profile.city === '' ? null : profile.city;
     if (profile.postalCode !== undefined) updateData.postalCode = profile.postalCode === '' ? null : profile.postalCode;
-    if (profile.primaryLanguageId !== undefined) updateData.primaryLanguageId = profile.primaryLanguageId;
     if (profile.phone !== undefined) updateData.phone = profile.phone === '' ? null : profile.phone;
     
     // Admin/Role fields for admin panel updates
@@ -777,28 +775,53 @@ export class DatabaseStorage implements IStorage {
 
   // User relations methods
   async getUserLanguages(userId: string): Promise<UserLanguage[]> {
-    return await db.select().from(userLanguages).where(eq(userLanguages.userId, userId));
+    const langs = await db.select().from(userLanguages).where(eq(userLanguages.userId, userId));
+    if (!langs.some(l => l.isPrimary)) {
+      // Default to Spanish if no primary language set
+      return [
+        ...langs,
+        {
+          id: 'default',
+          userId,
+          languageId: 37,
+          isPrimary: true,
+          createdAt: new Date()
+        } as any
+      ];
+    }
+    return langs;
   }
 
   async getUserSkills(userId: string): Promise<UserSkill[]> {
     return await db.select().from(userSkills).where(eq(userSkills.userId, userId));
   }
 
-  async updateUserLanguages(userId: string, languageIds: number[]): Promise<void> {
+  async updateUserLanguages(userId: string, languagesData: { languageId: number; isPrimary?: boolean }[]): Promise<void> {
     try {
-      console.log(`Updating languages for user ${userId}:`, languageIds);
-      
+      console.log(`Updating languages for user ${userId}:`, languagesData);
+
+      // Ensure there is a primary language, defaulting to Spanish (37)
+      let hasPrimary = languagesData.some(l => l.isPrimary);
+      if (!hasPrimary) {
+        const spanish = languagesData.find(l => l.languageId === 37);
+        if (spanish) {
+          spanish.isPrimary = true;
+        } else {
+          languagesData.push({ languageId: 37, isPrimary: true });
+        }
+      }
+
       // Delete existing languages
-      const deleteResult = await db.delete(userLanguages).where(eq(userLanguages.userId, userId));
-      console.log(`Deleted ${deleteResult?.rowCount || 0} existing languages`);
-      
+      await db.delete(userLanguages).where(eq(userLanguages.userId, userId));
+
       // Insert new languages
-      if (languageIds.length > 0) {
-        const insertData = languageIds.map(languageId => ({ userId, languageId }));
-        console.log('Inserting language data:', insertData);
-        
-        const insertResult = await db.insert(userLanguages).values(insertData);
-        console.log(`Inserted ${insertResult?.rowCount || languageIds.length} languages`);
+      const insertData = languagesData.map(l => ({
+        userId,
+        languageId: l.languageId,
+        isPrimary: l.isPrimary ?? false
+      }));
+      if (insertData.length > 0) {
+        await db.insert(userLanguages).values(insertData);
       }
     } catch (error) {
       console.error('Error updating user languages:', error);
@@ -929,7 +952,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Booking operations
-  async createBooking(booking: any): Promise<any> {
+  async createBooking(booking: InsertBooking): Promise<Booking> {
     const { bookings } = await import("@shared/schema");
     const [result] = await db.insert(bookings).values(booking).returning();
     return result;
@@ -1584,6 +1607,7 @@ export class DatabaseStorage implements IStorage {
         platformId: userSocialProfiles.platformId,
         username: userSocialProfiles.username,
         url: userSocialProfiles.url,
+        profileData: userSocialProfiles.profileData,
         isVisible: userSocialProfiles.isVisible,
         createdAt: userSocialProfiles.createdAt,
         updatedAt: userSocialProfiles.updatedAt,
@@ -1591,6 +1615,7 @@ export class DatabaseStorage implements IStorage {
           id: socialPlatforms.id,
           name: socialPlatforms.name,
           baseUrl: socialPlatforms.baseUrl,
+          iconUrl: socialPlatforms.iconUrl,
         }
       })
       .from(userSocialProfiles)
@@ -1600,7 +1625,7 @@ export class DatabaseStorage implements IStorage {
     return profiles;
   }
 
-  async updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string}[]): Promise<void> {
+  async updateUserSocialProfiles(userId: string, profiles: {platformId: number, username: string, profileData?: any}[]): Promise<void> {
     // Delete existing social profiles
     await db.delete(userSocialProfiles).where(eq(userSocialProfiles.userId, userId));
     
@@ -1612,6 +1637,7 @@ export class DatabaseStorage implements IStorage {
           platformId: profile.platformId,
           username: profile.username,
           url: `https://example.com/${profile.username}`, // This should be constructed based on platform
+          profileData: profile.profileData,
           isVisible: true
         }))
       );
@@ -2035,10 +2061,10 @@ export class DatabaseStorage implements IStorage {
       this.getAdminConfig('show_verified_badge'),
       this.getAdminConfig('show_recommended_badge')
     ]);
-    
+
     return {
-      showVerified: verifiedConfig ? JSON.parse(verifiedConfig.value) : true,
-      showRecommended: recommendedConfig ? JSON.parse(recommendedConfig.value) : true
+      showVerified: verifiedConfig ? JSON.parse(verifiedConfig.value) : false,
+      showRecommended: recommendedConfig ? JSON.parse(recommendedConfig.value) : false
     };
   }
 
