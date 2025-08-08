@@ -2,14 +2,11 @@ import { useTranslation } from "react-i18next";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { 
-  UserPlus, 
-  Search, 
-  Calendar, 
-  CreditCard, 
-  Video, 
+import {
+  Search,
+  Calendar,
+  Video,
   CheckCircle,
   ArrowRight,
   Users,
@@ -23,21 +20,27 @@ export default function HowItWorks() {
   const steps = [
     {
       icon: Search,
-      title: 'Search Host',
-      description: 'Utiliza nuestra IA para encontrar el experto perfecto según tus necesidades',
-      color: 'bg-green-100 text-green-600'
+      title: t('howItWorks.steps.search.title', 'Search Host'),
+      description: t(
+        'howItWorks.steps.search.description',
+        'Use our AI to find the perfect expert for your needs'
+      )
     },
     {
       icon: Calendar,
-      title: 'Schedule Session',
-      description: 'Selecciona fecha, hora y duración que mejor se adapte a tu horario',
-      color: 'bg-purple-100 text-purple-600'
+      title: t('howItWorks.steps.schedule.title', 'Schedule Session'),
+      description: t(
+        'howItWorks.steps.schedule.description',
+        'Choose date, time and duration that fits your schedule'
+      )
     },
     {
       icon: Video,
-      title: 'Videocall',
-      description: 'Únete a la videollamada HD con herramientas avanzadas de comunicación',
-      color: 'bg-red-100 text-red-600'
+      title: t('howItWorks.steps.videocall.title', 'Videocall'),
+      description: t(
+        'howItWorks.steps.videocall.description',
+        'Join the HD video call with advanced communication tools'
+      )
     }
   ];
 
@@ -77,29 +80,25 @@ export default function HowItWorks() {
         {/* Steps Section */}
         <div className="mb-20">
           <h2 className="text-3xl font-bold text-center text-[hsl(17,12%,6%)] mb-12">
-            En 3 Pasos Simples
+            {t('howItWorks.stepsTitle', 'En 3 Pasos Simples')}
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step, index) => (
               <div key={index} className="relative">
-                <Card className="bg-white border-[hsl(220,13%,90%)] shadow-lg hover:shadow-xl transition-all duration-300 h-full">
+                <Card className="bg-white border-[hsl(220,13%,90%)] shadow-sm h-full">
                   <CardContent className="p-6 text-center">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${step.color}`}>
+                    <div className="w-16 h-16 rounded-full border border-[hsl(188,100%,38%)] flex items-center justify-center mx-auto mb-4 text-[hsl(188,100%,38%)]">
                       <step.icon className="w-8 h-8" />
                     </div>
-                    <div className="bg-[hsl(188,100%,38%)] text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-3 text-sm font-bold">
-                      {index + 1}
-                    </div>
+                    <div className="text-[hsl(188,100%,38%)] font-bold mb-3">{index + 1}</div>
                     <h3 className="font-semibold text-[hsl(17,12%,6%)] mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-gray-600">
-                      {step.description}
-                    </p>
+                    <p className="text-sm text-gray-600">{step.description}</p>
                   </CardContent>
                 </Card>
-                
+
                 {/* Arrow connector for desktop */}
                 {index < steps.length - 1 && (
                   <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">

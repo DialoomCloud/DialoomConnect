@@ -572,29 +572,21 @@
     "badge": "Simple Process",
     "title": "How Dialoom Works",
     "subtitle": "We connect professionals with experts quickly, securely and efficiently. Discover how easy it is to get the help you need.",
-    "stepsTitle": "In 5 Simple Steps",
-    "steps": {
-      "register": {
-        "title": "Sign Up",
-        "description": "Create your free Dialoom account and complete your professional profile"
-      },
-      "search": {
-        "title": "Search Experts",
-        "description": "Use our AI to find the perfect expert according to your needs"
-      },
-      "schedule": {
-        "title": "Schedule Your Session",
-        "description": "Select date, time and duration that best fits your schedule"
-      },
-      "pay": {
-        "title": "Secure Payment",
-        "description": "Make payment securely with Stripe. You only pay when the session is completed"
-      },
-      "connect": {
-        "title": "Connect",
-        "description": "Join the HD video call with advanced communication tools"
-      }
+  "stepsTitle": "In 3 Simple Steps",
+  "steps": {
+    "search": {
+      "title": "Search Host",
+      "description": "Use our AI to find the perfect expert for your needs"
     },
+    "schedule": {
+      "title": "Schedule Session",
+      "description": "Choose date, time and duration that fits your schedule"
+    },
+    "videocall": {
+      "title": "Videocall",
+      "description": "Join the HD video call with advanced communication tools"
+    }
+  },
     "benefitsTitle": "Why Choose Dialoom",
     "benefits": {
       "experts": {
