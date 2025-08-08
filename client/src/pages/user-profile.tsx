@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "wouter";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useParams, useLocation } from "wouter";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/navigation";
@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MediaEmbed } from "@/components/media-embed";
 import { MediaViewerModal } from "@/components/media-viewer-modal";
-import { BookingFlow } from "@/components/booking-flow";
 import { DateTimeSelector } from "@/components/date-time-selector";
 
 import { User as UserIcon, Phone, MapPin, Mail, CheckCircle, Calendar, DollarSign, Clock, Monitor, Languages, Video, FileText, Star, Instagram, Twitter, Linkedin, Globe, Eye, Edit, Plus, X, ExternalLink } from "lucide-react";
@@ -33,13 +32,61 @@ export default function UserProfile() {
   const { data: verificationSettings } = useVerificationSettings();
   const params = useParams();
   const userId = params.id;
+  const [, setLocation] = useLocation();
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [viewingContent, setViewingContent] = useState<MediaContent | null>(null);
-  const [showBookingFlow, setShowBookingFlow] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState<{ duration: number; price: string } | null>(null);
   const [showDateTimeSelector, setShowDateTimeSelector] = useState(false);
-  const [selectedBookingDate, setSelectedBookingDate] = useState<Date | null>(null);
-  const [selectedBookingTime, setSelectedBookingTime] = useState<string | null>(null);
+
+  const createBookingSessionMutation = useMutation({
+    mutationFn: async (bookingData: any) => {
+      const res = await apiRequest('/api/booking-session', { method: 'POST', body: bookingData });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setLocation(`/checkout/${data.sessionId}`);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Error al crear la sesión de reserva. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleBookCall = () => {
+    if (!selectedPricing) {
+      toast({
+        title: "Selecciona una tarifa",
+        description: "Por favor elige una duración antes de continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowDateTimeSelector(true);
+  };
+
+  const handleDateTimeConfirm = (date: Date, time: string) => {
+    setShowDateTimeSelector(false);
+    if (!user) return;
+
+    const bookingData = {
+      hostId: user.id,
+      hostName: `${user.firstName} ${user.lastName}`,
+      selectedDate: format(date, 'yyyy-MM-dd'),
+      selectedTime: time,
+      selectedDuration: selectedPricing,
+      selectedServices: {
+        screenSharing: false,
+        translation: false,
+        recording: false,
+        transcription: false,
+      },
+    };
+
+    createBookingSessionMutation.mutate(bookingData);
+  };
 
   const [showFullDescription, setShowFullDescription] = useState(false);
 
@@ -601,9 +648,9 @@ export default function UserProfile() {
               )}
 
               {/* Book Call Button */}
-              <Button 
+              <Button
                 className="w-full bg-white text-[hsl(188,100%,38%)] hover:bg-gray-100 font-semibold py-2 text-sm booking-button"
-                onClick={() => setShowBookingFlow(true)}
+                onClick={handleBookCall}
               >
                 Reservar Llamada
               </Button>
@@ -711,12 +758,12 @@ export default function UserProfile() {
         />
       )}
 
-      {showBookingFlow && (
-        <BookingFlow
-          host={user}
-          isOpen={showBookingFlow}
-          onClose={() => setShowBookingFlow(false)}
-          hostServices={hostServices || {}}
+      {showDateTimeSelector && (
+        <DateTimeSelector
+          isOpen={showDateTimeSelector}
+          onClose={() => setShowDateTimeSelector(false)}
+          availability={availability || []}
+          onConfirm={handleDateTimeConfirm}
         />
       )}
 
