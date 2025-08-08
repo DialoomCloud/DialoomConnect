@@ -35,7 +35,7 @@ const DOCUMENT_TYPES = [
   { value: 'other', label: 'Otro (especificar)' }
 ];
 
-const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export function HostVerificationForm({ userId, userStatus }: { userId: string; userStatus?: string }) {
   const { toast } = useToast();
@@ -141,17 +141,17 @@ export function HostVerificationForm({ userId, userStatus }: { userId: string; u
     if (file.size > MAX_FILE_SIZE) {
       toast({
         title: "Archivo muy grande",
-        description: "El archivo debe ser menor a 15MB",
+        description: "El archivo debe ser menor a 5MB",
         variant: "destructive"
       });
       return;
     }
 
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
       toast({
         title: "Tipo de archivo no permitido",
-        description: "Solo se permiten archivos PDF, JPG, PNG o WEBP",
+        description: "Solo se permiten archivos PDF, JPG o PNG",
         variant: "destructive"
       });
       return;
