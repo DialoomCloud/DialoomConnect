@@ -479,6 +479,7 @@ export const bookings = pgTable("bookings", {
   agoraChannelName: varchar("agora_channel_name"),
   agoraToken: text("agora_token"),
   notes: text("notes"),
+  callLanguage: integer("call_language").references(() => languages.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

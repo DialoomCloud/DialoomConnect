@@ -174,9 +174,9 @@ export interface IStorage {
   // Host categories operations
   getHostCategories(userId: string): Promise<any[]>;
   updateHostCategories(userId: string, categoryIds: number[]): Promise<void>;
-  
+
   // Booking operations
-  createBooking(booking: any): Promise<any>;
+  createBooking(booking: InsertBooking): Promise<Booking>;
   getBookingById(id: string): Promise<any | undefined>;
   getBooking(id: string): Promise<Booking | undefined>; // Alias for getBookingById
   getHostBookings(hostId: string): Promise<any[]>;
@@ -929,7 +929,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Booking operations
-  async createBooking(booking: any): Promise<any> {
+  async createBooking(booking: InsertBooking): Promise<Booking> {
     const { bookings } = await import("@shared/schema");
     const [result] = await db.insert(bookings).values(booking).returning();
     return result;
