@@ -21,7 +21,8 @@ import {
   PhoneOff,
   Monitor,
   MonitorOff,
-  Loader2
+  Loader2,
+  Languages
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,9 +32,10 @@ interface VideoCallProps {
   token: string;
   userId: string;
   onEndCall: () => void;
+  callLanguage?: string;
 }
 
-function VideoCallContent({ appId, channelName, token, userId, onEndCall }: VideoCallProps) {
+function VideoCallContent({ appId, channelName, token, userId, onEndCall, callLanguage }: VideoCallProps) {
   const { localCameraTrack } = useLocalCameraTrack();
   const { localMicrophoneTrack } = useLocalMicrophoneTrack();
   const remoteUsers = useRemoteUsers();
@@ -103,6 +105,12 @@ function VideoCallContent({ appId, channelName, token, userId, onEndCall }: Vide
 
   return (
     <div className="h-screen bg-gray-900 flex flex-col">
+      {callLanguage && (
+        <div className="bg-gray-800 text-gray-100 text-sm px-4 py-2 flex items-center gap-2 justify-center">
+          <Languages className="w-4 h-4" />
+          <span>{callLanguage}</span>
+        </div>
+      )}
       {/* Video Grid */}
       <div className="flex-1 p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
@@ -181,19 +189,20 @@ function VideoCallContent({ appId, channelName, token, userId, onEndCall }: Vide
   );
 }
 
-export function VideoCall({ appId, channelName, token, userId, onEndCall }: VideoCallProps) {
+export function VideoCall({ appId, channelName, token, userId, onEndCall, callLanguage }: VideoCallProps) {
   const client = useRTCClient(
     AgoraRTC.createClient({ codec: "vp8", mode: "rtc" })
   );
 
   return (
     <AgoraRTCProvider client={client}>
-      <VideoCallContent 
+      <VideoCallContent
         appId={appId}
         channelName={channelName}
         token={token}
         userId={userId}
         onEndCall={onEndCall}
+        callLanguage={callLanguage}
       />
     </AgoraRTCProvider>
   );

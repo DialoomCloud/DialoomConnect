@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -70,6 +71,7 @@ export function BookingFlowDirect({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
   
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -114,11 +116,6 @@ export function BookingFlowDirect({
       const response = await apiRequest('POST', '/api/booking-session', bookingData);
       return response.json();
     },
-    onSuccess: (data) => {
-      // After creating session, create payment intent
-      createPaymentIntentMutation.mutate(data.sessionId);
-    },
-    onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message || "Error al crear la sesión de reserva. Inténtalo de nuevo.",
@@ -149,7 +146,16 @@ export function BookingFlowDirect({
       selectedServices,
     };
 
-    createBookingSessionMutation.mutate(bookingData);
+    createBookingSessionMutation.mutate(bookingData, {
+      onSuccess: (data) => {
+        const checkoutUrl = `/checkout/${data.sessionId}`;
+        if (isAuthenticated) {
+          setLocation(checkoutUrl);
+        } else {
+          setLocation(`/login?redirect=${encodeURIComponent(checkoutUrl)}`);
+        }
+      },
+    });
   };
 
   return (

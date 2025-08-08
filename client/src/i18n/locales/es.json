@@ -372,8 +372,10 @@
     "gdprCompliance": "Cumplimos con RGPD"
   },
   "language": {
+    "label": "Idioma",
+    "select": "Selecciona idioma",
     "spanish": "Español",
-    "english": "English", 
+    "english": "English",
     "catalan": "Català"
   },
   "adminTabs": {
@@ -646,29 +648,21 @@
     "badge": "Proceso Simple",
     "title": "Cómo Funciona Dialoom",
     "subtitle": "Conectamos a profesionales con expertos de forma rápida, segura y eficiente. Descubre lo fácil que es obtener la ayuda que necesitas.",
-    "stepsTitle": "En 5 Pasos Simples",
-    "steps": {
-      "register": {
-        "title": "Regístrate",
-        "description": "Crea tu cuenta gratuita en Dialoom y completa tu perfil profesional"
-      },
-      "search": {
-        "title": "Busca Expertos",
-        "description": "Utiliza nuestra IA para encontrar el experto perfecto según tus necesidades"
-      },
-      "schedule": {
-        "title": "Programa tu Sesión",
-        "description": "Selecciona fecha, hora y duración que mejor se adapte a tu horario"
-      },
-      "pay": {
-        "title": "Pago Seguro",
-        "description": "Realiza el pago de forma segura con Stripe. Solo pagas cuando la sesión se completa"
-      },
-      "connect": {
-        "title": "Conéctate",
-        "description": "Únete a la videollamada HD con herramientas avanzadas de comunicación"
-      }
+  "stepsTitle": "En 3 Pasos Simples",
+  "steps": {
+    "search": {
+      "title": "Buscar Host",
+      "description": "Utiliza nuestra IA para encontrar al experto perfecto según tus necesidades"
     },
+    "schedule": {
+      "title": "Programar Sesión",
+      "description": "Selecciona fecha, hora y duración que mejor se adapte a tu horario"
+    },
+    "videocall": {
+      "title": "Videollamada",
+      "description": "Únete a la videollamada HD con herramientas avanzadas de comunicación"
+    }
+  },
     "benefitsTitle": "Por Qué Elegir Dialoom",
     "benefits": {
       "experts": {
