@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
@@ -11,7 +11,14 @@ import { CalendarIcon, Clock, User, MapPin, Star } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface HostDetails {
   id: string;
@@ -80,6 +87,26 @@ export function BookingFlowDirect({
     recording: false,
     transcription: false,
   });
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+
+  const { data: hostLanguages = [] } = useQuery<{ languageId: number }[]>({
+    queryKey: [`/api/user/languages/${hostId}`],
+    enabled: !!hostId,
+  });
+
+  const { data: allLanguages = [] } = useQuery<any[]>({
+    queryKey: ["/api/languages"],
+  });
+
+  const availableLanguages = (allLanguages as any[]).filter((lang: any) =>
+    (hostLanguages as any[]).some((hl: any) => hl.languageId === lang.id)
+  );
+
+  useEffect(() => {
+    if (availableLanguages.length > 0 && !selectedLanguage) {
+      setSelectedLanguage(availableLanguages[0].code);
+    }
+  }, [availableLanguages, selectedLanguage]);
 
   // Get available time slots for selected date
   const getAvailableTimesForDate = (date: Date) => {
@@ -125,6 +152,7 @@ export function BookingFlowDirect({
       selectedTime,
       selectedDuration,
       selectedServices,
+      language: selectedLanguage,
     };
 
     createBookingSessionMutation.mutate(bookingData);
@@ -334,6 +362,28 @@ export function BookingFlowDirect({
               </div>
             )}
           </div>
+        </Card>
+      )}
+
+      {/* Language selection */}
+      {availableLanguages.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Idioma de la sesión</h2>
+          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona un idioma" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableLanguages.map((lang: any) => (
+                <SelectItem
+                  key={lang.id}
+                  value={lang.code || String(lang.id)}
+                >
+                  {lang.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Card>
       )}
 

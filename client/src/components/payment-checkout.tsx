@@ -25,6 +25,7 @@ interface CheckoutFormProps {
       recording: boolean;
       transcription: boolean;
     };
+    language?: string;
   };
   onSuccess: () => void;
   onCancel: () => void;
@@ -67,6 +68,7 @@ const CheckoutForm = ({ bookingDetails, onSuccess, onCancel }: CheckoutFormProps
         bookingId: bookingDetails.id,
         amount: calculateTotal(),
         serviceAddons: bookingDetails.serviceAddons,
+        language: bookingDetails.language,
       });
       const data = await response.json();
       const { clientSecret } = data;

@@ -32,6 +32,13 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { apiRequest } from "@/lib/queryClient";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface BookingFlowProps {
   isOpen: boolean;
@@ -60,6 +67,27 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
     recording: false,
     transcription: false,
   });
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+
+  // Fetch host languages
+  const { data: hostLanguages = [] } = useQuery<{ languageId: number }[]>({
+    queryKey: [`/api/user/languages/${host.id}`],
+    enabled: isOpen && !!host.id,
+  });
+
+  const { data: allLanguages = [] } = useQuery<any[]>({
+    queryKey: ["/api/languages"],
+  });
+
+  const availableLanguages = (allLanguages as any[]).filter((lang: any) =>
+    (hostLanguages as any[]).some((hl: any) => hl.languageId === lang.id)
+  );
+
+  useEffect(() => {
+    if (availableLanguages.length > 0 && !selectedLanguage) {
+      setSelectedLanguage(availableLanguages[0].code);
+    }
+  }, [availableLanguages, selectedLanguage]);
 
   // Fetch host availability
   const { data: availability } = useQuery({
@@ -92,6 +120,7 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
         recording: hostServices.recording !== undefined && hostServices.recording > 0,
         transcription: false,
       });
+      setSelectedLanguage("");
     }
   }, [isOpen, hostServices]);
 
@@ -568,6 +597,28 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
               </div>
             )}
 
+            {/* Language selection */}
+            {availableLanguages.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-medium">Idioma de la sesión</h3>
+                <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un idioma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableLanguages.map((lang: any) => (
+                      <SelectItem
+                        key={lang.id}
+                        value={lang.code || String(lang.id)}
+                      >
+                        {lang.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Total */}
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
@@ -615,6 +666,7 @@ export function BookingFlow({ isOpen, onClose, host, hostServices = {} }: Bookin
                 duration: selectedDuration?.duration || 0,
                 basePrice: selectedDuration?.price || 0,
                 serviceAddons: selectedServices,
+                language: selectedLanguage,
               }}
               onSuccess={handlePaymentComplete}
               onCancel={handleBack}
