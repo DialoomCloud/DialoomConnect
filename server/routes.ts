@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
+import { wrapHandlers } from "./middleware/asyncHandler";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, isAdminAuthenticated, setupAuthRoutes, supabaseAdmin } from "./supabaseAuth";
@@ -89,6 +90,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Automatically wrap async route handlers to forward errors to the error middleware
+  const methods: Array<keyof Express> = ["get", "post", "put", "delete", "patch"];
+  methods.forEach((method) => {
+    const original = (app as any)[method].bind(app);
+    (app as any)[method] = (path: any, ...handlers: any[]) =>
+      original(path, ...wrapHandlers(handlers));
+  });
+
   // Setup Supabase auth routes
   setupAuthRoutes(app);
 
