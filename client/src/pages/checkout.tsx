@@ -160,6 +160,18 @@ export default function Checkout() {
     createPaymentIntent();
   }, [sessionData, params?.sessionId]);
 
+  // Redirect if required data is missing after loading
+  useEffect(() => {
+    if (!isLoading && (!clientSecret || !bookingData)) {
+      toast({
+        title: "Datos de pago incompletos",
+        description: "Vuelve a seleccionar tu sesión",
+        variant: "destructive",
+      });
+      setLocation('/hosts');
+    }
+  }, [isLoading, clientSecret, bookingData, toast, setLocation]);
+
   if (isLoading || !clientSecret || !bookingData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
