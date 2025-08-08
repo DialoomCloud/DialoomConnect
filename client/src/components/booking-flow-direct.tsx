@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
+import { useBookingSessionStore } from "@/stores/bookingSessionStore";
 
 interface HostDetails {
   id: string;
@@ -60,7 +61,7 @@ interface BookingFlowDirectProps {
   };
 }
 
-export function BookingFlowDirect({ 
+export function BookingFlowDirect({
   hostId, 
   hostDetails, 
   pricingOptions, 

@@ -10,12 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { FcGoogle } from 'react-icons/fc';
 import { FaLinkedin } from 'react-icons/fa';
+import { useBookingSessionStore } from '@/stores/bookingSessionStore';
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { session: pendingBooking, clearSession } = useBookingSessionStore();
 
   const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/dashboard';
 
@@ -29,29 +31,45 @@ export default function LoginPage() {
   const [signUpFirstName, setSignUpFirstName] = useState('');
   const [signUpLastName, setSignUpLastName] = useState('');
 
+  const redirectAfterLogin = () => {
+    if (pendingBooking) {
+      const isExpired = new Date(pendingBooking.expiresAt).getTime() < Date.now();
+      if (isExpired) {
+        toast({
+          title: 'Sesión de reserva expirada',
+          description: 'Por favor, inicia una nueva reserva.',
+          variant: 'destructive',
+        });
+        const hostId = pendingBooking.bookingData.hostId;
+        clearSession();
+        navigate(`/host/${hostId}`);
+      } else {
+        navigate(`/checkout/${pendingBooking.sessionId}`);
+      }
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   // Check for OAuth callback on component mount
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
-        // Check if we have a session after OAuth redirect
         const { data: { session }, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           console.error('OAuth error:', error);
           setError('Error al iniciar sesión con OAuth');
           return;
         }
-        
+
         if (session) {
-          // Session exists, OAuth was successful
           toast({
             title: "¡Bienvenido!",
             description: "Has iniciado sesión correctamente",
           });
-          
-          // Wait a moment for the auth state to propagate
+
           setTimeout(() => {
-            navigate(redirectTo);
           }, 100);
         }
       } catch (err) {
@@ -60,7 +78,7 @@ export default function LoginPage() {
     };
 
     handleOAuthCallback();
-  }, [navigate, toast, redirectTo]);
+
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,9 +107,7 @@ export default function LoginPage() {
         title: "¡Bienvenido!",
         description: "Has iniciado sesión correctamente",
       });
-
-      // Redirect to target page to ensure auth state is loaded
-      navigate(redirectTo);
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {

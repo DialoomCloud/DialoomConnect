@@ -1,21 +1,3 @@
-import { useEffect, useState } from "react";
-import { useLocation, useRoute } from "wouter";
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { useQuery } from "@tanstack/react-query";
-// Icons removed to keep interface minimal
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -132,11 +114,11 @@ export default function Checkout() {
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const { session, clearSession } = useBookingSessionStore();
 
   // Get booking session data
-  const { data: sessionData, isLoading } = useQuery({
-    queryKey: ["/api/booking-session", params?.sessionId],
     enabled: !!params?.sessionId,
+    retry: false,
   });
 
   // Create payment intent when session data is loaded
@@ -169,18 +151,6 @@ export default function Checkout() {
 
     createPaymentIntent();
   }, [sessionData, params?.sessionId]);
-
-  // Redirect if required data is missing after loading
-  useEffect(() => {
-    if (!isLoading && (!clientSecret || !bookingData)) {
-      toast({
-        title: "Datos de pago incompletos",
-        description: "Vuelve a seleccionar tu sesión",
-        variant: "destructive",
-      });
-      setLocation('/hosts');
-    }
-  }, [isLoading, clientSecret, bookingData, toast, setLocation]);
 
   if (isLoading || !clientSecret || !bookingData) {
     return (
