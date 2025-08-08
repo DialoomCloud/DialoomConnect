@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
-import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -71,8 +70,6 @@ export function BookingFlowDirect({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const { data: verificationSettings } = useVerificationSettings();
-
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<PricingOption | null>(null);
@@ -91,24 +88,41 @@ export function BookingFlowDirect({
       .map(slot => slot.time);
   };
 
+  // Create payment intent mutation
+  const createPaymentIntentMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      await apiRequest('POST', '/api/stripe/create-payment-intent', {
+        bookingSessionId: sessionId,
+      });
+    },
+    onSuccess: (_data, sessionId) => {
+      setLocation(`/checkout/${sessionId}`);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo iniciar el pago. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Create booking session mutation
   const createBookingSessionMutation = useMutation({
     mutationFn: async (bookingData: any) => {
       const response = await apiRequest('POST', '/api/booking-session', bookingData);
       return response.json();
     },
-    onSuccess: (data) => {
-      // Redirect to checkout with session ID
-      setLocation(`/checkout/${data.sessionId}`);
-    },
-    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Error al crear la sesión de reserva. Inténtalo de nuevo.",
+        description: error.message || "Error al crear la sesión de reserva. Inténtalo de nuevo.",
         variant: "destructive",
       });
     },
   });
+
+  const isProcessing =
+    createBookingSessionMutation.isPending || createPaymentIntentMutation.isPending;
 
   const handleBooking = () => {
     if (!selectedDate || !selectedTime || !selectedDuration) {
@@ -129,7 +143,16 @@ export function BookingFlowDirect({
       selectedServices,
     };
 
-    createBookingSessionMutation.mutate(bookingData);
+    createBookingSessionMutation.mutate(bookingData, {
+      onSuccess: (data) => {
+        const checkoutUrl = `/checkout/${data.sessionId}`;
+        if (isAuthenticated) {
+          setLocation(checkoutUrl);
+        } else {
+          setLocation(`/login?redirect=${encodeURIComponent(checkoutUrl)}`);
+        }
+      },
+    });
   };
 
   return (
@@ -343,10 +366,14 @@ export function BookingFlowDirect({
       <div className="flex justify-center">
         <Button
           onClick={handleBooking}
-          disabled={!selectedDate || !selectedTime || !selectedDuration || createBookingSessionMutation.isPending}
+          disabled={!selectedDate || !selectedTime || !selectedDuration || isProcessing}
           className="px-8 py-3 text-lg"
         >
-          {createBookingSessionMutation.isPending ? "Procesando..." : "Reservar sesión"}
+          {createBookingSessionMutation.isPending
+            ? "Creando sesión..."
+            : createPaymentIntentMutation.isPending
+              ? "Preparando pago..."
+              : "Reservar sesión"}
         </Button>
       </div>
     </div>
