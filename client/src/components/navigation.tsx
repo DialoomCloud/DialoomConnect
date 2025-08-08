@@ -200,7 +200,7 @@ export function Navigation() {
                     }
                   >
                     <UserIcon className="w-4 h-4 mr-2" />
-                    {user.role === "host" || (user.isHost && !user.role) ? "Dashboard" : t('navigation.profile', 'Profile')}
+                    {user.role === "host" || user.role === "admin" || (user.isHost && !user.role) ? "Dashboard" : t('navigation.profile', 'Profile')}
                   </Button>
                 </Link>
 
@@ -221,8 +221,8 @@ export function Navigation() {
 
                 {/* Role-specific dashboards - Dashboard removed for hosts as it overlaps with Profile editor functionality */}
 
-                {/* Admin Panel - only show if user is admin AND not in admin or registered role */}
-                {user.isAdmin && user.role !== "admin" && user.role !== "registered" && (
+                {/* Admin Panel - only show if user is admin AND currently in admin role */}
+                {user.isAdmin && user.role === "admin" && (
                   <Link href="/admin-dashboard">
                     <Button
                       variant={isActive("/admin-dashboard") ? "default" : "ghost"}
@@ -446,6 +446,17 @@ export function Navigation() {
                     </Button>
                   </Link>
 
+                  <Link href="/profile" onClick={closeMobileMenu}>
+                    <Button
+                      variant={isActive("/profile") ? "default" : "ghost"}
+                      size="sm"
+                      className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
+                    >
+                      <UserIcon className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+
                   <Link href="/help" onClick={closeMobileMenu}>
                     <Button
                       variant={isActive("/help") ? "default" : "ghost"}
@@ -503,7 +514,7 @@ export function Navigation() {
                         className={`w-full justify-start ${isActive("/profile") ? "bg-[hsl(188,100%,38%)]" : ""}`}
                       >
                         <UserIcon className="w-4 h-4 mr-2" />
-                        {t("navigation.profile")}
+                        {user.role === "host" || user.role === "admin" || (user.isHost && !user.role) ? "Dashboard" : t("navigation.profile")}
                       </Button>
                     </Link>
                   )}
