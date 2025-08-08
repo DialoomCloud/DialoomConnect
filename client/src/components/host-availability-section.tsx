@@ -57,7 +57,7 @@ export function HostAvailabilitySection() {
   });
 
   // Fetch service prices from admin configuration
-  const { data: servicePrices } = useQuery<{
+  const { data: servicePrices, isLoading: servicePricesLoading } = useQuery<{
     screenSharing: number;
     translation: number;
     recording: number;
@@ -65,6 +65,9 @@ export function HostAvailabilitySection() {
   }>({
     queryKey: ["/api/config/service-prices"],
   });
+
+  // Debug log for service prices
+  console.log('Service prices:', servicePrices, 'Loading:', servicePricesLoading);
 
   // Add availability mutation
   const addAvailabilityMutation = useMutation({
@@ -132,7 +135,9 @@ export function HostAvailabilitySection() {
       });
     },
     onSuccess: () => {
+      // Force immediate refresh of pricing data
       queryClient.invalidateQueries({ queryKey: ["/api/host/pricing"] });
+      queryClient.refetchQueries({ queryKey: ["/api/host/pricing"] });
       toast({
         title: "Pricing Updated",
         description: "Your pricing has been updated successfully",
@@ -433,10 +438,10 @@ export function HostAvailabilitySection() {
               </div>
               <Switch
                 checked={pricing.some(p => p.includesScreenSharing)}
-                onCheckedChange={(checked) => {
+                onCheckedChange={async (checked) => {
                   const activePricing = pricing.filter(p => p.isActive);
-                  activePricing.forEach(p => {
-                    updatePricingMutation.mutate({
+                  for (const p of activePricing) {
+                    await updatePricingMutation.mutateAsync({
                       duration: p.duration,
                       price: parseFloat(p.price),
                       isActive: true,
@@ -445,7 +450,7 @@ export function HostAvailabilitySection() {
                       includesRecording: p.includesRecording || false,
                       includesTranscription: p.includesTranscription || false,
                     });
-                  });
+                  }
                 }}
               />
             </div>
@@ -466,10 +471,10 @@ export function HostAvailabilitySection() {
               </div>
               <Switch
                 checked={pricing.some(p => p.includesTranslation)}
-                onCheckedChange={(checked) => {
+                onCheckedChange={async (checked) => {
                   const activePricing = pricing.filter(p => p.isActive);
-                  activePricing.forEach(p => {
-                    updatePricingMutation.mutate({
+                  for (const p of activePricing) {
+                    await updatePricingMutation.mutateAsync({
                       duration: p.duration,
                       price: parseFloat(p.price),
                       isActive: true,
@@ -478,7 +483,7 @@ export function HostAvailabilitySection() {
                       includesRecording: p.includesRecording || false,
                       includesTranscription: p.includesTranscription || false,
                     });
-                  });
+                  }
                 }}
               />
             </div>
@@ -499,10 +504,10 @@ export function HostAvailabilitySection() {
               </div>
               <Switch
                 checked={pricing.some(p => p.includesRecording)}
-                onCheckedChange={(checked) => {
+                onCheckedChange={async (checked) => {
                   const activePricing = pricing.filter(p => p.isActive);
-                  activePricing.forEach(p => {
-                    updatePricingMutation.mutate({
+                  for (const p of activePricing) {
+                    await updatePricingMutation.mutateAsync({
                       duration: p.duration,
                       price: parseFloat(p.price),
                       isActive: true,
@@ -511,7 +516,7 @@ export function HostAvailabilitySection() {
                       includesRecording: checked,
                       includesTranscription: p.includesTranscription || false,
                     });
-                  });
+                  }
                 }}
               />
             </div>
@@ -532,10 +537,10 @@ export function HostAvailabilitySection() {
               </div>
               <Switch
                 checked={pricing.some(p => p.includesTranscription)}
-                onCheckedChange={(checked) => {
+                onCheckedChange={async (checked) => {
                   const activePricing = pricing.filter(p => p.isActive);
-                  activePricing.forEach(p => {
-                    updatePricingMutation.mutate({
+                  for (const p of activePricing) {
+                    await updatePricingMutation.mutateAsync({
                       duration: p.duration,
                       price: parseFloat(p.price),
                       isActive: true,
@@ -544,7 +549,7 @@ export function HostAvailabilitySection() {
                       includesRecording: p.includesRecording || false,
                       includesTranscription: checked,
                     });
-                  });
+                  }
                 }}
               />
             </div>
