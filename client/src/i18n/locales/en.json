@@ -876,5 +876,17 @@
     "additionalResourcesUpdateDesc": "Find useful documents and important links:",
     "termsOfServiceUpdate": "Terms of Service",
     "privacyPolicyUpdate": "Privacy Policy"
+  },
+  "reviews": {
+    "title": "Reviews for",
+    "review": "review",
+    "reviews": "reviews",
+    "sortBy": "Sort by",
+    "date": "Date",
+    "rating": "Rating",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "highest": "Highest",
+    "lowest": "Lowest"
   }
 }

@@ -948,5 +948,17 @@
         "high": "Alta"
       }
     }
+  },
+  "reviews": {
+    "title": "Reseñas de",
+    "review": "reseña",
+    "reviews": "reseñas",
+    "sortBy": "Ordenar por",
+    "date": "Fecha",
+    "rating": "Valoración",
+    "newest": "Más reciente",
+    "oldest": "Más antigua",
+    "highest": "Más alta",
+    "lowest": "Más baja"
   }
 }

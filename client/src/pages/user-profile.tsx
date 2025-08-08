@@ -23,6 +23,7 @@ import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progre
 import { trackUserAction } from "@/hooks/useOnboardingState";
 import { useVerificationSettings } from "@/hooks/useVerificationSettings";
 import { AvailabilityTooltip } from "@/components/availability-tooltip";
+import { ReviewsModal } from "@/components/reviews-modal";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -45,6 +46,9 @@ export default function UserProfile() {
   const [isEditingTopics, setIsEditingTopics] = useState(false);
   const [editTopics, setEditTopics] = useState<string[]>([]);
   const [newTopic, setNewTopic] = useState("");
+
+  // Reviews modal state
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
 
   // Fetch user profile
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
@@ -248,7 +252,7 @@ export default function UserProfile() {
                     <p className="text-lg text-[hsl(188,100%,38%)] font-semibold mb-2">{user.title}</p>
                   )}
                   
-                  {/* Rating Stars */}
+                  {/* Rating Stars - Clickable */}
                   <div className="flex items-center justify-center lg:justify-start mb-3">
                     <div className="flex items-center mr-2">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -259,7 +263,12 @@ export default function UserProfile() {
                       ))}
                     </div>
                     <span className="text-sm font-medium">5.0</span>
-                    <span className="text-sm text-[hsl(17,12%,60%)] ml-1">(12 reseñas)</span>
+                    <button 
+                      onClick={() => setShowReviewsModal(true)}
+                      className="text-sm text-[hsl(17,12%,60%)] ml-1 hover:text-[hsl(188,100%,38%)] hover:underline transition-colors cursor-pointer"
+                    >
+                      (12 reseñas)
+                    </button>
                   </div>
 
                   {/* Languages */}
@@ -682,6 +691,18 @@ export default function UserProfile() {
           isOpen={showBookingFlow}
           onClose={() => setShowBookingFlow(false)}
           hostServices={hostServices || {}}
+        />
+      )}
+
+      {/* Reviews Modal */}
+      {user && (
+        <ReviewsModal
+          isOpen={showReviewsModal}
+          onClose={() => setShowReviewsModal(false)}
+          hostId={user.id}
+          hostName={`${user.firstName} ${user.lastName}`}
+          totalReviews={12}
+          averageRating={5.0}
         />
       )}
     </div>

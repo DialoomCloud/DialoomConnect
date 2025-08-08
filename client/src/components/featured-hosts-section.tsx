@@ -1,16 +1,28 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, MapPin } from "lucide-react";
 import { Link } from "wouter";
 import type { User } from "@shared/schema";
 import { AvailabilityTooltip } from "@/components/availability-tooltip";
+import { ReviewsModal } from "@/components/reviews-modal";
 
 export function FeaturedHostsSection() {
+  const [selectedHost, setSelectedHost] = useState<User | null>(null);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+
   // Fetch featured hosts from the API
   const { data: featuredHosts = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/hosts/featured'],
     enabled: true,
   });
+
+  const handleReviewsClick = (host: User, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedHost(host);
+    setShowReviewsModal(true);
+  };
 
   if (isLoading) {
     return (
@@ -84,12 +96,17 @@ export function FeaturedHostsSection() {
                     {((host as any).title || 'Experto Profesional').toLowerCase()}
                   </p>
 
-                  {/* Rating */}
+                  {/* Rating - Clickable */}
                   <div className="flex items-center justify-center mb-2">
                     <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
                     <span className="text-sm text-gray-600">
                       {(host as any).rating ? `${(host as any).rating.toFixed(1)}` : '5.0'} 
-                      (12 reseñas)
+                      <button 
+                        onClick={(e) => handleReviewsClick(host, e)}
+                        className="hover:text-[hsl(188,100%,38%)] hover:underline transition-colors cursor-pointer ml-1"
+                      >
+                        (12 reseñas)
+                      </button>
                     </span>
                   </div>
 
@@ -111,6 +128,18 @@ export function FeaturedHostsSection() {
           </Link>
         ))}
       </div>
+
+      {/* Reviews Modal */}
+      {selectedHost && (
+        <ReviewsModal
+          isOpen={showReviewsModal}
+          onClose={() => setShowReviewsModal(false)}
+          hostId={selectedHost.id}
+          hostName={`${selectedHost.firstName || 'Experto'} ${selectedHost.lastName || 'Profesional'}`}
+          totalReviews={12}
+          averageRating={5.0}
+        />
+      )}
     </div>
   );
 }

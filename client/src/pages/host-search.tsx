@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Navigation } from "@/components/navigation";
-import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut, Grid3X3, Plus, Minus, HelpCircle, Info, ChevronDown, Check } from "lucide-react";
+import { Search, User, MapPin, CheckCircle, Sparkles, Brain, X, ZoomIn, ZoomOut, Grid3X3, Plus, Minus, HelpCircle, Info, ChevronDown, Check, Star } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProgressiveDisclosure, ONBOARDING_SEQUENCES } from "@/components/progressive-disclosure";
 import { AvailabilityTooltip } from "@/components/availability-tooltip";
+import { ReviewsModal } from "@/components/reviews-modal";
 
 type SearchResult = UserType & { relevance?: number };
 
@@ -49,6 +50,8 @@ export default function HostSearch() {
   const [aiResults, setAiResults] = useState<SearchResult[]>([]);
   const [isAISearch, setIsAISearch] = useState(false);
   const [gridCols, setGridCols] = useState(3); // Default to 3 columns
+  const [selectedHost, setSelectedHost] = useState<UserType | null>(null);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
   
   // Filter states from store
   const {
@@ -675,6 +678,25 @@ export default function HostSearch() {
                       </div>
                     </div>
 
+                    {/* Rating and Reviews */}
+                    <div className="flex items-center justify-center mb-2">
+                      <Star className="w-4 h-4 text-yellow-500 mr-1 fill-current" />
+                      <span className="text-sm text-gray-600">
+                        5.0 
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedHost(host);
+                            setShowReviewsModal(true);
+                          }}
+                          className="hover:text-[hsl(188,100%,38%)] hover:underline transition-colors cursor-pointer ml-1"
+                        >
+                          (12 reseñas)
+                        </button>
+                      </span>
+                    </div>
+
                     {/* Availability Status */}
                     <div className="flex justify-center">
                       <AvailabilityTooltip status="Media" className="text-xs" />
@@ -706,6 +728,18 @@ export default function HostSearch() {
           </div>
         )}
       </div>
+
+      {/* Reviews Modal */}
+      {selectedHost && (
+        <ReviewsModal
+          isOpen={showReviewsModal}
+          onClose={() => setShowReviewsModal(false)}
+          hostId={selectedHost.id}
+          hostName={`${selectedHost.firstName} ${selectedHost.lastName}` || selectedHost.email}
+          totalReviews={12}
+          averageRating={5.0}
+        />
+      )}
     </div>
   );
 }

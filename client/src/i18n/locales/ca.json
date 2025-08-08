@@ -884,5 +884,17 @@
     "additionalResourcesUpdateDesc": "Troba documents útils i enllaços importants:",
     "termsOfServiceUpdate": "Termes de Servei",
     "privacyPolicyUpdate": "Política de Privacitat"
+  },
+  "reviews": {
+    "title": "Ressenyes de",
+    "review": "ressenya",
+    "reviews": "ressenyes",
+    "sortBy": "Ordenar per",
+    "date": "Data",
+    "rating": "Valoració",
+    "newest": "Més recent",
+    "oldest": "Més antiga",
+    "highest": "Més alta",
+    "lowest": "Més baixa"
   }
 }
