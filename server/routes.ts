@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.userId;
       const { role } = req.body;
-      if (!['guest', 'host', 'admin'].includes(role)) {
+      if (!['guest', 'registered', 'host', 'admin'].includes(role)) {
         return res.status(400).json({ message: 'Rol no válido' });
       }
       const user = await storage.getUser(userId);
