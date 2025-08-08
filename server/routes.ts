@@ -4352,8 +4352,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send activation email
       try {
-        const sendEmail = await import('./send-email');
-        await sendEmail.sendHostActivationEmail(user.email, user.firstName, token, userId);
+        const { emailService } = await import('./email-service');
+        await emailService.sendHostActivationEmail(user.email, user.firstName, token, userId);
       } catch (emailError) {
         console.error("Error sending activation email:", emailError);
       }
@@ -4589,8 +4589,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       if (user && user.email) {
         try {
-          const sendEmail = await import('./send-email');
-          await sendEmail.sendHostApprovalEmail(user.email, user.firstName);
+          const { emailService } = await import('./email-service');
+          await emailService.sendHostApprovalEmail(user.email, user.firstName);
         } catch (emailError) {
           console.error("Error sending approval email:", emailError);
         }
