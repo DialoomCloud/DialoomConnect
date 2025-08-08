@@ -495,7 +495,7 @@ export default function Dashboard() {
                 <TabsTrigger value="overview">{t('dashboard.overview')}</TabsTrigger>
                 <TabsTrigger value="calls">{t('dashboard.calls')}</TabsTrigger>
                 <TabsTrigger value="invoices">{t('dashboard.billing')}</TabsTrigger>
-                <TabsTrigger value="profile">{t('dashboard.myProfile')}</TabsTrigger>
+                <TabsTrigger value="profile">Dashboard</TabsTrigger>
                 <TabsTrigger value="content">{t('dashboard.content')}</TabsTrigger>
                 <TabsTrigger value="availability">{t('dashboard.availability')}</TabsTrigger>
                 <TabsTrigger value="stripe-connect">

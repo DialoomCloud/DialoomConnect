@@ -56,6 +56,16 @@ export function HostAvailabilitySection() {
     queryKey: ["/api/host/pricing"],
   });
 
+  // Fetch service prices from admin configuration
+  const { data: servicePrices } = useQuery<{
+    screenSharing: number;
+    translation: number;
+    recording: number;
+    transcription: number;
+  }>({
+    queryKey: ["/api/config/service-prices"],
+  });
+
   // Add availability mutation
   const addAvailabilityMutation = useMutation({
     mutationFn: async (data: { date?: string; dayOfWeek?: number; startTime: string; endTime: string }) => {
@@ -231,7 +241,7 @@ export function HostAvailabilitySection() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign className="w-5 h-5" />
-              {t('pricing.title')}
+              Session Pricing
             </div>
             <div className="text-sm font-normal text-gray-600">
               Tarifas activas: {pricing.filter(p => p.isActive).length}/5
@@ -406,7 +416,6 @@ export function HostAvailabilitySection() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600 mb-4">{t('services.description')}</p>
           
           {/* Screen Sharing */}
           {adminConfig?.allow_screen_sharing !== false && (
@@ -414,8 +423,11 @@ export function HostAvailabilitySection() {
               <div className="flex items-center gap-3">
                 <Monitor className="w-5 h-5 text-gray-600" />
                 <div>
-                  <Label className="text-base font-medium">{t('services.screenSharing')}</Label>
-                  <p className="text-sm text-gray-600">{t('services.screenSharingDesc')}</p>
+                  <Label className="text-base font-medium">Screen Sharing</Label>
+                  <p className="text-sm text-gray-600">Allow screen sharing during the call</p>
+                  {servicePrices && (
+                    <p className="text-sm font-medium text-[hsl(188,100%,38%)]">+€{servicePrices.screenSharing}</p>
+                  )}
                 </div>
               </div>
               <Switch
@@ -428,9 +440,9 @@ export function HostAvailabilitySection() {
                       price: parseFloat(p.price),
                       isActive: true,
                       includesScreenSharing: checked,
-                      includesTranslation: p.includesTranslation,
-                      includesRecording: p.includesRecording,
-                      includesTranscription: p.includesTranscription,
+                      includesTranslation: p.includesTranslation || false,
+                      includesRecording: p.includesRecording || false,
+                      includesTranscription: p.includesTranscription || false,
                     });
                   });
                 }}
@@ -444,8 +456,11 @@ export function HostAvailabilitySection() {
               <div className="flex items-center gap-3">
                 <Languages className="w-5 h-5 text-gray-600" />
                 <div>
-                  <Label className="text-base font-medium">{t('services.translation')}</Label>
-                  <p className="text-sm text-gray-600">{t('services.translationDesc')}</p>
+                  <Label className="text-base font-medium">Simultaneous Translation</Label>
+                  <p className="text-sm text-gray-600">Offer real-time translation during the session</p>
+                  {servicePrices && (
+                    <p className="text-sm font-medium text-[hsl(188,100%,38%)]">+€{servicePrices.translation}</p>
+                  )}
                 </div>
               </div>
               <Switch
@@ -457,10 +472,10 @@ export function HostAvailabilitySection() {
                       duration: p.duration,
                       price: parseFloat(p.price),
                       isActive: true,
-                      includesScreenSharing: p.includesScreenSharing,
+                      includesScreenSharing: p.includesScreenSharing || false,
                       includesTranslation: checked,
-                      includesRecording: p.includesRecording,
-                      includesTranscription: p.includesTranscription,
+                      includesRecording: p.includesRecording || false,
+                      includesTranscription: p.includesTranscription || false,
                     });
                   });
                 }}
@@ -474,8 +489,11 @@ export function HostAvailabilitySection() {
               <div className="flex items-center gap-3">
                 <Video className="w-5 h-5 text-gray-600" />
                 <div>
-                  <Label className="text-base font-medium">{t('services.recording')}</Label>
-                  <p className="text-sm text-gray-600">{t('services.recordingDesc')}</p>
+                  <Label className="text-base font-medium">Session Recording</Label>
+                  <p className="text-sm text-gray-600">Allow recording the video call for future reference</p>
+                  {servicePrices && (
+                    <p className="text-sm font-medium text-[hsl(188,100%,38%)]">+€{servicePrices.recording}</p>
+                  )}
                 </div>
               </div>
               <Switch
@@ -487,10 +505,10 @@ export function HostAvailabilitySection() {
                       duration: p.duration,
                       price: parseFloat(p.price),
                       isActive: true,
-                      includesScreenSharing: p.includesScreenSharing,
-                      includesTranslation: p.includesTranslation,
+                      includesScreenSharing: p.includesScreenSharing || false,
+                      includesTranslation: p.includesTranslation || false,
                       includesRecording: checked,
-                      includesTranscription: p.includesTranscription,
+                      includesTranscription: p.includesTranscription || false,
                     });
                   });
                 }}
@@ -504,8 +522,11 @@ export function HostAvailabilitySection() {
               <div className="flex items-center gap-3">
                 <FileText className="w-5 h-5 text-gray-600" />
                 <div>
-                  <Label className="text-base font-medium">{t('services.transcription')}</Label>
-                  <p className="text-sm text-gray-600">{t('services.transcriptionDesc')}</p>
+                  <Label className="text-base font-medium">Transcription</Label>
+                  <p className="text-sm text-gray-600">Generate a written transcript of the conversation</p>
+                  {servicePrices && (
+                    <p className="text-sm font-medium text-[hsl(188,100%,38%)]">+€{servicePrices.transcription}</p>
+                  )}
                 </div>
               </div>
               <Switch
@@ -517,9 +538,9 @@ export function HostAvailabilitySection() {
                       duration: p.duration,
                       price: parseFloat(p.price),
                       isActive: true,
-                      includesScreenSharing: p.includesScreenSharing,
-                      includesTranslation: p.includesTranslation,
-                      includesRecording: p.includesRecording,
+                      includesScreenSharing: p.includesScreenSharing || false,
+                      includesTranslation: p.includesTranslation || false,
+                      includesRecording: p.includesRecording || false,
                       includesTranscription: checked,
                     });
                   });
