@@ -15,6 +15,13 @@
       "when": 1754677994376,
       "tag": "0001_host_verification_status_enum",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754681512000,
+      "tag": "0002_add_profile_data_to_user_social_profiles",
+      "breakpoints": true
     }
   ]
 }

@@ -1902,29 +1902,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user's social profiles to extract LinkedIn data if available
       const userSocialProfiles = await storage.getUserSocialProfiles(userId);
       console.log('User social profiles:', userSocialProfiles);
-      
-      let linkedinData = '';
-      
-      if (linkedinUrl) {
-        linkedinData = linkedinUrl;
-      } else {
-        // Find LinkedIn profile from user's social profiles
-        const linkedinProfile = userSocialProfiles.find(profile => profile.platformId === 1); // LinkedIn platform ID
-        if (linkedinProfile) {
-          linkedinData = `https://linkedin.com/in/${linkedinProfile.username}`;
+
+      // Try to extract detailed LinkedIn info from stored profile data
+      let linkedinText = '';
+      const linkedinProfile = userSocialProfiles.find(profile => profile.platformId === 1); // LinkedIn platform ID
+
+      if (linkedinProfile?.profileData) {
+        try {
+          const data = linkedinProfile.profileData;
+          const parts = [] as string[];
+          if (data.headline) parts.push(`Titular: ${data.headline}`);
+          if (data.summary) parts.push(`Resumen: ${data.summary}`);
+          if (Array.isArray(data.experience) && data.experience.length) {
+            const expText = data.experience.map((e: string) => `- ${e}`).join('\n');
+            parts.push(`Experiencia:\n${expText}`);
+          }
+          linkedinText = parts.join('\n');
+        } catch (err) {
+          console.error('Error parsing LinkedIn profile data:', err);
         }
+      } else if (linkedinUrl) {
+        linkedinText = linkedinUrl;
+      } else if (linkedinProfile) {
+        linkedinText = `https://linkedin.com/in/${linkedinProfile.username}`;
       }
-      
-      console.log('Using LinkedIn data:', linkedinData);
+
+      console.log('Using LinkedIn data:', linkedinText);
 
       const enhancementPrompt = `
         Como experto en redacción profesional y marketing personal, mejora esta descripción profesional para que sea más atractiva, clara y persuasiva para potenciales clientes.
-        
+
         Descripción actual: "${description}"
-        ${linkedinData ? `
-        El usuario ha indicado que tiene un perfil en LinkedIn en: ${linkedinData}
+        ${linkedinText ? (linkedinText.startsWith('http') ? `
+        El usuario ha indicado que tiene un perfil en LinkedIn en: ${linkedinText}
         Nota: Aunque no puedo acceder directamente al contenido del perfil de LinkedIn, debes basarte en la descripción proporcionada y mejorarla asumiendo que el profesional tiene experiencia relevante que respalda sus afirmaciones.
-        ` : ''}
+        ` : `
+        Información del perfil de LinkedIn del usuario:
+        ${linkedinText}
+        `) : ''}
         
         Directrices:
         - Mantén un tono HUMILDE y PROFESIONAL, evitando superlativos o afirmaciones grandilocuentes
