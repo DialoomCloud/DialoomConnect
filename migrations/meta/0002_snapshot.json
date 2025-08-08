@@ -2698,12 +2698,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "primary_language_id": {
-          "name": "primary_language_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "category_id": {
           "name": "category_id",
           "type": "integer",
@@ -2916,19 +2910,6 @@
           ],
           "columnsTo": [
             "code"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "users_primary_language_id_languages_id_fk": {
-          "name": "users_primary_language_id_languages_id_fk",
-          "tableFrom": "users",
-          "tableTo": "languages",
-          "columnsFrom": [
-            "primary_language_id"
-          ],
-          "columnsTo": [
-            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"

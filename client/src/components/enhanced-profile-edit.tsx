@@ -71,7 +71,6 @@ const profileSchema = z.object({
   city: z.string().nullable().optional(),
   postalCode: z.string().nullable().optional(),
   countryCode: z.string().nullable().optional(),
-  primaryLanguageId: z.number().nullable().optional(),
   phone: z.string().nullable().optional(),
   purpose: z.array(z.string()).nullable().optional(),
   videoCallTopics: z.array(z.string()).nullable().optional(),
@@ -151,6 +150,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   const [aiSuggestions, setAISuggestions] = useState<AISuggestions | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
+  const [primaryLanguageId, setPrimaryLanguageId] = useState<number | null>(null);
   const [selectedPurposes, setSelectedPurposes] = useState<string[]>([]);
   const [socialProfiles, setSocialProfiles] = useState<{platformId: number, username: string}[]>([]);
   const [newSocialProfile, setNewSocialProfile] = useState<SocialProfileData>({
@@ -174,7 +174,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       city: "",
       postalCode: "",
       countryCode: "",
-      primaryLanguageId: undefined,
       phone: "",
       purpose: [],
       videoCallTopics: [],
@@ -200,7 +199,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         description: typedUser.description,
         nationality: typedUser.nationality,
         countryCode: typedUser.countryCode,
-        primaryLanguageId: typedUser.primaryLanguageId,
         dateOfBirth: typedUser.dateOfBirth
       });
       form.reset({
@@ -214,7 +212,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         city: typedUser.city || "",
         postalCode: typedUser.postalCode || "",
         countryCode: typedUser.countryCode || "",
-        primaryLanguageId: typedUser.primaryLanguageId || undefined,
         phone: typedUser.phone || "",
         purpose: typedUser.purpose || [],
         videoCallTopics: typedUser.videoCallTopics || [],
@@ -239,7 +236,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
     queryKey: ['/api/languages'],
   });
 
-  const { data: userLanguages = [] } = useQuery({
+  const { data: userLanguages = [] } = useQuery<{ languageId: number; isPrimary: boolean }[]>({
     queryKey: ['/api/user/languages', typedUser?.id],
     enabled: !!typedUser?.id,
   });
@@ -269,6 +266,14 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       setSelectedCategories(typedUserCategories.map((uc: any) => uc.categoryId));
     }
   }, [typedUserCategories]);
+
+  useEffect(() => {
+    if (typedUserLanguages.length > 0) {
+      setSelectedLanguages(typedUserLanguages.map((ul: any) => ul.languageId));
+      const primary = typedUserLanguages.find((ul: any) => ul.isPrimary);
+      setPrimaryLanguageId(primary ? primary.languageId : null);
+    }
+  }, [typedUserLanguages]);
   
   // This effect is already handled above at line 176
 
@@ -481,11 +486,15 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
   };
 
   const handleLanguageToggle = (languageId: number) => {
-    setSelectedLanguages(prev =>
-      prev.includes(languageId)
-        ? prev.filter(id => id !== languageId)
-        : [...prev, languageId]
-    );
+    setSelectedLanguages(prev => {
+      if (prev.includes(languageId)) {
+        if (languageId === primaryLanguageId) {
+          setPrimaryLanguageId(null);
+        }
+        return prev.filter(id => id !== languageId);
+      }
+      return [...prev, languageId];
+    });
   };
 
   const handlePurposeToggle = (purpose: string) => {
@@ -548,21 +557,17 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
       // Clean data - convert empty strings to null for proper backend handling
       const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
         if (value === '' || value === null || value === undefined) {
-          // Send null for empty values so backend can handle them properly
           acc[key] = null;
-        } else if (key === 'primaryLanguageId' && typeof value === 'string') {
-          // Convert string to number for primaryLanguageId
-          acc[key] = value ? parseInt(value, 10) : null;
         } else {
           acc[key] = value;
         }
         return acc;
       }, {} as any);
-      
+
       const updatePromises = [] as Promise<unknown>[];
 
-      // Update profile with selected languages
-      const profileDataToSend = { ...cleanedData, languageIds: selectedLanguages };
+      const languagePayload = selectedLanguages.map(id => ({ languageId: id, isPrimary: id === primaryLanguageId }));
+      const profileDataToSend = { ...cleanedData, languages: languagePayload };
       console.log('🚀 [PROFILE SAVE] Sending profile data to server:', {
         address: profileDataToSend.address,
         phone: profileDataToSend.phone,
@@ -572,7 +577,6 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         description: profileDataToSend.description,
         nationality: profileDataToSend.nationality,
         countryCode: profileDataToSend.countryCode,
-        primaryLanguageId: profileDataToSend.primaryLanguageId,
         dateOfBirth: profileDataToSend.dateOfBirth,
         allData: profileDataToSend
       });
@@ -580,9 +584,7 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
         'nationality value': profileDataToSend.nationality,
         'nationality type': typeof profileDataToSend.nationality,
         'countryCode value': profileDataToSend.countryCode,
-        'countryCode type': typeof profileDataToSend.countryCode,
-        'primaryLanguageId value': profileDataToSend.primaryLanguageId,
-        'primaryLanguageId type': typeof profileDataToSend.primaryLanguageId
+        'countryCode type': typeof profileDataToSend.countryCode
       });
       updatePromises.push(updateProfileMutation.mutateAsync(profileDataToSend));
 
@@ -973,48 +975,46 @@ export function EnhancedProfileEdit({ onClose }: EnhancedProfileEditProps = {}) 
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="primaryLanguageId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Idioma Principal</FormLabel>
-                          <Select 
-                            onValueChange={(val) => field.onChange(val ? parseInt(val) : null)} 
-                            value={field.value ? field.value.toString() : undefined}
-                            defaultValue={field.value ? field.value.toString() : undefined}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona un idioma" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {typedLanguages.map((lang: any) => (
-                                <SelectItem key={lang.id} value={lang.id.toString()}>
-                                  {lang.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div>
+                      <Label>Idioma Principal</Label>
+                      <Select
+                        value={primaryLanguageId?.toString() || ""}
+                        onValueChange={(val) => {
+                          const id = val ? parseInt(val) : null;
+                          setPrimaryLanguageId(id);
+                          if (id !== null && !selectedLanguages.includes(id)) {
+                            setSelectedLanguages(prev => [...prev, id]);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Selecciona un idioma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {typedLanguages.map((lang: any) => (
+                            <SelectItem key={lang.id} value={lang.id.toString()}>
+                              {lang.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div>
                     <Label>Idiomas Hablados</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto mt-2">
-                      {typedLanguages.map((language: any) => (
-                        <div key={language.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`lang-${language.id}`}
-                            checked={selectedLanguages.includes(language.id)}
-                            onCheckedChange={() => handleLanguageToggle(language.id)}
-                          />
-                          <Label htmlFor={`lang-${language.id}`}>{language.name}</Label>
-                        </div>
+                      {typedLanguages
+                        .filter((language: any) => language.id !== primaryLanguageId)
+                        .map((language: any) => (
+                          <div key={language.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`lang-${language.id}`}
+                              checked={selectedLanguages.includes(language.id)}
+                              onCheckedChange={() => handleLanguageToggle(language.id)}
+                            />
+                            <Label htmlFor={`lang-${language.id}`}>{language.name}</Label>
+                          </div>
                       ))}
                     </div>
                   </div>
