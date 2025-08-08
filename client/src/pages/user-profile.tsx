@@ -339,9 +339,9 @@ export default function UserProfile() {
                           <Input
                             value={newTopic}
                             onChange={(e) => setNewTopic(e.target.value)}
-                            placeholder="Agregar nuevo tema..."
+                            placeholder="Agregar nuevo tema (ej: Estrategias de marketing digital para e-commerce...)"
                             className="flex-1 text-xs"
-                            maxLength={50}
+                            maxLength={200}
                             onKeyPress={(e) => e.key === 'Enter' && addTopic()}
                           />
                           <Button 
