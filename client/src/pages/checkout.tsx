@@ -12,6 +12,7 @@ import { Clock, Calendar, User, DollarSign, Check, ArrowLeft } from 'lucide-reac
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import { useBookingSessionStore } from '@/stores/bookingSessionStore';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -126,11 +127,13 @@ export default function Checkout() {
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState('');
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const { session, clearSession } = useBookingSessionStore();
 
   // Get booking session data
-  const { data: sessionData, isLoading } = useQuery({
+  const { data: sessionData, isLoading, error } = useQuery({
     queryKey: ['/api/booking-session', params?.sessionId],
     enabled: !!params?.sessionId,
+    retry: false,
   });
 
   // Create payment intent when session data is loaded
@@ -159,6 +162,25 @@ export default function Checkout() {
 
     createPaymentIntent();
   }, [sessionData, params?.sessionId]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-lg">La sesión de reserva ha expirado o no existe.</p>
+          <Button
+            onClick={() => {
+              const hostId = session?.bookingData.hostId;
+              clearSession();
+              setLocation(hostId ? `/host/${hostId}` : '/hosts');
+            }}
+          >
+            Reiniciar reserva
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !clientSecret || !bookingData) {
     return (

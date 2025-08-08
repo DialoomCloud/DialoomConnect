@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
+import { useBookingSessionStore } from "@/stores/bookingSessionStore";
 
 interface HostDetails {
   id: string;
@@ -60,7 +61,7 @@ interface BookingFlowDirectProps {
   };
 }
 
-export function BookingFlowDirect({ 
+export function BookingFlowDirect({
   hostId, 
   hostDetails, 
   pricingOptions, 
@@ -70,6 +71,7 @@ export function BookingFlowDirect({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { setSession } = useBookingSessionStore();
   
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -95,11 +97,17 @@ export function BookingFlowDirect({
       const response = await apiRequest('POST', '/api/booking-session', bookingData);
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      // Save booking session data to shared store
+      setSession({
+        sessionId: data.sessionId,
+        expiresAt: data.expiresAt,
+        bookingData: variables,
+      });
       // Redirect to checkout with session ID
       setLocation(`/checkout/${data.sessionId}`);
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "Error",
         description: "Error al crear la sesión de reserva. Inténtalo de nuevo.",
