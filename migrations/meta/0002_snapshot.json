@@ -1,6 +1,4 @@
 {
-  "id": "0ceedcde-1bdf-4fbb-9094-c426621bdecc",
-  "prevId": "05abe723-4fdd-442a-8d0c-b8c4170119c4",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2574,12 +2572,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
-        },
-        "profile_data": {
-          "name": "profile_data",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -3058,4 +3050,3 @@
     "schemas": {},
     "tables": {}
   }
-}

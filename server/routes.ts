@@ -7,7 +7,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { promises as fs } from "fs";
-import { insertMediaContentSchema, updateUserProfileSchema } from "@shared/schema";
+import { insertMediaContentSchema, updateUserProfileSchema, type InsertBooking } from "@shared/schema";
 import { z } from "zod";
 import { storageBucket } from "./storage-bucket";
 import { replitStorage, ReplitObjectStorage } from "./object-storage";
@@ -2368,7 +2368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/bookings', isAuthenticated, async (req: any, res) => {
     try {
       const guestId = req.userId;
-      const { hostId, scheduledDate, startTime, duration, price, services, notes } = req.body;
+      const { hostId, scheduledDate, startTime, duration, price, notes, callLanguage } = req.body;
       // Ensure host is verified before allowing bookings
       const host = await storage.getUser(hostId);
       if (!host || host.hostVerificationStatus !== 'verified') {
@@ -2376,7 +2376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create booking
-      const booking = await storage.createBooking({
+      const bookingData: InsertBooking = {
         hostId,
         guestId,
         scheduledDate,
@@ -2385,8 +2385,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price,
         status: 'pending',
         notes,
-        services: services ? JSON.stringify(services) : null,
-      });
+        callLanguage,
+      };
+
+      const booking = await storage.createBooking(bookingData);
 
       // Get guest details
       const guest = await storage.getUser(guestId);
