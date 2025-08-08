@@ -258,7 +258,7 @@ The project uses a monorepo architecture with clear separation of concerns:
 - Stripe account for payments
 - Agora.io account for video calls
 - OpenAI API key for AI features
-- Resend account for emails
+- Resend account for emails (domain verification required)
 
 ### Environment Variables
 Create a `.env` file with the following variables:
@@ -290,6 +290,8 @@ RESEND_FROM_EMAIL=noreply@dialoom.com
 PUBLIC_OBJECT_SEARCH_PATHS=/bucket/public
 PRIVATE_OBJECT_DIR=/bucket/private
 ```
+
+Before using the email service, verify your domain in the Resend dashboard.
 
 ### Installation Steps
 
