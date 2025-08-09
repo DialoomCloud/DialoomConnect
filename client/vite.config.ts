@@ -23,6 +23,7 @@ export default defineConfig({
       "@assets": path.resolve(import.meta.dirname, "..", "attached_assets"),
     },
   },
+
   build: {
     outDir: path.resolve(import.meta.dirname, "..", "dist/public"),
     emptyOutDir: true,
@@ -37,4 +38,3 @@ export default defineConfig({
     "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
   },
 });
-
