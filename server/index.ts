@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -7,34 +6,110 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import filesRoutes from './routes/files';
 import { errorHandler } from "./middleware/errorHandler";
-import { env } from "./utils/env";
+import { env, features } from "./utils/env";
+import { ensureArrayResponse } from "./utils/array-guards";
 
 const app = express();
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:", "ws:", "wss:"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
-      fontSrc: ["'self'", "https:", "http:", "data:"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "https:", "http:"],
-      frameSrc: ["'self'", "https:", "http:"],
-    },
-  },
-}));
+// CSP configuration - relaxed in development to prevent HMR blocking
+const cspConfig = env.NODE_ENV === 'development' 
+  ? {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:", "ws:", "wss:", "blob:"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+          imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
+          connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
+          fontSrc: ["'self'", "https:", "http:", "data:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'", "https:", "http:", "blob:"],
+          frameSrc: ["'self'", "https:", "http:"],
+        },
+      },
+    }
+  : {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "https:"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "https:"],
+          fontSrc: ["'self'", "https:", "data:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'", "https:"],
+          frameSrc: ["'self'", "https:"],
+        },
+      },
+    };
+
+app.use(helmet(cspConfig));
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: false }));
 
+// Health checks
 app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
-// Unified file serving routes (antes de otros middlewares)
+// Readiness check - verifies critical services
+app.get("/readyz", async (_req, res) => {
+  const checks = {
+    database: false,
+    storage: false,
+    features,
+  };
+
+  try {
+    // Check database connection
+    const { db } = await import('./storage');
+    await db.execute('SELECT 1');
+    checks.database = true;
+  } catch (error) {
+    console.error('Database health check failed:', error);
+  }
+
+  try {
+    // Check storage accessibility
+    if (features.objectStorage) {
+      // Basic object storage check would go here
+      checks.storage = true;
+    } else {
+      // Check local filesystem
+      const fs = await import('fs/promises');
+      await fs.access('./uploads');
+      checks.storage = true;
+    }
+  } catch (error) {
+    console.error('Storage health check failed:', error);
+  }
+
+  const isReady = checks.database && checks.storage;
+  
+  res.status(isReady ? 200 : 503).json({
+    ready: isReady,
+    checks,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Static files first (uploads) with proper CORS
+app.use('/uploads', express.static('uploads', {
+  setHeaders: (res) => {
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cache-Control': 'public, max-age=86400',
+    });
+  },
+}));
+
+// Unified file serving routes
 app.use('/api', filesRoutes);
+
+// Array response guardrails for list endpoints
+app.use('/api', ensureArrayResponse);
 
 app.use((req, res, next) => {
   const start = Date.now();

@@ -1,0 +1,103 @@
+¡Perfecto! Con lo que hemos vivido estos días y mirando la rama main del repo (estructura client/ + server/ con Vite/React delante y Node detrás), te dejo un diagnóstico claro de por qué aparecen fallos recurrentes, dónde suele morder Replit y qué medidas te estabilizan la app a corto y medio plazo.  ￼
+
+Por qué reaparecen los errores (patrones que he visto)
+	1.	Config y entorno frágiles (ENV + arranque)
+	•	Variables críticas ausentes o tardías (ej. correo, Stripe, storage) → el server cae o ciertas rutas “fallan en silencio”.
+	•	Mezcla ESM/CJS en dev tools (ej. ts-node-dev vs ESM) y rutas con __dirname en ESM → arranques intermitentes, HMR que “rompe” y pantallas en blanco.
+	•	CSP demasiado estricta en desarrollo → bloquea scripts de Vite y te muestra página blanca con overlay.
+	2.	Modelo de datos / migraciones desalineadas
+	•	Campos que el código espera pero la DB no tiene (ejemplo típico: is_primary en idiomas) → endpoints devuelven algo que no es array y revientan componentes (hosts?.map).
+	•	Cambios manuales en DB sin migración reproducible → en local “va”, en despliegue no.
+	3.	Estado y reactividad en frontend
+	•	Mutaciones asíncronas en bucle (forEach + llamadas “en paralelo”) sin await → UI no refleja el cambio hasta que recargas.
+	•	Falta de invalidaciones de React Query después de mutar → estado obsoleto.
+	•	Componentes calendario mal configurados (props en conflicto) → días mal renderizados o “números de semana”.
+	4.	Rutas, estáticos y CORS
+	•	Construcción inconsistente de URLs de imágenes (/storage vs /uploads) y orden del middleware express.static → miniaturas que a veces cargan y a veces no.
+	•	Cabeceras CORS/ privacy en recursos estáticos aplicadas tarde o de forma contradictoria → bloqueos intermitentes.
+	5.	Navegación y roles
+	•	Lógica de menú acoplada a texto/paths y no a un “router de roles” único → cambios menores rompen: menús duplicados, enlaces muertos, o el Admin desaparece cuando cambias de rol.
+	•	Backend no permitía registered en el switch de roles → UI mostraba la opción pero el server la rechazaba.
+	6.	Dependencias/código “faltantes”
+	•	Imports que “parecen obvios” pero no están (p.ej. loadStripe) y alias de Vite sin resolver → error de overlay que bloquea todo hasta tocar el archivo.
+	7.	Traducción/AI y efectos
+	•	Hooks que disparan peticiones 2–3 veces por render, sin guardas de longitud ni debounce → cascada de errores y “plugin error” al abrir perfiles.
+
+Dónde suele “pifiar” Replit (y cómo blindarlo)
+	•	FS efímero y orden de arranque: si el server expone estáticos después de otros middlewares, o se reinicia el watcher, puedes perder rutas a /uploads. Declara express.static('uploads') muy arriba y loguea 404 de estáticos.
+	•	HMR overlay: el overlay de Vite (el modal de error) corta toda la UI por warnings triviales. En dev, permite overlay pero añade fallback (ej. abrir consola y cerrar overlay automáticamente tras X s en errores no críticos).
+	•	Puertos y proxys: en Replit el frontend puede intentar hablar a :80 o a host “spock…replit…” mientras tu API vive en :5000. Deja el proxy en vite.config.ts y centraliza baseURL en fetch.
+	•	Node + ESM: usa tsx para dev en vez de ts-node-dev y en Vite calcula rutas con fileURLToPath(import.meta.url) (no __dirname).
+	•	“Always on” y doble watcher: dos watchers concurrentes pueden pelear por los puertos. Evita lanzar Vite y server duplicados.
+
+Qué ya quedó mitigado (y por qué funcionó)
+	•	ENV de email: añadir RESEND_FROM_EMAIL y hacer “no fatal” la falta de ENV → el server no cae si falta correo; sólo desactiva envíos.
+	•	ESM y Vite paths: mover a tsx y usar fileURLToPath → sin errores de módulo ni de rutas en dev.
+	•	CSP dev relajada: permite scripts/WS de Vite → adiós páginas en blanco por CSP.
+	•	Stripe import: importar loadStripe explícitamente → fuera el overlay de “no definido”.
+	•	registered en backend: incluirlo en la whitelist → el cambio de rol ya no falla.
+	•	Mutaciones en servicios extra: pasar a mutateAsync + for...of + invalidación → la UI refleja cambios sin recarga.
+	•	Calendarios: quitar props conflictivas y showWeekNumber → render de días correcto.
+
+Estructuralmente, la main actual es un monorepo client/ + server/, con lo que ya sabes: si se toca navegación, pricing o calendario sin test/CI, regresiones reaparecen.  ￼
+
+Plan de estabilización (en main, sin reescribir todo)
+
+1) Rama protegida y flujo PR
+	•	Protege main y crea develop. Exige PR con:
+	•	pnpm -w typecheck (TS estricto, --noEmit)
+	•	pnpm -w lint (con reglas que marquen any implícitos y forEach(async))
+	•	pnpm -w build (Vite + compilación server)
+	•	Prueba de migraciones: drizzle/prisma migrate diff --exit-code o script equivalente que falle si schema ↔ DB divergen.
+	•	Smoke E2E (Playwright): 4 checks:
+a) explorar hosts (cards cargan + idiomas extra),
+b) abrir perfil (no “plugin error”),
+c) activar/desactivar “Screen sharing / Recording” y ver reflejo inmediato,
+d) calendario público muestra “7 agosto = jueves”.
+
+2) Config saneada
+	•	env.ts con Zod: valida RESEND_*, Stripe, storage, etc. Si falta algo loggea warning y desactiva feature (no crashea).
+	•	Unifica vite.config.ts (proxy a :5000, fileURLToPath), server con tsx, y CSP distinta para dev/prod.
+
+3) Datos y migraciones
+	•	Auditoría de columnas “sospechosas” (ej. is_primary). Todo cambio a schema → migración reproducible.
+	•	Script “guardrail”: si un endpoint clave devuelve !Array.isArray(res), log de error + 500 coherente (no valores “undefined” que rompan UI).
+
+4) React Query y mutaciones
+	•	Patrón único de mutación: await mutateAsync + invalidateQueries() + optimistic update donde aplique.
+	•	Prohíbe forEach(async) con ESLint rule; usa for...of.
+
+5) Rutas estáticas e imágenes
+	•	Una sola fuente de verdad para construir URLs de avatar (/uploads/users/:id/public/...).
+	•	express.static('uploads') al principio, CORS + Cross-Origin-Resource-Policy: cross-origin sólo ahí. Añade prueba que haga HEAD a 2 avatares.
+
+6) Calendario y zona horaria
+	•	Centraliza locale y weekStartsOn en un módulo común.
+	•	Test de snapshot para agosto 2025 con date-fns-tz y la locale es para que no vuelva el “1/2/3 de semana”.
+
+7) Navegación por roles
+	•	Deriva el menú de un mapa de permisos (role → items), no if-else sueltos.
+	•	Test unitario: host ve “Dashboard”, user no ve “Admin”, admin ve Admin + Dashboard.
+
+8) Observabilidad
+	•	Sentry (o similar) para capturar: errores de overlay, fetch fallidos a /api/hosts, CSP blocks, 5xx del server.
+	•	healthz ya existe; añade /readyz que compruebe acceso a DB y storage.
+
+Checklist rápido (lo puedes hacer hoy)
+	•	Proteger main y exigir checks (typecheck, lint, build, migraciones, smoke E2E).
+	•	Cambiar ts-node-dev → tsx en scripts de dev del server.
+	•	vite.config.ts: proxy a API, fileURLToPath(import.meta.url), y overlay configurable.
+	•	env.ts con Zod + fall‑backs no fatales (e-mail, storage).
+	•	Unificar rutas /uploads + middleware estático al inicio del server.
+	•	Reglas ESLint: bloquear any implícito y forEach(async).
+	•	4 pruebas Playwright (host list, perfil, toggles, calendario).
+	•	Test unitario de roles para navegación.
+
+Si quieres, preparo un PR a main con:
+	•	env.ts (Zod),
+	•	cambios de ts-node-dev → tsx,
+	•	vite.config.ts saneado,
+	•	una suite mínima de smoke E2E y un test de roles,
+	•	y un script de verificación de migraciones en CI.
+
+¿Te lo monto así, apuntando a main, y dejamos protegida la rama para que a partir de ahí no vuelva a romperse lo ya arreglado?

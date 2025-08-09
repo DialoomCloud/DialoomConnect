@@ -1,57 +1,64 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
-import { fileURLToPath } from "url";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
-  ],
-  root: path.resolve(__dirname),
+  plugins: [react()],
+  
+  // Development server configuration
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': 'http://localhost:5000',
+      '/storage': 'http://localhost:5000',
+    },
+    // Configure HMR for stability
+    hmr: {
+      overlay: true,
+    },
+  },
+
+  // Build configuration
+  build: {
+    outDir: '../dist/client',
+    emptyOutDir: true,
+    sourcemap: process.env.NODE_ENV === 'development',
+  },
+
+  // Path resolution
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
-      "@shared": path.resolve(__dirname, "..", "shared"),
-      "@assets": path.resolve(__dirname, "..", "attached_assets"),
+      '@': resolve(__dirname, './src'),
+      '@shared': resolve(__dirname, '../shared'),
+      '@assets': resolve(__dirname, '../attached_assets'),
     },
   },
 
-  build: {
-    outDir: path.resolve(__dirname, "..", "dist/public"),
-    emptyOutDir: true,
+  // Optimized dependencies
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@tanstack/react-query',
+      'wouter',
+      'lucide-react',
+      '@stripe/stripe-js',
+    ],
   },
-  server: {
-    hmr: {
-      overlay: false, // Disable HMR overlay to prevent UI blocking
-    },
-    proxy: {
-      "/api": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
+
+  // Environment variables prefix
+  envPrefix: 'VITE_',
+
+  // Global CSS variables
+  css: {
+    preprocessorOptions: {
+      css: {
+        charset: false,
       },
-      "/storage": {
-        target: "http://localhost:5000", 
-        changeOrigin: true,
-      }
     },
-    fs: {
-      strict: true,
-      deny: ["**/.*"],
-    },
-  },
-  define: {
-    "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
   },
 });
