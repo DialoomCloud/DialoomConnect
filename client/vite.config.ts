@@ -9,21 +9,30 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 export default defineConfig({
   plugins: [react()],
   
+  // Path resolution
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL('./src', import.meta.url)),
+      "@assets": fileURLToPath(new URL('../attached_assets', import.meta.url)),
+    },
+  },
+  
   // Development server configuration
   server: {
     port: 5173,
     host: '0.0.0.0',
+    strictPort: true,
     proxy: {
       '/api': 'http://localhost:5000',
       '/storage': 'http://localhost:5000',
       '/uploads': 'http://localhost:5000',
     },
-    // Configure HMR for stability
     hmr: {
-      overlay: process.env.VITE_HMR_OVERLAY !== 'false',
+      overlay: false,
     },
     fs: {
       strict: false,
+      allow: ['..', '../..'],
     },
   },
 

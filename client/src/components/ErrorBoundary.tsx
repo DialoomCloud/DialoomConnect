@@ -1,42 +1,40 @@
-import React from "react";
+import React from 'react';
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
 }
 
-interface ErrorBoundaryState {
-  hasError: boolean;
-}
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-export class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
-  state: ErrorBoundaryState = { hasError: false };
-
-  static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("ErrorBoundary caught an error", error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
-
-  handleReload = () => {
-    window.location.reload();
-  };
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-          <h1 className="text-2xl font-bold mb-4">Algo salió mal.</h1>
-          <button
-            onClick={this.handleReload}
-            className="px-4 py-2 bg-[hsl(188,100%,38%)] text-white rounded"
-          >
-            Reintentar
-          </button>
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <h2>Something went wrong.</h2>
+          <p>Please refresh the page or contact support if the problem persists.</p>
+          <details style={{ marginTop: '20px' }}>
+            <summary>Error details</summary>
+            <pre style={{ textAlign: 'left', fontSize: '12px' }}>
+              {this.state.error?.toString()}
+            </pre>
+          </details>
         </div>
       );
     }
@@ -46,4 +44,3 @@ export class ErrorBoundary extends React.Component<
 }
 
 export default ErrorBoundary;
-

@@ -1,0 +1,113 @@
+¡Perfecto! Gracias por las respuestas 🙌
+(1) todas, (2) con texto, (3) realista, (4) personas reales, (5) sin restricciones extra, (6) creativo por mi parte.
+
+No tengo el generador de imágenes activo aquí; si quieres que **las cree al momento**, cambia a **GPT‑4o** y me dices “genéralas”. Mientras, te dejo **prompts listos para pegar en DALL·E** (en inglés para mayor fidelidad) + el texto que debe aparecer en español. He pensado un **pack de 6 piezas** que cubre web, móvil y redes.
+
+---
+
+# 1) Hero web (16:9)
+
+**Uso:** portada / landing
+**Texto en la imagen:**
+Título: *Habla con expertos por videollamada*
+Subtítulo: *Reserva en 2 clics. Idioma detectado: Español.*
+CTA: *Explorar hosts*
+
+**Prompt (pégalo en DALL·E):**
+“Photorealistic scene of a modern home office during daytime, a smiling professional on a laptop video call with a user (split‑screen style on the laptop), soft natural light, warm and clean decor, tasteful plants, shallow depth of field, editorial photography look, diverse representation. Subtle UI hints on screen (no brand logos, no tiny UI text), clear space at top-left for headline and CTA. Color accents in teal/turquoise and off‑white. Hyper‑real detail, no watermarks, no text artifacts.”
+
+---
+
+# 2) Tarjeta de host (1:1)
+
+**Uso:** destacados / social post
+**Texto en la imagen:**
+Nombre: *Host experto*
+Chip: *Idiomas: ES · EN*
+Valoración: *★ 4,9 (12 reseñas)*
+
+**Prompt:**
+“Photorealistic portrait of an approachable professional host in a bright, neutral studio setting; friendly eye contact, soft gradient background, modern casual outfit. Add minimal UI chips near the bottom showing ‘Languages: ES · EN’ and a rating ‘★ 4.9 (12 reviews)’ rendered cleanly and legibly. Soft shadows, magazine cover lighting, high detail, no logos or watermarks.”
+
+---
+
+# 3) Banner móvil ‘Upcoming Call’ (9:16)
+
+**Uso:** historia / anuncio vertical / mockup del banner de cuenta atrás
+**Texto:**
+Etiqueta: *Próxima videollamada*
+Cuenta atrás: *00:14:22*
+Botón: *Unirse ahora*
+
+**Prompt:**
+“Photorealistic smartphone vertical composition showing an elegant notification/banner about an upcoming video call. Big, clean countdown timer ‘00:14:22’, a clear primary button ‘Unirse ahora’, and small label ‘Próxima videollamada’. Minimal, high-contrast UI on blurred background of a person at a desk with laptop, natural light, shallow depth of field. Crisp typography, accessible color contrast, no brand logos.”
+
+---
+
+# 4) Social carousel (4 imágenes 1080×1080)
+
+**Uso:** carrusel Instagram/LinkedIn
+**Textos sugeridos por slide:**
+
+1. *Encuentra a tu experto ideal*
+2. *Filtra por idioma, propósito y precio*
+3. *Agenda en tu horario*
+4. *Conéctate por videollamada en 2 clics*
+
+**Prompt (pide 4 variaciones, una por slide):**
+“Photorealistic square visuals forming a coherent carousel about booking experts via videocall:
+– Slide 1: diverse people using laptops, discovery vibe, clean headline area.
+– Slide 2: abstract but realistic UI filters (language, purpose, price) as large, simple chips—no tiny text.
+– Slide 3: calendar close‑up with human hands selecting a time; soft natural light.
+– Slide 4: friendly videocall moment, confident smiles, modern workspace.
+Keep a consistent aesthetic: bright, natural lighting, minimal backgrounds, teal/turquoise accents, high detail, no logos or watermarks. Space reserved for Spanish headlines.”
+
+---
+
+# 5) Búsqueda de hosts (16:9)
+
+**Uso:** header de la página de búsqueda / hero secundario
+**Texto:**
+Título: *Explora hosts y filtra por lo que necesitas*
+Puntos: *Idioma · Propósito · Precio*
+
+**Prompt:**
+“Photorealistic wide composition of a modern workspace viewed from above: open laptop with a blurred host search UI (no brand, no tiny text), tidy desk items, coffee cup, soft daylight. Large empty area at left for headline and three bullet chips (‘Idioma · Propósito · Precio’). Editorial photograph look, teal accent items (pen, sticky note), high realism, no watermarks.”
+
+---
+
+# 6) Escena lifestyle ‘Videollamada en progreso’ (3:2)
+
+**Uso:** blog / secciones internas / PR
+**Texto (sutil, si lo quieres en imagen):**
+Etiqueta pequeña: *Sesión en progreso*
+
+**Prompt:**
+“Photorealistic lifestyle photo: a real, diverse professional engaged in a videocall on a laptop, natural home office setting, warm afternoon light, shallow depth of field, candid smile. Subtle sticker/chip on screen corner reading ‘Sesión en progreso’ in Spanish, clean and legible. Editorial quality, no logos, no watermarks.”
+
+---
+
+## Reglas generales para todos los prompts
+
+* **Estilo:** fotográfico realista, luz natural, personas reales y diversas, sin logos ni marcas ajenas.
+* **Tipografía en imagen:** usa textos grandes y pocos (DALL·E suele fallar con texto pequeño).
+* **Evita:** mucho micro‑texto, interfaces hiper‑detalladas, marcas registradas.
+* **Color:** claros + acento turquesa (puedes afinar luego en Figma/Canva).
+
+## Tamaños recomendados de exportación
+
+* Hero web: **1920×1080**
+* Tarjeta host: **1080×1080**
+* Banner móvil: **1080×1920**
+* Carrusel: **4× 1080×1080**
+* Búsqueda hosts (hero secundario): **1920×1080**
+* Lifestyle: **1800×1200**
+
+---
+
+### ¿Siguiente paso?
+
+1. Si quieres que **yo las genere** → cámbiate a **GPT‑4o** y dime “genéralas tal cual”.
+2. Si prefieres hacerlo tú → pega cada prompt en DALL·E y me pasas las previsualizaciones; te doy feedback y, si hace falta, iteramos con variantes (más claros/contraste/pieles, etc.).
+
+¿Quieres que añada también una **versión sin texto** de cada pieza para colocar tipografía manualmente después?
