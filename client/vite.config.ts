@@ -12,13 +12,18 @@ export default defineConfig({
   // Development server configuration
   server: {
     port: 5173,
+    host: '0.0.0.0',
     proxy: {
       '/api': 'http://localhost:5000',
       '/storage': 'http://localhost:5000',
+      '/uploads': 'http://localhost:5000',
     },
     // Configure HMR for stability
     hmr: {
-      overlay: true,
+      overlay: process.env.VITE_HMR_OVERLAY !== 'false',
+    },
+    fs: {
+      strict: false,
     },
   },
 
