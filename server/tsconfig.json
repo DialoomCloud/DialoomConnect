@@ -1,3 +1,4 @@
+// Configuration for compiling server code to JavaScript
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
