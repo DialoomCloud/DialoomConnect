@@ -217,6 +217,7 @@ export default function HostSearch() {
   const [gridCols, setGridCols] = useState(3); // Default to 3 columns
   const [selectedHost, setSelectedHost] = useState<UserType | null>(null);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   // Filter states from store
   const {
@@ -458,9 +459,29 @@ export default function HostSearch() {
           )}
         </div>
 
+        {/* Mobile Filter Toggle Button */}
+        <div className="md:hidden mb-4">
+          <Button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            variant="outline"
+            className="w-full flex items-center justify-between"
+          >
+            <span className="flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              {t('hosts.filters')}
+              {(selectedCategories.length > 0 || selectedSkills.length > 0 || selectedLanguages.length > 0 || selectedPurposes.length > 0 || minPrice > 0 || maxPrice < 200) && (
+                <Badge className="ml-2 bg-[hsl(188,100%,38%)] text-white">
+                  {selectedCategories.length + selectedSkills.length + selectedLanguages.length + selectedPurposes.length + (minPrice > 0 ? 1 : 0) + (maxPrice < 200 ? 1 : 0)}
+                </Badge>
+              )}
+            </span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} />
+          </Button>
+        </div>
+
         {/* Filters Section */}
         <TooltipProvider>
-        <div className="mb-8 sticky top-0 z-20 bg-[hsl(220,9%,98%)] sm:static">
+        <div className={`mb-8 md:block ${showMobileFilters ? 'block' : 'hidden md:block'}`}>
           <div className="flex justify-end mb-4">
             {(selectedCategories.length > 0 || selectedSkills.length > 0 || selectedLanguages.length > 0 || selectedPurposes.length > 0 || minPrice > 0 || maxPrice < 200) && (
               <Button
