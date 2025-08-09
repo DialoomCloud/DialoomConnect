@@ -20,7 +20,7 @@ const envSchema = z.object({
   RESEND_FROM_EMAIL: z.string().optional(),
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
-  CLIENT_ORIGIN: z.string().optional(),
+  CLIENT_ORIGIN: z.string().default("http://localhost:5173"),
   REPLIT_DOMAINS: z.string().optional(),
   APP_URL: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),

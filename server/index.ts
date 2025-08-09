@@ -6,13 +6,12 @@ import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { errorHandler } from "./middleware/errorHandler";
-
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN;
+import { env } from "./utils/env";
 
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: false }));
