@@ -1,7 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import debug from "debug";
-
-const log = debug("server:boot");
+const log = (...args: any[]) => console.debug("server:boot", ...args);
 
 export function errorHandler(
   err: any,
