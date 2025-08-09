@@ -70,6 +70,8 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@tudomain.com
 ```
 
+> Si no configuras estas variables, el envío de correos quedará deshabilitado hasta que las añadas.
+
 ### Almacenamiento de Objetos (Replit Object Storage)
 ```env
 # Rutas de búsqueda para objetos públicos (✅ Configurado)

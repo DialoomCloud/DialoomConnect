@@ -291,7 +291,9 @@ PUBLIC_OBJECT_SEARCH_PATHS=/bucket/public
 PRIVATE_OBJECT_DIR=/bucket/private
 ```
 
-Before using the email service, verify your domain in the Resend dashboard.
+Add both `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to your deployment secrets.
+Verify your domain in the Resend dashboard before deploying.
+If these variables are absent, the email service will be disabled but the application will still start.
 
 ### Installation Steps
 
