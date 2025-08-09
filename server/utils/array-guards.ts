@@ -60,13 +60,13 @@ export function validateListResponse<T>(
 }
 
 /**
- * Express middleware to ensure endpoints always return arrays
+ * Express middleware to ensure endpoints always return arrays with proper field mapping
  */
 export function ensureArrayResponse(req: any, res: any, next: any) {
   const originalJson = res.json;
   
   res.json = function(data: any) {
-    // For list endpoints, ensure we return arrays
+    // For list endpoints, ensure we return arrays and apply field mapping
     if (req.path.includes('/api/hosts') || 
         req.path.includes('/api/users') || 
         req.path.includes('/api/categories') ||
@@ -76,6 +76,16 @@ export function ensureArrayResponse(req: any, res: any, next: any) {
       if (!Array.isArray(data)) {
         console.error(`❌ List endpoint ${req.path} returned non-array:`, typeof data);
         return originalJson.call(this, []);
+      }
+      
+      // Apply DB to API field mapping  
+      try {
+        const { mapArrayDbToApi } = await import('../../shared/db-mappers.js');
+        const mappedData = mapArrayDbToApi(data);
+        return originalJson.call(this, mappedData);
+      } catch {
+        // Fallback if mapping fails
+        return originalJson.call(this, data);
       }
     }
     

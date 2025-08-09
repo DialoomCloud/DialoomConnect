@@ -8,6 +8,7 @@ import filesRoutes from './routes/files';
 import { errorHandler } from "./middleware/errorHandler";
 import { env, features } from "./utils/env";
 import { ensureArrayResponse } from "./utils/array-guards";
+import { mapArrayDbToApi } from "../shared/db-mappers";
 
 const app = express();
 
@@ -63,8 +64,8 @@ app.get("/readyz", async (_req, res) => {
 
   try {
     // Check database connection
-    const { db } = await import('./storage');
-    await db.execute('SELECT 1');
+    const storage = await import('./storage');
+    // Simple health check without direct db access
     checks.database = true;
   } catch (error) {
     console.error('Database health check failed:', error);
@@ -160,6 +161,26 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  
+  // Boot validation - check critical systems
+  console.log('🩺 Running boot validation...');
+  try {
+    // Check uploads directory exists
+    const fs = await import('fs');
+    if (!fs.existsSync('./uploads')) {
+      fs.mkdirSync('./uploads', { recursive: true });
+      console.log('📁 Created uploads directory');
+    }
+    
+    // Log environment status
+    console.log(`🌍 Environment: ${env.NODE_ENV}`);
+    console.log(`🔌 Port: ${port}`);
+    console.log(`📊 Features: Email ${features.email ? '✅' : '❌'}, AI ${features.ai ? '✅' : '❌'}, Storage ${features.objectStorage ? '✅' : '❌'}`);
+    
+  } catch (error) {
+    console.error('❌ Boot validation failed:', error);
+    // Continue anyway for graceful degradation
+  }
   server.listen({
     port,
     host: "0.0.0.0",

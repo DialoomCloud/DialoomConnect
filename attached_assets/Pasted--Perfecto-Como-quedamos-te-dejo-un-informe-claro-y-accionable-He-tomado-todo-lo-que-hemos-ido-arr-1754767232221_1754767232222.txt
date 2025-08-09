@@ -1,0 +1,205 @@
+¡Perfecto! Como quedamos, te dejo un informe claro y accionable. He tomado todo lo que hemos ido arreglando estos días y lo que suele “reaparecer” para identificar **por qué se os rompen cosas de forma recurrente** y **qué parte es culpa de config/código** y **qué parte os la lía Replit**. Al final te dejo un plan de blindaje y un checklist para validar que la rama `main` quede estable.
+
+# Causas raíz (por qué vuelven los fallos)
+
+1. **ESM vs CJS en el servidor**
+
+   * Mezcla de `ts-node-dev` con módulos ES provoca errores tipo `__dirname is not defined`, imports de `debug` o `helmet` que fallan y arranques intermitentes.
+   * Solución estable: usar **`tsx`** (o compilar con `tsc` y ejecutar JS) y emular `__dirname` así:
+
+     ```ts
+     // vite.config.ts o cualquier ESM
+     import { fileURLToPath } from "url";
+     import path from "path";
+     const __dirname = path.dirname(fileURLToPath(import.meta.url));
+     ```
+
+2. **CSP/Helmet muy restrictivo en desarrollo**
+
+   * Bloquea scripts inline y WebSocket de Vite → pantallas en blanco, HMR roto.
+   * Arreglo: relajar CSP **solo en dev** (permitir `ws:`, `unsafe-eval` y `unsafe-inline` para Vite). En prod, CSP estricta.
+
+3. **Variables de entorno faltantes → crash en arranque**
+
+   * Ej.: `RESEND_FROM_EMAIL`. Si falta, el servidor peta.
+   * Arreglo: **fallbacks seguros** (desactivar email si no hay creds) + **health gate** en arranque que loguee claro qué falta sin matar el proceso.
+
+4. **Desfase esquema DB ↔ código (drift de migraciones)**
+
+   * Ej.: columna `is_primary` en `user_languages` no existe → `/api/hosts` devuelve algo no iterable → `hosts?.map is not a function`.
+   * Arreglo: disciplina de migraciones (una fuente de verdad) y **chequeo de esquema al boot** (si falta columna, avisar y modo degradado en endpoints).
+
+5. **Snake\_case ↔ camelCase**
+
+   * Campos tipo `first_name` vs `firstName`, `profile_image_url` vs `profileImageUrl` → serialización útil hoy, rotura mañana.
+   * Arreglo: **capa de mapeo** consistente (Zod/Valibot o mappers) en la salida de la DB antes de devolver al front.
+
+6. **React Query sin invalidación/actualización correcta**
+
+   * `mutate` sin `await` (o `forEach(async ...)`) → condiciones de carrera y estados obsoletos; UI parece que no cambia hasta refresh.
+   * Arreglo: usar `await mutateAsync`, secuenciar con `for...of`, e **invalidar/actualizar caché** (`queryClient.setQueryData` + `invalidateQueries`).
+
+7. **Rutas estáticas y CORS para imágenes de perfil**
+
+   * Orden del middleware o prefijos mal ( `/uploads` vs `/storage` ) + cabeceras CORS → miniaturas rotas.
+   * Arreglo: `app.use('/uploads', express.static('uploads'))` **antes** de rutas, y cabeceras mínimas (`Cross-Origin-Resource-Policy: cross-origin`) si las usas embebidas.
+
+8. **Calendario (react-day-picker v8) + props de otra versión**
+
+   * Props antiguas/duplicadas (`ISOWeek`, `fixedWeeks`) → días “1, 2” por semana, locales raros.
+   * Arreglo: v8 “limpio”: `showWeekNumber={false}`, `locale={es}`, y pintar con `format(day, 'd', { locale: es })`. Quitar props no soportadas.
+
+9. **Stripe: import ausente / provider mal montado**
+
+   * `loadStripe` no importado o `VITE_STRIPE_PUBLIC_KEY` sin setear → checkout crashea.
+   * Arreglo: `import { loadStripe } from '@stripe/stripe-js'` y validar key en client.
+
+10. **Traducción inteligente: llamada API mal formada**
+
+* Doble `JSON.stringify` o enviar request prematuramente → “plugin error” al abrir perfiles.
+* Arreglo: usar `fetch` simple con `headers` + `body` JSON, y **no llamar** si `description` < 5 chars o falta `hostId`.
+
+11. **Overlay de errores intrusivo**
+
+* El plugin de overlay de Replit/Vite bloquea la pantalla constantemente.
+* Arreglo: desactivar overlay en dev móvil o bajo flag:
+
+  ```ts
+  server: { hmr: { overlay: process.env.VITE_HMR_OVERLAY !== 'false' } }
+  ```
+
+12. **Selector de rol y navegación condicionada**
+
+* Cambios en labels/condiciones del header (Profile/Dashboard/Admin) que se pisan con refactors.
+* Arreglo: centralizar **una única función** de visibilidad de menú según `role`/`isHost`/`isAdmin` y tests de snapshot.
+
+---
+
+# Dónde nos la lía Replit (y cómo blindarlo)
+
+1. **Puertos y host**: Replit exige usar `process.env.PORT` y `0.0.0.0`. No hardcodear `5000`.
+2. **Dos procesos (client+server) con `concurrently`**: si uno cae, el otro sigue “vivo” y parece que “arrancó” pero falla.
+
+   * Solución: script de orquestación que **espere** a que el backend escuche antes de levantar Vite; matar ambos si falla uno.
+3. **FS efímero/paths**: rutas absolutas a `/uploads` pueden no persistir entre sesiones.
+
+   * Usa **Object Storage** o sube a S3/Supabase; si local, monta **migración de assets** al boot.
+4. **CSP por defecto**: bloquea HMR y eval.
+
+   * Relajar en dev (ver arriba).
+5. **HMR overlay**: modal invasivo en móvil.
+
+   * Desactiva por variable de entorno en Replit.
+6. **Secrets**: las “Environment” no persisten como crees; usa **Secrets** de Replit y valida en runtime.
+7. **ESM en `ts-node-dev`**: muy inestable.
+
+   * Usa **`tsx`** o build previo.
+8. **Proxy**: front no llega al backend si no hay `server.proxy` en Vite (`/api` → puerto backend).
+9. **WebSockets**: HMR necesita `ws:` permitido en CSP y que el proxy de Replit no lo bloquee.
+10. **Re-runs automáticos**: cuando se salva “demasiado”, reinicia en mitad de migraciones o semillas → estado inconsistente.
+
+---
+
+# Qué ya quedó encaminado (y por qué a veces “vuelve”)
+
+* ✅ Nav: “Dashboard” para host/admin, ocultar items según rol.
+
+  * Puede “volver” si se tocan **condiciones duplicadas** en desktop y móvil (divergencia). Centralizar lógica.
+
+* ✅ Pricing/Servicios extra: reactividad corregida (`mutateAsync`, invalidación).
+
+  * “Vuelve” si se añaden toggles con **forEach async** o sin actualizar caché local.
+
+* ✅ Imágenes de perfil: `/uploads` servido + CORS.
+
+  * “Vuelve” si cambia el prefijo en DB ( `Objects/…` ) o el orden del middleware.
+
+* ✅ Calendario: props limpias y locales correctas.
+
+  * “Vuelve” si alguien copia props de ejemplos antiguos o cambia de versión sin revisar breaking changes.
+
+* ✅ Checkout/Stripe: imports completos.
+
+  * “Vuelve” si se mueve a un layout lazy y se olvida el provider en el nivel correcto.
+
+---
+
+# Checklist para dejar `main` estable (10 min cada uno)
+
+1. **Arranque**
+
+   * `node -e "console.log(process.env.PORT)"` (debe existir)
+   * `/healthz` responde `{ ok: true }`.
+
+2. **DB**
+
+   * `SELECT column_name FROM information_schema.columns WHERE table_name='user_languages'` (comprueba `is_primary`).
+   * Si falta algo, aplica migración o mapea el campo.
+
+3. **Hosts API**
+
+   * `GET /api/hosts` → **array** (no objeto).
+
+4. **Imágenes**
+
+   * `GET /uploads/.../profile-*.webp` → `200` desde el navegador.
+
+5. **Calendario**
+
+   * Agosto muestra `7` en jueves; no hay números de semana.
+
+6. **Toggles servicios**
+
+   * Activar/Desactivar se refleja **sin refrescar** (revisar React Query devtools).
+
+7. **Traducción**
+
+   * Abrir 2 perfiles con descripciones en idiomas distintos → sin “plugin error”, badge “Traducido” solo cuando toca.
+
+8. **Stripe**
+
+   * Página de checkout renderiza sin error de `loadStripe`.
+
+9. **CSP/HMR**
+
+   * En dev, no hay pantalla en blanco ni errores CSP; HMR funciona.
+
+10. **Header roles**
+
+* Cambiar entre Registered/Host/Admin y validar menús (desktop y mobile).
+
+---
+
+# Cambios mínimos que dejaría hoy mismo
+
+* **Servidor**: arrancar con **`tsx`** y portar cualquier `__dirname` a `fileURLToPath`.
+* **Helmet en dev**: CSP permisiva sólo si `NODE_ENV!=='production'`.
+* **Guard clause env**: si falta `RESEND_*`, log claro y servicio email en “modo no operativo” (sin crash).
+* **Mapper DB→API**: una función única que transforme snake\_case a camelCase.
+* **React Query**: reemplazar `forEach(async ...)` por `for...of` + `await mutateAsync` y **actualizar caché** al vuelo.
+* **Vite proxy**: asegurar `server.proxy['/api']` → backend; `hmr.overlay` configurable por env.
+
+---
+
+# Endurecer para que no se rompa otra vez (1–2 días)
+
+* **Pruebas de humo E2E (Playwright)**:
+
+  * 1. carga Home, 2) abre un host, 3) ve calendario correcto, 4) toggle de un servicio, 5) miniatura se ve.
+* **“Boot doctor”** (script que corre en cada arranque): valida env, migraciones y rutas estáticas.
+* **CI barato** (GitHub Actions o Replit Deploy Hooks): lint, build, test de humo en cada PR a `main`.
+* **Feature flags** para tutoriales/overlays/experimentos (evita roturas por UI opcional).
+* **Convención de migraciones**: una sola herramienta (Drizzle/Prisma), “status” obligatorio antes de desplegar.
+
+---
+
+Si te va bien, preparo un **PR único contra `main`** con:
+
+* `scripts` de arranque con `tsx`
+* CSP “dev friendly”
+* guardas de env + health gate
+* mapper DB→API
+* corrección de invalidaciones React Query en los toggles
+* proxy de Vite + opción para desactivar overlay
+
+¿Le doy?
