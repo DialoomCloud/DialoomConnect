@@ -18,7 +18,7 @@ function checkNodeVersion() {
 
 function checkEnv() {
   const examplePath = ".env.example";
-  const localCandidates = [".env.local", "env.local"];
+  const localCandidates = [".env.local"];
   const localPath = localCandidates.find((p) => fs.existsSync(p));
 
   if (!fs.existsSync(examplePath)) {
@@ -27,7 +27,7 @@ function checkEnv() {
   }
 
   if (!localPath) {
-    console.warn("No .env.local or env.local file found");
+    console.warn("No .env.local file found");
     return;
   }
 
