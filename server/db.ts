@@ -1,12 +1,11 @@
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
-import createDebug from "debug";
 import ws from "ws";
 import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-const log = createDebug("server:db");
+const log = (...args: any[]) => console.debug("server:db", ...args);
 
 let pool: Pool | undefined;
 let db: any;
