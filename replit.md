@@ -28,6 +28,7 @@ Dialoom is a platform designed to connect users through video calls. It focuses 
 - **Video Call Topics Character Limit Expansion**: Increased maximum character limit for video call topics from 50 to 200 characters, allowing hosts to create more descriptive and detailed topic descriptions. Updated placeholder text to provide better guidance with examples.
 - **Prominent Upcoming Calls Banner**: Created a prominent UpcomingCallsBanner component for the dashboard that displays at the top with real-time countdown timer functionality for next video calls. Features urgency-based styling (very urgent/urgent/soon/normal) with appropriate colors and animations, responsive design, and large "Join Call" button for intuitive access to video sessions. Only shows when there are upcoming calls in the next 7 days.
 - **Email Service Configuration Fix**: Enhanced email service resilience by adding proper environment variable checks and graceful fallbacks. EmailService now warns when RESEND_API_KEY or RESEND_FROM_EMAIL are missing instead of crashing. Fixed missing dependencies (Handlebars, storage import) and improved error handling for admin config access. Application will continue to work without email functionality if these variables are not configured.
+- **System Robustness Overhaul**: Implemented comprehensive defensive programming patterns and error prevention system. Created shared validation schemas with Zod for host pricing (including atomic UPSERT operations), established unified image serving system with proper fallback chains, added database constraints for data integrity, disabled Vite HMR overlay to prevent UI blocking, and integrated defensive guards throughout host search with array safety patterns. System now prevents runtime errors through proactive validation rather than reactive error handling.
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language (non-technical users)
@@ -51,11 +52,13 @@ The system employs a client-server architecture.
     - **Image Optimization**: Increased limits and improved compression for uploaded images.
     - **Video Compression**: Automatic video compression using FFmpeg for files up to 100MB, with smart quality adjustment, format standardization to MP4, and resolution optimization while maintaining visual quality.
     - **Admin Panel**: Enhanced with analytics, session management, multimedia management, theme editor, and robust role assignment and impersonation features.
+    - **Defensive Programming Architecture**: Implemented comprehensive error prevention system with shared validation patterns, atomic database operations, unified image serving with fallback chains, and proactive array safety guards throughout the application. System prioritizes prevention over reactive error handling.
 - **System Design Choices**:
     - **Authentication**: All user authentication is handled via Supabase Auth.
     - **File Storage**: `ObjectStorageService` is the standard for all file operations.
-    - **Database Management**: Drizzle ORM is used; database schema changes are managed via `npm run db:push`, avoiding manual SQL migrations. User data is synchronized between Supabase and the NEON database.
+    - **Database Management**: Drizzle ORM is used with atomic UPSERT operations and proper constraints; database schema changes are managed via `npm run db:push`, avoiding manual SQL migrations. User data is synchronized between Supabase and the NEON database.
     - **Internationalization**: All UI text uses i18n keys for multi-language support (Spanish, English, Catalan).
+    - **Error Prevention**: Comprehensive defensive patterns implemented through shared validation schemas, type-safe API responses, array safety guards, and unified resource serving with graceful fallbacks.
 
 ## External Dependencies
 - **Supabase**: Primary service for user authentication and managing user profiles.

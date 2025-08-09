@@ -14,6 +14,7 @@ import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
 import { useExploreFilterStore, PURPOSES } from "@/stores/exploreFilterStore";
+import { safeArray, safeString, arrayResponseSchema, hostSchema } from '@shared/defensive-patterns';
 import PriceRangeSlider from "@/components/PriceRangeSlider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -254,6 +255,10 @@ export default function HostSearch() {
   const { data: hosts, isLoading } = useQuery<UserType[]>({
     queryKey: ["/api/hosts", selectedCategories, selectedSkills, selectedLanguages, selectedPurposes, minPrice, maxPrice],
     queryFn: () => fetch(apiUrl).then(res => res.json()),
+    select: (data) => {
+      // Use defensive pattern for API response validation
+      return safeArray(data);
+    },
   });
 
   // Remove social profiles query since we no longer show them in host cards
@@ -396,7 +401,11 @@ export default function HostSearch() {
     return true;
   });
 
-  const displayHosts = isAISearch ? aiResults : filteredHosts;
+  // Apply defensive patterns throughout the component
+  const safeHosts = safeArray(hosts);
+  const safeAiResults = safeArray(aiResults);
+  const safeFilteredHosts = safeHosts.filter(filterHosts);
+  const displayHosts = isAISearch ? safeAiResults : safeFilteredHosts;
 
   return (
     <div className="min-h-screen bg-[hsl(220,9%,98%)]">

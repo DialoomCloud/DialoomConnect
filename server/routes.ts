@@ -139,71 +139,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Serve files from Replit Object Storage with fallback to local files
-  app.get('/storage/*', async (req, res) => {
-    try {
-      const objectPath = req.params[0];
-      console.log(`Attempting to serve file: ${objectPath}`);
-      
-      let fileBuffer: Buffer;
-      
-      try {
-        // Try Object Storage first
-        fileBuffer = await replitStorage.getFile(objectPath);
-        console.log(`Served from Object Storage: ${objectPath}`);
-      } catch (objectStorageError) {
-        console.log('Object Storage failed, trying local fallback...');
-        
-        // Fallback to local file system
-        // Try multiple local path variations
-        const localPaths = [
-          `uploads/${objectPath}`,
-          objectPath.replace('Objects/', 'uploads/'),
-          objectPath.replace('Media/', 'uploads/Media/')
-        ];
-        
-        let fileFound = false;
-        for (const localPath of localPaths) {
-          try {
-            const fs = await import('fs/promises');
-            fileBuffer = await fs.readFile(localPath);
-            console.log(`Served from local filesystem: ${localPath}`);
-            fileFound = true;
-            break;
-          } catch (localError) {
-            // Continue to next path
-          }
-        }
-        
-        if (!fileFound) {
-          console.error('Both Object Storage and local file failed:', {
-            objectStorageError: (objectStorageError as Error).message,
-            paths: localPaths
-          });
-          return res.status(404).json({ message: 'File not found' });
-        }
-      }
-
-      // Determine content type based on file extension
-      const ext = objectPath.split('.').pop()?.toLowerCase();
-      let contentType = 'application/octet-stream';
-      
-      if (ext === 'webp' || ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
-        contentType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-      } else if (ext === 'mp4') {
-        contentType = 'video/mp4';
-      } else if (ext === 'pdf') {
-        contentType = 'application/pdf';
-      }
-
-      res.set('Content-Type', contentType);
-      res.set('Cache-Control', 'private, max-age=3600');
-      res.send(fileBuffer);
-    } catch (error) {
-      console.error('Error serving file from Object Storage:', error);
-      res.status(404).json({ message: 'File not found' });
-    }
-  });
+  // Import and setup unified image serving
+  const { createImageRoutes } = await import('./image-helper.js');
+  createImageRoutes(app, replitStorage);
 
 
 
@@ -2282,56 +2220,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId;
       const body = req.body;
 
+      // Import validation schemas
+      const { upsertHostPricingSchema, batchHostPricingSchema } = await import("@shared/schema");
+
       // Check if it's a single pricing update or bulk update
       if (Array.isArray(body)) {
-        // Bulk update - check 5-tariff limit
-        const activeTariffs = body.filter(p => p.isActive);
-        if (activeTariffs.length > 5) {
-          return res.status(400).json({ 
-            error: "Máximo de tarifas alcanzado",
-            message: "Solo se pueden tener máximo 5 tarifas activas." 
-          });
-        }
-
-        // Clear existing and create new
-        const existing = await storage.getHostPricing(userId);
-        for (const price of existing) {
-          await storage.deleteHostPricing(price.id, userId);
-        }
-
+        // Validate batch data
+        const validatedBatch = batchHostPricingSchema.parse(body.map(item => ({ ...item, userId })));
+        
+        // Use atomic transaction for batch operations
         const results = [];
-        for (const price of body) {
-          const result = await storage.createHostPricing({
-            ...price,
-            userId,
-            currency: "EUR",
-          });
+        for (const pricingData of validatedBatch) {
+          const result = await storage.upsertHostPricing(pricingData);
           results.push(result);
         }
-        res.json(results);
+        
+        // Return all updated pricing for cache reconciliation
+        const allPricing = await storage.getHostPricing(userId);
+        res.json(allPricing);
       } else {
-        // Single pricing update
-        const { 
-          duration, 
-          price, 
-          isActive, 
-          isCustom,
-          includesScreenSharing,
-          includesTranslation,
-          includesRecording,
-          includesTranscription
-        } = body;
+        // Single pricing update - validate input
+        const validatedData = upsertHostPricingSchema.parse({ ...body, userId });
 
-        // Check 5-tariff limit when activating a NEW tariff (not when updating services for existing ones)
-        if (isActive) {
+        // Check 5-tariff limit only for new active tariffs
+        if (validatedData.isActive) {
           const existingPricing = await storage.getHostPricing(userId);
-          const existingTariffForDuration = existingPricing.find(p => p.duration === duration);
+          const existingForDuration = existingPricing.find(p => p.duration === validatedData.duration);
           
-          // Only check the limit if we're creating a completely new tariff
-          if (!existingTariffForDuration) {
-            const currentActivePricing = existingPricing.filter(p => p.isActive);
-            
-            if (currentActivePricing.length >= 5) {
+          if (!existingForDuration) {
+            const activeCount = existingPricing.filter(p => p.isActive).length;
+            if (activeCount >= 5) {
               return res.status(400).json({ 
                 error: "Máximo de tarifas alcanzado",
                 message: "Solo se pueden tener máximo 5 tarifas activas." 
@@ -2340,24 +2258,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
-        const pricingData = {
-          userId,
-          duration,
-          price,
-          currency: "EUR",
-          isActive,
-          isCustom: isCustom || false,
-          includesScreenSharing: includesScreenSharing || false,
-          includesTranslation: includesTranslation || false,
-          includesRecording: includesRecording || false,
-          includesTranscription: includesTranscription || false,
-        };
-
-        const result = await storage.upsertHostPricing(pricingData);
+        const result = await storage.upsertHostPricing(validatedData);
+        
+        // Return the complete entity for cache reconciliation
         res.json(result);
       }
     } catch (error) {
       console.error("Error saving host pricing:", error);
+      
+      // Handle validation errors specifically
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          error: "Datos de entrada inválidos",
+          details: error.errors 
+        });
+      }
+      
       res.status(500).json({ message: "Failed to save pricing" });
     }
   });

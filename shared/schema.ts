@@ -493,6 +493,30 @@ export type HostPricing = typeof hostPricing.$inferSelect;
 export type InsertHostPricing = typeof hostPricing.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = typeof bookings.$inferInsert;
+
+// Pricing schema validation with UPSERT constraint
+export const upsertHostPricingSchema = createInsertSchema(hostPricing).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  // Ensure userId and duration are always provided for UPSERT
+  userId: z.string().min(1),
+  duration: z.number().int().min(0),
+  price: z.string().or(z.number()).transform(val => String(val)),
+  currency: z.string().default("EUR"),
+  isActive: z.boolean().default(true),
+  isCustom: z.boolean().default(false),
+  includesScreenSharing: z.boolean().default(false),
+  includesTranslation: z.boolean().default(false),
+  includesRecording: z.boolean().default(false),
+  includesTranscription: z.boolean().default(false),
+});
+
+export const batchHostPricingSchema = z.array(upsertHostPricingSchema).max(5, "Máximo 5 tarifas permitidas");
+
+export type UpsertHostPricing = z.infer<typeof upsertHostPricingSchema>;
+export type BatchHostPricing = z.infer<typeof batchHostPricingSchema>;
 export type HostCategory = typeof hostCategories.$inferSelect;
 export type InsertHostCategory = typeof hostCategories.$inferInsert;
 

@@ -1,0 +1,156 @@
+¡Genial — me pongo manos a la obra!
+
+Aquí tienes un diagnóstico claro de por qué aparecen errores “recurrentes”, qué cosas suele romper Replit en este stack y cómo blindarlo para que no vuelvan.
+
+Resumen ejecutivo
+
+Los fallos que has mencionado (guardados intermitentes en Admin → usuarios, imágenes que a veces no cargan, calendarios raros, toggles de precios que “dicen que sí” pero no se ven hasta recargar, etc.) encajan en 8 causas de raíz:
+	1.	Contratos de API desalineados (client ↔ server)
+Síntoma: tras “pequeños cambios” en el backend, el front sigue asumiendo el shape antiguo (campos, nullables, enums…), y las mutaciones fallan silenciosamente o quedan “succesful” pero la UI no refleja.
+Cómo se arregla para siempre:
+
+	•	Define esquemas Zod compartidos (en /shared) y usa los mismos para validar en el server y tipar en el front (zod-to-ts o ts-rest).
+	•	Responde siempre la entidad actualizada en las mutaciones y usa ese payload para reconciliar cache (React Query onSuccess(data){ queryClient.setQueryData(..., data) }).
+	•	Añade tests de contrato (Pact, ts-rest contract tests) en CI.
+
+	2.	Capa de cache / invalidation (React Query) mal orquestada
+Síntoma: “Me dice que lo cambia pero no se ve hasta recargar” (exactamente lo que describiste con Additional Services / pricing).
+Cómo fijarlo:
+
+	•	Mutaciones con mutateAsync + await por cada tarifa y una invalidación al final (o mejor: optimistic update + rollback si falla).
+	•	Convención de queryKeys por recurso (["hostPricing", hostId], ["adminUsers", page], etc.) y un helper invalidate(keys...).
+
+	3.	Deriva de esquema de base de datos (migraciones)
+Síntoma: columnas “aparecen/desaparecen” (caso real típico: is_primary vs isPrimary), endpoints que devuelven arrays vacíos o undefined que luego rompen .map.
+Cómo fijarlo:
+
+	•	Una sola fuente de verdad (Drizzle/Prisma), migración por PR siempre, y check de drift en CI (drizzle-kit diff o prisma migrate diff).
+	•	Unique constraints e idempotencia: p.ej. (user_id, duration) para pricing con UPSERT en lugar de “crear si no existe” (evita el “máximo de 5 tarifas” cuando en realidad actualizas).
+
+	4.	Gestión de ficheros/URLs de imágenes inconsistente
+Síntoma: miniaturas que a veces van con /Objects/... y otras con /uploads/..., CORS o Cross-Origin-Resource-Policy que bloquea, 404 intermitentes.
+Cómo fijarlo:
+
+	•	Un único helper getPublicUrl(path) en server que normaliza la URL sea S3 u on-disk; el front nunca concatena rutas.
+	•	Sirve estáticos con express.static("uploads") antes de middlewares que puedan interferir + headers CORS correctos.
+	•	En el front, fallback de Avatar (onError → imagen por defecto).
+
+	5.	HMR/overlay y hot-reload en desarrollo que enmascara (o agrava) errores
+Síntoma: mensajes tipo plugin:runtime-error-plugin ... hosts?.map is not a function, pantalla bloqueada por overlay.
+Cómo fijarlo:
+
+	•	En Vite dev: server.hmr.overlay=false para que la app no quede “secuestrada” por el modal.
+	•	Añade guardas defensivas: Array.isArray(hosts) ? hosts.map(...) : [] en puntos calientes (cards de hosts, grids).
+
+	6.	ESM vs CommonJS, loaders, y herramienta de arranque
+Síntoma: arranques inestables (ts-node-dev vs tsx), __dirname no definido, imports que fallan.
+Cómo fijarlo:
+
+	•	Estándar: Node ESM + tsx para el server, y en Vite usar fileURLToPath(import.meta.url) (ya lo habéis corregido en dev).
+	•	Congela versión de Node en el entorno de ejecución (Replit a veces no coincide).
+
+	7.	Validación de ENV y “arranques frágiles”
+Síntoma: crashes por RESEND_FROM_EMAIL ausente, Stripe loadStripe no importado, CSP bloqueando dev, etc.
+Cómo fijarlo:
+
+	•	Valida .env al boot con Zod: si falta algo en dev loggea y degrada (no crash).
+	•	helmet con CSP relajado solo en dev para HMR y websockets.
+	•	Chequeo de integraciones (Stripe, Resend, Agora) con healthcheck agregado.
+
+	8.	UI móvil sin “modo compacto”
+Síntoma: filtros pegados arriba que tapan resultados; calendarios con numeración confusa; toggles sin estado visual inmediato.
+Cómo fijarlo:
+
+	•	Filtros colapsables + sticky no intrusivo; calendario usando DayPicker con contenido del día date.getDate() y sin weekNumber; badges y skeletons claros para estados “loading”.
+
+⸻
+
+Donde Replit suele “romperte” cosas (y cómo neutralizarlo)
+	•	Multiproceso y watchers: Vite + server con watchers pueden duplicar procesos/puertos.
+→ Usa concurrently con comandos explícitos y puertos fijos; mata huérfanos en npm-scripts.
+	•	Node/API keys: variables a veces tardan en aplicarse entre restarts.
+→ Valídalas en runtime y permite “modo degradado” (sin email, p.ej.).
+	•	HMR overlay que bloquea la UI: desactívalo en dev cuando vayáis a demo.
+	•	FS y paths: rutas relativas distintas en shell vs servidor; normaliza con helpers (getPublicUrl) y evita construir URLs en el front.
+
+⸻
+
+Comprobaciones en el repo
+
+He revisado el repositorio DialoomConnect para ver stack, estructura y documentación, y encaja con lo anterior:
+	•	Stack: Frontend Vite + React/TS, Backend Express/TS, Postgres con ORM (Drizzle/Prisma), Redis, y S3‑compatible object storage; integraciones Stripe, Resend, Agora.  ￼
+	•	Estructura: monorepo con client/ (Vite), server/ (Express), shared/ (tipos/contratos), scripts y docs (deployment, envs, etc.).  ￼
+	•	Zonas sensibles: páginas “Host Discovery/Search” y “Admin Dashboard” referenciadas en el README — precisamente donde nos reportas los fallos.  ￼
+
+(GitHub a veces devolvió errores 500 al abrir algunos md, pero la info principal del README bastó para contrastar stack/estructura.)
+
+⸻
+
+Acciones concretas para “cerrar grifos” (ordenadas por impacto)
+	1.	Contratos compartidos + validación en tiempo real (1–2 días)
+
+	•	Crear /shared/contracts con Zod para todas las entidades usadas por Admin y Host (usuarios, pricing, services, availability).
+	•	Server: validar req.body y devolver exactamente la entidad final.
+	•	Front: tipos derivados del mismo Zod y reconciliación de cache en onSuccess.
+
+	2.	Estabilizar la capa de pricing y services (0.5–1 día)
+
+	•	En BD: UNIQUE (user_id, duration) y UPSERT para mutaciones → nunca “crea” una sexta tarifa por error; solo actualiza.
+	•	En front: optimistic update de toggles (screen sharing, recording…) y un único invalidateQueries al final.
+
+	3.	Migrations disciplinadas + drift check en CI (0.5 día)
+
+	•	Pipeline: migrate:generate → migrate:apply y drift check obligatorio en PR.
+	•	Script de “health” que avise si hay diferencia de esquema antes de arrancar.
+
+	4.	Imágenes fiables (0.5 día)
+
+	•	Helper de server getPublicUrl(key) + ruta /files/:key con headers correctos.
+	•	Componente Avatar con onError y placeholder consistente.
+
+	5.	HMR/CSP dev limpio y no intrusivo (0.5 día)
+
+	•	server.hmr.overlay=false en Vite (dev), CSP relajado solo en dev; healthchecks para Stripe/Resend/Agora que no tumben el boot.
+
+	6.	Tests mínimos que evitan regresiones (1 día)
+
+	•	3–4 tests e2e (Playwright) para:
+a) Guardar usuario admin.
+b) Toggle de servicios + reflejo inmediato en UI.
+c) Calendario host (que imprime 1..31, no “número de semana”).
+d) Carga de miniaturas en Hosts.
+
+	7.	Observabilidad básica (0.5 día)
+
+	•	Sentry (front+back), logger con correlação de requestId y x-request-id, trazas en mutaciones clave.
+
+⸻
+
+Cosas puntuales que ya vimos fallar (y cómo dejarlo a prueba de balas)
+	•	hosts?.map is not a function: protege con Array.isArray(hosts) y garantiza que el endpoint /api/hosts siempre devuelve [] si no hay resultados.
+	•	Stripe “loadStripe”: importa explícitamente desde @stripe/stripe-js y valida VITE_STRIPE_PUBLIC_KEY (degrada a “modo demo” si falta).
+	•	Calendario público de host: render del número de día debe ser date.getDate(); no uses week number; congela weekStartsOn={1} y desactiva showWeekNumber.
+	•	Role switching: backend debe aceptar 'registered' y responder el estado final; el header lee siempre del user actualizado (no de memoria local).
+	•	Filtros móvil: botón de colapso + sticky no intrusivo probado con position: sticky y top: env(safe-area-inset-top).
+
+⸻
+
+¿Por qué te reaparecen tras “mejoras”?
+
+Porque sin contratos y tests, cada mejora pequeña puede:
+	•	Cambiar el shape (p.ej. includesTranslation → translationIncluded)
+	•	Tocar orden/clave de queries (React Query no invalida lo correcto)
+	•	Introducir race conditions con forEach(async ...) (no espera)
+	•	Romper tipos que TypeScript no detecta si lo fuerzas con any
+	•	Desalinear BD por migraciones sin aplicar en todos los entornos
+
+La receta para que no vuelvan es: contratos compartidos + migraciones disciplinadas + 4 tests e2e bien elegidos + observabilidad mínima.
+
+⸻
+
+Próximos pasos (propuesta)
+	1.	Te abro PR con: contratos Zod compartidos + fijado de mutaciones/pricing + helper de imágenes.
+	2.	Otro PR con: tests e2e mínimos + Sentry + healthchecks.
+	3.	Pipeline con drift check y linterna de queries (invalidations) para Admin/Hosts.
+
+¿Te parece si empiezo por pricing + servicios (que es donde más “se ve” la mejora) y en paralelo dejo creados los contratos compartidos? Si me das OK, preparo esos dos PRs y te los paso para revisión.

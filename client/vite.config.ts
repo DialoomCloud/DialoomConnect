@@ -33,11 +33,18 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    hmr: {
+      overlay: false, // Disable HMR overlay to prevent UI blocking
+    },
     proxy: {
       "/api": {
         target: "http://localhost:5000",
         changeOrigin: true,
       },
+      "/storage": {
+        target: "http://localhost:5000", 
+        changeOrigin: true,
+      }
     },
     fs: {
       strict: true,

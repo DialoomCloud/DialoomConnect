@@ -892,25 +892,55 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertHostPricing(pricing: InsertHostPricing): Promise<HostPricing> {
-    const existing = await db
-      .select()
-      .from(hostPricing)
-      .where(and(
-        eq(hostPricing.userId, pricing.userId),
-        eq(hostPricing.duration, pricing.duration)
-      ));
-
-    if (existing.length > 0) {
-      // Update existing pricing
+    try {
+      // Use PostgreSQL's ON CONFLICT to handle UPSERT atomically
       const [result] = await db
-        .update(hostPricing)
-        .set({ ...pricing, updatedAt: new Date() })
-        .where(eq(hostPricing.id, existing[0].id))
+        .insert(hostPricing)
+        .values({
+          ...pricing,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [hostPricing.userId, hostPricing.duration],
+          set: {
+            price: pricing.price,
+            currency: pricing.currency || "EUR",
+            isActive: pricing.isActive ?? true,
+            isCustom: pricing.isCustom ?? false,
+            includesScreenSharing: pricing.includesScreenSharing ?? false,
+            includesTranslation: pricing.includesTranslation ?? false,
+            includesRecording: pricing.includesRecording ?? false,
+            includesTranscription: pricing.includesTranscription ?? false,
+            updatedAt: new Date()
+          }
+        })
         .returning();
+      
       return result;
-    } else {
-      // Create new pricing
-      return this.createHostPricing(pricing);
+    } catch (error) {
+      console.error("Failed to upsert host pricing:", error);
+      // Fallback to old method if constraint doesn't exist yet
+      const existing = await db
+        .select()
+        .from(hostPricing)
+        .where(and(
+          eq(hostPricing.userId, pricing.userId),
+          eq(hostPricing.duration, pricing.duration)
+        ));
+
+      if (existing.length > 0) {
+        // Update existing pricing
+        const [result] = await db
+          .update(hostPricing)
+          .set({ ...pricing, updatedAt: new Date() })
+          .where(eq(hostPricing.id, existing[0].id))
+          .returning();
+        return result;
+      } else {
+        // Create new pricing
+        return this.createHostPricing(pricing);
+      }
     }
   }
 
