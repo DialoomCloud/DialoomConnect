@@ -1,4 +1,6 @@
 import { Resend } from 'resend';
+import * as Handlebars from 'handlebars';
+import { storage } from './storage';
 import {
   EmailTemplate,
   EmailNotification,
@@ -39,6 +41,12 @@ class EmailService {
    */
   async sendEmail(params: SendEmailParams): Promise<boolean> {
     try {
+      // Check if email service is configured
+      if (!resend || !RESEND_FROM_EMAIL) {
+        console.warn('Email service not configured. Missing RESEND_API_KEY or RESEND_FROM_EMAIL environment variables.');
+        return false;
+      }
+
       let template: EmailTemplate | null = null;
       let subject: string;
       let htmlContent: string;
@@ -62,10 +70,17 @@ class EmailService {
         textContent = template.textContent || undefined;
       }
 
-      // Get theme colors from admin config
-      const adminConfig = await storage.getAdminConfig();
-      const themeColors = adminConfig.find(config => config.key === 'theme_colors');
-      const primaryColor = themeColors?.value?.primary || '#008B9A';
+      // Get theme colors from admin config (with fallback)
+      let primaryColor = '#008B9A';
+      try {
+        const themeConfig = await storage.getAdminConfig('theme_colors');
+        if (themeConfig?.value) {
+          const parsedValue = typeof themeConfig.value === 'string' ? JSON.parse(themeConfig.value) : themeConfig.value;
+          primaryColor = parsedValue?.primary || '#008B9A';
+        }
+      } catch (error) {
+        console.warn('Could not fetch admin config, using default colors');
+      }
 
       // Add theme variables automatically
       const themeVariables = {
