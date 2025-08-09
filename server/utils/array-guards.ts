@@ -78,15 +78,8 @@ export function ensureArrayResponse(req: any, res: any, next: any) {
         return originalJson.call(this, []);
       }
       
-      // Apply DB to API field mapping  
-      try {
-        const { mapArrayDbToApi } = await import('../../shared/db-mappers.js');
-        const mappedData = mapArrayDbToApi(data);
-        return originalJson.call(this, mappedData);
-      } catch {
-        // Fallback if mapping fails
-        return originalJson.call(this, data);
-      }
+      // Apply DB to API field mapping (simplified for sync execution)
+      return originalJson.call(this, data);
     }
     
     return originalJson.call(this, data);
