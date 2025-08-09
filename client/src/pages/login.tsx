@@ -78,7 +78,7 @@ export default function LoginPage() {
     };
 
     handleOAuthCallback();
-
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
