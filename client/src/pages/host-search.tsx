@@ -360,9 +360,10 @@ export default function HostSearch() {
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
 
-  const filteredHosts = hosts?.filter((host) => {
-    // Text search filter
-    if (searchTerm) {
+  // Filter function for hosts
+  const filterHosts = (host: UserType) => {
+    // Text search (if any search term is provided)
+    if (searchTerm && searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
       const textMatch = (
         host.firstName?.toLowerCase().includes(search) ||
@@ -399,7 +400,7 @@ export default function HostSearch() {
     // }
 
     return true;
-  });
+  };
 
   // Apply defensive patterns throughout the component
   const safeHosts = safeArray(hosts);
