@@ -13,6 +13,7 @@
 - [Development Guidelines](#development-guidelines)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 
@@ -456,6 +457,19 @@ Please include:
 - Actual behavior
 - Browser/device information
 - Screenshots if applicable
+
+## 🛠️ Troubleshooting
+
+### Doctor Script
+Run `npm run doctor` to perform basic diagnostics:
+- Validates that you are using Node.js 20 or higher.
+- Compares `.env.example` and `.env.local` to report missing keys.
+- Starts the server on port `8080` and checks `http://localhost:8080/healthz`.
+
+### Common Issues
+- **Missing environment variables** – copy `.env.example` to `.env.local` and provide the required values.
+- **Module type errors** – the project uses ES modules (`"type": "module"`); use modern `import` syntax and Node.js ≥ 20.
+- **Port conflicts** – the app serves on port `5000` by default. Set the `PORT` variable if 5000 or the doctor's port `8080` is already in use.
 
 ## 📄 License
 
