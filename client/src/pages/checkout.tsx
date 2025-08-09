@@ -117,6 +117,14 @@ export default function Checkout() {
   const { session, clearSession } = useBookingSessionStore();
 
   // Get booking session data
+  const { data: sessionData, isLoading } = useQuery({
+    queryKey: ["/api/booking-session", params?.sessionId],
+    queryFn: async () => {
+      const response = await apiRequest(
+        `/api/booking-session/${params?.sessionId}`
+      );
+      return response.json();
+    },
     enabled: !!params?.sessionId,
     retry: false,
   });
