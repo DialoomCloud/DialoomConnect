@@ -5,6 +5,7 @@ import cors from "cors";
 import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import filesRoutes from './routes/files';
 import { errorHandler } from "./middleware/errorHandler";
 import { env } from "./utils/env";
 
@@ -31,6 +32,9 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: false }));
 
 app.get("/healthz", (_req, res) => res.json({ ok: true }));
+
+// Unified file serving routes (antes de otros middlewares)
+app.use('/api', filesRoutes);
 
 app.use((req, res, next) => {
   const start = Date.now();

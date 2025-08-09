@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { User as UserType, Category, Skill, Language, Country } from "@shared/schema";
 import { useExploreFilterStore, PURPOSES } from "@/stores/exploreFilterStore";
 import { safeArray, safeString, arrayResponseSchema, hostSchema } from '@shared/defensive-patterns';
+import { hostSearchResponseSchema, type HostSearchResponse } from '@shared/contracts';
 import PriceRangeSlider from "@/components/PriceRangeSlider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -256,8 +257,9 @@ export default function HostSearch() {
     queryKey: ["/api/hosts", selectedCategories, selectedSkills, selectedLanguages, selectedPurposes, minPrice, maxPrice],
     queryFn: () => fetch(apiUrl).then(res => res.json()),
     select: (data) => {
-      // Use defensive pattern for API response validation
-      return safeArray(data);
+      // Use contract validation with fallback
+      const validated = hostSearchResponseSchema.safeParse({ hosts: data, totalCount: 0, filters: {} });
+      return validated.success ? validated.data.hosts : safeArray(data);
     },
   });
 
