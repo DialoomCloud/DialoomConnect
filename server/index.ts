@@ -11,41 +11,36 @@ import { ensureArrayResponse } from "./utils/array-guards";
 import { mapArrayDbToApi } from "../shared/db-mappers";
 
 const app = express();
+const isProd = process.env.NODE_ENV === 'production';
 
-// CSP configuration - relaxed in development to prevent HMR blocking
-const cspConfig = env.NODE_ENV === 'development' 
-  ? {
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:", "ws:", "wss:", "blob:"],
-          styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-          imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
-          connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
-          fontSrc: ["'self'", "https:", "http:", "data:"],
-          objectSrc: ["'none'"],
-          mediaSrc: ["'self'", "https:", "http:", "blob:"],
-          frameSrc: ["'self'", "https:", "http:"],
-        },
-      },
+// Sirve /uploads antes de rutas API
+app.use('/uploads', express.static('uploads'));
+
+if (isProd) {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "script-src": ["'self'"],
+        "connect-src": ["'self'"],
+      }
     }
-  : {
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "https:"],
-          styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https:"],
-          fontSrc: ["'self'", "https:", "data:"],
-          objectSrc: ["'none'"],
-          mediaSrc: ["'self'", "https:"],
-          frameSrc: ["'self'", "https:"],
-        },
+  }))
+} else {
+  // DEV: permite Vite
+  app.use(helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "http://localhost:5173"],
+        "connect-src": ["'self'", "ws://localhost:5173", "http://localhost:5173"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:"],
       },
-    };
-
-app.use(helmet(cspConfig));
+    },
+    crossOriginEmbedderPolicy: false,
+  }))
+}
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: "2mb" }));

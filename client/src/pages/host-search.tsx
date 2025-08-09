@@ -301,13 +301,13 @@ export default function HostSearch() {
 
   // Fetch additional languages for all hosts
   const { data: hostLanguages = {} } = useQuery({
-    queryKey: ["/api/hosts/languages", hosts?.map(h => h.id)],
+    queryKey: ["/api/hosts/languages", Array.isArray(hosts) ? hosts.map(h => h.id) : []],
     queryFn: async () => {
       if (!hosts || hosts.length === 0) return {};
       
       const languageData: Record<string, any[]> = {};
       await Promise.all(
-        hosts.map(async (host) => {
+        (Array.isArray(hosts) ? hosts : []).map(async (host) => {
           try {
             const response = await fetch(`/api/user/languages/${host.id}`);
             if (response.ok) {
@@ -322,7 +322,7 @@ export default function HostSearch() {
       );
       return languageData;
     },
-    enabled: !!hosts && hosts.length > 0,
+    enabled: Array.isArray(hosts) && hosts.length > 0,
   });
 
   // AI Search mutation

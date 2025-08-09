@@ -1,0 +1,93 @@
+3) package.json (unificar en tsx, adiós ts-node-dev)
+json
+Copiar
+{
+  "type": "module",
+  "scripts": {
+    "dev": "npm-run-all -p dev:server dev:client",
+    "dev:server": "tsx watch --env-file=.env server/index.ts",
+    "dev:client": "vite --config client/vite.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "echo \"Usa build separada client/server si hace falta\"",
+    "start": "node dist/server/index.js"
+  },
+  "engines": { "node": ">=20.11 <21" }
+}
+Pincha Node (usa .nvmrc o engines) y compromete el lockfile (pnpm/yarn/npm) para que Replit no te cambie versiones.
+
+4) Blindaje rápido en hosts (evita el crash)
+ts
+Copiar
+// en host-search.tsx o donde uses hosts
+const safeHosts = Array.isArray(hosts) ? hosts : []
+// ...
+safeHosts.map(h => /* ... */)
+Y en el backend, nunca devuelvas null/undefined; si hay error, responde { hosts: [] } o [] con 200 o error tipado con la misma forma siempre.
+
+5) Stripe (si sigue fallando en checkout.tsx)
+ts
+Copiar
+import { loadStripe } from '@stripe/stripe-js'
+// …
+const pk = import.meta.env.VITE_STRIPE_PUBLIC_KEY
+if (!pk) console.warn('VITE_STRIPE_PUBLIC_KEY no está definido')
+const stripePromise = loadStripe(pk!)
+“Dónde la lía Replit” (y cómo neutralizarlo)
+Overlay de errores: su plugin capta errores y deja pantalla en blanco.
+
+➜ Desactívalo (hmr.overlay: false) mientras estabilizamos.
+
+Watcher de archivos: a veces no detecta cambios.
+
+➜ server.watch.usePolling en Vite y CHOKIDAR_USEPOLLING=1.
+
+Puertos y procesos múltiples: la UI da por “lista” la app si un proceso habla, aunque el otro esté KO.
+
+➜ Log claro de arranque y health checks; idealmente integrar Vite con Express en dev para tener un solo puerto (opcional).
+
+Cachés “pegajosas”: Vite cachea transformaciones; a veces tras un error persiste.
+
+➜ Borrar .vite caches (rm -rf node_modules/.vite client/node_modules/.vite).
+
+Actualizaciones del entorno (imagen Nix, Node, etc.).
+
+➜ Fijar versiones y lockfile; evitar instalaciones “fresh” sin control.
+
+Checklist de estabilización (15 min)
+Borra cachés Vite y node_modules si hace falta; reinstala con lockfile.
+
+Sustituye vite.config.ts, server/index.ts y scripts como te dejé.
+
+Quita el plugin de overlay de Replit (o desactiva overlay).
+
+Asegura que el servidor escucha process.env.PORT || 5000.
+
+Comprueba que /api/hosts siempre devuelve array (aunque vacío).
+
+Añade el blindaje Array.isArray(hosts) en el frontend.
+
+Revisa helmet sólo estricto en prod.
+
+Arranca: npm run dev (o el comando equivalente en Replit).
+
+Abre /hosts y recarga fuerte si ves pantalla en blanco.
+
+Si aún falla: mira consola del navegador → cualquier CSP/HMR bloqueado = volver a paso 2–3.
+
+Para que no vuelva a pasar (en main, como pediste)
+CI mínimo en GitHub Actions:
+
+pnpm -w i --frozen-lockfile
+
+pnpm -w typecheck && pnpm -w lint
+
+Arranque de smoke: vite build del client y tsc del server.
+
+Migraciones DB (Drizzle/Prisma) obligatorias en PR.
+
+Contratos Zod compartidos en /shared (server valida, client tipa).
+
+Feature flags simples (env/const) para no tocar navegación/roles en caliente.
+
+E2E pequeño (Playwright) que abra /hosts y verifique que renderiza una card.
+

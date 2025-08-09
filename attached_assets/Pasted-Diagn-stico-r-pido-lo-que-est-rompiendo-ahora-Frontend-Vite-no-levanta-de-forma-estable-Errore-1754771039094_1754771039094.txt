@@ -1,0 +1,64 @@
+Diagnóstico rápido (lo que está rompiendo ahora)
+Frontend (Vite) no levanta de forma estable
+
+Errores de pre‑transform de Vite con /src/main.tsx suelen venir de:
+
+vite.config.ts mal resuelto (paths relativos desde la raíz del monorepo).
+
+Plugins de overlay (el de Replit) interceptando y “congelando” el arranque.
+
+CSP del backend bloqueando scripts de Vite en desarrollo.
+
+Síntoma que vi en tus logs: el runtime-error-plugin de Replit saca overlay y la app se queda en blanco aunque el servidor esté “OK”.
+
+hosts?.map is not a function en la página de hosts
+
+La API devuelve algo que no es array, o undefined cuando hay error.
+
+El frontend no blinda el acceso y revienta el render.
+
+ESM/CJS y arranque de server
+
+Mezcla de ts-node-dev (mal con ESM) y tsx, sumado a __dirname en ESM, hacen que a veces el servidor se quede a medias aunque “parezca” levantado.
+
+Helmet/CSP demasiado estricta en dev
+
+Bloquea ws://localhost:5173 y/o unsafe-eval/inline que Vite usa en desarrollo => pantalla en blanco.
+
+Proxy y paths en Vite
+
+Cuando corres Vite desde la raíz con --config client/vite.config.ts, si el config no usa fileURLToPath(import.meta.url) y __dirname en ESM, pierde el root real y no encuentra /client/src/main.tsx.
+
+“Por qué se repiten” (raíces de recurrencia)
+Deriva de entorno: Node/Vite/paquetes cambian entre sesiones de Replit.
+
+✅ Fijar versiones (Node + lockfile) y usar siempre el mismo gestor.
+
+ESM vs CJS mezclado y herramientas distintas (ts-node-dev vs tsx).
+
+✅ Unificar en ESM + tsx (watch), nada de ts-node-dev.
+
+Config de dev y prod mezcladas (CSP, rutas estáticas, puertos).
+
+✅ Separar DEV/PROD por NODE_ENV y centralizar config.
+
+Esquema de DB a mano (hotfix SQL) sin migraciones formales.
+
+✅ Usar migraciones (Drizzle/Prisma) y tests de smoke tras migrar.
+
+APIs sin contrato tipado compartido (el frontend asume array, el backend a veces devuelve error).
+
+✅ Compartir schemas (Zod/TS) en /shared para validar en server y typear en client.
+
+Mutaciones sin estado optimista ni invalidación clara (React Query).
+
+✅ mutateAsync + invalidateQueries + optimistic update + staleTime coherente.
+
+Plugins/overlays de Replit que se meten en medio.
+
+✅ Desactivar overlay en dev o limitarlo.
+
+Watcher del FS en Replit pierde cambios.
+
+✅ usePolling: true en Vite + CHOKIDAR_USEPOLLING.
+

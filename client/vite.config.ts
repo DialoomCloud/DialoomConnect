@@ -1,78 +1,28 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// https://vitejs.dev/config/
 export default defineConfig({
+  root: __dirname, // asegura que el root es /client
   plugins: [react()],
-  
-  // Path resolution
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL('./src', import.meta.url)),
-      "@assets": fileURLToPath(new URL('../attached_assets', import.meta.url)),
+      '@': path.resolve(__dirname, 'src'),
+      '@shared': path.resolve(__dirname, '../shared'),
+      '@assets': path.resolve(__dirname, '../attached_assets'),
     },
   },
-  
-  // Development server configuration
   server: {
     port: 5173,
-    host: '0.0.0.0',
+    host: true,
     strictPort: true,
+    hmr: { overlay: false },          // quita el overlay que congela la app
+    watch: { usePolling: true, interval: 300 }, // Replit a veces necesita polling
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/storage': 'http://localhost:5000',
-      '/uploads': 'http://localhost:5000',
-    },
-    hmr: {
-      overlay: false,
-    },
-    fs: {
-      strict: false,
-      allow: ['..', '../..'],
+      '/api': { target: 'http://localhost:5000', changeOrigin: true },
     },
   },
-
-  // Build configuration
-  build: {
-    outDir: '../dist/client',
-    emptyOutDir: true,
-    sourcemap: process.env.NODE_ENV === 'development',
-  },
-
-  // Path resolution
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-      '@shared': resolve(__dirname, '../shared'),
-      '@assets': resolve(__dirname, '../attached_assets'),
-    },
-  },
-
-  // Optimized dependencies
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      '@tanstack/react-query',
-      'wouter',
-      'lucide-react',
-      '@stripe/stripe-js',
-    ],
-  },
-
-  // Environment variables prefix
-  envPrefix: 'VITE_',
-
-  // Global CSS variables
-  css: {
-    preprocessorOptions: {
-      css: {
-        charset: false,
-      },
-    },
-  },
-});
+})
