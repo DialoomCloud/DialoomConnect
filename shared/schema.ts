@@ -401,11 +401,11 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   postalCode: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
   // Admin/Role fields for admin panel updates
-  isAdmin: z.boolean().optional(),
-  isHost: z.boolean().optional(),
+  isAdmin: z.coerce.boolean().optional(),
+  isHost: z.coerce.boolean().optional(),
   role: z.string().optional(),
-  isActive: z.boolean().optional(),
-  isVerified: z.boolean().optional(),
+  isActive: z.coerce.boolean().optional(),
+  isVerified: z.coerce.boolean().optional(),
   // Video call topics for hosts
   videoCallTopics: z.array(z.string()).optional(),
   // Purpose/goal of the host's services - for filtering
