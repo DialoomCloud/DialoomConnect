@@ -7,12 +7,20 @@ import {
   InsertEmailNotification,
   emailTemplateTypeEnum
 } from '@shared/schema';
+import Handlebars from 'handlebars';
+import { storage } from './storage';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 
 // Only initialize Resend when the required environment variables are present
-const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+const resend = RESEND_API_KEY && RESEND_FROM_EMAIL ? new Resend(RESEND_API_KEY) : null;
+
+if (!resend) {
+  console.warn(
+    'Resend email service disabled. Missing RESEND_API_KEY or RESEND_FROM_EMAIL.'
+  );
+}
 
 export interface EmailVariables {
   [key: string]: string | number | boolean;
@@ -40,6 +48,10 @@ class EmailService {
    * Send an email using a template or custom content
    */
   async sendEmail(params: SendEmailParams): Promise<boolean> {
+    if (!resend || !RESEND_FROM_EMAIL) {
+      console.warn('Email service not configured. Skipping email send.');
+      return false;
+    }
     try {
       // Check if email service is configured
       if (!resend || !RESEND_FROM_EMAIL) {
