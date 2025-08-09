@@ -10,7 +10,21 @@ import { env } from "./utils/env";
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:", "ws:", "wss:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
+      fontSrc: ["'self'", "https:", "http:", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'", "https:", "http:"],
+      frameSrc: ["'self'", "https:", "http:"],
+    },
+  },
+}));
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: "2mb" }));

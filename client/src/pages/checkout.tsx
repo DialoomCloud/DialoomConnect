@@ -1,4 +1,18 @@
 
+import React, { useState, useEffect } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
+import { useLocation, useRoute } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+// Booking session store import removed - store doesn't exist
+import { apiRequest } from "@/lib/queryClient";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -114,7 +128,7 @@ export default function Checkout() {
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
-  const { session, clearSession } = useBookingSessionStore();
+  // Session management removed - store doesn't exist
 
   // Get booking session data
   const { data: sessionData, isLoading } = useQuery({
